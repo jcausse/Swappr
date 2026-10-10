@@ -37,8 +37,25 @@ public class TestConfig {
 	}
 
     @Bean
-    public PlatformTransactionManager transactionManager(final DataSource dataSource) {
-        return new DataSourceTransactionManager(dataSource);
+    public org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean entityManagerFactory(DataSource dataSource) {
+        final org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean factoryBean = new org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean();
+        factoryBean.setPackagesToScan("ar.edu.itba.paw.model");
+        factoryBean.setDataSource(dataSource);
+        factoryBean.setJpaVendorAdapter(new org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter());
+        
+        final java.util.Properties properties = new java.util.Properties();
+        properties.setProperty("hibernate.hbm2ddl.auto", "none");
+        properties.setProperty("hibernate.dialect", "org.hibernate.dialect.HSQLDialect");
+        properties.setProperty("hibernate.show_sql", "true");
+        properties.setProperty("format_sql", "true");
+        factoryBean.setJpaProperties(properties);
+        
+        return factoryBean;
+    }
+
+    @Bean
+    public PlatformTransactionManager transactionManager(final javax.persistence.EntityManagerFactory emf) {
+        return new org.springframework.orm.jpa.JpaTransactionManager(emf);
     }
 
     @Bean

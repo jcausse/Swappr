@@ -16,13 +16,15 @@ import org.springframework.test.jdbc.JdbcTestUtils;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.sql.DataSource;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import java.util.Optional;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = { TestConfig.class })
 @Transactional
 @Rollback
-public class FileJdbcDaoTest {
+public class FileJpaDaoTest {
 
     private static final String TABLE = "files";
 
@@ -41,6 +43,8 @@ public class FileJdbcDaoTest {
     private DataSource dataSource;
 
     private JdbcTemplate jdbcTemplate;
+    @PersistenceContext
+    private EntityManager em;
 
     @Before
     public void setUp() {
@@ -124,6 +128,7 @@ public class FileJdbcDaoTest {
         final File file = fileDao.create(FILENAME, ALT, CONTENT_TYPE, DATA);
 
         // Assert
+        em.flush();
         Assert.assertEquals(1, JdbcTestUtils.countRowsInTable(jdbcTemplate, TABLE));
         Assert.assertEquals(1, JdbcTestUtils.countRowsInTableWhere(jdbcTemplate, TABLE,
             "file_id = " + file.getId()
@@ -154,7 +159,7 @@ public class FileJdbcDaoTest {
             "file_id = " + file.getId() + " AND content_type IS NULL"));
     }
 
-    @Test(expected = DataIntegrityViolationException.class)
+    @Test(expected = javax.persistence.PersistenceException.class)
     public void testCreateWithoutDataFails() {
         fileDao.create(FILENAME, ALT, CONTENT_TYPE, null);
     }
@@ -185,6 +190,7 @@ public class FileJdbcDaoTest {
         fileDao.delete(FILE_ID);
 
         // Assert
+        em.flush();
         Assert.assertEquals(1, JdbcTestUtils.countRowsInTable(jdbcTemplate, TABLE));
         Assert.assertEquals(1, JdbcTestUtils.countRowsInTableWhere(jdbcTemplate, TABLE, "file_id = " + (FILE_ID + 1)));
     }
@@ -198,6 +204,7 @@ public class FileJdbcDaoTest {
         fileDao.delete(NON_EXISTING_ID);
 
         // Assert
+        em.flush();
         Assert.assertEquals(1, JdbcTestUtils.countRowsInTable(jdbcTemplate, TABLE));
     }
 

@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 @ContextConfiguration(classes = { TestConfig.class })
 @Transactional
 @Rollback
-public class CategoryJdbcDaoTest {
+public class CategoryJpaDaoTest {
 
     private static final long CATEGORY_ID = 1L;
     private static final String CATEGORY_NAME = "Electronics";
@@ -187,7 +187,7 @@ public class CategoryJdbcDaoTest {
         Assert.assertEquals(4, JdbcTestUtils.countRowsInTable(jdbcTemplate, "categories"));
     }
 
-    @Test(expected = DataIntegrityViolationException.class)
+    @Test(expected = javax.persistence.PersistenceException.class)
     public void testCreateDuplicateNameFails() {
         // Act (categories.name is UNIQUE)
         categoryDao.create(CATEGORY_NAME);

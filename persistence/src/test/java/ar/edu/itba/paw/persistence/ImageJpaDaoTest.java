@@ -15,13 +15,15 @@ import org.springframework.test.jdbc.JdbcTestUtils;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.sql.DataSource;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import java.util.Optional;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = { TestConfig.class })
 @Transactional
 @Rollback
-public class ImageJdbcDaoTest {
+public class ImageJpaDaoTest {
 
     private static final String TABLE = "images";
 
@@ -39,6 +41,8 @@ public class ImageJdbcDaoTest {
     private DataSource dataSource;
 
     private JdbcTemplate jdbcTemplate;
+    @PersistenceContext
+    private EntityManager em;
 
     @Before
     public void setUp() {
@@ -151,7 +155,7 @@ public class ImageJdbcDaoTest {
             "image_id = " + image.getId() + " AND content_type IS NULL"));
     }
 
-    @Test(expected = DataIntegrityViolationException.class)
+    @Test(expected = javax.persistence.PersistenceException.class)
     public void testCreateWithoutDataFails() {
         imageDao.create(FILENAME, ALT, CONTENT_TYPE, null);
     }

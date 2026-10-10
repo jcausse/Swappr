@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 @ContextConfiguration(classes = { TestConfig.class })
 @Transactional
 @Rollback
-public class SubcategoryJdbcDaoTest {
+public class SubcategoryJpaDaoTest {
 
     private static final long SUBCATEGORY_ID = 1L;
     private static final String SUBCATEGORY_NAME = "Laptops";
@@ -238,13 +238,13 @@ public class SubcategoryJdbcDaoTest {
             jdbcTemplate, "subcategories", "name = '" + SUBCATEGORY_NAME + "'"));
     }
 
-    @Test(expected = DataIntegrityViolationException.class)
+    @Test(expected = javax.persistence.PersistenceException.class)
     public void testCreateDuplicateNameInSameCategoryFails() {
         // Act
         subcategoryDao.create(SUBCATEGORY_NAME, CATEGORY_ID);
     }
 
-    @Test(expected = DataIntegrityViolationException.class)
+    @Test(expected = javax.persistence.PersistenceException.class)
     public void testCreateWithNonExistingCategoryFails() {
         // Act 
         subcategoryDao.create(NEW_SUBCATEGORY_NAME, NON_EXISTING_ID);

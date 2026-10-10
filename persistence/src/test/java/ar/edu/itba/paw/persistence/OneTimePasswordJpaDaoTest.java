@@ -16,6 +16,8 @@ import org.springframework.test.jdbc.JdbcTestUtils;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.sql.DataSource;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -26,7 +28,7 @@ import java.util.Optional;
 @Sql({ "classpath:sql/otp-data.sql" })
 @Transactional
 @Rollback
-public class OneTimePasswordJdbcDaoTest {
+public class OneTimePasswordJpaDaoTest {
 
     private static final String TABLE = "one_time_passwords";
 
@@ -44,6 +46,8 @@ public class OneTimePasswordJdbcDaoTest {
     private DataSource dataSource;
 
     private JdbcTemplate jdbcTemplate;
+    @PersistenceContext
+    private EntityManager em;
 
     @Before
     public void setUp() {
@@ -183,6 +187,7 @@ public class OneTimePasswordJdbcDaoTest {
         otpDao.deleteIfPresentByUser(userRef(USER_ID));
 
         // Assert
+        em.flush();
         Assert.assertEquals(0, JdbcTestUtils.countRowsInTable(jdbcTemplate, TABLE));
     }
 
