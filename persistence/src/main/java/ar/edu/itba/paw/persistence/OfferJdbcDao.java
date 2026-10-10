@@ -3,6 +3,7 @@ package ar.edu.itba.paw.persistence;
 import ar.edu.itba.paw.model.Category;
 import ar.edu.itba.paw.model.Language;
 import ar.edu.itba.paw.model.Condition;
+import ar.edu.itba.paw.model.File;
 import ar.edu.itba.paw.model.Listing;
 import ar.edu.itba.paw.model.ListingStatus;
 import ar.edu.itba.paw.model.Offer;
@@ -212,26 +213,16 @@ public class OfferJdbcDao implements OfferDao {
             .hasOtherOffers(rs.getBoolean("has_other_offers"))
             .hasBetterOffers(rs.getBoolean("has_better_offers"))
             .createdAt(rs.getTimestamp(OfferSchema.CREATED_AT).toInstant())
-            .proofOfPaymentId(
-                    Optional.ofNullable(rs.getObject(OfferSchema.PROOF_OF_PAYMENT_ID, Integer.class))
-                            .map(Integer::longValue)
-                            .orElse(null))
-            .proofOfPaymentFilename(rs.getString(OfferSchema.PROOF_OF_PAYMENT_FILENAME))
-            .proofOfPaymentContentType(rs.getString(OfferSchema.PROOF_OF_PAYMENT_CONTENT_TYPE))
-            .proofOfPaymentSize(
-                    Optional.ofNullable(rs.getObject(OfferSchema.PROOF_OF_PAYMENT_SIZE, Integer.class))
-                            .map(Integer::longValue)
-                            .orElse(null))
-            .proofOfShippingId(
-                    Optional.ofNullable(rs.getObject(OfferSchema.PROOF_OF_SHIPPING_ID, Integer.class))
-                            .map(Integer::longValue)
-                            .orElse(null))
-            .proofOfShippingFilename(rs.getString(OfferSchema.PROOF_OF_SHIPPING_FILENAME))
-            .proofOfShippingContentType(rs.getString(OfferSchema.PROOF_OF_SHIPPING_CONTENT_TYPE))
-            .proofOfShippingSize(
-                    Optional.ofNullable(rs.getObject(OfferSchema.PROOF_OF_SHIPPING_SIZE, Integer.class))
-                            .map(Integer::longValue)
-                            .orElse(null))
+            .proofOfPayment(buildFileSummary(rs,
+                    OfferSchema.PROOF_OF_PAYMENT_ID,
+                    OfferSchema.PROOF_OF_PAYMENT_FILENAME,
+                    OfferSchema.PROOF_OF_PAYMENT_CONTENT_TYPE,
+                    OfferSchema.PROOF_OF_PAYMENT_SIZE))
+            .proofOfShipping(buildFileSummary(rs,
+                    OfferSchema.PROOF_OF_SHIPPING_ID,
+                    OfferSchema.PROOF_OF_SHIPPING_FILENAME,
+                    OfferSchema.PROOF_OF_SHIPPING_CONTENT_TYPE,
+                    OfferSchema.PROOF_OF_SHIPPING_SIZE))
             .trackingNumber(rs.getString(OfferSchema.TRACKING_NUMBER))
             .sellerRating(
                     Optional.ofNullable(rs.getString(OfferSchema.SELLER_RATING))
@@ -241,13 +232,29 @@ public class OfferJdbcDao implements OfferDao {
                     Optional.ofNullable(rs.getString(OfferSchema.BUYER_RATING))
                             .flatMap(OfferRating::fromString)
                             .orElse(null))
-            .offeredListingId(
-                    Optional.ofNullable(rs.getObject(OfferSchema.OFFERED_LISTING_ID, Integer.class))
-                            .map(Integer::longValue)
-                            .orElse(null))
             .offeredListing(buildOfferedListing(rs))
             .build();
     };
+
+    /**
+     * Builds a {@link File} summary (metadata only, without the blob) from the joined file columns.
+     * Returns {@code null} when the offer has no such file attached.
+     */
+    private static File buildFileSummary(java.sql.ResultSet rs, String idColumn, String filenameColumn,
+                                         String contentTypeColumn, String sizeColumn) throws java.sql.SQLException {
+        final Integer fileId = rs.getObject(idColumn, Integer.class);
+        if (fileId == null) {
+            return null;
+        }
+        return File.builder()
+            .id(fileId.longValue())
+            .filename(rs.getString(filenameColumn))
+            .contentType(rs.getString(contentTypeColumn))
+            .size(Optional.ofNullable(rs.getObject(sizeColumn, Integer.class))
+                    .map(Integer::longValue)
+                    .orElse(null))
+            .build();
+    }
 
     private static List<Long> parseImageIds(String imageIdsStr) {
         if (imageIdsStr == null || imageIdsStr.isEmpty()) {

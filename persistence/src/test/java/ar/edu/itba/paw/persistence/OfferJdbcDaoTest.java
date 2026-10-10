@@ -2,6 +2,7 @@ package ar.edu.itba.paw.persistence;
 
 import ar.edu.itba.paw.model.Category;
 import ar.edu.itba.paw.model.Condition;
+import ar.edu.itba.paw.model.File;
 import ar.edu.itba.paw.model.Listing;
 import ar.edu.itba.paw.model.ListingStatus;
 import ar.edu.itba.paw.model.Offer;
@@ -148,7 +149,7 @@ public class OfferJdbcDaoTest {
         Assert.assertEquals(0, new BigDecimal("1400.00").compareTo(offer.getAmount()));
         Assert.assertFalse(offer.getIsFullPrice());
         Assert.assertEquals(OfferStatus.PENDING, offer.getStatus());
-        Assert.assertNull(offer.getMessage());
+        Assert.assertEquals(null, offer.getMessage());
         final Instant storedCreatedAt = jdbcTemplate.queryForObject(
             "SELECT created_at FROM offers WHERE offer_id = ?", java.sql.Timestamp.class, LOW_OFFER_ID).toInstant();
         Assert.assertEquals(storedCreatedAt, offer.getCreatedAt());
@@ -214,10 +215,11 @@ public class OfferJdbcDaoTest {
         final Offer offer = offerDao.getById(ACCEPTED_OFFER_ID).orElseThrow();
 
         // Assert
-        Assert.assertEquals(PAYMENT_FILE_ID, (long) offer.getProofOfPaymentId());
-        Assert.assertEquals("payment.pdf", offer.getProofOfPaymentFilename());
-        Assert.assertEquals("application/pdf", offer.getProofOfPaymentContentType());
-        Assert.assertEquals(3L, (long) offer.getProofOfPaymentSize());
+        final File proofOfPayment = offer.getProofOfPayment().orElseThrow();
+        Assert.assertEquals(PAYMENT_FILE_ID, (long) proofOfPayment.getId());
+        Assert.assertEquals("payment.pdf", proofOfPayment.getFilename());
+        Assert.assertEquals(Optional.of("application/pdf"), proofOfPayment.getContentType());
+        Assert.assertEquals(3L, proofOfPayment.getSize());
     }
 
     @Test
@@ -226,10 +228,11 @@ public class OfferJdbcDaoTest {
         final Offer offer = offerDao.getById(ACCEPTED_OFFER_ID).orElseThrow();
 
         // Assert
-        Assert.assertEquals(SHIPPING_FILE_ID, (long) offer.getProofOfShippingId());
-        Assert.assertEquals("shipping.jpg", offer.getProofOfShippingFilename());
-        Assert.assertEquals("image/jpeg", offer.getProofOfShippingContentType());
-        Assert.assertEquals(2L, (long) offer.getProofOfShippingSize());
+        final File proofOfShipping = offer.getProofOfShipping().orElseThrow();
+        Assert.assertEquals(SHIPPING_FILE_ID, (long) proofOfShipping.getId());
+        Assert.assertEquals("shipping.jpg", proofOfShipping.getFilename());
+        Assert.assertEquals(Optional.of("image/jpeg"), proofOfShipping.getContentType());
+        Assert.assertEquals(2L, proofOfShipping.getSize());
         Assert.assertEquals("TRACK-123", offer.getTrackingNumber());
     }
 
@@ -249,14 +252,12 @@ public class OfferJdbcDaoTest {
         final Offer offer = offerDao.getById(LOW_OFFER_ID).orElseThrow();
 
         // Assert
-        Assert.assertNull(offer.getProofOfPaymentId());
-        Assert.assertNull(offer.getProofOfPaymentSize());
-        Assert.assertNull(offer.getProofOfShippingId());
-        Assert.assertNull(offer.getTrackingNumber());
+        Assert.assertEquals(Optional.empty(), offer.getProofOfPayment());
+        Assert.assertEquals(Optional.empty(), offer.getProofOfShipping());
+        Assert.assertEquals(null, offer.getTrackingNumber());
         Assert.assertEquals(Optional.empty(), offer.getBuyerRating());
         Assert.assertEquals(Optional.empty(), offer.getSellerRating());
-        Assert.assertNull(offer.getOfferedListingId());
-        Assert.assertNull(offer.getOfferedListing());
+        Assert.assertEquals(Optional.empty(), offer.getOfferedListing());
     }
 
     @Test
@@ -266,9 +267,7 @@ public class OfferJdbcDaoTest {
 
         // Assert
         Assert.assertEquals(OfferStatus.PENDING_PAYMENT, offer.getStatus());
-        Assert.assertEquals(MACBOOK_LISTING_ID, (long) offer.getOfferedListingId());
-        final Listing offered = offer.getOfferedListing();
-        Assert.assertNotNull(offered);
+        final Listing offered = offer.getOfferedListing().orElseThrow();
         Assert.assertEquals(MACBOOK_LISTING_ID, (long) offered.getId());
         Assert.assertEquals("MacBook Pro 2023", offered.getTitle());
         Assert.assertEquals(SELLER_ID, (long) offered.getCreator().getId());
@@ -481,7 +480,7 @@ public class OfferJdbcDaoTest {
         Assert.assertEquals(OfferStatus.PENDING, offer.getStatus());
         Assert.assertEquals("Is it unlocked?", offer.getMessage());
         Assert.assertEquals(NEW_OFFER_CREATED_AT, offer.getCreatedAt());
-        Assert.assertNull(offer.getOfferedListingId());
+        Assert.assertEquals(Optional.empty(), offer.getOfferedListing());
         Assert.assertFalse(offer.isHasOtherOffers());
     }
 
@@ -506,10 +505,10 @@ public class OfferJdbcDaoTest {
             false, OfferStatus.PENDING, null, NEW_OFFER_CREATED_AT, GALAXY_LISTING_ID);
 
         // Assert
-        Assert.assertEquals(GALAXY_LISTING_ID, (long) offer.getOfferedListingId());
-        Assert.assertNotNull(offer.getOfferedListing());
-        Assert.assertEquals("Galaxy S23", offer.getOfferedListing().getTitle());
-        Assert.assertTrue(offer.getOfferedListing().getImageIds().isEmpty());
+        final Listing offered = offer.getOfferedListing().orElseThrow();
+        Assert.assertEquals(GALAXY_LISTING_ID, (long) offered.getId());
+        Assert.assertEquals("Galaxy S23", offered.getTitle());
+        Assert.assertTrue(offered.getImageIds().isEmpty());
     }
 
     /* ---------------------------------------------------------------------------------------------- */
@@ -674,8 +673,9 @@ public class OfferJdbcDaoTest {
         // Assert
         Assert.assertTrue(updated);
         final Offer offer = offerDao.getById(LOW_OFFER_ID).orElseThrow();
-        Assert.assertEquals(PAYMENT_FILE_ID, (long) offer.getProofOfPaymentId());
-        Assert.assertEquals("payment.pdf", offer.getProofOfPaymentFilename());
+        final File proofOfPayment = offer.getProofOfPayment().orElseThrow();
+        Assert.assertEquals(PAYMENT_FILE_ID, (long) proofOfPayment.getId());
+        Assert.assertEquals("payment.pdf", proofOfPayment.getFilename());
     }
 
     @Test
@@ -695,8 +695,9 @@ public class OfferJdbcDaoTest {
         // Assert
         Assert.assertTrue(updated);
         final Offer offer = offerDao.getById(LOW_OFFER_ID).orElseThrow();
-        Assert.assertEquals(SHIPPING_FILE_ID, (long) offer.getProofOfShippingId());
-        Assert.assertEquals("shipping.jpg", offer.getProofOfShippingFilename());
+        final File proofOfShipping = offer.getProofOfShipping().orElseThrow();
+        Assert.assertEquals(SHIPPING_FILE_ID, (long) proofOfShipping.getId());
+        Assert.assertEquals("shipping.jpg", proofOfShipping.getFilename());
         Assert.assertEquals("TRACK-999", offer.getTrackingNumber());
     }
 

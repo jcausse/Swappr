@@ -2,41 +2,97 @@ package ar.edu.itba.paw.model;
 
 import lombok.*;
 
+import javax.persistence.*;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Optional;
 
-@RequiredArgsConstructor
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
-@ToString
-public final class Offer {
+@ToString(exclude = {"proofOfPayment", "proofOfShipping"})
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@Entity
+@Table(name = "offers")
+public class Offer {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "offer_id", nullable = false)
     @EqualsAndHashCode.Include
-    private final @NonNull Long id;
-    private final @NonNull Listing listing;
-    private final @NonNull User buyer;
-    private final @NonNull BigDecimal amount;
-    private final @NonNull Boolean isFullPrice;
-    private final @NonNull OfferStatus status;
-    private final String message;
-    private final boolean hasOtherOffers;
-    private final boolean hasBetterOffers;
-    private final @NonNull Instant createdAt;
-    private final Long proofOfPaymentId;
-    private final String proofOfPaymentFilename;
-    private final String proofOfPaymentContentType;
-    private final Long proofOfPaymentSize;
-    private final Long proofOfShippingId;
-    private final String proofOfShippingFilename;
-    private final String proofOfShippingContentType;
-    private final Long proofOfShippingSize;
-    private final String trackingNumber;
-    private final Instant acceptedAt;
-    private final OfferRating buyerRating;
-    private final OfferRating sellerRating;
-    private final Long offeredListingId;
-    private final Listing offeredListing;
+    private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "listing_id", nullable = false)
+    private Listing listing;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "buyer_id", nullable = false)
+    private User buyer;
+
+    @Column(name = "amount", nullable = false, precision = 100, scale = 2)
+    private BigDecimal amount;
+
+    @Column(name = "is_full_price", nullable = false)
+    private Boolean isFullPrice;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false, length = 20)
+    private OfferStatus status;
+
+    @Column(name = "message")
+    private String message;
+
+    @Column(name = "created_at", nullable = false)
+    private Instant createdAt;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "proof_of_payment_id")
+    private File proofOfPayment;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "proof_of_shipping_id")
+    private File proofOfShipping;
+
+    @Column(name = "tracking_number")
+    private String trackingNumber;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "offered_listing_id")
+    private Listing offeredListing;
+
+    @Column(name = "accepted_at")
+    private Instant acceptedAt;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "buyer_rating", length = 10)
+    private OfferRating buyerRating;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "seller_rating", length = 10)
+    private OfferRating sellerRating;
+
+    @Transient
+    private boolean hasOtherOffers;
+
+    @Transient
+    private boolean hasBetterOffers;
+
+    // -------------------------------------------------------------------------------------------------
+
+    public Optional<File> getProofOfPayment() {
+        return Optional.ofNullable(proofOfPayment);
+    }
+
+    public Optional<File> getProofOfShipping() {
+        return Optional.ofNullable(proofOfShipping);
+    }
+
+    public Optional<Listing> getOfferedListing() {
+        return Optional.ofNullable(offeredListing);
+    }
 
     public Optional<Instant> getAcceptedAt() {
         return Optional.ofNullable(acceptedAt);
@@ -50,47 +106,59 @@ public final class Offer {
         return Optional.ofNullable(sellerRating);
     }
 
-    public String getProofOfPaymentExtension() {
-        if (proofOfPaymentFilename == null || proofOfPaymentFilename.isBlank()) {
-            return "";
-        }
-        int lastDot = proofOfPaymentFilename.lastIndexOf('.');
-        if (lastDot == -1 || lastDot == proofOfPaymentFilename.length() - 1) {
-            return "";
-        }
-        return proofOfPaymentFilename.substring(lastDot + 1).toLowerCase();
+    // -- Transitional getters for Service / Webapp compatibility --
+    // TODO: [JPA Migration Cleanup] Transitional getters for compatibility.
+    public Long getOfferedListingId() {
+        return offeredListing != null ? offeredListing.getId() : null;
+    }
+
+    public Long getProofOfPaymentId() {
+        return proofOfPayment != null ? proofOfPayment.getId() : null;
+    }
+
+    public String getProofOfPaymentFilename() {
+        return proofOfPayment != null ? proofOfPayment.getFilename() : null;
     }
 
     public Long getProofOfPaymentSizeKb() {
-        if (proofOfPaymentSize == null || proofOfPaymentSize <= 0) {
-            return 0L;
-        }
-        return proofOfPaymentSize / 1024;
+        if (proofOfPayment == null || proofOfPayment.getSize() <= 0) return 0L;
+        return proofOfPayment.getSize() / 1024;
     }
 
     public boolean proofOfPaymentIsImage() {
-        return proofOfPaymentContentType != null && proofOfPaymentContentType.startsWith("image/");
+        return proofOfPayment != null && proofOfPayment.getContentType().map(ct -> ct.startsWith("image/")).orElse(false);
     }
 
-    public String getProofOfShippingExtension() {
-        if (proofOfShippingFilename == null || proofOfShippingFilename.isBlank()) {
-            return "";
-        }
-        int lastDot = proofOfShippingFilename.lastIndexOf('.');
-        if (lastDot == -1 || lastDot == proofOfShippingFilename.length() - 1) {
-            return "";
-        }
-        return proofOfShippingFilename.substring(lastDot + 1).toLowerCase();
+    public String getProofOfPaymentExtension() {
+        if (proofOfPayment == null || proofOfPayment.getFilename() == null || proofOfPayment.getFilename().isBlank()) return "";
+        String filename = proofOfPayment.getFilename();
+        int lastDot = filename.lastIndexOf('.');
+        if (lastDot == -1 || lastDot == filename.length() - 1) return "";
+        return filename.substring(lastDot + 1).toLowerCase();
+    }
+
+    public Long getProofOfShippingId() {
+        return proofOfShipping != null ? proofOfShipping.getId() : null;
+    }
+
+    public String getProofOfShippingFilename() {
+        return proofOfShipping != null ? proofOfShipping.getFilename() : null;
     }
 
     public Long getProofOfShippingSizeKb() {
-        if (proofOfShippingSize == null || proofOfShippingSize <= 0) {
-            return 0L;
-        }
-        return proofOfShippingSize / 1024;
+        if (proofOfShipping == null || proofOfShipping.getSize() <= 0) return 0L;
+        return proofOfShipping.getSize() / 1024;
     }
 
     public boolean proofOfShippingIsImage() {
-        return proofOfShippingContentType != null && proofOfShippingContentType.startsWith("image/");
+        return proofOfShipping != null && proofOfShipping.getContentType().map(ct -> ct.startsWith("image/")).orElse(false);
+    }
+
+    public String getProofOfShippingExtension() {
+        if (proofOfShipping == null || proofOfShipping.getFilename() == null || proofOfShipping.getFilename().isBlank()) return "";
+        String filename = proofOfShipping.getFilename();
+        int lastDot = filename.lastIndexOf('.');
+        if (lastDot == -1 || lastDot == filename.length() - 1) return "";
+        return filename.substring(lastDot + 1).toLowerCase();
     }
 }

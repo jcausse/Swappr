@@ -2,14 +2,31 @@ package ar.edu.itba.paw.model;
 
 import lombok.*;
 
-@RequiredArgsConstructor
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@Getter
-@Builder
-@ToString
-public final class Category {
+import javax.persistence.*;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@ToString(exclude = "subcategories")
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@Entity
+@Table(name = "categories")
+public class Category {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "category_id", nullable = false)
     @EqualsAndHashCode.Include
-    private final @NonNull Long id;
-    private final @NonNull String name;
+    private Long id;
+
+    @Column(name = "name", nullable = false, length = 100)
+    private String name;
+
+    @Builder.Default
+    @OneToMany(mappedBy = "category")
+    private Set<Subcategory> subcategories = new LinkedHashSet<>();
 }

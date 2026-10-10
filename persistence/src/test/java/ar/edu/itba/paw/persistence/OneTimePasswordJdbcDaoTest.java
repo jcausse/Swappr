@@ -91,7 +91,7 @@ public class OneTimePasswordJdbcDaoTest {
 
         // Assert
         Assert.assertTrue(maybeOtp.isPresent());
-        Assert.assertEquals(USER_ID, (long) maybeOtp.get().getRequesterId());
+        Assert.assertEquals(USER_ID, (long) maybeOtp.get().getId());
         Assert.assertEquals(OTP_VALUE, maybeOtp.get().getOtpValue());
         Assert.assertEquals(createdAt, maybeOtp.get().getCreatedAt());
     }
@@ -115,7 +115,7 @@ public class OneTimePasswordJdbcDaoTest {
         final OneTimePassword otp = otpDao.getByUser(userRef(OTHER_USER_ID)).orElseThrow();
 
         // Assert
-        Assert.assertEquals(OTHER_USER_ID, (long) otp.getRequesterId());
+        Assert.assertEquals(OTHER_USER_ID, (long) otp.getId());
         Assert.assertEquals("222222", otp.getOtpValue());
     }
 
@@ -132,7 +132,7 @@ public class OneTimePasswordJdbcDaoTest {
         final OneTimePassword otp = otpDao.create(USER_ID, OTP_VALUE, createdAt);
 
         // Assert
-        Assert.assertEquals(USER_ID, (long) otp.getRequesterId());
+        Assert.assertEquals(USER_ID, (long) otp.getId());
         Assert.assertEquals(OTP_VALUE, otp.getOtpValue());
         Assert.assertEquals(createdAt, otp.getCreatedAt());
     }

@@ -68,7 +68,7 @@ public class OneTimePasswordServiceImplTest {
         final OneTimePassword result = otpService.create(user);
 
         // Assert: returned value is the plain OTP (what was passed to encode), not the encoded one
-        Assert.assertEquals(USER_ID, (long) result.getRequesterId());
+        Assert.assertEquals(USER_ID, (long) result.getId());
         Assert.assertEquals(encodeArg.getValue(), result.getOtpValue());
         Assert.assertNotEquals(ENCODED_OTP, result.getOtpValue());
     }

@@ -493,7 +493,7 @@ public class OfferServiceImplTest {
     @Test
     public void testGetProofOfPaymentFileReturnsStoredFile() {
         // Arrange
-        givenOffer(offerBuilder(OfferStatus.PENDING_PAYMENT).proofOfPaymentId(FILE_ID).build());
+        givenOffer(offerBuilder(OfferStatus.PENDING_PAYMENT).proofOfPayment(ar.edu.itba.paw.model.File.builder().id(FILE_ID).build()).build());
         when(fileDao.getById(eq(FILE_ID))).thenReturn(Optional.of(buildFakeFile()));
 
         // Act
@@ -507,7 +507,7 @@ public class OfferServiceImplTest {
     @Test
     public void testGetProofOfShippingFileReturnsStoredFile() {
         // Arrange
-        givenOffer(offerBuilder(OfferStatus.PENDING_PAYMENT).proofOfShippingId(FILE_ID).build());
+        givenOffer(offerBuilder(OfferStatus.PENDING_PAYMENT).proofOfShipping(ar.edu.itba.paw.model.File.builder().id(FILE_ID).build()).build());
         when(fileDao.getById(eq(FILE_ID))).thenReturn(Optional.of(buildFakeFile()));
 
         // Act
