@@ -82,11 +82,12 @@ public class OneTimePasswordServiceImpl implements OneTimePasswordService {
         String plainOtp = generateRandomOneTimePassword();
         Instant now = Instant.now();
 
-        otpDao.create(requester.getId(), passwordEncoder.encode(plainOtp), now);    // OTPs are stored encoded
+        otpDao.create(requester, passwordEncoder.encode(plainOtp), now);    // OTPs are stored encoded
         LOGGER.info("OTP created for user id={}", requester.getId());
 
         return OneTimePassword.builder()
-                .requesterId(requester.getId())
+                .id(requester.getId())
+                .user(requester)
                 .otpValue(plainOtp)                 // Return the OTP un-encoded so it can be sent via e-mail
                 .createdAt(now)
                 .build();

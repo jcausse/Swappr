@@ -21,8 +21,8 @@ public class OneTimePasswordJpaDao implements OneTimePasswordDao {
     }
 
     @Override
-    public OneTimePassword create(Long requesterId, String otpValue, Instant createdAt) {
-        final User userReference = em.getReference(User.class, requesterId);
+    public OneTimePassword create(User requester, String otpValue, Instant createdAt) {
+        final User userReference = em.getReference(User.class, requester.getId());
         final OneTimePassword otp = OneTimePassword.builder()
                 .user(userReference)
                 .otpValue(otpValue)

@@ -9,7 +9,7 @@ import java.util.Optional;
 public interface OneTimePasswordDao {
     Optional<OneTimePassword> getByUser(User requester);
 
-    OneTimePassword create(Long requesterId, String otpValue, Instant createdAt);
+    OneTimePassword create(User requester, String otpValue, Instant createdAt);
 
     void deleteIfPresentByUser(User requester);
 

@@ -131,9 +131,10 @@ public class OneTimePasswordJpaDaoTest {
     public void testCreateReturnsCreatedOtp() {
         // Arrange
         final Instant createdAt = Instant.now();
+        final User user = userRef(USER_ID);
 
         // Act
-        final OneTimePassword otp = otpDao.create(USER_ID, OTP_VALUE, createdAt);
+        final OneTimePassword otp = otpDao.create(user, OTP_VALUE, createdAt);
 
         // Assert
         Assert.assertEquals(USER_ID, (long) otp.getId());
@@ -144,7 +145,7 @@ public class OneTimePasswordJpaDaoTest {
     @Test
     public void testCreatePersistsOtp() {
         // Act
-        otpDao.create(USER_ID, OTP_VALUE, Instant.now());
+        otpDao.create(userRef(USER_ID), OTP_VALUE, Instant.now());
 
         // Assert
         Assert.assertEquals(1, countOtpWhere(

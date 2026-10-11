@@ -47,7 +47,8 @@ public class OneTimePasswordServiceImplTest {
 
     private OneTimePassword buildOtp(final Instant createdAt) {
         return OneTimePassword.builder()
-            .requesterId(USER_ID)
+            .id(USER_ID)
+            .user(buildUser())
             .otpValue(ENCODED_OTP)
             .createdAt(createdAt)
             .build();
@@ -69,6 +70,7 @@ public class OneTimePasswordServiceImplTest {
 
         // Assert: returned value is the plain OTP (what was passed to encode), not the encoded one
         Assert.assertEquals(USER_ID, (long) result.getId());
+        Assert.assertEquals(user, result.getUser());
         Assert.assertEquals(encodeArg.getValue(), result.getOtpValue());
         Assert.assertNotEquals(ENCODED_OTP, result.getOtpValue());
     }
