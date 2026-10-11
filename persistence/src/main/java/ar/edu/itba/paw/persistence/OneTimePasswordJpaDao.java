@@ -22,6 +22,12 @@ public class OneTimePasswordJpaDao implements OneTimePasswordDao {
 
     @Override
     public OneTimePassword create(User requester, String otpValue, Instant createdAt) {
+        /*
+         * Obtaining a reference to the User first ensures that userReference is managed by the EntityManager,
+         * which is needed for the OneTimePassword's @MapsId annotation to work without triggering a
+         * PersistentObjectException on detached entities.
+         * The line below might seem redundant on first sight, but it is needed and must not be removed.
+         */
         final User userReference = em.getReference(User.class, requester.getId());
         final OneTimePassword otp = OneTimePassword.builder()
                 .user(userReference)
