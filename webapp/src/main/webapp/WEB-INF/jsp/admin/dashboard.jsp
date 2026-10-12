@@ -70,7 +70,7 @@
             <spring:message code="admin.listings.takedown.desc" var="takeDownListingDesc"/>
             <paw:card title="${takeDownListingTitle}" subtitle="${takeDownListingDesc}">
                 <form:form method="post" action="${takedownListingUrl}" modelAttribute="takeDownListingForm" class="flex flex-col gap-4 mt-2">
-                    <input type="hidden" name="redirect" value="<c:url value='/admin'/>?success=listing_takedown"/>
+                    <input type="hidden" name="redirect" value="/admin?success=listing_takedown"/>
                     <spring:message code="admin.listings.takedown.idLabel" var="listingIdLabel"/>
                     <spring:message code="admin.listings.takedown.idPlaceholder" var="listingIdPlaceholder"/>
                     <paw:formInput path="listingId" type="number" min="1" label="${listingIdLabel}" placeholder="${listingIdPlaceholder}" variant="outline"/>
@@ -84,7 +84,7 @@
             <spring:message code="admin.offers.takedown.desc" var="takeDownOfferDesc"/>
             <paw:card title="${takeDownOfferTitle}" subtitle="${takeDownOfferDesc}">
                 <form:form method="post" action="${takedownOfferUrl}" modelAttribute="takeDownOfferForm" class="flex flex-col gap-4 mt-2">
-                    <input type="hidden" name="redirect" value="<c:url value='/admin'/>?success=offer_takedown"/>
+                    <input type="hidden" name="redirect" value="/admin?success=offer_takedown"/>
                     <spring:message code="admin.offers.takedown.idLabel" var="offerIdLabel"/>
                     <spring:message code="admin.offers.takedown.idPlaceholder" var="offerIdPlaceholder"/>
                     <paw:formInput path="offerId" type="number" min="1" label="${offerIdLabel}" placeholder="${offerIdPlaceholder}" variant="outline"/>

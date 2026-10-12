@@ -47,7 +47,10 @@
         </form:form>
     </div>
 
-    <a href="<c:url value="/login"/>" class="text-sm font-medium text-white drop-shadow-md hover:text-neutral-200 underline mt-4">
+    <a href="<c:url value="/recovery/request"/>" class="text-sm font-medium text-white drop-shadow-md hover:text-neutral-200 underline mt-4">
+        <spring:message code="recovery.verification.requestNew"/>
+    </a>
+    <a href="<c:url value="/login"/>" class="text-sm font-medium text-white drop-shadow-md hover:text-neutral-200 underline mt-2">
         <spring:message code="recovery.request.backToLogin"/>
     </a>
     </main>

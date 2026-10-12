@@ -22,9 +22,12 @@
 
     <c:choose>
         <c:when test="${empty offers}">
-            <div class="text-center py-12">
+            <div class="text-center py-12 flex flex-col items-center gap-4">
                 <spring:message code="account.myOffers.empty" var="emptyMsg"/>
                 <p class="text-black/50 text-lg"><c:out value="${emptyMsg}"/></p>
+                <c:url value="/listing" var="exploreUrl"/>
+                <spring:message code="landing.hero.cta.explore" var="exploreLabel"/>
+                <paw:linkButton href="${exploreUrl}" text="${exploreLabel}" icon="search"/>
             </div>
         </c:when>
         <c:when test="${filterForm.getStatusGroup() == 'pending' || filterForm.getStatusGroup() == 'pending_payment'}">

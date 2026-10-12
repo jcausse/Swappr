@@ -18,7 +18,7 @@
         <spring:message code="admin.listings.takedown.desc" var="takedownCardDesc"/>
         <paw:card title="${takedownCardTitle}" subtitle="${takedownCardDesc}">
             <form:form method="post" action="${takedownListingUrl}" modelAttribute="takeDownListingForm" class="flex flex-col sm:flex-row gap-3 items-end mt-2">
-                <input type="hidden" name="redirect" value="<c:url value='/admin/listings'/>?success=listing_takedown"/>
+                <input type="hidden" name="redirect" value="/admin/listings?success=listing_takedown"/>
                 <div class="flex-1 w-full">
                     <spring:message code="admin.listings.takedown.idLabel" var="listingIdLabel"/>
                     <spring:message code="admin.listings.takedown.idPlaceholder" var="listingIdPlaceholder"/>
@@ -149,7 +149,7 @@
 
                                     <c:if test="${listing.status.name() ne 'CANCELED' and listing.status.name() ne 'SOLD'}">
                                         <form method="post" action="${takedownActionUrl}">
-                                            <input type="hidden" name="redirect" value="<c:url value='/admin/listings?page=${listingsPage.page}&query=${currentQuery}&status=${currentStatus}'/>"/>
+                                            <input type="hidden" name="redirect" value="/admin/listings?page=${listingsPage.page}&query=<c:out value='${currentQuery}'/>&status=<c:out value='${currentStatus}'/>"/>
                                             <spring:message code="admin.listings.takedown.btn" var="takeDownBtnText"/>
                                             <paw:button text="${takeDownBtnText}" type="submit" variant="outline" role="danger" size="sm" icon="trash-2"/>
                                         </form>
