@@ -143,11 +143,10 @@ The project has entered the **JPA / Hibernate ORM stage**. All domain models are
 - **Relationships & Collections**:
   - Ratings and offers have a 1:1 relationship mapped with `@OneToOne` and backed by a DB unique constraint on `ratings.offer_id` (migrated via `V20`).
   - Relationships are lazy by default (`fetch = FetchType.LAZY`) unless eager fetching is strictly justified (e.g., user roles, given that a User might have two or three roles at most).
-- **Incremental DAO Migration (Strangler Fig Pattern)**:
-  - DAOs are migrated from `JdbcTemplate` to `EntityManager` incrementally.
-  - The entire test suite (`mvn clean test`) must remain green across all commits.
-  - Transitional builder adapter methods in domain entities are tagged with `// TODO: [JPA Migration Cleanup]` and will be removed once all DAOs are migrated.
-  - **IMPORTANT:** Always tag temporal / transitory code needed to keep the application running but needs to be removed after completing a migration with a comment like `// TODO: [JPA Migration Cleanup]`. 
+- **DAO Migration to JPA (Completed)**:
+  - All 12 DAOs have been fully migrated from `JdbcTemplate` to `EntityManager` (`*JpaDao`).
+  - JDBC DAOs have been removed, and all DAO tests now target the JPA implementations (`*JpaDaoTest`).
+  - Transitional builder adapter methods in domain entities tagged with `// TODO: [JPA Migration Cleanup]` can be cleaned up in follow-up tasks. 
 
 ## Other Conventions
 
