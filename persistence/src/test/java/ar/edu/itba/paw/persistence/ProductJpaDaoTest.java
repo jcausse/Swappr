@@ -25,7 +25,7 @@ import java.util.Optional;
 @Sql({ "classpath:sql/product-data.sql" })
 @Transactional
 @Rollback
-public class ProductJdbcDaoTest {
+public class ProductJpaDaoTest {
 
     private static final long CATEGORY_ID = 1L;             // Electronics
     private static final String CATEGORY_NAME = "Electronics";
@@ -129,7 +129,7 @@ public class ProductJdbcDaoTest {
         final List<Product> products = productDao.getByCategory(PHONES_CATEGORY_ID);
 
         Assert.assertEquals(1, products.size());
-        Assert.assertEquals("Samsung", products.get(0).getBrand());
+        Assert.assertEquals("Samsung", products.getFirst().getBrand());
     }
 
     /* ---------------------------------------------------------------------------------------------- */
@@ -155,7 +155,7 @@ public class ProductJdbcDaoTest {
         final List<Product> products = productDao.getBySubcategory(PHONES_SUBCATEGORY_ID);
 
         Assert.assertEquals(1, products.size());
-        Assert.assertEquals("Samsung", products.get(0).getBrand());
+        Assert.assertEquals("Samsung", products.getFirst().getBrand());
     }
 
     /* ---------------------------------------------------------------------------------------------- */
