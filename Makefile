@@ -3,6 +3,8 @@ PYTHON := python3
 
 .PHONY: dev dev-clean clean pack compile deploy db-start db-stop troubleshoot import-secrets
 
+default-target: dev
+
 ########################################################################################################################
 # LOCAL DEVELOPMENT TARGETS
 
