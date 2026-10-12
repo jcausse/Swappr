@@ -12,7 +12,7 @@ import java.util.Optional;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@ToString(exclude = {"proofOfPayment", "proofOfShipping"})
+@ToString(exclude = {"listing", "buyer", "proofOfPayment", "proofOfShipping", "offeredListing"})
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Entity
 @Table(name = "offers")

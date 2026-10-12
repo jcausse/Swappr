@@ -39,7 +39,7 @@ import java.util.stream.Collectors;
 @Sql({ "classpath:sql/listing-data.sql", "classpath:sql/offer-data.sql" })
 @Transactional
 @Rollback
-public class OfferJdbcDaoTest {
+public class OfferJpaDaoTest {
 
     // Fixture ids (see sql/listing-data.sql and sql/offer-data.sql)
     private static final long LOW_OFFER_ID = 1L;              // listing 1, buyer 2, 1400, pending
@@ -63,6 +63,7 @@ public class OfferJdbcDaoTest {
     private static final long PAYMENT_FILE_ID = 1L;
     private static final long SHIPPING_FILE_ID = 2L;
     private static final long FRONT_IMAGE_ID = 1L;
+    private static final long BACK_IMAGE_ID = 2L;
 
     private static final Instant NEW_OFFER_CREATED_AT = Instant.parse("2026-02-01T12:00:00Z");
 
@@ -149,7 +150,7 @@ public class OfferJdbcDaoTest {
         Assert.assertEquals(0, new BigDecimal("1400.00").compareTo(offer.getAmount()));
         Assert.assertFalse(offer.getIsFullPrice());
         Assert.assertEquals(OfferStatus.PENDING, offer.getStatus());
-        Assert.assertEquals(null, offer.getMessage());
+        Assert.assertNull(offer.getMessage());
         final Instant storedCreatedAt = jdbcTemplate.queryForObject(
             "SELECT created_at FROM offers WHERE offer_id = ?", java.sql.Timestamp.class, LOW_OFFER_ID).toInstant();
         Assert.assertEquals(storedCreatedAt, offer.getCreatedAt());
@@ -195,7 +196,7 @@ public class OfferJdbcDaoTest {
         final Listing listing = offerDao.getById(LOW_OFFER_ID).orElseThrow().getListing();
 
         // Assert
-        Assert.assertEquals(List.of(FRONT_IMAGE_ID), listing.getImageIds());
+        Assert.assertEquals(List.of(FRONT_IMAGE_ID, BACK_IMAGE_ID), listing.getImageIds());
     }
 
     @Test
@@ -254,7 +255,7 @@ public class OfferJdbcDaoTest {
         // Assert
         Assert.assertEquals(Optional.empty(), offer.getProofOfPayment());
         Assert.assertEquals(Optional.empty(), offer.getProofOfShipping());
-        Assert.assertEquals(null, offer.getTrackingNumber());
+        Assert.assertNull(offer.getTrackingNumber());
         Assert.assertEquals(Optional.empty(), offer.getBuyerRating());
         Assert.assertEquals(Optional.empty(), offer.getSellerRating());
         Assert.assertEquals(Optional.empty(), offer.getOfferedListing());
@@ -273,7 +274,7 @@ public class OfferJdbcDaoTest {
         Assert.assertEquals(SELLER_ID, (long) offered.getCreator().getId());
         Assert.assertEquals("Apple", offered.getProduct().getBrand());
         Assert.assertEquals("Electronics", offered.getProduct().getSubcategory().getCategory().getName());
-        Assert.assertEquals(List.of(FRONT_IMAGE_ID), offered.getImageIds());
+        Assert.assertEquals(List.of(FRONT_IMAGE_ID, BACK_IMAGE_ID), offered.getImageIds());
     }
 
     @Test
