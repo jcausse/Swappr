@@ -16,6 +16,7 @@ build.log
 
 # IntelliJ JPA Plugin
 model/model.iml
+persistence/persistence.iml
 
 # Python Cache
 **/__pycache__/
