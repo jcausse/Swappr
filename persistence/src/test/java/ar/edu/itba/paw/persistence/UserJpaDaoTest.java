@@ -25,7 +25,7 @@ import java.util.Optional;
 @Sql({ "classpath:sql/user-data.sql" })
 @Transactional
 @Rollback
-public class UserJdbcDaoTest {
+public class UserJpaDaoTest {
 
     // Fixtures: user 1 from initial-data.sql, users 2-3 from sql/user-data.sql
     private static final long FAKE_USER_ID = 1L;            // fake_user, unverified, no province
