@@ -36,7 +36,7 @@ import java.util.stream.Collectors;
 @Sql("classpath:sql/listing-data.sql")
 @Transactional
 @Rollback
-public class ListingJdbcDaoTest {
+public class ListingJpaDaoTest {
 
     // Fixture ids (see sql/listing-data.sql)
     private static final long MACBOOK_LISTING_ID = 1L;      // ACTIVE, 1500, GOOD, trade, 2 pending offers, 2 images
@@ -359,7 +359,7 @@ public class ListingJdbcDaoTest {
         final Page<Listing> page = listingDao.search(baseFilter().query("MacBook Pro").build());
 
         // Assert
-        Assert.assertEquals(List.of(FRONT_IMAGE_ID), page.getContent().getFirst().getImageIds());
+        Assert.assertEquals(List.of(FRONT_IMAGE_ID, BACK_IMAGE_ID), page.getContent().getFirst().getImageIds());
     }
 
     /* ---------------------------------------------------------------------------------------------- */

@@ -5,6 +5,7 @@ import org.hibernate.annotations.Formula;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -66,9 +67,13 @@ public class Listing {
     @OrderColumn(name = "display_order")
     private List<Image> images = new ArrayList<>();
 
-    // TODO: Move this to a DAO
+    // TODO: Move the query to a DAO but leave the field
     @Formula("(SELECT COUNT(*) FROM offers o WHERE o.listing_id = listing_id AND o.status = 'PENDING')")
     private int pendingOffersCount;
+
+    // TODO: Move the query to a DAO but leave the field
+    @Formula("(SELECT MAX(o.created_at) FROM offers o WHERE o.listing_id = listing_id AND o.status = 'PENDING')")
+    private Instant recentPendingOfferAt;
 
     // -------------------------------------------------------------------------------------------------
 
@@ -100,6 +105,7 @@ public class Listing {
         return Boolean.TRUE.equals(acceptsShipping);
     }
 
+    // TODO: [JPA Migration Cleanup]
     public static class ListingBuilder {
         public ListingBuilder price(Price price) {
             this.price = price != null ? price.getAmount() : null;
