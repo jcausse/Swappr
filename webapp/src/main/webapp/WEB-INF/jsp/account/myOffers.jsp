@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
@@ -14,10 +13,7 @@
 <spring:message code="account.myOffers.pendingPaymentTitle" var="pendingPaymentTitleMsg"/>
 <spring:message code="account.myOffers.resolvedTitle" var="resolvedTitleMsg"/>
 
-<html lang="${pageContext.response.locale.language}">
-<paw:head titleKey="account.myOffers.title"/>
-
-<account:layout title="${titleMsg}" subtitle="${subtitleMsg}">
+<account:layout titleKey="account.myOffers.title" title="${titleMsg}" subtitle="${subtitleMsg}">
     <form:form modelAttribute="filterForm" action="${filterAction}" method="get" id="filterForm">
         <paw:card classname="p-2! mb-4">
             <paw:formButtonToggle path="statusGroup" items="${statusGroupOptions}" selectedOption="${filterForm.getStatusGroup()}" />
@@ -26,9 +22,12 @@
 
     <c:choose>
         <c:when test="${empty offers}">
-            <div class="text-center py-12">
+            <div class="text-center py-12 flex flex-col items-center gap-4">
                 <spring:message code="account.myOffers.empty" var="emptyMsg"/>
                 <p class="text-black/50 text-lg"><c:out value="${emptyMsg}"/></p>
+                <c:url value="/listing" var="exploreUrl"/>
+                <spring:message code="landing.hero.cta.explore" var="exploreLabel"/>
+                <paw:linkButton href="${exploreUrl}" text="${exploreLabel}" icon="search"/>
             </div>
         </c:when>
         <c:when test="${filterForm.getStatusGroup() == 'pending' || filterForm.getStatusGroup() == 'pending_payment'}">
@@ -60,4 +59,3 @@
         </c:when>
     </c:choose>
 </account:layout>
-</html>

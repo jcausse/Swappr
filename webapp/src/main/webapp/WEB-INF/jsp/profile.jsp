@@ -24,11 +24,8 @@
 <c:url value="/profile/${user.id}" var="profileUrl"/>
 <c:url value="/profile/${user.id}" var="filterAction"/>
 
-<html lang="${pageContext.response.locale.language}">
-<paw:head title="${user.displayName}"/>
-<body class="min-h-screen bg-neutral-50 flex flex-col">
-    <paw:navbar/>
-    <main class="max-w-5xl w-full mx-auto px-6 pt-8 pb-16 flex flex-col gap-6">
+<paw:layout titleKey="profile.title" titleParams="${user.displayName}">
+    <div class="flex flex-col gap-6">
         <c:if test="${user.suspended}">
             <spring:message code="profile.suspended.banner" var="profileSuspendedMsg"/>
             <paw:banner text="${profileSuspendedMsg}" role="danger" icon="alert-triangle"/>
@@ -198,6 +195,5 @@
                 </c:otherwise>
             </c:choose>
         </paw:card>
-    </main>
-</body>
-</html>
+    </div>
+</paw:layout>

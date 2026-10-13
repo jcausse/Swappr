@@ -95,7 +95,7 @@
         </div>
     </div>
 
-    <c:if test="${offer.hasOtherOffers}">
+    <c:if test="${offer.hasOtherOffers && user == 'buyer'}">
         <spring:message code="${offer.hasBetterOffers ? 'offer.warning.betterOffers' : 'offer.warning.otherOffers'}" var="warningMsg"/>
         <paw:banner text="${warningMsg}" icon="triangle-alert" role="warning" />
     </c:if>
@@ -117,8 +117,8 @@
                 <paw:banner role="secondary" icon="contact-round">
                     <div class="text-sm">
                         <c:out value="${sellerEmailLabel}:" />
-                        <c:url value="mailto:${offer.seller.email}" var="sellerEmailUrl" />
-                        <a class="hover:text-lime-600 underline cursor-pointer" href="${sellerEmailUrl}"><c:out value="${offer.seller.email}" /></a>
+                        <c:url value="mailto:${offer.listing.creator.email}" var="sellerEmailUrl" />
+                        <a class="hover:text-lime-600 underline cursor-pointer" href="${sellerEmailUrl}"><c:out value="${offer.listing.creator.email}" /></a>
                     </div>
                 </paw:banner>
             </c:when>

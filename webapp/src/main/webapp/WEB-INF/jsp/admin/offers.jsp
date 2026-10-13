@@ -11,17 +11,14 @@
 <c:url value="/admin/offers" var="offersBaseUrl"/>
 <c:url value="/admin/offers/takedown" var="takedownOfferUrl"/>
 
-<html lang="${pageContext.response.locale.language}">
-<paw:head titleKey="admin.offers.title"/>
-
-<admin:layout title="${offersTitle}" subtitle="${offersSubtitle}">
+<admin:layout titleKey="admin.offers.title" title="${offersTitle}" subtitle="${offersSubtitle}">
     <div class="flex flex-col gap-6">
         <%-- Quick Takedown by ID Form --%>
         <spring:message code="admin.offers.takedown.title" var="takedownCardTitle"/>
         <spring:message code="admin.offers.takedown.desc" var="takedownCardDesc"/>
         <paw:card title="${takedownCardTitle}" subtitle="${takedownCardDesc}">
             <form:form method="post" action="${takedownOfferUrl}" modelAttribute="takeDownOfferForm" class="flex flex-col sm:flex-row gap-3 items-end mt-2">
-                <input type="hidden" name="redirect" value="<c:url value='/admin/offers'/>?success=offer_takedown"/>
+                <input type="hidden" name="redirect" value="/admin/offers?success=offer_takedown"/>
                 <div class="flex-1 w-full">
                     <spring:message code="admin.offers.takedown.idLabel" var="offerIdLabel"/>
                     <spring:message code="admin.offers.takedown.idPlaceholder" var="offerIdPlaceholder"/>
@@ -165,7 +162,7 @@
 
                                     <c:if test="${offer.status.name() == 'PENDING' || offer.status.name() == 'PENDING_PAYMENT'}">
                                         <form method="post" action="${takedownOfferActionUrl}">
-                                            <input type="hidden" name="redirect" value="<c:url value='/admin/offers?page=${offersPage.page}&statusGroup=${currentStatusGroup}'/>"/>
+                                            <input type="hidden" name="redirect" value="/admin/offers?page=${offersPage.page}&statusGroup=<c:out value='${currentStatusGroup}'/>"/>
                                             <spring:message code="admin.offers.takedown.btn" var="takeDownOfferBtnText"/>
                                             <paw:button text="${takeDownOfferBtnText}" type="submit" variant="outline" role="danger" size="sm" icon="trash-2"/>
                                         </form>
@@ -182,4 +179,3 @@
         </c:choose>
     </div>
 </admin:layout>
-</html>

@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
@@ -18,10 +17,7 @@
 <spring:message code="offer.proofOfShipping.fileHint" var="fileHintMsg"/>
 <spring:message code="offer.proofOfShipping.fileLabelForm" var="fileLabelMsg"/>
 
-<html lang="${pageContext.response.locale.language}">
-<paw:head titleKey="offer.proofOfShipping.title" />
-
-<account:layout title="${titleMsg}" subtitle="${subtitleMsg}">
+<account:layout titleKey="offer.proofOfShipping.title"  title="${titleMsg}" subtitle="${subtitleMsg}">
     <!-- Back link -->
     <div class="mb-4">
         <paw:linkButton href="${backUrl}" text="${backLabelMsg}" variant="ghost" icon="chevron-left" classname="justify-start" />
@@ -70,4 +66,3 @@
         </form:form>
     </paw:card>
 </account:layout>
-</html>

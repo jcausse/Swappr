@@ -3,10 +3,11 @@
 <%@ taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
 <%@ taglib prefix="paw" tagdir="/WEB-INF/tags" %>
 <%@ taglib prefix="spring" uri="http://www.springframework.org/tags" %>
+
+
 <html lang="${pageContext.response.locale.language}">
 <paw:head titleKey="login.title"/>
 <body class="min-h-screen flex flex-col relative bg-neutral-50">
-
     <div class="fixed inset-0 z-0 overflow-hidden bg-neutral-900">
         <img src="<c:url value='/static-image/banner.png'/>" class="w-full h-full object-cover blur-md opacity-40 scale-105" alt=""/>
     </div>

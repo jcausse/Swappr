@@ -79,6 +79,7 @@ public class MailingServiceImpl implements MailingService {
         context.setVariable("listing", listing);
         context.setVariable("message", message);
         context.setVariable("baseUrl", baseUrl);
+        context.setVariable("actionUrl", "mailto:" + buyer.getEmail());
 
         String subject = messageSource.getMessage("email.purchase.seller.subject", null, localeOf(seller));
         sendEmail(seller.getEmail(), subject, "purchase-seller", context);
@@ -92,6 +93,7 @@ public class MailingServiceImpl implements MailingService {
         context.setVariable("seller", seller);
         context.setVariable("listing", listing);
         context.setVariable("baseUrl", baseUrl);
+        context.setVariable("actionUrl", "mailto:" + seller.getEmail());
 
         String subject = messageSource.getMessage("email.purchase.buyer.subject", null, localeOf(buyer));
         sendEmail(buyer.getEmail(), subject, "purchase-buyer", context);
@@ -105,7 +107,7 @@ public class MailingServiceImpl implements MailingService {
         context.setVariable("listing", listing);
         context.setVariable("offer", offer);
         context.setVariable("baseUrl", baseUrl);
-        context.setVariable("actionUrl", baseUrl + "/offer/" + offer.getId());
+        context.setVariable("actionUrl", baseUrl + "/account/incoming-offers/" + offer.getId());
 
         String subject = messageSource.getMessage("email.offer.new.subject", null, localeOf(seller));
         sendEmail(seller.getEmail(), subject, "offer-new", context);
@@ -148,7 +150,7 @@ public class MailingServiceImpl implements MailingService {
         context.setVariable("listing", listing);
         context.setVariable("offer", offer);
         context.setVariable("baseUrl", baseUrl);
-        context.setVariable("actionUrl", baseUrl + "/listing/" + listing.getId());
+        context.setVariable("actionUrl", baseUrl + "/account/my-offers/" + offer.getId() + "/payment");
 
         String subject = messageSource.getMessage("email.offer.pendingPayment.subject", null, localeOf(buyer));
         sendEmail(buyer.getEmail(), subject, "offer-pending-payment", context);
@@ -163,7 +165,7 @@ public class MailingServiceImpl implements MailingService {
         context.setVariable("listing", listing);
         context.setVariable("offer", offer);
         context.setVariable("baseUrl", baseUrl);
-        context.setVariable("actionUrl", baseUrl + "/offer/" + offer.getId());
+        context.setVariable("actionUrl", baseUrl + "/account/incoming-offers/" + offer.getId());
 
         String subject = messageSource.getMessage("email.pendingTransaction.subject", null, localeOf(seller));
         sendEmail(seller.getEmail(), subject, "pending-transaction", context);
@@ -178,7 +180,7 @@ public class MailingServiceImpl implements MailingService {
         context.setVariable("listing", listing);
         context.setVariable("offer", offer);
         context.setVariable("baseUrl", baseUrl);
-        context.setVariable("actionUrl", baseUrl + "/offer/" + offer.getId());
+        context.setVariable("actionUrl", baseUrl + "/account/incoming-offers/" + offer.getId());
 
         String subject = messageSource.getMessage("email.proofOfPayment.uploaded.subject", null, localeOf(seller));
         sendEmail(seller.getEmail(), subject, "proof-of-payment-uploaded", context);
@@ -193,7 +195,7 @@ public class MailingServiceImpl implements MailingService {
         context.setVariable("listing", listing);
         context.setVariable("offer", offer);
         context.setVariable("baseUrl", baseUrl);
-        context.setVariable("actionUrl", baseUrl + "/offer/" + offer.getId());
+        context.setVariable("actionUrl", baseUrl + "/account/my-offers");
         context.setVariable("trackingNumber", offer.getTrackingNumber());
 
         String subject = messageSource.getMessage("email.proofOfShipping.uploaded.subject", null, localeOf(buyer));

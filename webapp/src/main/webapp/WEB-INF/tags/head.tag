@@ -1,6 +1,7 @@
 <%@ tag language="java" pageEncoding="UTF-8" %>
 <%@ attribute name="title" required="false" %>
 <%@ attribute name="titleKey" required="false" %>
+<%@ attribute name="titleParams" required="false" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="spring" uri="http://www.springframework.org/tags" %>
 
@@ -12,7 +13,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <c:choose>
         <c:when test="${not empty titleKey}">
-            <title><spring:message code="${titleKey}"/></title>
+            <title><spring:message code="${titleKey}" arguments="${titleParams}"/></title>
         </c:when>
         <c:when test="${not empty title}">
             <title><c:out value="${title}"/></title>

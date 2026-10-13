@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="spring" uri="http://www.springframework.org/tags" %>
@@ -17,10 +16,7 @@
 <spring:message code="account.incomingOffers" var="incomingOffersTitle"/>
 <spring:message code="account.myOffers" var="myOffersTitle"/>
 
-<html lang="${pageContext.response.locale.language}">
-<paw:head titleKey="account.title"/>
-
-<account:layout title="${welcomeMsg}" subtitle="${subtitleMsg}">
+<account:layout titleKey="account.title" title="${welcomeMsg}" subtitle="${subtitleMsg}">
     <spring:message code="account.sidebar.buyer" var="buyerSubtitle"/>
     <paw:card title="${buyerSubtitle}">
         <div class="flex flex-col">
@@ -65,4 +61,3 @@
         </div>
     </paw:card>
 </account:layout>
-</html>

@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
@@ -27,10 +26,7 @@
 <c:url value="/account/listings" var="filterAction"/>
 <c:url value="/listing/new/choose-product" var="newListingUrl"/>
 
-<html lang="${pageContext.response.locale.language}">
-<paw:head titleKey="account.listings.title"/>
-
-<account:layout title="${titleMsg}" subtitle="${subtitleMsg}" actionHref="${newListingUrl}" actionText="${newListingLabel}">
+<account:layout titleKey="account.listings.title" title="${titleMsg}" subtitle="${subtitleMsg}" actionHref="${newListingUrl}" actionText="${newListingLabel}">
     <paw:card>
         <form:form modelAttribute="filterForm" action="${filterAction}" method="get" id="filterForm">
             <div class="flex items-center justify-between gap-4 mb-4">
@@ -143,27 +139,26 @@
             </c:otherwise>
         </c:choose>
     </paw:card>
-</account:layout>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const statusSelect = document.getElementById('status');
-        const sortSelect = document.getElementById('sort');
-        const isAutoSubmitInput = document.getElementById('isAutoSubmit');
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const statusSelect = document.getElementById('status');
+            const sortSelect = document.getElementById('sort');
+            const isAutoSubmitInput = document.getElementById('isAutoSubmit');
 
-        function submitForm() {
-            if (isAutoSubmitInput) {
-                isAutoSubmitInput.value = 'true';
+            function submitForm() {
+                if (isAutoSubmitInput) {
+                    isAutoSubmitInput.value = 'true';
+                }
+                document.querySelector('form#filterForm').submit();
             }
-            document.querySelector('form#filterForm').submit();
-        }
 
-        if (statusSelect) {
-            statusSelect.addEventListener('change', submitForm);
-        }
-        if (sortSelect) {
-            sortSelect.addEventListener('change', submitForm);
-        }
-    });
-</script>
-</html>
+            if (statusSelect) {
+                statusSelect.addEventListener('change', submitForm);
+            }
+            if (sortSelect) {
+                sortSelect.addEventListener('change', submitForm);
+            }
+        });
+    </script>
+</account:layout>

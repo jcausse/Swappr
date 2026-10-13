@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
@@ -28,10 +27,7 @@
 <spring:message code="account.rate.reviewPlaceholder" var="reviewPlaceholder"/>
 <spring:message code="account.rate.reviewHint" var="reviewHint"/>
 
-<html lang="${pageContext.response.locale.language}">
-<paw:head titleKey="account.rate.title" />
-
-<account:layout title="${titleMsg}" subtitle="${subtitleMsg}">
+<account:layout titleKey="account.rate.title"  title="${titleMsg}" subtitle="${subtitleMsg}">
     <div class="mb-4">
         <spring:message code="${isBuyer ? 'account.incomingOffers.title' : 'account.myOffers.title'}" var="backLabel"/>
         <paw:linkButton href="${backUrlResolved}" text="${backLabel}" variant="ghost" icon="chevron-left" classname="justify-start" />
@@ -91,4 +87,3 @@
         </form:form>
     </paw:card>
 </account:layout>
-</html>

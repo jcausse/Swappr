@@ -69,7 +69,7 @@
                                     <td style="padding: 16px 20px;">
                                         <p style="margin: 0 0 8px; font-size: 14px; font-weight: 600; color: #171717;" th:text="${listing.title}">Listing Title</p>
                                         <p style="margin: 0 0 8px; font-size: 13px; color: #737373;">
-                                            <span th:text="${listing.product.brand + ' ' + listing.product.model + ' (' + listing.product.year + ')'}">Brand Model (Year)</span>
+                                            <span th:text="${listing.product.brand + ' ' + listing.product.model + ' (' + #numbers.formatInteger(listing.product.year, 1, 'NONE') + ')'}">Brand Model (Year)</span>
                                         </p>
                                         <p style="margin: 0; font-size: 14px; font-weight: 700; color: #78716c;">
                                             <span th:text="'$' + ${offer.amount}">$100</span>
@@ -106,7 +106,7 @@
                                                 <td style="vertical-align: top;">
                                                     <p style="margin: 0 0 4px; font-size: 14px; font-weight: 600; color: #171717;" th:text="${offer.offeredListing.title}">Offered Listing Title</p>
                                                     <p style="margin: 0 0 4px; font-size: 13px; color: #737373;">
-                                                        <span th:text="${offer.offeredListing.product.brand + ' ' + offer.offeredListing.product.model + ' (' + offer.offeredListing.product.year + ')'}">Brand Model (Year)</span>
+                                                        <span th:text="${offer.offeredListing.product.brand + ' ' + offer.offeredListing.product.model + ' (' + #numbers.formatInteger(offer.offeredListing.product.year, 1, 'NONE') + ')'}">Brand Model (Year)</span>
                                                     </p>
                                                     <p style="margin: 0; font-size: 14px; font-weight: 700; color: #65a30d;">
                                                         <span th:text="'$' + ${offer.offeredListing.price.amount}">$100</span>

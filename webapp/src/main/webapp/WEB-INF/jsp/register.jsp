@@ -3,10 +3,11 @@
 <%@ taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
 <%@ taglib prefix="paw" tagdir="/WEB-INF/tags" %>
 <%@ taglib prefix="spring" uri="http://www.springframework.org/tags" %>
+
+
 <html lang="${pageContext.response.locale.language}">
 <paw:head titleKey="register.title"/>
 <body class="min-h-screen flex flex-col relative bg-neutral-50">
-
     <div class="fixed inset-0 z-0 overflow-hidden bg-neutral-900">
         <img src="<c:url value='/static-image/banner.png'/>" class="w-full h-full object-cover blur-md opacity-40 scale-105" alt=""/>
     </div>
@@ -22,7 +23,7 @@
 
     <main class="flex-grow flex flex-col items-center justify-center p-4 relative z-10">
         <h2 class="text-3xl font-bold mb-4 text-white drop-shadow-md"><spring:message code="register.title"/></h2>
-        
+
         <div class="w-96 bg-white border border-black/10 shadow-2xl rounded-2xl p-6">
         <c:url value="/register" var="registerUrl"/>
         <form:form modelAttribute="userForm" action="${registerUrl}" method="post" enctype="multipart/form-data" cssClass="flex flex-col gap-4">

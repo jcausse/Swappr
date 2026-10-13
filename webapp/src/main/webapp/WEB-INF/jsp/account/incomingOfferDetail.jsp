@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
@@ -6,14 +5,12 @@
 <%@ taglib prefix="paw" tagdir="/WEB-INF/tags" %>
 <%@ taglib prefix="account" tagdir="/WEB-INF/tags/account" %>
 
+
 <c:url value="/account/incoming-offers" var="incomingOffersUrl"/>
 <spring:message code="account.incomingOffers.title" var="titleMsg"/>
 <spring:message code="account.incomingOffers.subtitle" var="subtitleMsg"/>
 
-<html lang="${pageContext.response.locale.language}">
-<paw:head titleKey="offer.detail.title" />
-
-<account:layout title="${titleMsg}" subtitle="${subtitleMsg}">
+<account:layout titleKey="offer.detail.title" title="${titleMsg}" subtitle="${subtitleMsg}">
     <!-- Back link -->
     <div class="mb-4">
         <spring:message code="offer.detail.back" var="backLabel"/>
@@ -22,24 +19,24 @@
 
     <paw:card classname="flex flex-col gap-4">
         <div class="text-center">
-        <c:set var="offerAmount" value="${offer.amount}"/>
-        <c:set var="tradeAndAmount" value=""/>
-        <c:if test="${offerAmount != null and offerAmount > 0.0}">
-            <spring:message var="tradeAndAmount" code="offer.detail.tradeAndAmount" arguments="${offerAmount}"/>
-        </c:if>
+            <c:set var="offerAmount" value="${offer.amount}"/>
+            <c:set var="tradeAndAmount" value=""/>
+            <c:if test="${offerAmount != null and offerAmount > 0.0}">
+                <spring:message var="tradeAndAmount" code="offer.detail.tradeAndAmount" arguments="${offerAmount}"/>
+            </c:if>
 
-        <c:choose>
-            <c:when test="${offer.offeredListing != null}">
-                <spring:message code="offer.detail.title.trade"
-                                arguments="${offer.buyer.displayName},${offer.offeredListing.product.brand},${offer.offeredListing.product.model},${offer.offeredListing.product.year},${tradeAndAmount},${offer.listing.product.brand},${offer.listing.product.model},${offer.listing.product.year}"
-                                var="title"/>
-            </c:when>
-            <c:otherwise>
-                <spring:message code="offer.detail.title"
-                                arguments="${offer.buyer.displayName},${offer.amount},${offer.listing.product.brand},${offer.listing.product.model},${offer.listing.product.year}"
-                                var="title"/>
-            </c:otherwise>
-        </c:choose>
+            <c:choose>
+                <c:when test="${offer.offeredListing != null}">
+                    <spring:message code="offer.detail.title.trade"
+                                    arguments="${offer.buyer.displayName},${offer.offeredListing.product.brand},${offer.offeredListing.product.model},${offer.offeredListing.product.year},${tradeAndAmount},${offer.listing.product.brand},${offer.listing.product.model},${offer.listing.product.year}"
+                                    var="title"/>
+                </c:when>
+                <c:otherwise>
+                    <spring:message code="offer.detail.title"
+                                    arguments="${offer.buyer.displayName},${offer.amount},${offer.listing.product.brand},${offer.listing.product.model},${offer.listing.product.year}"
+                                    var="title"/>
+                </c:otherwise>
+            </c:choose>
             <h1 class="text-xl font-medium text-balance"><c:out value="${title}"/></h1>
 
             <c:choose>
@@ -213,7 +210,5 @@
                 </div>
             </c:otherwise>
         </c:choose>
-    </div>
-</paw:card>
+    </paw:card>
 </account:layout>
-</html>

@@ -13,10 +13,7 @@
 <c:url value="/admin/users/unsuspend" var="unsuspendUserUrl"/>
 <c:url value="/admin/users/grant-admin" var="grantAdminUrl"/>
 
-<html lang="${pageContext.response.locale.language}">
-<paw:head titleKey="admin.users.title"/>
-
-<admin:layout title="${usersTitle}" subtitle="${usersSubtitle}">
+<admin:layout titleKey="admin.users.title" title="${usersTitle}" subtitle="${usersSubtitle}">
     <div class="flex flex-col gap-6">
         <%-- Search User by Username --%>
         <paw:card>
@@ -138,4 +135,3 @@
         </div>
     </div>
 </admin:layout>
-</html>
