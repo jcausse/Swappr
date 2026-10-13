@@ -145,8 +145,7 @@ The project has entered the **JPA / Hibernate ORM stage**. All domain models are
   - Relationships are lazy by default (`fetch = FetchType.LAZY`) unless eager fetching is strictly justified (e.g., user roles, given that a User might have two or three roles at most).
 - **DAO Migration to JPA (Completed)**:
   - All 12 DAOs have been fully migrated from `JdbcTemplate` to `EntityManager` (`*JpaDao`).
-  - JDBC DAOs have been removed, and all DAO tests now target the JPA implementations (`*JpaDaoTest`).
-  - Transitional builder adapter methods in domain entities tagged with `// TODO: [JPA Migration Cleanup]` can be cleaned up in follow-up tasks. 
+  - JDBC DAOs have been removed, and all DAO tests target the JPA implementations (`*JpaDaoTest`).
 
 ## Other Conventions
 
