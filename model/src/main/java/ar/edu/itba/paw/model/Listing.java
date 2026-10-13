@@ -104,38 +104,4 @@ public class Listing {
     public boolean isAcceptsShipping() {
         return Boolean.TRUE.equals(acceptsShipping);
     }
-
-    // TODO: [JPA Migration Cleanup]
-    public static class ListingBuilder {
-        public ListingBuilder price(Price price) {
-            this.price = price != null ? price.getAmount() : null;
-            return this;
-        }
-
-        public ListingBuilder price(BigDecimal price) {
-            this.price = price;
-            return this;
-        }
-
-        // TODO: [JPA Migration Cleanup] Transitional builder method for JDBC backward compatibility.
-        // Remove imageIds adapter once ListingDao is migrated to JPA.
-        public ListingBuilder imageIds(List<Long> imageIds) {
-            if (imageIds != null) {
-                this.images = imageIds.stream()
-                        .map(id -> Image.builder().id(id).build())
-                        .collect(java.util.stream.Collectors.toCollection(ArrayList::new));
-            }
-            return this;
-        }
-
-        public ListingBuilder acceptsTrade(boolean acceptsTrade) {
-            this.acceptsTrade = acceptsTrade;
-            return this;
-        }
-
-        public ListingBuilder acceptsShipping(boolean acceptsShipping) {
-            this.acceptsShipping = acceptsShipping;
-            return this;
-        }
-    }
 }

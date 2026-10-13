@@ -31,13 +31,4 @@ public class OneTimePassword {
 
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
-
-    // TODO: [JPA Migration Cleanup] Transitional builder method for JDBC backward compatibility.
-    // Remove requesterId adapter once OneTimePasswordDao is migrated to JPA.
-    public static class OneTimePasswordBuilder {
-        public OneTimePasswordBuilder requesterId(Long requesterId) {
-            this.id = requesterId;
-            return this;
-        }
-    }
 }

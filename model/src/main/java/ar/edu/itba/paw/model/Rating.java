@@ -53,23 +53,4 @@ public class Rating {
     public Listing getListing() {
         return offer != null ? offer.getListing() : null;
     }
-
-    // TODO: [JPA Migration Cleanup] Transitional builder methods for JDBC backward compatibility.
-    // Remove listing adapter and custom build() once RatingDao is migrated to JPA.
-    public static class RatingBuilder {
-        private Listing listing;
-
-        public RatingBuilder listing(Listing listing) {
-            this.listing = listing;
-            return this;
-        }
-
-        public Rating build() {
-            Offer of = this.offer;
-            if (of == null && this.listing != null) {
-                of = Offer.builder().listing(this.listing).build();
-            }
-            return new Rating(id, creator, rated, of, role, type, reviewText, createdAt);
-        }
-    }
 }

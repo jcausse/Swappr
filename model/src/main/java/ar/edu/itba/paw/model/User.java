@@ -152,15 +152,4 @@ public class User {
         int neg = buyerNegativeRatings != null ? buyerNegativeRatings : 0;
         return pos - neg;
     }
-
-    // TODO: [JPA Migration Cleanup] Transitional builder method for JDBC backward compatibility.
-    // Remove imageId adapter once UserDao is migrated to JPA.
-    public static class UserBuilder {
-        public UserBuilder imageId(Long imageId) {
-            if (imageId != null) {
-                this.image = Image.builder().id(imageId).build();
-            }
-            return this;
-        }
-    }
 }
