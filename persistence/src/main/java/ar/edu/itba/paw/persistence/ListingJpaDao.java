@@ -55,7 +55,7 @@ public class ListingJpaDao implements ListingDao {
 
         final Listing listing = Listing.builder()
                 .title(title)
-                .price(price.getAmount())
+                .price(price)
                 .creator(creatorRef)
                 .product(productRef)
                 .condition(condition)
@@ -83,11 +83,11 @@ public class ListingJpaDao implements ListingDao {
             params.put("subcategoryId", filter.getSubcategoryId());
         }
         if (filter.getMinPrice() != null) {
-            whereClause.append(" AND l.price >= :minPrice");
+            whereClause.append(" AND l.price.amount >= :minPrice");
             params.put("minPrice", filter.getMinPrice());
         }
         if (filter.getMaxPrice() != null) {
-            whereClause.append(" AND l.price <= :maxPrice");
+            whereClause.append(" AND l.price.amount <= :maxPrice");
             params.put("maxPrice", filter.getMaxPrice());
         }
         if (filter.getCondition() != null) {
@@ -145,8 +145,8 @@ public class ListingJpaDao implements ListingDao {
     }
 
     private static final Map<ListingSort, String> LISTING_SORT_TO_SQL = new HashMap<>(Map.ofEntries(
-            Map.entry(ListingSort.PRICE_ASC, "l.price ASC, l.id DESC"),
-            Map.entry(ListingSort.PRICE_DESC, "l.price DESC, l.id DESC"),
+            Map.entry(ListingSort.PRICE_ASC, "l.price.amount ASC, l.id DESC"),
+            Map.entry(ListingSort.PRICE_DESC, "l.price.amount DESC, l.id DESC"),
             Map.entry(ListingSort.NAME_ASC, "l.title ASC, l.id DESC"),
             Map.entry(ListingSort.NAME_DESC, "l.title DESC, l.id DESC"),
             Map.entry(ListingSort.MOST_OFFERS, "l.pendingOffersCount DESC, l.id DESC"),
@@ -224,7 +224,7 @@ public class ListingJpaDao implements ListingDao {
             throw new NoSuchElementException("Listing not found with id: " + id);
         }
         listing.setTitle(title);
-        listing.setPrice(price.getAmount());
+        listing.setPrice(price);
         listing.setProduct(em.getReference(Product.class, product.getId()));
         listing.setCondition(condition);
         listing.setAcceptsTrade(acceptsTrade);

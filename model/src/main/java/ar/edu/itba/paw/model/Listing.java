@@ -4,7 +4,6 @@ import lombok.*;
 import org.hibernate.annotations.Formula;
 
 import javax.persistence.*;
-import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -41,8 +40,9 @@ public class Listing {
     @JoinColumn(name = "product_id")
     private Product product;
 
-    @Column(name = "price", nullable = false, precision = 100, scale = 2)
-    private BigDecimal price;
+    @Embedded
+    @AttributeOverride(name = "amount", column = @Column(name = "price", nullable = false, precision = 100, scale = 2))
+    private Price price;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 20)
@@ -76,18 +76,6 @@ public class Listing {
     private Instant recentPendingOfferAt;
 
     // -------------------------------------------------------------------------------------------------
-
-    public Price getPrice() {
-        return price != null ? new Price(price) : null;
-    }
-
-    public void setPrice(Price price) {
-        this.price = price != null ? price.getAmount() : null;
-    }
-
-    public void setPrice(BigDecimal price) {
-        this.price = price;
-    }
 
     // TODO: Remove after creating DAO
     public List<Long> getImageIds() {

@@ -143,6 +143,9 @@ The project has entered the **JPA / Hibernate ORM stage**. All domain models are
 - **Relationships & Collections**:
   - Ratings and offers have a 1:1 relationship mapped with `@OneToOne` and backed by a DB unique constraint on `ratings.offer_id` (migrated via `V20`).
   - Relationships are lazy by default (`fetch = FetchType.LAZY`) unless eager fetching is strictly justified (e.g., user roles, given that a User might have two or three roles at most).
+- **Embeddables & Value Objects**:
+  - Domain value objects like `Price` are mapped as `@Embeddable` with a protected no-args constructor, `@AllArgsConstructor`, and Lombok `@Builder`.
+  - Owning entities embed them with `@Embedded` (and `@AttributeOverride` where needed). In JPQL/HQL queries, navigate embeddable attributes using property dot notation (e.g., `l.price.amount`).
 - **DAO Migration to JPA (Completed)**:
   - All 12 DAOs have been fully migrated from `JdbcTemplate` to `EntityManager` (`*JpaDao`).
   - JDBC DAOs have been removed, and all DAO tests target the JPA implementations (`*JpaDaoTest`).
