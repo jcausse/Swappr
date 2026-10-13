@@ -112,7 +112,6 @@ public class OfferJpaDao implements OfferDao {
                 .offeredListing(offeredListing)
                 .build();
         em.persist(offer);
-        em.flush(); // TODO: [JPA Migration Cleanup]
         populateTransientFlags(List.of(offer));
         return offer;
     }
@@ -122,7 +121,6 @@ public class OfferJpaDao implements OfferDao {
         final Offer offer = em.find(Offer.class, offerId);
         if (offer == null) return false;
         offer.setStatus(status);
-        em.flush(); // TODO: [JPA Migration Cleanup]
         return true;
     }
 
@@ -133,7 +131,6 @@ public class OfferJpaDao implements OfferDao {
             return false;
         }
         offer.setStatus(OfferStatus.WITHDRAWN);
-        em.flush(); // TODO: [JPA Migration Cleanup]
         return true;
     }
 
@@ -152,7 +149,6 @@ public class OfferJpaDao implements OfferDao {
         for (Offer o : toReject) {
             o.setStatus(OfferStatus.REJECTED);
         }
-        em.flush(); // TODO: [JPA Migration Cleanup]
         return toReject;
     }
 
@@ -171,7 +167,6 @@ public class OfferJpaDao implements OfferDao {
         if (offer == null) return false;
         final File file = proofOfPaymentId != null ? em.getReference(File.class, proofOfPaymentId) : null;
         offer.setProofOfPayment(file);
-        em.flush(); // TODO: [JPA Migration Cleanup]
         return true;
     }
 
@@ -182,7 +177,6 @@ public class OfferJpaDao implements OfferDao {
         final File file = proofOfShippingId != null ? em.getReference(File.class, proofOfShippingId) : null;
         offer.setProofOfShipping(file);
         offer.setTrackingNumber(trackingNumber);
-        em.flush(); // TODO: [JPA Migration Cleanup]
         return true;
     }
 
@@ -192,7 +186,6 @@ public class OfferJpaDao implements OfferDao {
         if (offer == null) return false;
         offer.setStatus(OfferStatus.ACCEPTED);
         offer.setAcceptedAt(acceptedAt);
-        em.flush(); // TODO: [JPA Migration Cleanup]
         return true;
     }
 
@@ -201,7 +194,6 @@ public class OfferJpaDao implements OfferDao {
         final Offer offer = em.find(Offer.class, offerId);
         if (offer == null || offer.getSellerRating().isPresent()) return false;
         offer.setSellerRating(rating);
-        em.flush(); // TODO: [JPA Migration Cleanup]
         return true;
     }
 
@@ -210,7 +202,6 @@ public class OfferJpaDao implements OfferDao {
         final Offer offer = em.find(Offer.class, offerId);
         if (offer == null || offer.getBuyerRating().isPresent()) return false;
         offer.setBuyerRating(rating);
-        em.flush(); // TODO: [JPA Migration Cleanup]
         return true;
     }
 

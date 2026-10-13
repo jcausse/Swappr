@@ -102,7 +102,6 @@ public class ProductJpaDao implements ProductDao {
                 .subcategory(subcategoryRef)
                 .build();
         em.persist(product);
-        em.flush(); // TODO: [JPA Migration Cleanup]
         return product;
     }
 }

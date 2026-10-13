@@ -66,7 +66,6 @@ public class ListingJpaDao implements ListingDao {
                 .images(images)
                 .build();
         em.persist(listing);
-        em.flush(); // TODO: [JPA Migration Cleanup]
         return listing;
     }
 
@@ -169,7 +168,6 @@ public class ListingJpaDao implements ListingDao {
         final Listing listing = em.find(Listing.class, id);
         if (listing != null) {
             listing.setStatus(ListingStatus.SOLD);
-            em.flush(); // TODO: [JPA Migration Cleanup]
         }
         return ListingStatus.SOLD;
     }
@@ -179,7 +177,6 @@ public class ListingJpaDao implements ListingDao {
         final Listing listing = em.find(Listing.class, id);
         if (listing != null) {
             listing.setStatus(ListingStatus.PENDING_TRANSACTION);
-            em.flush(); // TODO: [JPA Migration Cleanup]
         }
         return ListingStatus.PENDING_TRANSACTION;
     }
@@ -189,7 +186,6 @@ public class ListingJpaDao implements ListingDao {
         final Listing listing = em.find(Listing.class, id);
         if (listing != null) {
             listing.setStatus(ListingStatus.CANCELED);
-            em.flush(); // TODO: [JPA Migration Cleanup]
         }
     }
 
@@ -198,7 +194,6 @@ public class ListingJpaDao implements ListingDao {
         final Listing listing = em.find(Listing.class, id);
         if (listing != null) {
             listing.setStatus(status);
-            em.flush(); // TODO: [JPA Migration Cleanup]
         }
     }
 
@@ -211,7 +206,6 @@ public class ListingJpaDao implements ListingDao {
                 .setParameter("status", status)
                 .setParameter("ids", ids)
                 .executeUpdate();
-        em.flush(); // TODO: [JPA Migration Cleanup]
     }
 
     @Override
@@ -236,7 +230,6 @@ public class ListingJpaDao implements ListingDao {
         listing.setAcceptsTrade(acceptsTrade);
         listing.setAcceptsShipping(acceptsShipping);
         listing.setDescription(description);
-        em.flush(); // TODO: [JPA Migration Cleanup]
         return listing;
     }
 }

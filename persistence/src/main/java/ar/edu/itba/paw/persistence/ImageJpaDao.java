@@ -27,7 +27,6 @@ public class ImageJpaDao implements ImageDao {
                 .data(data)
                 .build();
         em.persist(image);
-        em.flush(); // TODO: [JPA Migration Cleanup]
         return image;
     }
 
@@ -36,7 +35,6 @@ public class ImageJpaDao implements ImageDao {
         final Image image = em.find(Image.class, id);
         if (image != null) {
             em.remove(image);
-            em.flush(); // TODO: [JPA Migration Cleanup]
         }
     }
 }

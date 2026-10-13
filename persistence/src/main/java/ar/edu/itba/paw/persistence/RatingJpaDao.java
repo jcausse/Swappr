@@ -84,7 +84,6 @@ public class RatingJpaDao implements RatingDao {
                 .createdAt(createdAt)
                 .build();
         em.persist(rating);
-        em.flush(); // TODO: [JPA Migration Cleanup]
         return rating;
     }
 }

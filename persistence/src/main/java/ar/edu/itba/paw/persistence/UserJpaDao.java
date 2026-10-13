@@ -66,7 +66,6 @@ public class UserJpaDao implements UserDao {
                 .buyerNegativeRatings(0)
                 .build();
         em.persist(user);
-        em.flush(); // TODO: [JPA Migration Cleanup]
         return user;
     }
 
@@ -91,7 +90,6 @@ public class UserJpaDao implements UserDao {
         if (imageId != null) {
             user.setImage(em.getReference(Image.class, imageId));
         }
-        em.flush(); // TODO: [JPA Migration Cleanup]
         return Optional.of(user);
     }
 
@@ -104,7 +102,6 @@ public class UserJpaDao implements UserDao {
         final Province province = provinceId != null ? em.getReference(Province.class, provinceId) : null;
         user.setProvince(province);
         user.setLocationDetail(locationDetail);
-        em.flush(); // TODO: [JPA Migration Cleanup]
         return Optional.of(user);
     }
 
@@ -115,7 +112,6 @@ public class UserJpaDao implements UserDao {
             return Optional.empty();
         }
         user.setPreferredLanguage(preferredLanguage);
-        em.flush(); // TODO: [JPA Migration Cleanup]
         return Optional.of(user);
     }
 
@@ -126,7 +122,6 @@ public class UserJpaDao implements UserDao {
             return Optional.empty();
         }
         user.setEmailVerifiedAt(verifiedAt);
-        em.flush(); // TODO: [JPA Migration Cleanup]
         return Optional.of(user);
     }
 
@@ -137,7 +132,6 @@ public class UserJpaDao implements UserDao {
             return Optional.empty();
         }
         user.setSuspendedAt(suspendedAt);
-        em.flush(); // TODO: [JPA Migration Cleanup]
         return Optional.of(user);
     }
 
@@ -148,7 +142,6 @@ public class UserJpaDao implements UserDao {
             return Optional.empty();
         }
         user.setSuspendedAt(null);
-        em.flush(); // TODO: [JPA Migration Cleanup]
         return Optional.of(user);
     }
 
@@ -175,7 +168,6 @@ public class UserJpaDao implements UserDao {
                 case NEUTRAL -> user.setSellerNeutralRatings((user.getSellerNeutralRatings() != null ? user.getSellerNeutralRatings() : 0) + 1);
                 case NEGATIVE -> user.setSellerNegativeRatings((user.getSellerNegativeRatings() != null ? user.getSellerNegativeRatings() : 0) + 1);
             }
-            em.flush(); // TODO: [JPA Migration Cleanup]
         }
     }
 
@@ -188,7 +180,6 @@ public class UserJpaDao implements UserDao {
                 case NEUTRAL -> user.setBuyerNeutralRatings((user.getBuyerNeutralRatings() != null ? user.getBuyerNeutralRatings() : 0) + 1);
                 case NEGATIVE -> user.setBuyerNegativeRatings((user.getBuyerNegativeRatings() != null ? user.getBuyerNegativeRatings() : 0) + 1);
             }
-            em.flush(); // TODO: [JPA Migration Cleanup]
         }
     }
 }

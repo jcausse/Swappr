@@ -35,7 +35,6 @@ public class OneTimePasswordJpaDao implements OneTimePasswordDao {
                 .createdAt(createdAt)
                 .build();
         em.persist(otp);
-        em.flush(); // TODO: [JPA Migration Cleanup]
         return otp;
     }
 
@@ -44,7 +43,6 @@ public class OneTimePasswordJpaDao implements OneTimePasswordDao {
         final OneTimePassword otp = em.find(OneTimePassword.class, requester.getId());
         if (otp != null) {
             em.remove(otp);
-            em.flush(); // TODO: [JPA Migration Cleanup]
         }
     }
 

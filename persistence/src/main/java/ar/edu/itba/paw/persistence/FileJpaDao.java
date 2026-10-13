@@ -27,7 +27,6 @@ public class FileJpaDao implements FileDao {
                 .data(data)
                 .build();
         em.persist(file);
-        em.flush(); // TODO: [JPA Migration Cleanup]
         return file;
     }
 
@@ -36,7 +35,6 @@ public class FileJpaDao implements FileDao {
         final File file = em.find(File.class, id);
         if (file != null) {
             em.remove(file);
-            em.flush(); // TODO: [JPA Migration Cleanup]
         }
     }
 }
