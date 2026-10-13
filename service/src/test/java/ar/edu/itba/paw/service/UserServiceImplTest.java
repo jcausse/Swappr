@@ -1,14 +1,11 @@
 package ar.edu.itba.paw.service;
 
 import ar.edu.itba.paw.model.Image;
-import ar.edu.itba.paw.model.Province;
 import ar.edu.itba.paw.model.User;
 import ar.edu.itba.paw.model.Language;
 import ar.edu.itba.paw.persistence.UserDao;
 import ar.edu.itba.paw.persistence.UserRoleDao;
-import ar.edu.itba.paw.service.dto.ImageData;
 import ar.edu.itba.paw.service.dto.UserCreationDto;
-import ar.edu.itba.paw.service.dto.UserEditDto;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -72,7 +69,7 @@ public class UserServiceImplTest {
             .displayName(USER_DISPLAY_NAME)
             .email(USER_EMAIL)
             .password(USER_PASSWORD)
-            .imageId(imageId)
+            .image(imageId != null ? Image.builder().id(imageId).build() : null)
             .joinedAt(Instant.now())
             .build();
     }

@@ -24,6 +24,8 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.jdbc.JdbcTestUtils;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import javax.sql.DataSource;
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -68,9 +70,17 @@ public class ListingJpaDaoTest {
 
     private JdbcTemplate jdbcTemplate;
 
+    @PersistenceContext
+    private EntityManager em;
+
     @Before
     public void setUp() {
         jdbcTemplate = new JdbcTemplate(dataSource);
+    }
+
+    private int countListingsWhere(final String whereClause) {
+        em.flush();
+        return JdbcTestUtils.countRowsInTableWhere(jdbcTemplate, "listings", whereClause);
     }
 
     /* ---------------------------------------------------------------------------------------------- */
@@ -501,9 +511,7 @@ public class ListingJpaDaoTest {
         );
 
         // Assert
-        final int count = JdbcTestUtils.countRowsInTableWhere(
-            jdbcTemplate,
-            "listings",
+        final int count = countListingsWhere(
             "title = 'Brand new listing' AND status = 'ACTIVE' AND creator_id = " + SELLER_ID
         );
         Assert.assertEquals(1, count);
@@ -532,6 +540,7 @@ public class ListingJpaDaoTest {
         );
 
         // Assert
+        em.flush();
         final int count = JdbcTestUtils.countRowsInTableWhere(
             jdbcTemplate, "listing_images", "listing_id = " + created.getId()
         );
@@ -582,9 +591,7 @@ public class ListingJpaDaoTest {
         );
 
         // Assert
-        final int count = JdbcTestUtils.countRowsInTableWhere(
-            jdbcTemplate,
-            "listings",
+        final int count = countListingsWhere(
             "listing_id = " + MACBOOK_LISTING_ID + " AND title = 'MacBook Pro M3' AND accepts_trade = FALSE"
         );
         Assert.assertEquals(1, count);
@@ -601,8 +608,8 @@ public class ListingJpaDaoTest {
 
         // Assert
         Assert.assertEquals(ListingStatus.SOLD, status);
-        Assert.assertEquals(1, JdbcTestUtils.countRowsInTableWhere(
-            jdbcTemplate, "listings", "listing_id = " + MACBOOK_LISTING_ID + " AND status = 'SOLD'"
+        Assert.assertEquals(1, countListingsWhere(
+            "listing_id = " + MACBOOK_LISTING_ID + " AND status = 'SOLD'"
         ));
     }
 
@@ -613,8 +620,8 @@ public class ListingJpaDaoTest {
 
         // Assert
         Assert.assertEquals(ListingStatus.PENDING_TRANSACTION, status);
-        Assert.assertEquals(1, JdbcTestUtils.countRowsInTableWhere(
-            jdbcTemplate, "listings", "listing_id = " + MACBOOK_LISTING_ID + " AND status = 'PENDING_TRANSACTION'"
+        Assert.assertEquals(1, countListingsWhere(
+            "listing_id = " + MACBOOK_LISTING_ID + " AND status = 'PENDING_TRANSACTION'"
         ));
     }
 
@@ -624,8 +631,8 @@ public class ListingJpaDaoTest {
         listingDao.cancel(MACBOOK_LISTING_ID);
 
         // Assert
-        Assert.assertEquals(1, JdbcTestUtils.countRowsInTableWhere(
-            jdbcTemplate, "listings", "listing_id = " + MACBOOK_LISTING_ID + " AND status = 'CANCELED'"
+        Assert.assertEquals(1, countListingsWhere(
+            "listing_id = " + MACBOOK_LISTING_ID + " AND status = 'CANCELED'"
         ));
     }
 
@@ -635,8 +642,8 @@ public class ListingJpaDaoTest {
         listingDao.cancel(MACBOOK_LISTING_ID);
 
         // Assert
-        Assert.assertEquals(1, JdbcTestUtils.countRowsInTableWhere(
-            jdbcTemplate, "listings", "status = 'CANCELED'"
+        Assert.assertEquals(1, countListingsWhere(
+            "status = 'CANCELED'"
         ));
     }
 
@@ -646,8 +653,8 @@ public class ListingJpaDaoTest {
         listingDao.updateStatus(GALAXY_LISTING_ID, ListingStatus.OFFERED_IN_TRADE);
 
         // Assert
-        Assert.assertEquals(1, JdbcTestUtils.countRowsInTableWhere(
-            jdbcTemplate, "listings", "listing_id = " + GALAXY_LISTING_ID + " AND status = 'OFFERED_IN_TRADE'"
+        Assert.assertEquals(1, countListingsWhere(
+            "listing_id = " + GALAXY_LISTING_ID + " AND status = 'OFFERED_IN_TRADE'"
         ));
     }
 }

@@ -6,7 +6,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
@@ -173,6 +172,7 @@ public class ImageJpaDaoTest {
         imageDao.delete(IMAGE_ID);
 
         // Assert
+        em.flush();
         Assert.assertEquals(0, JdbcTestUtils.countRowsInTableWhere(jdbcTemplate, TABLE, "image_id = " + IMAGE_ID));
     }
 
@@ -186,6 +186,7 @@ public class ImageJpaDaoTest {
         imageDao.delete(IMAGE_ID);
 
         // Assert
+        em.flush();
         Assert.assertEquals(1, JdbcTestUtils.countRowsInTableWhere(jdbcTemplate, TABLE, "image_id = " + (IMAGE_ID + 1)));
         Assert.assertEquals(0, JdbcTestUtils.countRowsInTableWhere(jdbcTemplate, TABLE, "image_id = " + IMAGE_ID));
     }
@@ -199,6 +200,7 @@ public class ImageJpaDaoTest {
         imageDao.delete(NON_EXISTING_ID);
 
         // Assert
+        em.flush();
         Assert.assertEquals(1, JdbcTestUtils.countRowsInTableWhere(jdbcTemplate, TABLE, "image_id = " + IMAGE_ID));
     }
 }

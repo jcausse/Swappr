@@ -6,7 +6,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
@@ -177,6 +176,7 @@ public class FileJpaDaoTest {
         fileDao.delete(FILE_ID);
 
         // Assert
+        em.flush();
         Assert.assertEquals(0, JdbcTestUtils.countRowsInTableWhere(jdbcTemplate, TABLE, "file_id = " + FILE_ID));
     }
 
@@ -215,6 +215,7 @@ public class FileJpaDaoTest {
         fileDao.delete(FILE_ID);
 
         // Assert
+        em.flush();
         Assert.assertEquals(1, JdbcTestUtils.countRowsInTableWhere(jdbcTemplate, "offers",
             "offer_id = " + PROOF_OFFER_ID + " AND proof_of_payment_id IS NULL"));
     }

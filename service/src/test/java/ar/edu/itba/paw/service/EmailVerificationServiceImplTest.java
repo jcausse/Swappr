@@ -4,7 +4,6 @@ import ar.edu.itba.paw.model.OneTimePassword;
 import ar.edu.itba.paw.model.User;
 import ar.edu.itba.paw.service.enumeration.OneTimePasswordVerificationResult;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -55,7 +54,8 @@ public class EmailVerificationServiceImplTest {
 
     private OneTimePassword buildFakeOtp() {
         return OneTimePassword.builder()
-            .requesterId(USER_ID)
+            .id(USER_ID)
+            .user(buildFakeUser(false))
             .otpValue(PLAIN_OTP)
             .createdAt(Instant.now())
             .build();

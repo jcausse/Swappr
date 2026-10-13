@@ -77,6 +77,7 @@ public class OneTimePasswordJpaDaoTest {
     }
 
     private int countOtpWhere(final String whereClause) {
+        em.flush();
         return JdbcTestUtils.countRowsInTableWhere(jdbcTemplate, TABLE, whereClause);
     }
 

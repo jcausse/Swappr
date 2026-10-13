@@ -16,6 +16,8 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.jdbc.JdbcTestUtils;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import javax.sql.DataSource;
 import java.time.Instant;
 import java.util.Optional;
@@ -49,12 +51,16 @@ public class UserJpaDaoTest {
 
     private JdbcTemplate jdbcTemplate;
 
+    @PersistenceContext
+    private EntityManager em;
+
     @Before
     public void setUp() {
         jdbcTemplate = new JdbcTemplate(dataSource);
     }
 
     private int countUsersWhere(final String whereClause) {
+        em.flush();
         return JdbcTestUtils.countRowsInTableWhere(jdbcTemplate, "users", whereClause);
     }
 

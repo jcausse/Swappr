@@ -27,6 +27,8 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.jdbc.JdbcTestUtils;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import javax.sql.DataSource;
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -76,6 +78,9 @@ public class OfferJpaDaoTest {
     private DataSource dataSource;
 
     private JdbcTemplate jdbcTemplate;
+
+    @PersistenceContext
+    private EntityManager em;
 
     @Before
     public void setUp() {
@@ -131,6 +136,7 @@ public class OfferJpaDaoTest {
     }
 
     private int countOffersWhere(final String whereClause) {
+        em.flush();
         return JdbcTestUtils.countRowsInTableWhere(jdbcTemplate, "offers", whereClause);
     }
 
@@ -492,6 +498,7 @@ public class OfferJpaDaoTest {
             false, OfferStatus.PENDING, null, NEW_OFFER_CREATED_AT, null);
 
         // Assert
+        em.flush();
         Assert.assertEquals(TOTAL_OFFERS + 1, JdbcTestUtils.countRowsInTable(jdbcTemplate, "offers"));
         Assert.assertEquals(1, countOffersWhere("offer_id = " + offer.getId()
             + " AND listing_id = " + GALAXY_LISTING_ID
