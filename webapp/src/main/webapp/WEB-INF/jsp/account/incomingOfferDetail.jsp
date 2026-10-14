@@ -26,9 +26,10 @@
             </c:if>
 
             <c:choose>
-                <c:when test="${offer.offeredListing != null}">
+                <c:when test="${offer.offeredListing.present}">
+                    <c:set var="offeredListing" value="${offer.offeredListing.get()}"/>
                     <spring:message code="offer.detail.title.trade"
-                                    arguments="${offer.buyer.displayName},${offer.offeredListing.product.brand},${offer.offeredListing.product.model},${offer.offeredListing.product.year},${tradeAndAmount},${offer.listing.product.brand},${offer.listing.product.model},${offer.listing.product.year}"
+                                    arguments="${offer.buyer.displayName},${offeredListing.product.brand},${offeredListing.product.model},${offeredListing.product.year},${tradeAndAmount},${offer.listing.product.brand},${offer.listing.product.model},${offer.listing.product.year}"
                                     var="title"/>
                 </c:when>
                 <c:otherwise>
@@ -91,23 +92,24 @@
         </div>
 
         <div class="flex flex-col">
-            <c:if test="${offer.offeredListing != null}">
-                <c:url value="/listing/${offer.offeredListing.id}" var="offeredListingUrl"/>
+            <c:if test="${offer.offeredListing.present}">
+                <c:set var="offeredListing" value="${offer.offeredListing.get()}"/>
+                <c:url value="/listing/${offeredListing.id}" var="offeredListingUrl"/>
                 <spring:message code="offer.detail.offeredItem" var="offeredItemLabel"/>
                 <p class="text-black/60 text-sm font-semibold mb-1"><c:out value="${offeredItemLabel}"/></p>
                 <div class="flex flex-row gap-4">
-                    <paw:listingImage listing="${offer.offeredListing}" size="xl" />
+                    <paw:listingImage listing="${offeredListing}" size="xl" />
                     <div class="flex-1 min-w-0 flex flex-col justify-center">
                         <a href="${offeredListingUrl}" class="text-xl font-semibold hover:text-lime-600 transition">
-                            <c:out value="${offer.offeredListing.title}"/>
+                            <c:out value="${offeredListing.title}"/>
                         </a>
                         <p class="text-sm text-black/60 mt-1">
-                            <c:out value="${offer.offeredListing.product.brand}"/>
-                            <c:out value="${offer.offeredListing.product.model}"/>
-                            (<c:out value="${offer.offeredListing.product.year}"/>)
+                            <c:out value="${offeredListing.product.brand}"/>
+                            <c:out value="${offeredListing.product.model}"/>
+                            (<c:out value="${offeredListing.product.year}"/>)
                         </p>
                         <p class="text-sm text-black/60 mt-1">
-                            $<c:out value="${offer.offeredListing.price.amount}"/>
+                            $<c:out value="${offeredListing.price.amount}"/>
                         </p>
                     </div>
                 </div>
@@ -116,7 +118,7 @@
                     <span class="text-2xl text-end font-bold mt-2"><c:out value="${plusAmountLabel}"/></span>
                 </c:if>
             </c:if>
-            <c:if test="${offer.offeredListing == null}">
+            <c:if test="${not offer.offeredListing.present}">
                 <c:if test="${not offer.isFullPrice}">
                     <p class="text-lg font-medium line-through text-black/60">
                         $<c:out value="${offer.listing.price.getAmount()}"/>
