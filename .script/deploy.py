@@ -259,6 +259,7 @@ def show_warning():
         "--exclude-dir=.agents",
         "--exclude-dir=doc",
         "--exclude-dir=.idea",
+        "--exclude=AGENTS.md",
         "."
     ]
     try:
@@ -282,6 +283,7 @@ def full_deploy():
     """
     try:
         show_warning()
+        was_cancelled = True
         was_cancelled = not should_deploy()
         if was_cancelled:
             print("Deploy cancelled.")
@@ -310,8 +312,11 @@ def backup_only():
         print("=== DATABASE BACKUP FAILED ===")
 
 if __name__ == "__main__":
-    if len(sys.argv) == 2:
-        if sys.argv[1] == "--db-backup-only":
-            backup_only()
-    else:
-        full_deploy()
+    try:
+        if len(sys.argv) == 2:
+            if sys.argv[1] == "--db-backup-only":
+                backup_only()
+        else:
+            full_deploy()
+    except KeyboardInterrupt:
+        print("\n\nAborted")
