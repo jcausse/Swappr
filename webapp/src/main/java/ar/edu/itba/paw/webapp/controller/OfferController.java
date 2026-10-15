@@ -40,11 +40,11 @@ public class OfferController {
 
     @PostMapping("/{offerId}/withdraw")
     public ModelAndView withdrawOffer(@PathVariable Long offerId,
-                                       @CurrentUser User currentUser,
-                                       @RequestHeader(value = "Referer", required = false) String referer) {
+                                      @CurrentUser User currentUser,
+                                      @RequestHeader(value = "Referer", required = false) String referer) {
         LOGGER.info("User {} withdrew offer {}", currentUser.getId(), offerId);
         final Offer offer = offerService.getById(offerId)
-                .orElseThrow(() -> NotFoundException.createFor("Offer"));
+                .orElseThrow(() -> NotFoundException.createFor("Offer"));           // TODO: Mover al Service
 
         final Listing listing = offer.getListing();
         offerService.withdraw(offerId, currentUser.getId());
