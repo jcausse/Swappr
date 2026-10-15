@@ -132,9 +132,7 @@ public class UserController {
     @GetMapping("/profile")
     public ModelAndView currentUserProfile(@CurrentUser User currentUser) {
         LOGGER.debug("Accessing current user profile for user {}", currentUser.getId());
-        return new ModelAndView("profile")
-                .addObject("user", currentUser)
-                .addObject("allowEdit", true);
+        return new ModelAndView("redirect:/profile/" + currentUser.getId());
     }
 
     /* PROFILE EDIT */

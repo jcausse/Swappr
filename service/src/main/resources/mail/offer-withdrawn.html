@@ -35,12 +35,12 @@
                     <!-- Body -->
                     <tr>
                         <td style="padding: 16px 40px 0; text-align: center;">
-                            <th:block th:if="${offer.offeredListing != null}">
-                                <p th:text="#{email.offer.withdrawn.body.trade(${buyer.displayName}, ${offer.offeredListing.product.brand}, ${offer.offeredListing.product.model}, ${offer.offeredListing.product.year}, ${offer.amount != null and offer.amount > 0 ? ' and $' + offer.amount : ''}, ${listing.product.brand}, ${listing.product.model}, ${listing.product.year})}" style="margin: 0; font-size: 15px; line-height: 1.6; color: #525252;">
+                            <th:block th:if="${offer.offeredListing.present}" th:with="offeredListing=${offer.offeredListing.get()}">
+                                <p th:text="#{email.offer.withdrawn.body.trade(${buyer.displayName}, ${offeredListing.product.brand}, ${offeredListing.product.model}, ${offeredListing.product.year}, ${offer.amount != null and offer.amount > 0 ? ' and $' + offer.amount : ''}, ${listing.product.brand}, ${listing.product.model}, ${listing.product.year})}" style="margin: 0; font-size: 15px; line-height: 1.6; color: #525252;">
                                     Offer was withdrawn.
                                 </p>
                             </th:block>
-                            <th:block th:unless="${offer.offeredListing != null}">
+                            <th:block th:unless="${offer.offeredListing.present}">
                                 <p th:text="#{email.offer.withdrawn.body(${buyer.displayName}, ${offer.amount}, ${listing.product.brand}, ${listing.product.model}, ${listing.product.year})}" style="margin: 0; font-size: 15px; line-height: 1.6; color: #525252;">
                                     Offer was withdrawn.
                                 </p>
@@ -80,7 +80,7 @@
                         </td>
                     </tr>
                     <!-- Offered Listing Card (for trade offers) -->
-                    <tr th:if="${offer.offeredListing != null}">
+                    <tr th:if="${offer.offeredListing.present}" th:with="offeredListing=${offer.offeredListing.get()}">
                         <td style="padding: 20px 40px 0;">
                             <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #fafafa; border-radius: 12px; border: 1px solid #e5e5e5;">
                                 <tr>
@@ -93,23 +93,23 @@
                                         <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
                                             <tr>
                                                 <td style="width: 80px; vertical-align: top; padding-right: 12px;">
-                                                    <a th:href="${baseUrl + '/listing/' + offer.offeredListing.id}" target="_blank" style="text-decoration: none;">
-                                                        <img th:if="${offer.offeredListing.imageIds != null and !offer.offeredListing.imageIds.isEmpty()}"
-                                                             th:src="${baseUrl + '/image/' + offer.offeredListing.imageIds[0]}"
+                                                    <a th:href="${baseUrl + '/listing/' + offeredListing.id}" target="_blank" style="text-decoration: none;">
+                                                        <img th:if="${offeredListing.imageIds != null and !offeredListing.imageIds.isEmpty()}"
+                                                             th:src="${baseUrl + '/image/' + offeredListing.imageIds[0]}"
                                                              alt="Offered listing image"
                                                              style="display: block; width: 80px; height: 80px; object-fit: cover; border-radius: 8px; border: 1px solid #e5e5e5;"/>
-                                                        <div th:unless="${offer.offeredListing.imageIds != null and !offer.offeredListing.imageIds.isEmpty()}"
+                                                        <div th:unless="${offeredListing.imageIds != null and !offeredListing.imageIds.isEmpty()}"
                                                              style="display: block; width: 80px; height: 80px; background-color: #f5f5f5; border-radius: 8px; border: 1px solid #e5e5e5;">
                                                         </div>
                                                     </a>
                                                 </td>
                                                 <td style="vertical-align: top;">
-                                                    <p style="margin: 0 0 4px; font-size: 14px; font-weight: 600; color: #171717;" th:text="${offer.offeredListing.title}">Offered Listing Title</p>
+                                                    <p style="margin: 0 0 4px; font-size: 14px; font-weight: 600; color: #171717;" th:text="${offeredListing.title}">Offered Listing Title</p>
                                                     <p style="margin: 0 0 4px; font-size: 13px; color: #737373;">
-                                                        <span th:text="${offer.offeredListing.product.brand + ' ' + offer.offeredListing.product.model + ' (' + #numbers.formatInteger(offer.offeredListing.product.year, 1, 'NONE') + ')'}">Brand Model (Year)</span>
+                                                        <span th:text="${offeredListing.product.brand + ' ' + offeredListing.product.model + ' (' + #numbers.formatInteger(offeredListing.product.year, 1, 'NONE') + ')'}">Brand Model (Year)</span>
                                                     </p>
                                                     <p style="margin: 0; font-size: 14px; font-weight: 700; color: #65a30d;">
-                                                        <span th:text="'$' + ${offer.offeredListing.price.amount}">$100</span>
+                                                        <span th:text="'$' + ${offeredListing.price.amount}">$100</span>
                                                     </p>
                                                     <th:block th:if="${offer.amount != null and offer.amount > 0}">
                                                         <p style="margin: 4px 0 0; font-size: 13px; font-weight: 600; color: #16a34a;">

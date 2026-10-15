@@ -210,4 +210,24 @@ public class UserJpaDaoTest {
 
         Assert.assertFalse(updated.isPresent());
     }
+
+    /* ---------------------------------------------------------------------------------------------- */
+    /* getById                                                                                         */
+    /* ---------------------------------------------------------------------------------------------- */
+
+    @Test
+    public void testGetByIdExistingReturnsUser() {
+        final Optional<User> user = userDao.getById(FAKE_USER_ID);
+
+        Assert.assertTrue(user.isPresent());
+        Assert.assertEquals(Long.valueOf(FAKE_USER_ID), user.get().getId());
+        Assert.assertEquals(FAKE_USERNAME, user.get().getUsername());
+    }
+
+    @Test
+    public void testGetByIdNonExistingReturnsEmpty() {
+        final Optional<User> user = userDao.getById(NON_EXISTING_USER_ID);
+
+        Assert.assertFalse(user.isPresent());
+    }
 }

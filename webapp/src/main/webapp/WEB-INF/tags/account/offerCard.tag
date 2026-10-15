@@ -24,7 +24,7 @@
             </c:when>
         </c:choose>
         <paw:badge text="${statusLabel}" classname="ml-auto ${statusClass}" />
-        <c:if test="${offer.offeredListing != null}">
+        <c:if test="${offer.offeredListing.present}">
             <spring:message code="offer.tradeBadge" var="tradeBadgeLabel"/>
             <paw:badge text="${tradeBadgeLabel}" classname="text-purple-600" />
         </c:if>
@@ -38,21 +38,22 @@
 
             <div class="mt-2 flex flex-row gap-4 items-end">
                 <div class="flex-1">
-                    <c:if test="${offer.offeredListing != null}">
-                        <c:url value="/listing/${offer.offeredListing.id}" var="offeredListingUrl"/>
+                    <c:if test="${offer.offeredListing.present}">
+                        <c:set var="offeredListing" value="${offer.offeredListing.get()}"/>
+                        <c:url value="/listing/${offeredListing.id}" var="offeredListingUrl"/>
                         <spring:message code="offer.detail.offeredItem" var="offeredItemLabel"/>
                         <p class="text-black/60 text-xs font-semibold"><c:out value="${offeredItemLabel}"/></p>
                         <div class="flex flex-row items-end gap-2">
                             <paw:linkButton variant="ghost" href="${offeredListingUrl}" size="sm" classname="p-1! flex-1">
-                                <paw:listingImage listing="${offer.offeredListing}" size="sm" />
+                                <paw:listingImage listing="${offeredListing}" size="sm" />
                                 <div class="flex-1 min-w-0">
-                                    <p class="text-sm font-medium text-black truncate"><c:out value="${offer.offeredListing.title}"/></p>
+                                    <p class="text-sm font-medium text-black truncate"><c:out value="${offeredListing.title}"/></p>
                                     <p class="text-xs text-black/60 font-normal">
-                                        <c:out value="${offer.offeredListing.product.brand}"/>
-                                        <c:out value="${offer.offeredListing.product.model}"/>
-                                        (<c:out value="${offer.offeredListing.product.year}"/>)
+                                        <c:out value="${offeredListing.product.brand}"/>
+                                        <c:out value="${offeredListing.product.model}"/>
+                                        (<c:out value="${offeredListing.product.year}"/>)
                                     </p>
-                                    <p class="text-xs text-black/60 font-normal">$<c:out value="${offer.offeredListing.price.amount}"/></p>
+                                    <p class="text-xs text-black/60 font-normal">$<c:out value="${offeredListing.price.amount}"/></p>
                                 </div>
                             </paw:linkButton>
                             <c:if test="${offer.amount != null and offer.amount > 0.0}">
@@ -61,7 +62,7 @@
                             </c:if>
                         </div>
                     </c:if>
-                    <c:if test="${offer.offeredListing == null}">
+                    <c:if test="${not offer.offeredListing.present}">
                         <c:if test="${not offer.isFullPrice}">
                             <p class="text-base font-medium line-through text-black/60"> $<c:out value="${offer.listing.price.amount}"/> </p>
                         </c:if>

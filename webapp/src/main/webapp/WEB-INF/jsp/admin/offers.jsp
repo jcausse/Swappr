@@ -136,14 +136,15 @@
                                         <span class="font-bold text-sm text-black">
                                             $<c:out value="${offer.amount}"/>
                                         </span>
-                                        <c:if test="${offer.offeredListing != null}">
-                                            <c:url value="/listing/${offer.offeredListing.id}" var="offeredListingUrl"/>
+                                        <c:if test="${offer.offeredListing.present}">
+                                            <c:set var="offeredListing" value="${offer.offeredListing.get()}"/>
+                                            <c:url value="/listing/${offeredListing.id}" var="offeredListingUrl"/>
                                             <span class="inline-flex items-center gap-1 text-purple-700 bg-purple-50 px-2 py-0.5 rounded border border-purple-200">
                                                 <paw:icon name="arrow-right-left"/>
                                                 <spring:message code="admin.offers.tradeItem" var="tradeItemLabel"/>
                                                 <c:out value="${tradeItemLabel}"/>:
                                                 <a href="${offeredListingUrl}" class="hover:underline font-medium">
-                                                    #<c:out value="${offer.offeredListing.id}"/>
+                                                    #<c:out value="${offeredListing.id}"/>
                                                 </a>
                                             </span>
                                         </c:if>

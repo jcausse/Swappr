@@ -51,10 +51,7 @@
                                             <span th:text="${listing.product.brand + ' ' + listing.product.model + ' (' + #numbers.formatInteger(listing.product.year, 1, 'NONE') + ')'}">Brand Model (Year)</span>
                                         </p>
                                         <p style="margin: 0; font-size: 14px; font-weight: 700; color: #65a30d;">
-                                            <span th:if="${!offer.isFullPrice}" style="font-size: 12px; font-weight: 400; color: #626262; text-decoration: line-through;">
-                                                <span th:text="'$' + ${listing.price.amount}">$100</span>
-                                            </span>
-                                            <span th:text="'$' + ${offer.amount}">$100</span>
+                                            <span th:text="'$' + ${listing.price.amount}">$100</span>
                                         </p>
                                     </td>
                                 </tr>
