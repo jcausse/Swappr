@@ -280,7 +280,7 @@ public class AccountController {
             byte[] fileData = null;
             String filename = null;
             String contentType = null;
-            if (form.getFile() != null && !form.getFile().isEmpty()) {
+            if (form.getFile() != null && !form.getFile().isEmpty()) {          // TODO: Usar Bean Validation
                 fileData = form.getFile().getBytes();
                 filename = form.getFile().getOriginalFilename();
                 contentType = form.getFile().getContentType();
@@ -374,7 +374,7 @@ public class AccountController {
                                         @Valid @ModelAttribute("rateForm") RateForm rateForm,
                                         BindingResult bindingResult) {
         final Offer offer = offerService.getById(offerId)
-                .orElseThrow(() -> NotFoundException.createFor("Offer"));
+                .orElseThrow(() -> NotFoundException.createFor("Offer")); // podria moverse a la primera linea de oferservice.rate
 
         if (bindingResult.hasErrors()) {
             var mav = new ModelAndView("account/rate");

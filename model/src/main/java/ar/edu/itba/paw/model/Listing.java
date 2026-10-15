@@ -67,11 +67,9 @@ public class Listing {
     @OrderColumn(name = "display_order")
     private List<Image> images = new ArrayList<>();
 
-    // TODO: Move the query to a DAO but leave the field
     @Formula("(SELECT COUNT(*) FROM offers o WHERE o.listing_id = listing_id AND o.status = 'PENDING')")
     private int pendingOffersCount;
 
-    // TODO: Move the query to a DAO but leave the field
     @Formula("(SELECT MAX(o.created_at) FROM offers o WHERE o.listing_id = listing_id AND o.status = 'PENDING')")
     private Instant recentPendingOfferAt;
 

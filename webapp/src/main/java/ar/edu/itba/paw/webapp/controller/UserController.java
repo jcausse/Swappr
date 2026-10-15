@@ -190,6 +190,7 @@ public class UserController {
         }
 
         // Extract image from form
+        // TODO: Usar Bean Validation
         ImageData imageData = null;
         if (form.getProfilePicture() != null && !form.getProfilePicture().isEmpty()) {
             try {

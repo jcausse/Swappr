@@ -65,7 +65,7 @@ public class EmailVerificationController {
 
     @PostMapping("/verify/resend")
     public ModelAndView resendVerificationCode(@RequestParam("usernameOrEmail") String usernameOrEmail) {
-        if (usernameOrEmail != null && !usernameOrEmail.isBlank()) {
+        if (usernameOrEmail != null && !usernameOrEmail.isBlank()) {            // TODO: Usar Bean Validation
             LOGGER.info("Requested resend of verification email for {}", usernameOrEmail);
             emailVerificationService.resendVerificationEmail(usernameOrEmail);
             return new ModelAndView("redirect:/verify?email=" +
