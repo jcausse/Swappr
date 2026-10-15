@@ -20,13 +20,7 @@ public class UserJpaDao implements UserDao {
 
     @Override
     public Optional<User> getById(Long id) {
-        // Fetch province and image eagerly so views can render them outside the
-        // persistence context without triggering a LazyInitializationException.
-        return em.createQuery(
-                "FROM User u LEFT JOIN FETCH u.province LEFT JOIN FETCH u.image WHERE u.id = :id", User.class)
-                .setParameter("id", id)
-                .getResultStream()
-                .findFirst();
+        return Optional.ofNullable(em.find(User.class, id));
     }
 
     @Override
