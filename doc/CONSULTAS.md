@@ -1,6 +1,8 @@
 Es necesario usar `GenerationType.SEQUENCE`? Con `GenerationType.IDENTITY` es automático y no se necesita 
 el `@SequenceGenerator`
 
+> Se puede usar, no pasa nada.
+
 ---
 
 Esta bien este `filter` en `web.xml`?
@@ -21,6 +23,8 @@ Esta bien este `filter` en `web.xml`?
 
 Esto fue necesario para que el `EntityManager` se mantuviera mientras los JSP estan renderizando, porque acceden a 
 propiedades que son _lazy-loaded_ de los modelos, causando `LazyInitializationException`.
+
+> No es un problema. Sacarlo para el final.
 
 ---
 
