@@ -108,10 +108,23 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            const filterForm = document.getElementById('filterForm');
+
             const sortSelect = document.getElementById('sort');
             if (sortSelect) {
                 sortSelect.addEventListener('change', function() {
-                    document.getElementById('filterForm').submit();
+                    filterForm.submit();
+                });
+            }
+
+            const categorySelect = document.getElementById('categoryId');
+            if (categorySelect) {
+                categorySelect.addEventListener('change', function() {
+                    const subcategorySelect = document.getElementById('subcategoryId');
+                    if (subcategorySelect) {
+                        subcategorySelect.value = '';
+                    }
+                    filterForm.submit();
                 });
             }
         });
