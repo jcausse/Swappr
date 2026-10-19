@@ -1,6 +1,5 @@
 package ar.edu.itba.paw.webapp.controller;
 
-import java.io.IOException;
 import java.util.Arrays;
 
 import javax.validation.Valid;
@@ -178,6 +177,7 @@ public class AccountController {
         final Long currentUserId = currentUser.getId();
 
         // Verify the current user is the seller (listing creator)
+        // FIXME use preauthorize
         if (!listing.getCreator().getId().equals(currentUserId)) {
             throw new ForbiddenException("Not authorized to view this offer");
         }
@@ -195,10 +195,12 @@ public class AccountController {
         final Offer offer = offerService.getById(offerId)
                 .orElseThrow(() -> NotFoundException.createFor("Offer"));
 
+        // FIXME use preauthorize
         if (!offer.getBuyer().getId().equals(currentUser.getId())) {
             throw new ForbiddenException("Not authorized to upload proof of payment");
         }
 
+        // TODO check this
         if (offer.getStatus() != OfferStatus.PENDING_PAYMENT) {
             throw new BadParameterException("Offer is not pending payment");
         }
@@ -223,20 +225,12 @@ public class AccountController {
             return mav;
         }
 
-        try {
-            offerService.uploadProofOfPayment(
-                    offerId,
-                    currentUser.getId(),
-                    form.getFile().getOriginalFilename(),
-                    "Proof of payment for offer " + offerId,
-                    form.getFile().getContentType(),
-                    form.getFile().getBytes()
-            );
-            LOGGER.info("User {} uploaded proof of payment for offer {}", currentUser.getId(), offerId);
-        } catch (IOException e) {
-            LOGGER.error("Failed to read uploaded file for offer {}", offerId, e);
-            throw new RuntimeException("Failed to read uploaded file", e);
-        }
+        offerService.uploadProofOfPayment(
+                offerId,
+                currentUser.getId(),
+                form.getFileDto()
+        );
+        LOGGER.info("User {} uploaded proof of payment for offer {}", currentUser.getId(), offerId);
 
         return new ModelAndView("redirect:/account/my-offers?statusGroup=pending_payment");
     }
@@ -248,10 +242,12 @@ public class AccountController {
         final Offer offer = offerService.getById(offerId)
                 .orElseThrow(() -> NotFoundException.createFor("Offer"));
 
+        // FIXME use preauthorize
         if (!offer.getListing().getCreator().getId().equals(currentUser.getId())) {
             throw new ForbiddenException("Not authorized to upload proof of shipping");
         }
 
+        // TODO check this
         if (offer.getStatus() != OfferStatus.PENDING_PAYMENT) {
             throw new BadParameterException("Offer is not pending payment");
         }
@@ -276,29 +272,13 @@ public class AccountController {
             return mav;
         }
 
-        try {
-            byte[] fileData = null;
-            String filename = null;
-            String contentType = null;
-            if (form.getFile() != null && !form.getFile().isEmpty()) {          // TODO: Usar Bean Validation
-                fileData = form.getFile().getBytes();
-                filename = form.getFile().getOriginalFilename();
-                contentType = form.getFile().getContentType();
-            }
-            offerService.uploadProofOfShipping(
-                    offerId,
-                    currentUser.getId(),
-                    filename,
-                    "Proof of shipping for offer " + offerId,
-                    contentType,
-                    fileData,
-                    form.getTrackingNumber()
-            );
-            LOGGER.info("User {} uploaded proof of shipping for offer {}", currentUser.getId(), offerId);
-        } catch (IOException e) {
-            LOGGER.error("Failed to read uploaded file for offer {}", offerId, e);
-            throw new RuntimeException("Failed to read uploaded file", e);
-        }
+        offerService.uploadProofOfShipping(
+                offerId,
+                currentUser.getId(),
+                form.getFileDto(),
+                form.getTrackingNumber()
+        );
+        LOGGER.info("User {} uploaded proof of shipping for offer {}", currentUser.getId(), offerId);
 
         return new ModelAndView("redirect:/account/incoming-offers?statusGroup=pending_payment");
     }

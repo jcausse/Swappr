@@ -31,4 +31,3 @@ propiedades que son _lazy-loaded_ de los modelos, causando `LazyInitializationEx
 Tenemos el problema de las `n + 1` queries? Cual es la forma mas facil de identificarlas?
 
 ---
-
