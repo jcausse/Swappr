@@ -13,6 +13,10 @@
 <spring:message code="discovery.filter.search" var="searchLabel"/>
 <spring:message code="discovery.filter.category" var="categoryLabel"/>
 <spring:message code="discovery.filter.subcategory" var="subcategoryLabel"/>
+<spring:message code="discovery.filter.brand" var="brandLabel"/>
+<spring:message code="discovery.filter.model" var="modelLabel"/>
+<spring:message code="discovery.filter.yearMin" var="yearMinLabel"/>
+<spring:message code="discovery.filter.yearMax" var="yearMaxLabel"/>
 <spring:message code="discovery.filter.condition" var="conditionLabel"/>
 <spring:message code="discovery.filter.province" var="provinceLabel"/>
 <spring:message code="discovery.filter.minPrice" var="minPriceLabel"/>
@@ -40,6 +44,12 @@
                             <c:if test="${not empty subcategoryOptions}">
                                 <paw:formSelect path="subcategoryId" label="${subcategoryLabel}" placeholder="${allLabel}" items="${subcategoryOptions}" />
                             </c:if>
+                            <c:if test="${not empty brandOptions}">
+                                <paw:formSelect path="brand" label="${brandLabel}" placeholder="${allLabel}" items="${brandOptions}" itemLabel="label" itemValue="value" />
+                            </c:if>
+                            <c:if test="${not empty modelOptions}">
+                                <paw:formSelect path="model" label="${modelLabel}" placeholder="${allLabel}" items="${modelOptions}" itemLabel="label" itemValue="value" />
+                            </c:if>
 
                             <paw:formSelect path="condition" label="${conditionLabel}" placeholder="${allLabel}" items="${conditionOptions}" itemLabel="label" itemValue="value" />
 
@@ -48,6 +58,11 @@
                             <div class="flex flex-row gap-2">
                                 <paw:formInput path="minPrice" type="number" step="0.01" min="0" label="${minPriceLabel}" classname="min-w-0" />
                                 <paw:formInput path="maxPrice" type="number" step="0.01" min="0" label="${maxPriceLabel}" classname="min-w-0" />
+                            </div>
+
+                            <div class="flex flex-row gap-2">
+                                <paw:formInput path="yearMin" type="number" step="1" min="0" label="${yearMinLabel}" classname="min-w-0" />
+                                <paw:formInput path="yearMax" type="number" step="1" min="0" label="${yearMaxLabel}" classname="min-w-0" />
                             </div>
 
                             <div class="flex flex-col gap-1">
@@ -110,23 +125,29 @@
         document.addEventListener('DOMContentLoaded', function() {
             const filterForm = document.getElementById('filterForm');
 
-            const sortSelect = document.getElementById('sort');
-            if (sortSelect) {
-                sortSelect.addEventListener('change', function() {
+            // Reload the filters on change so dependent dropdowns get populated.
+            // Each level clears the selects below it, since their options belong
+            // to the previous selection: category -> subcategory -> brand -> model.
+            function reloadOnChange(selectId, dependentIds) {
+                const select = document.getElementById(selectId);
+                if (!select) {
+                    return;
+                }
+                select.addEventListener('change', function() {
+                    dependentIds.forEach(function(id) {
+                        const dependent = document.getElementById(id);
+                        if (dependent) {
+                            dependent.value = '';
+                        }
+                    });
                     filterForm.submit();
                 });
             }
 
-            const categorySelect = document.getElementById('categoryId');
-            if (categorySelect) {
-                categorySelect.addEventListener('change', function() {
-                    const subcategorySelect = document.getElementById('subcategoryId');
-                    if (subcategorySelect) {
-                        subcategorySelect.value = '';
-                    }
-                    filterForm.submit();
-                });
-            }
+            reloadOnChange('sort', []);
+            reloadOnChange('categoryId', ['subcategoryId', 'brand', 'model']);
+            reloadOnChange('subcategoryId', ['brand', 'model']);
+            reloadOnChange('brand', ['model']);
         });
     </script>
 </paw:layout>
