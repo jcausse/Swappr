@@ -19,5 +19,9 @@ public record ListingFilterDto(
     Integer pageSize,
     Boolean hasActiveOffers,
     Long provinceId,
-    Boolean acceptsShipping
+    Boolean acceptsShipping,
+    String brand,
+    String model,
+    Integer yearMin,
+    Integer yearMax
 ) {}
