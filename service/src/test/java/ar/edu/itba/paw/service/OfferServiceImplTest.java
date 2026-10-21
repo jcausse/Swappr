@@ -12,6 +12,7 @@ import ar.edu.itba.paw.model.User;
 import ar.edu.itba.paw.persistence.FileDao;
 import ar.edu.itba.paw.persistence.OfferDao;
 import ar.edu.itba.paw.persistence.UserDao;
+import ar.edu.itba.paw.service.dto.FileDto;
 import ar.edu.itba.paw.service.dto.OfferCreationDto;
 import ar.edu.itba.paw.service.exception.BadParameterException;
 import ar.edu.itba.paw.service.exception.ForbiddenException;
@@ -48,12 +49,18 @@ public class OfferServiceImplTest {
     private static final BigDecimal AMOUNT = new BigDecimal("1400.00");
     private static final String MESSAGE = "Is it still available?";
 
-    private static final String FILENAME = "receipt.png";
+    private static final String FILENAME_PNG = "receipt.png";
+    private static final String FILENAME_PDF = "proof.pdf";
     private static final String ALT = "Proof";
     private static final String PNG = "image/png";
     private static final String PDF = "application/pdf";
     private static final byte[] DATA = new byte[]{ 1, 2, 3 };
     private static final String TRACKING_NUMBER = "AR123456789";
+
+    private static final FileDto FILE_DTO_PDF = new FileDto(DATA, FILENAME_PDF, PDF);
+    private static final FileDto FILE_DTO_PNG = new FileDto(DATA, FILENAME_PNG, PNG);
+    private static final FileDto FILE_DTO_PNG_EMPTY = new FileDto(new byte[0], FILENAME_PNG, PNG);
+	private static final FileDto FILE_DTO_TXT = new FileDto(DATA, "notes.txt", "text/plain");
 
     private static final int PAGE_SIZE = 10;
 
@@ -127,7 +134,7 @@ public class OfferServiceImplTest {
     }
 
     private static File buildFakeFile() {
-        return File.builder().id(FILE_ID).filename(FILENAME).alt(ALT).contentType(PNG).data(DATA).build();
+        return File.builder().id(FILE_ID).filename(FILENAME_PNG).alt(ALT).contentType(PNG).data(DATA).build();
     }
 
     private static OfferCreationDto buildCreationDto(final long buyerId, final Long offeredListingId) {
@@ -379,7 +386,7 @@ public class OfferServiceImplTest {
         when(fileDao.create(any(), any(), eq(PDF), any(byte[].class))).thenReturn(buildFakeFile());
 
         // Act
-        final Offer result = offerService.uploadProofOfPayment(OFFER_ID, BUYER_ID, "receipt.pdf", ALT, PDF, DATA);
+        final Offer result = offerService.uploadProofOfPayment(OFFER_ID, BUYER_ID, FILE_DTO_PDF);
 
         // Assert
         Assert.assertEquals(OFFER_ID, (long) result.getId());
@@ -391,7 +398,7 @@ public class OfferServiceImplTest {
         givenOffer(buildFakeOffer(OfferStatus.PENDING_PAYMENT));
 
         // Act
-        offerService.uploadProofOfPayment(OFFER_ID, SELLER_ID, FILENAME, ALT, PNG, DATA);
+        offerService.uploadProofOfPayment(OFFER_ID, SELLER_ID, FILE_DTO_PNG);
     }
 
     @Test(expected = BadParameterException.class)
@@ -400,7 +407,7 @@ public class OfferServiceImplTest {
         givenOffer(buildFakeOffer(OfferStatus.PENDING));
 
         // Act
-        offerService.uploadProofOfPayment(OFFER_ID, BUYER_ID, FILENAME, ALT, PNG, DATA);
+        offerService.uploadProofOfPayment(OFFER_ID, BUYER_ID, FILE_DTO_PNG);
     }
 
     @Test(expected = BadParameterException.class)
@@ -409,7 +416,7 @@ public class OfferServiceImplTest {
         givenOffer(buildFakeOffer(OfferStatus.PENDING_PAYMENT));
 
         // Act
-        offerService.uploadProofOfPayment(OFFER_ID, BUYER_ID, FILENAME, ALT, PNG, new byte[0]);
+        offerService.uploadProofOfPayment(OFFER_ID, BUYER_ID, FILE_DTO_PNG_EMPTY);
     }
 
     @Test(expected = BadParameterException.class)
@@ -418,7 +425,7 @@ public class OfferServiceImplTest {
         givenOffer(buildFakeOffer(OfferStatus.PENDING_PAYMENT));
 
         // Act
-        offerService.uploadProofOfPayment(OFFER_ID, BUYER_ID, "notes.txt", ALT, "text/plain", DATA);
+        offerService.uploadProofOfPayment(OFFER_ID, BUYER_ID, FILE_DTO_TXT);
     }
 
     /* ---------------------------------------------------------------------------------------------- */
@@ -431,7 +438,7 @@ public class OfferServiceImplTest {
         givenOffer(buildFakeOffer(OfferStatus.PENDING_PAYMENT));
 
         // Act
-        offerService.uploadProofOfShipping(OFFER_ID, SELLER_ID, null, null, null, null, "  ");
+        offerService.uploadProofOfShipping(OFFER_ID, SELLER_ID, null, null);
     }
 
     @Test(expected = BadParameterException.class)
@@ -440,7 +447,7 @@ public class OfferServiceImplTest {
         givenOffer(buildFakeOffer(OfferStatus.PENDING_PAYMENT));
 
         // Act
-        offerService.uploadProofOfShipping(OFFER_ID, BUYER_ID, null, null, null, null, TRACKING_NUMBER);
+        offerService.uploadProofOfShipping(OFFER_ID, BUYER_ID, null, TRACKING_NUMBER);
     }
 
     @Test(expected = BadParameterException.class)
@@ -449,7 +456,7 @@ public class OfferServiceImplTest {
         givenOffer(buildFakeOffer(OfferStatus.PENDING_PAYMENT));
 
         // Act
-        offerService.uploadProofOfShipping(OFFER_ID, SELLER_ID, "notes.txt", ALT, "text/plain", DATA, TRACKING_NUMBER);
+        offerService.uploadProofOfShipping(OFFER_ID, SELLER_ID, FILE_DTO_TXT, TRACKING_NUMBER);
     }
 
     /* ---------------------------------------------------------------------------------------------- */
