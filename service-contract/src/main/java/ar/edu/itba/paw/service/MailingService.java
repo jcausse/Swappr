@@ -19,7 +19,7 @@ public interface MailingService {
     void sendPurchaseBuyerEmail(User buyer, User seller, Listing listing);
 
     /** Notify the seller that they received a new offer on their listing. */
-    void sendNewOfferEmail(User seller, User buyer, Listing listing, Offer offer);
+    void sendNewOfferEmail(Long offerId);
 
     /** Notify the buyer that their offer was rejected. */
     void sendOfferRejectedEmail(User buyer, Listing listing, Offer offer);

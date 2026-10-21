@@ -27,6 +27,8 @@ import java.util.Objects;
 import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -154,7 +156,13 @@ public class OfferServiceImpl implements OfferService {
                 offer.getId(), dto.listingId(), dto.buyerId(), dto.amount(), isTrade);
 
         // Send email notification to seller about the new offer
-        mailingService.sendNewOfferEmail(listing.getCreator(), buyer, listing, offer);
+        final Long offerId = offer.getId();
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                mailingService.sendNewOfferEmail(offerId);
+            }
+        });
 
         return offer;
     }

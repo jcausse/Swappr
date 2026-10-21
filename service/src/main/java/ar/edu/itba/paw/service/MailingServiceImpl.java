@@ -4,6 +4,7 @@ import ar.edu.itba.paw.model.Language;
 import ar.edu.itba.paw.model.Listing;
 import ar.edu.itba.paw.model.Offer;
 import ar.edu.itba.paw.model.User;
+import ar.edu.itba.paw.persistence.OfferDao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -15,6 +16,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring5.SpringTemplateEngine;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -30,17 +32,20 @@ public class MailingServiceImpl implements MailingService {
     private final MessageSource messageSource;
     private final String mailFrom;
     private final String baseUrl;
+    private final OfferDao offerDao;
 
     public MailingServiceImpl(
             JavaMailSender mailSender,
             @Qualifier("emailTemplateEngine") SpringTemplateEngine emailTemplateEngine,
             MessageSource messageSource,
+            OfferDao offerDao,
             @Value("${mail.username}") String mailFrom,
             @Value("${app.baseUrl}") String baseUrl
     ) {
         this.mailSender = mailSender;
         this.emailTemplateEngine = emailTemplateEngine;
         this.messageSource = messageSource;
+        this.offerDao = offerDao;
         this.mailFrom = mailFrom;
         this.baseUrl = baseUrl;
     }
@@ -100,8 +105,19 @@ public class MailingServiceImpl implements MailingService {
     }
 
     @Async
+    @Transactional(readOnly = true)
     @Override
-    public void sendNewOfferEmail(User seller, User buyer, Listing listing, Offer offer) {
+    public void sendNewOfferEmail(Long offerId) {
+        final Offer offer = offerDao.getById(offerId).orElse(null);
+        if (offer == null) {
+            LOGGER.warn("Skipping 'offer-new' email: offer {} not found", offerId);
+            return;
+        }
+
+        final Listing listing = offer.getListing();
+        final User seller = listing.getCreator();
+        final User buyer = offer.getBuyer();
+        
         var context = new Context(localeOf(seller));
         context.setVariable("buyer", buyer);
         context.setVariable("listing", listing);
