@@ -308,11 +308,19 @@ public class OfferServiceImpl implements OfferService {
             throw new BadParameterException("Offer is not pending payment");
         }
 
-        var partialFile = fileDto.toFile().orElseThrow(() -> new RuntimeException("this should never happen"));
+        if (fileDto == null) {
+            throw new BadParameterException("No file given");
+        }
+
+        var partialFile = fileDto.toFile().orElseThrow(() -> new BadParameterException("No file given"));
         var contentType = partialFile.getContentType().orElse("");
         var data = partialFile.getData();
         var filename = partialFile.getFilename();
         var alt = "Proof of payment for offer " + offerId;
+
+        if (data.length == 0) {
+            throw new BadParameterException("File is empty");
+        }
 
         if (!contentType.startsWith("image/") && !"application/pdf".equals(contentType)) {
             throw new BadParameterException("Only image and PDF files are allowed");
@@ -344,6 +352,10 @@ public class OfferServiceImpl implements OfferService {
 
         if (offer.getStatus() != OfferStatus.PENDING_PAYMENT) {
             throw new BadParameterException("Offer is not pending payment");
+        }
+
+        if (fileDto == null) {
+            throw new BadParameterException("No file given");
         }
 
         var partialFileOptional = fileDto.toFile();
