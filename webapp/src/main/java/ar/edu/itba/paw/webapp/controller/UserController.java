@@ -187,23 +187,6 @@ public class UserController {
             return profileEditView(currentUser);
         }
 
-        // Extract image from form
-        // TODO: Usar Bean Validation
-        ImageData imageData = null;
-        if (form.getProfilePicture() != null && !form.getProfilePicture().isEmpty()) {
-            try {
-                imageData = new ImageData(
-                    form.getProfilePicture().getBytes(),
-                    form.getProfilePicture().getOriginalFilename(),
-                    form.getProfilePicture().getContentType()
-                );
-            } catch (java.io.IOException e) {
-                LOGGER.error("Failed to read profile picture for user {}", currentUser.getId(), e);
-                errors.rejectValue("profilePicture", "error.image.upload");
-                return profileEditView(currentUser);
-            }
-        }
-
         LOGGER.info("User {} profile edit submitted", currentUser.getId());
         LOGGER.debug("User {} updating profile", currentUser.getUsername());
 
@@ -214,7 +197,7 @@ public class UserController {
             .user(currentUser)
             .newDisplayName(form.getDisplayName())
             .newPassword(form.getPassword())
-            .newImageData(imageData)
+            .newImageData(form.getProfilePicture().orElse(null))
             .updateLocationAndLanguage(true)
             .newProvinceId(form.getProvinceId())
             .newLocationDetail(form.getLocationDetail())
@@ -236,7 +219,7 @@ public class UserController {
 
     @PostMapping("/register")
     public ModelAndView register(@Valid @ModelAttribute("userForm") UserForm form, BindingResult errors) {
-        if (errors.hasErrors()) {
+        if(errors.hasErrors()) {
             LOGGER.debug("Validation failed for registration form");
             return registerForm(form);
         }
@@ -244,28 +227,12 @@ public class UserController {
         LOGGER.info("User registration submitted: {}", form.getUsername());
         LOGGER.debug("Registering new user with username: {}", form.getUsername());
 
-        // Extract image from form
-        ImageData imageData = null;
-        if (form.getProfilePicture() != null && !form.getProfilePicture().isEmpty()) {
-            try {
-                imageData = new ImageData(
-                    form.getProfilePicture().getBytes(),
-                    form.getProfilePicture().getOriginalFilename(),
-                    form.getProfilePicture().getContentType()
-                );
-            } catch (java.io.IOException e) {
-                LOGGER.error("Failed to read profile picture for registration of username {}", form.getUsername(), e);
-                errors.rejectValue("profilePicture", "error.image.upload");
-                return registerForm(form);
-            }
-        }
-
-        User user = userService.create(new UserCreationDto(
+        var user = userService.create(new UserCreationDto(
             form.getUsername(),
             form.getDisplayName(),
             form.getEmail(),
             form.getPassword(),
-            imageData
+            form.getProfilePicture().orElse(null)
         ));
 
         emailVerificationService.sendVerificationEmail(user);

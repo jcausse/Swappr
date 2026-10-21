@@ -317,25 +317,6 @@ public class ListingController {
             return detailsWithErrors(form);
         }
 
-        List<ImageData> imageDataList = new ArrayList<>();
-        if (form.getImages() != null) {
-            for (MultipartFile imageFile : form.getImages()) {
-                if (imageFile != null && !imageFile.isEmpty()) {
-                    try {
-                        imageDataList.add(new ImageData(
-                            imageFile.getBytes(),
-                            imageFile.getOriginalFilename(),
-                            imageFile.getContentType()
-                        ));
-                    } catch (IOException e) {
-                        LOGGER.error("Failed to read uploaded image", e);
-                        bindingResult.rejectValue("images", "error.image.upload");
-                        return detailsWithErrors(form);
-                    }
-                }
-            }
-        }
-
         if (form.getEditListingId() != null) {
             var updated = listingService.update(new ListingUpdateDto(
                 form.getEditListingId(),
@@ -359,7 +340,7 @@ public class ListingController {
                 form.isAcceptsTrade(),
                 form.isAcceptsShipping(),
                 form.getDescription(),
-                imageDataList
+                form.getImages()
         ));
         return new ModelAndView("redirect:/listing/" + newListing.getId());
     }

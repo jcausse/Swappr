@@ -14,6 +14,7 @@ import ar.edu.itba.paw.persistence.OfferDao;
 import ar.edu.itba.paw.persistence.FileDao;
 import ar.edu.itba.paw.persistence.UserDao;
 import ar.edu.itba.paw.model.RatingRole;
+import ar.edu.itba.paw.service.dto.FileDto;
 import ar.edu.itba.paw.service.dto.OfferCreationDto;
 import ar.edu.itba.paw.service.dto.OfferFilterDto;
 import ar.edu.itba.paw.service.exception.BadParameterException;
@@ -293,7 +294,7 @@ public class OfferServiceImpl implements OfferService {
 
     @Override
     @Transactional
-    public Offer uploadProofOfPayment(Long offerId, Long buyerId, String filename, String alt, String contentType, byte[] data) {
+    public Offer uploadProofOfPayment(Long offerId, Long buyerId, FileDto fileDto) {
         LOGGER.debug("Uploading proof of payment: offerId={}, buyerId={}", offerId, buyerId);
         final Offer offer = offerDao.getById(offerId)
             .orElseThrow(() -> NotFoundException.createFor("Offer with ID " + offerId));
@@ -307,11 +308,21 @@ public class OfferServiceImpl implements OfferService {
             throw new BadParameterException("Offer is not pending payment");
         }
 
-        if (data == null || data.length == 0) {
+        if (fileDto == null) {
+            throw new BadParameterException("No file given");
+        }
+
+        var partialFile = fileDto.toFile().orElseThrow(() -> new BadParameterException("No file given"));
+        var contentType = partialFile.getContentType().orElse("");
+        var data = partialFile.getData();
+        var filename = partialFile.getFilename();
+        var alt = "Proof of payment for offer " + offerId;
+
+        if (data.length == 0) {
             throw new BadParameterException("File is empty");
         }
 
-        if (contentType == null || (!contentType.startsWith("image/") && !"application/pdf".equals(contentType))) {
+        if (!contentType.startsWith("image/") && !"application/pdf".equals(contentType)) {
             throw new BadParameterException("Only image and PDF files are allowed");
         }
 
@@ -328,11 +339,12 @@ public class OfferServiceImpl implements OfferService {
 
     @Override
     @Transactional
-    public Offer uploadProofOfShipping(Long offerId, Long sellerId, String filename, String alt, String contentType, byte[] data, String trackingNumber) {
+    public Offer uploadProofOfShipping(Long offerId, Long sellerId, FileDto fileDto, String trackingNumber) {
         LOGGER.debug("Uploading proof of shipping: offerId={}, sellerId={}", offerId, sellerId);
         final Offer offer = offerDao.getById(offerId)
             .orElseThrow(() -> NotFoundException.createFor("Offer with ID " + offerId));
 
+        // TODO remove this validation after implementing preatuhorize
         if (!offer.getListing().getCreator().getId().equals(sellerId)) {
             LOGGER.warn("User {} unauthorized to upload proof of shipping for offer {}", sellerId, offerId);
             throw new BadParameterException("Only the seller can upload proof of shipping");
@@ -342,18 +354,27 @@ public class OfferServiceImpl implements OfferService {
             throw new BadParameterException("Offer is not pending payment");
         }
 
-        if ((data == null || data.length == 0) && (trackingNumber == null || trackingNumber.isBlank())) {
+        if (fileDto == null) {
+            throw new BadParameterException("No file given");
+        }
+
+        var partialFileOptional = fileDto.toFile();
+        if (!partialFileOptional.isPresent() && (trackingNumber == null || trackingNumber.isBlank())) {
             throw new BadParameterException("Either a file or a tracking number must be provided");
         }
 
-        if (data != null && data.length > 0) {
+        Long proofOfShippingId = null;
+        if (partialFileOptional.isPresent()) {
+            var partialFile = partialFileOptional.get();
+            var contentType = partialFile.getContentType().orElse("");
+            var data = partialFile.getData();
+            var filename = partialFile.getFilename();
+            var alt = "Proof of shipping for offer " + offerId;
+
             if (contentType == null || (!contentType.startsWith("image/") && !"application/pdf".equals(contentType))) {
                 throw new BadParameterException("Only image and PDF files are allowed");
             }
-        }
 
-        Long proofOfShippingId = null;
-        if (data != null && data.length > 0) {
             final File file = fileDao.create(filename, alt, contentType, data);
             proofOfShippingId = file.getId();
         }
@@ -541,4 +562,3 @@ public class OfferServiceImpl implements OfferService {
         mailingService.sendOfferRejectedEmail(offer.getBuyer(), offer.getListing(), offer);
     }
 }
-
