@@ -71,6 +71,10 @@ public class ListingServiceImpl implements ListingService {
             .hasActiveOffers(dto.hasActiveOffers())
             .provinceId(dto.provinceId())
             .acceptsShipping(Boolean.TRUE.equals(dto.acceptsShipping()) ? Boolean.TRUE : null)
+            .brand(dto.brand())
+            .model(dto.model())
+            .yearMin(dto.yearMin())
+            .yearMax(dto.yearMax())
             .build();
 
         return listingDao.search(filter);

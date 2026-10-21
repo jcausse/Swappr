@@ -74,6 +74,10 @@ public class ListingController {
             .pageSize(DISCOVERY_PAGE_SIZE)
             .provinceId(filterForm.getProvinceId())
             .acceptsShipping(filterForm.getAcceptsShipping())
+            .brand(filterForm.getBrand())
+            .model(filterForm.getModel())
+            .yearMin(filterForm.getYearMin())
+            .yearMax(filterForm.getYearMax())
             .build();
 
         final var listingPage = listingService.search(filter);
@@ -125,6 +129,22 @@ public class ListingController {
                 subcategoryOptions.add(new SelectOption(sub.getId(), messageSource.getMessage("subcategory." + sub.getName(), null, LocaleContextHolder.getLocale())));
             }
             mav.addObject("subcategoryOptions", subcategoryOptions);
+        }
+
+        if (filterForm.getSubcategoryId() != null) {
+            var brandOptions = new java.util.ArrayList<StringSelectOption>();
+            for (var brand : productService.getBrandsBySubcategory(filterForm.getSubcategoryId())) {
+                brandOptions.add(new StringSelectOption(brand, brand));
+            }
+            mav.addObject("brandOptions", brandOptions);
+
+            if (filterForm.getBrand() != null && !filterForm.getBrand().isBlank()) {
+                var modelOptions = new java.util.ArrayList<StringSelectOption>();
+                for (var model : productService.getModelsBySubcategoryAndBrand(filterForm.getSubcategoryId(), filterForm.getBrand())) {
+                    modelOptions.add(new StringSelectOption(model, model));
+                }
+                mav.addObject("modelOptions", modelOptions);
+            }
         }
         return mav;
     }
@@ -297,25 +317,6 @@ public class ListingController {
             return detailsWithErrors(form);
         }
 
-        List<ImageData> imageDataList = new ArrayList<>();
-        if (form.getImages() != null) {
-            for (MultipartFile imageFile : form.getImages()) {
-                if (imageFile != null && !imageFile.isEmpty()) {
-                    try {
-                        imageDataList.add(new ImageData(
-                            imageFile.getBytes(),
-                            imageFile.getOriginalFilename(),
-                            imageFile.getContentType()
-                        ));
-                    } catch (IOException e) {
-                        LOGGER.error("Failed to read uploaded image", e);
-                        bindingResult.rejectValue("images", "error.image.upload");
-                        return detailsWithErrors(form);
-                    }
-                }
-            }
-        }
-
         if (form.getEditListingId() != null) {
             var updated = listingService.update(new ListingUpdateDto(
                 form.getEditListingId(),
@@ -339,7 +340,7 @@ public class ListingController {
                 form.isAcceptsTrade(),
                 form.isAcceptsShipping(),
                 form.getDescription(),
-                imageDataList
+                form.getImages()
         ));
         return new ModelAndView("redirect:/listing/" + newListing.getId());
     }
