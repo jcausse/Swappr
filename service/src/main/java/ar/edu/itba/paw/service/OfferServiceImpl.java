@@ -157,12 +157,7 @@ public class OfferServiceImpl implements OfferService {
 
         // Send email notification to seller about the new offer
         final Long offerId = offer.getId();
-        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-            @Override
-            public void afterCommit() {
-                mailingService.sendNewOfferEmail(offerId);
-            }
-        });
+        runAfterCommit(() -> mailingService.sendNewOfferEmail(offerId));
 
         return offer;
     }
@@ -197,9 +192,9 @@ public class OfferServiceImpl implements OfferService {
                 offerId, offer.getListing().getId(), offer.getBuyer().getId(), currentUserId);
 
         // Send email notification to buyer about offer acceptance (pending payment)
-        mailingService.sendOfferPendingPaymentEmail(offer.getBuyer(), offer.getListing().getCreator(), offer.getListing(), offer);
+        runAfterCommit(() -> mailingService.sendOfferPendingPaymentEmail(offerId));
         // Send email notification to seller about pending transaction
-        mailingService.sendPendingTransactionEmail(offer.getListing().getCreator(), offer.getBuyer(), offer.getListing(), offer);
+        runAfterCommit(() -> mailingService.sendPendingTransactionEmail(offerId));
 
         // FIXME double query
         return offerDao.getById(offerId).orElseThrow();
@@ -238,7 +233,7 @@ public class OfferServiceImpl implements OfferService {
         LOGGER.info("Offer rejected: offerId={}, listingId={}, by sellerId={}", offerId, offer.getListing().getId(), currentUserId);
 
         // Send email notification to buyer about offer rejection
-        mailingService.sendOfferRejectedEmail(offer.getBuyer(), offer.getListing(), offer);
+        runAfterCommit(() -> mailingService.sendOfferRejectedEmail(offerId));
 
         // FIXME double query
         return offerDao.getById(offerId).orElseThrow();
@@ -294,7 +289,8 @@ public class OfferServiceImpl implements OfferService {
         }
 
         for (Offer offer : rejected) {
-            mailingService.sendOfferRejectedEmail(offer.getBuyer(), offer.getListing(), offer);
+            final Long rejectedOfferId = offer.getId();
+            runAfterCommit(() -> mailingService.sendOfferRejectedEmail(rejectedOfferId));
         }
         return rejected;
     }
@@ -546,7 +542,20 @@ public class OfferServiceImpl implements OfferService {
         LOGGER.info("Offer canceled by admin: offerId={}, listingId={}", offerId, offer.getListing().getId());
 
         /* Send the buyer an email telling them the offer has been rejected */
-        mailingService.sendOfferRejectedEmail(offer.getBuyer(), offer.getListing(), offer);
+        runAfterCommit(() -> mailingService.sendOfferRejectedEmail(offerId));
+    }
+
+    private static void runAfterCommit(final Runnable action) {
+        if (!TransactionSynchronizationManager.isSynchronizationActive()) {
+            action.run();
+            return;
+        }
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                action.run();
+            }
+        });
     }
 }
 

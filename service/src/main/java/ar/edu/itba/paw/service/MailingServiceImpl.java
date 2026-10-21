@@ -130,8 +130,17 @@ public class MailingServiceImpl implements MailingService {
     }
 
     @Async
+    @Transactional(readOnly = true)
     @Override
-    public void sendOfferRejectedEmail(User buyer, Listing listing, Offer offer) {
+    public void sendOfferRejectedEmail(Long offerId) {
+        final Offer offer = offerDao.getById(offerId).orElse(null);
+        if (offer == null) {
+            LOGGER.warn("Skipping 'offer-rejected' email: offer {} not found", offerId);
+            return;
+        }
+        final Listing listing = offer.getListing();
+        final User buyer = offer.getBuyer();
+
         var context = new Context(localeOf(buyer));
         context.setVariable("buyer", buyer);
         context.setVariable("listing", listing);
@@ -158,8 +167,18 @@ public class MailingServiceImpl implements MailingService {
     }
 
     @Async
+    @Transactional(readOnly = true)
     @Override
-    public void sendOfferPendingPaymentEmail(User buyer, User seller, Listing listing, Offer offer) {
+    public void sendOfferPendingPaymentEmail(Long offerId) {
+        final Offer offer = offerDao.getById(offerId).orElse(null);
+        if (offer == null) {
+            LOGGER.warn("Skipping 'offer-pending-payment' email: offer {} not found", offerId);
+            return;
+        }
+        final Listing listing = offer.getListing();
+        final User buyer = offer.getBuyer();
+        final User seller = listing.getCreator();
+
         var context = new Context(localeOf(buyer));
         context.setVariable("buyer", buyer);
         context.setVariable("seller", seller);
@@ -173,8 +192,18 @@ public class MailingServiceImpl implements MailingService {
     }
 
     @Async
+    @Transactional(readOnly = true)
     @Override
-    public void sendPendingTransactionEmail(User seller, User buyer, Listing listing, Offer offer) {
+    public void sendPendingTransactionEmail(Long offerId) {
+        final Offer offer = offerDao.getById(offerId).orElse(null);
+        if (offer == null) {
+            LOGGER.warn("Skipping 'pending-transaction' email: offer {} not found", offerId);
+            return;
+        }
+        final Listing listing = offer.getListing();
+        final User buyer = offer.getBuyer();
+        final User seller = listing.getCreator();
+
         var context = new Context(localeOf(seller));
         context.setVariable("seller", seller);
         context.setVariable("buyer", buyer);

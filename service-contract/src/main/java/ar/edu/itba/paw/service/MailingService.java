@@ -22,16 +22,16 @@ public interface MailingService {
     void sendNewOfferEmail(Long offerId);
 
     /** Notify the buyer that their offer was rejected. */
-    void sendOfferRejectedEmail(User buyer, Listing listing, Offer offer);
+    void sendOfferRejectedEmail(Long offerId);
 
     /** Notify the seller that an offer on their listing was withdrawn by the buyer. */
     void sendOfferWithdrawnEmail(User seller, User buyer, Listing listing, Offer offer);
 
     /** Notify the buyer that their offer was accepted and is pending payment. */
-    void sendOfferPendingPaymentEmail(User buyer, User seller, Listing listing, Offer offer);
+    void sendOfferPendingPaymentEmail(Long offerId);
 
     /** Notify the seller that their listing has a pending transaction. */
-    void sendPendingTransactionEmail(User seller, User buyer, Listing listing, Offer offer);
+    void sendPendingTransactionEmail(Long offerId);
 
     /** Notify the seller that proof of payment was uploaded. */
     void sendProofOfPaymentUploadedEmail(User seller, User buyer, Listing listing, Offer offer);
