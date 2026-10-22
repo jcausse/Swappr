@@ -5,7 +5,7 @@
 <%@ taglib prefix="paw" tagdir="/WEB-INF/tags" %>
 
 
-<c:url value="/offer/${offer.id}/proof-of-shipping/download" var="downloadUrl"/>
+<c:url value="/my-offers/${offer.id}/shipping/download" var="downloadUrl"/>
 
 <div class="flex flex-col gap-2">
     <c:if test="${not empty offer.trackingNumber}">

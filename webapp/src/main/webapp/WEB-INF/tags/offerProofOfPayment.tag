@@ -5,7 +5,7 @@
 <%@ taglib prefix="paw" tagdir="/WEB-INF/tags" %>
 
 
-<c:url value="/offer/${offer.id}/proof-of-payment/download" var="downloadUrl"/>
+<c:url value="/my-offers/${offer.id}/payment/download" var="downloadUrl"/>
 
 <div class="flex flex-col gap-2">
     <spring:message code="offer.proofOfPayment.label" var="proofOfPaymentLabel"/>
