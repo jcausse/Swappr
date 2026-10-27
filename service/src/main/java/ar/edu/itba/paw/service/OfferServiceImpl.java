@@ -17,6 +17,7 @@ import ar.edu.itba.paw.model.RatingRole;
 import ar.edu.itba.paw.service.dto.FileDto;
 import ar.edu.itba.paw.service.dto.OfferCreationDto;
 import ar.edu.itba.paw.service.dto.OfferFilterDto;
+import ar.edu.itba.paw.service.dto.mail.OfferMailDto;
 import ar.edu.itba.paw.service.exception.BadParameterException;
 import ar.edu.itba.paw.service.exception.ForbiddenException;
 import ar.edu.itba.paw.service.exception.NotFoundException;
@@ -155,7 +156,7 @@ public class OfferServiceImpl implements OfferService {
                 offer.getId(), dto.listingId(), dto.buyerId(), dto.amount(), isTrade);
 
         // Send email notification to seller about the new offer
-        mailingService.sendNewOfferEmail(listing.getCreator(), buyer, listing, offer);
+        mailingService.sendNewOfferEmail(OfferMailDto.from(offer));
 
         return offer;
     }
@@ -189,10 +190,11 @@ public class OfferServiceImpl implements OfferService {
         LOGGER.info("Offer accepted: offerId={}, listingId={}, buyerId={}, sellerId={}",
                 offerId, offer.getListing().getId(), offer.getBuyer().getId(), currentUserId);
 
+        final var offerMail = OfferMailDto.from(offer);
         // Send email notification to buyer about offer acceptance (pending payment)
-        mailingService.sendOfferPendingPaymentEmail(offer.getBuyer(), offer.getListing().getCreator(), offer.getListing(), offer);
+        mailingService.sendOfferPendingPaymentEmail(offerMail);
         // Send email notification to seller about pending transaction
-        mailingService.sendPendingTransactionEmail(offer.getListing().getCreator(), offer.getBuyer(), offer.getListing(), offer);
+        mailingService.sendPendingTransactionEmail(offerMail);
 
         // FIXME double query
         return offerDao.getById(offerId).orElseThrow();
@@ -231,7 +233,7 @@ public class OfferServiceImpl implements OfferService {
         LOGGER.info("Offer rejected: offerId={}, listingId={}, by sellerId={}", offerId, offer.getListing().getId(), currentUserId);
 
         // Send email notification to buyer about offer rejection
-        mailingService.sendOfferRejectedEmail(offer.getBuyer(), offer.getListing(), offer);
+        mailingService.sendOfferRejectedEmail(OfferMailDto.from(offer));
 
         // FIXME double query
         return offerDao.getById(offerId).orElseThrow();
@@ -264,7 +266,7 @@ public class OfferServiceImpl implements OfferService {
         LOGGER.info("Offer withdrawn: offerId={}, listingId={}, by buyerId={}", offerId, offer.getListing().getId(), currentUserId);
 
         // Send email notification to seller about offer withdrawal
-        mailingService.sendOfferWithdrawnEmail(offer.getListing().getCreator(), offer.getBuyer(), offer.getListing(), offer);
+        mailingService.sendOfferWithdrawnEmail(OfferMailDto.from(offer));
 
         // FIXME double query
         return offerDao.getById(offerId).orElseThrow();
@@ -287,7 +289,7 @@ public class OfferServiceImpl implements OfferService {
         }
 
         for (Offer offer : rejected) {
-            mailingService.sendOfferRejectedEmail(offer.getBuyer(), offer.getListing(), offer);
+            mailingService.sendOfferRejectedEmail(OfferMailDto.from(offer));
         }
         return rejected;
     }
@@ -332,7 +334,7 @@ public class OfferServiceImpl implements OfferService {
         LOGGER.info("Proof of payment uploaded: offerId={}, buyerId={}, fileId={}", offerId, buyerId, file.getId());
 
         // Notify seller that proof of payment was uploaded
-        mailingService.sendProofOfPaymentUploadedEmail(offer.getListing().getCreator(), offer.getBuyer(), offer.getListing(), offer);
+        mailingService.sendProofOfPaymentUploadedEmail(OfferMailDto.from(offer));
 
         return offerDao.getById(offerId).orElseThrow();
     }
@@ -359,7 +361,7 @@ public class OfferServiceImpl implements OfferService {
         }
 
         var partialFileOptional = fileDto.toFile();
-        if (!partialFileOptional.isPresent() && (trackingNumber == null || trackingNumber.isBlank())) {
+        if (partialFileOptional.isEmpty() && (trackingNumber == null || trackingNumber.isBlank())) {
             throw new BadParameterException("Either a file or a tracking number must be provided");
         }
 
@@ -371,7 +373,7 @@ public class OfferServiceImpl implements OfferService {
             var filename = partialFile.getFilename();
             var alt = "Proof of shipping for offer " + offerId;
 
-            if (contentType == null || (!contentType.startsWith("image/") && !"application/pdf".equals(contentType))) {
+            if (!contentType.startsWith("image/") && !"application/pdf".equals(contentType)) {
                 throw new BadParameterException("Only image and PDF files are allowed");
             }
 
@@ -384,10 +386,12 @@ public class OfferServiceImpl implements OfferService {
         LOGGER.info("Proof of shipping uploaded: offerId={}, sellerId={}, hasFile={}, trackingNumber='{}'",
                 offerId, sellerId, proofOfShippingId != null, trackingNumber);
 
-        // Notify buyer that proof of shipping was uploaded
-        mailingService.sendProofOfShippingUploadedEmail(offer.getBuyer(), offer.getListing().getCreator(), offer.getListing(), offer);
+        final Offer updatedOffer = offerDao.getById(offerId).orElseThrow();
 
-        return offerDao.getById(offerId).orElseThrow();
+        // Notify buyer that proof of shipping was uploaded
+        mailingService.sendProofOfShippingUploadedEmail(OfferMailDto.from(updatedOffer));
+
+        return updatedOffer;
     }
 
     @Override
@@ -559,6 +563,6 @@ public class OfferServiceImpl implements OfferService {
         LOGGER.info("Offer canceled by admin: offerId={}, listingId={}", offerId, offer.getListing().getId());
 
         /* Send the buyer an email telling them the offer has been rejected */
-        mailingService.sendOfferRejectedEmail(offer.getBuyer(), offer.getListing(), offer);
+        mailingService.sendOfferRejectedEmail(OfferMailDto.from(offer));
     }
 }

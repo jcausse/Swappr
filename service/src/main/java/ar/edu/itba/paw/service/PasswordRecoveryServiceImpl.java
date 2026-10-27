@@ -2,6 +2,7 @@ package ar.edu.itba.paw.service;
 
 import ar.edu.itba.paw.model.OneTimePassword;
 import ar.edu.itba.paw.service.dto.UserEditDto;
+import ar.edu.itba.paw.service.dto.mail.UserMailDto;
 import ar.edu.itba.paw.service.enumeration.OneTimePasswordVerificationResult;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -35,7 +36,7 @@ public class PasswordRecoveryServiceImpl implements PasswordRecoveryService {
 
         final var user = maybeUser.get();
         final var otp = otpService.create(user);
-        mailingService.sendPasswordRecoveryEmail(user, otp.getOtpValue());
+        mailingService.sendPasswordRecoveryEmail(UserMailDto.from(user), otp.getOtpValue());
         LOGGER.info("Password recovery email sent for user id={}", user.getId());
         return Optional.of(otp);
     }

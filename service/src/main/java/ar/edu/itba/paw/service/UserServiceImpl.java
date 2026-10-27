@@ -10,6 +10,7 @@ import ar.edu.itba.paw.persistence.UserRoleDao;
 import ar.edu.itba.paw.service.dto.ImageData;
 import ar.edu.itba.paw.service.dto.UserCreationDto;
 import ar.edu.itba.paw.service.dto.UserEditDto;
+import ar.edu.itba.paw.service.dto.mail.UserMailDto;
 
 import java.time.Instant;
 import java.util.List;
@@ -204,7 +205,7 @@ public class UserServiceImpl implements UserService {
         LOGGER.info("Suspending user id={}", userId);
         final User user = userDao.suspend(userId, Instant.now())
                 .orElseThrow(() -> new IllegalArgumentException("Non-valid User received"));
-        mailingService.sendAccountSuspendedEmail(user);
+        mailingService.sendAccountSuspendedEmail(UserMailDto.from(user));
         return user;
     }
 
@@ -214,7 +215,7 @@ public class UserServiceImpl implements UserService {
         LOGGER.info("Unsuspending user id={}", userId);
         final User user = userDao.unsuspend(userId)
                 .orElseThrow(() -> new IllegalArgumentException("Non-valid User received"));
-        mailingService.sendAccountUnsuspendedEmail(user);
+        mailingService.sendAccountUnsuspendedEmail(UserMailDto.from(user));
         return user;
     }
 
