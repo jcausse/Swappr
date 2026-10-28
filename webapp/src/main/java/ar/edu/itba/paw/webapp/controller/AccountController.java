@@ -13,6 +13,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -166,26 +167,14 @@ public class AccountController {
 		return offerService.getPendingOffersCount(user);
 	}
 
-    // Offer detail page - seller view
     @GetMapping("/incoming-offers/{offerId}")
+    @PreAuthorize("@webPermissionService.canManageOfferAsSeller(authentication, #offerId)")
     public ModelAndView incomingOfferDetail(@PathVariable Long offerId, @CurrentUser User currentUser) {
         LOGGER.debug("User {} viewing incoming offer {}", currentUser.getId(), offerId);
-        final Offer offer = offerService.getById(offerId)
-                .orElseThrow(() -> NotFoundException.createFor("Offer"));
 
-        final Listing listing = offer.getListing();
-        final Long currentUserId = currentUser.getId();
-
-        // Verify the current user is the seller (listing creator)
-        // FIXME use preauthorize
-        if (!listing.getCreator().getId().equals(currentUserId)) {
-            throw new ForbiddenException("Not authorized to view this offer");
-        }
-
-        var mav = new ModelAndView("account/incomingOfferDetail");
-        mav.addObject("offer", offer);
-        mav.addObject("pendingOffersCount", getPendingOffersCount(currentUser));
-        return mav;
+        return new ModelAndView("account/incomingOfferDetail")
+                .addObject("offer", offerService.getById(offerId).orElseThrow(() -> NotFoundException.createFor("Offer")))
+                .addObject("pendingOffersCount", getPendingOffersCount(currentUser));
     }
 
     // Proof of payment upload - buyer
