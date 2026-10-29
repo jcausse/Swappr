@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
 @PropertySource(value = "classpath:git.properties", ignoreResourceNotFound = true)
+// TODO do we need preauthorize if everyone is allowed?
 public class AppInfoController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AppInfoController.class);

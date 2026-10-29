@@ -107,11 +107,8 @@ public class WebAuthConfig extends WebSecurityConfigurerAdapter {
                 /* Landing */
                 .antMatchers("/").permitAll()                       // Landing page
 
-                /* Miscellaneous */
-                .antMatchers("/appinfo").permitAll()                // Deploy info
-
                 /* Default */
-                .anyRequest().authenticated()                         // Non-listed endpoints require authentication
+                .anyRequest().permitAll()                         // Non-listed endpoints require authentication
 
             /* Login */
             .and().formLogin()
