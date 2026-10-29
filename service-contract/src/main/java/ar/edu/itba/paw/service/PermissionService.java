@@ -4,7 +4,7 @@ import ar.edu.itba.paw.model.User;
 
 public interface PermissionService {
 
-	boolean canModifyListing(User user, long listingId);
+	boolean canManageListing(User user, long listingId);
 	boolean canManageOfferAsSeller(User user, long offerId);
 	boolean canManageOfferAsBuyer(User user, long offerId);
 	boolean canAccessOffer(User user, long offerId);

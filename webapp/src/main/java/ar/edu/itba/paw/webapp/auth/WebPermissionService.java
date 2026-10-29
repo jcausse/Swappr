@@ -22,8 +22,8 @@ public class WebPermissionService {
         return Optional.of(((AuthUserDetails) auth.getPrincipal()).getDomainUser());
 	}
 
-	public boolean canModifyListing(final Authentication authentication, final long listingId) {
-	    return getCurrentUser(authentication).map(u -> permissionService.canModifyListing(u, listingId)).orElse(false);
+	public boolean canManageListing(final Authentication authentication, final long listingId) {
+	    return getCurrentUser(authentication).map(u -> permissionService.canManageListing(u, listingId)).orElse(false);
 	}
 
 	public boolean canManageOfferAsSeller(final Authentication authentication, final long offerId) {

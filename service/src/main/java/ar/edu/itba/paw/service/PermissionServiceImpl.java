@@ -3,6 +3,7 @@ package ar.edu.itba.paw.service;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import ar.edu.itba.paw.model.ListingStatus;
 import ar.edu.itba.paw.model.User;
 import lombok.RequiredArgsConstructor;
 
@@ -14,8 +15,9 @@ public class PermissionServiceImpl implements PermissionService {
 
 	@Override
 	@Transactional
-	public boolean canModifyListing(User user, long listingId) {
-		return isListingCreator(user, listingId);
+	public boolean canManageListing(User user, long listingId) {
+    	var listing = listingService.getById(listingId);
+		return isListingCreator(user, listingId) && listing.getStatus() != ListingStatus.CANCELED;
 	}
 
 	@Override
