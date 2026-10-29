@@ -78,8 +78,8 @@ public class WebAuthConfig extends WebSecurityConfigurerAdapter {
                     .hasRole(Role.ADMIN.getRoleName())
 
                 /* Login, Register, Logout and Password Recovery */
-                .antMatchers("/login").permitAll()                  // User login page (authenticated users are redirected home by the controller)
-                .antMatchers("/register").permitAll()               // User registration page (authenticated users are redirected home by the controller)
+                .antMatchers("/login").anonymous()                  // User login page
+                .antMatchers("/register").anonymous()               // User registration page
                 .antMatchers("/logout").authenticated()             // User logout endpoint (Spring-managed)
                 .antMatchers("/recovery/**").permitAll()            // Password recovery page
                 .antMatchers("/verify/**").permitAll()              // Email verification page

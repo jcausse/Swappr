@@ -211,22 +211,16 @@ public class UserController {
     /* REGISTER */
 
     @GetMapping("/register")
-    public ModelAndView registerForm(@CurrentUser(required = false) User currentUser, @ModelAttribute("userForm") UserForm form) {
-        if (currentUser != null) {
-            return new ModelAndView("redirect:/");
-        }
+    public ModelAndView registerForm(@ModelAttribute("userForm") UserForm form) {
         LOGGER.debug("Accessing register form");
         return new ModelAndView("register");
     }
 
     @PostMapping("/register")
-    public ModelAndView register(@CurrentUser(required = false) User currentUser, @Valid @ModelAttribute("userForm") UserForm form, BindingResult errors) {
-        if (currentUser != null) {
-            return new ModelAndView("redirect:/");
-        }
+    public ModelAndView register(@Valid @ModelAttribute("userForm") UserForm form, BindingResult errors) {
         if(errors.hasErrors()) {
             LOGGER.debug("Validation failed for registration form");
-            return registerForm(null, form);
+            return registerForm(form);
         }
 
         LOGGER.info("User registration submitted: {}", form.getUsername());
@@ -248,10 +242,7 @@ public class UserController {
     /* LOGIN */
 
     @GetMapping("/login")
-    public ModelAndView loginForm(@CurrentUser(required = false) User currentUser) {
-        if (currentUser != null) {
-            return new ModelAndView("redirect:/");
-        }
+    public ModelAndView loginForm() {
         LOGGER.debug("Accessing login form");
         return new ModelAndView("login");
     }
