@@ -382,6 +382,10 @@ public class ListingController {
             if (form.getNewProductBrand() != null && !form.getNewProductBrand().isBlank() && !OTHER_VALUE.equals(form.getNewProductBrand())) {
                 models = productService.getModelsBySubcategoryAndBrand(form.getSubcategoryId(), form.getNewProductBrand());
             }
+            // A custom brand has no known models, so the model is necessarily custom too
+            if (OTHER_VALUE.equals(form.getNewProductBrand())) {
+                form.setNewProductModel(OTHER_VALUE);
+            }
             mav.addObject("models", models);
             mav.addObject("modelsEmpty", models.isEmpty());
         }
