@@ -328,7 +328,7 @@ public class ListingController {
                 form.isAcceptsShipping(),
                 form.getDescription()
             ), currentUser.getId());
-            return new ModelAndView("redirect:/listing/" + updated.getId());
+            return new ModelAndView("redirect:/account/listings");
         }
 
         var newListing = listingService.create(new ListingCreationDto(
@@ -342,7 +342,7 @@ public class ListingController {
                 form.getDescription(),
                 form.getImages()
         ));
-        return new ModelAndView("redirect:/listing/" + newListing.getId());
+        return new ModelAndView("redirect:/account/listings");
     }
 
     private ModelAndView detailsWithErrors(ListingDetailsForm form) {
