@@ -6,7 +6,6 @@ import ar.edu.itba.paw.service.ListingService;
 import ar.edu.itba.paw.service.RatingService;
 import ar.edu.itba.paw.service.ProvinceService;
 import ar.edu.itba.paw.service.UserService;
-import ar.edu.itba.paw.service.dto.ImageData;
 import ar.edu.itba.paw.service.dto.ListingFilterDto;
 import ar.edu.itba.paw.service.dto.UserCreationDto;
 import ar.edu.itba.paw.service.dto.UserEditDto;
@@ -65,7 +64,7 @@ public class UserController {
         final boolean isSelfRequest = currentUser != null && Objects.equals(id, currentUser.getId());
 
         final var filter = ListingFilterDto.builder()
-                .sort(ListingSort.RECENT.getKey())
+                .sort(ListingSort.RECENT.getKey())  // TODO: SACAR LOS PARSEOS Y HACER QUE EL FORM TOME UN ENUM USANDO CONVERTERS
                 .creatorId(user.getId())
                 .status(ListingStatus.ACTIVE.name())
                 .page(1)

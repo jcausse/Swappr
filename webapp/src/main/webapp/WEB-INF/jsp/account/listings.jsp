@@ -17,6 +17,7 @@
 <spring:message code="listing.status.ACTIVE" var="statusActive"/>
 <spring:message code="listing.status.SOLD" var="statusSold"/>
 <spring:message code="listing.status.CANCELED" var="statusCanceled"/>
+<%-- TODO: TRADUCCION DUPLICADA --%>
 <spring:message code="discovery.sort.recent" var="sortRecent"/>
 <spring:message code="discovery.sort.price_asc" var="sortPriceAsc"/>
 <spring:message code="discovery.sort.price_desc" var="sortPriceDesc"/>
