@@ -51,7 +51,6 @@ public class PermissionServiceImpl implements PermissionService {
 	@Override
 	@Transactional
 	public boolean isOfferSeller(User user, long offerId) {
-    	System.out.println("BABABABA");
 		var offer = offerService.getById(offerId);
 		if (offer.isEmpty()) return false;
 		System.out.println("BABABABA " + user.getId());

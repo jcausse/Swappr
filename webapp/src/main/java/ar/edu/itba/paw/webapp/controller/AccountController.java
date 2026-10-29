@@ -179,6 +179,7 @@ public class AccountController {
 
     // Proof of payment upload - buyer
     @GetMapping("/my-offers/{offerId}/payment")
+    @PreAuthorize("@webPermissionService.canManageOfferAsBuyer(authentication, #offerId)")
     public ModelAndView showProofOfPaymentUpload(@PathVariable Long offerId, @CurrentUser User currentUser) {
         LOGGER.debug("User {} accessing proof of payment upload for offer {}", currentUser.getId(), offerId);
         final Offer offer = offerService.getById(offerId)

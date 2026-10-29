@@ -15,6 +15,7 @@ public class CurrentUserControllerAdvice {
     @ModelAttribute(value = "currentUser", binding = false)
     public Optional<User> currentUser() {
         final var auth = SecurityContextHolder.getContext().getAuthentication();
+        // TODO use permission service
         if (auth != null && auth.getPrincipal() instanceof AuthUserDetails) {
             return Optional.of(((AuthUserDetails) auth.getPrincipal()).getDomainUser());
         }

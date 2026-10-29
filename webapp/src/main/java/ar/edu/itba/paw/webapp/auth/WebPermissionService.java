@@ -22,19 +22,19 @@ public class WebPermissionService {
         return Optional.of(((AuthUserDetails) auth.getPrincipal()).getDomainUser());
 	}
 
-	public boolean canModifyListing(final Authentication authentication, final User user, final long listingId) {
+	public boolean canModifyListing(final Authentication authentication, final long listingId) {
 	    return getCurrentUser(authentication).map(u -> permissionService.canModifyListing(u, listingId)).orElse(false);
 	}
 
-	public boolean canManageOfferAsSeller(final Authentication authentication, final User user, final long offerId) {
+	public boolean canManageOfferAsSeller(final Authentication authentication, final long offerId) {
 	    return getCurrentUser(authentication).map(u -> permissionService.canManageOfferAsSeller(u, offerId)).orElse(false);
 	}
 
-	public boolean canManageOfferAsBuyer(final Authentication authentication, final User user, final long offerId) {
+	public boolean canManageOfferAsBuyer(final Authentication authentication, final long offerId) {
 	    return getCurrentUser(authentication).map(u -> permissionService.canManageOfferAsBuyer(u, offerId)).orElse(false);
 	}
 
-	public boolean canAccessOffer(final Authentication authentication, final User user, final long offerId) {
+	public boolean canAccessOffer(final Authentication authentication, final long offerId) {
 	    return getCurrentUser(authentication).map(u -> permissionService.canAccessOffer(u, offerId)).orElse(false);
 	}
 }
