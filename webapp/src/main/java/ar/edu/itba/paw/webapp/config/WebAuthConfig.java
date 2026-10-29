@@ -79,27 +79,6 @@ public class WebAuthConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/admin/**")                           // Administrator panel subpages
                     .hasRole(Role.ADMIN.getRoleName())
 
-                /* Login, Register, Logout and Password Recovery */
-                .antMatchers("/login").anonymous()                  // User login page
-                .antMatchers("/register").anonymous()               // User registration page
-                .antMatchers("/logout").authenticated()             // User logout endpoint (Spring-managed)
-                .antMatchers("/recovery/**").permitAll()            // Password recovery page
-
-                /* Profiles and User Accounts */
-                .antMatchers("/profile").authenticated()            // Current user's profile
-                .antMatchers("/profile/edit").authenticated()       // Profile editing
-                .antMatchers("/profile/**").permitAll()             // Profiles of users other than the current user
-                .antMatchers("/account/**").authenticated()         // Current user account details and settings
-
-                /* Sell Page (create new listing) */
-                .antMatchers("/listing/new/**").authenticated()     // Listing creation
-
-                /* Listings */
-                .antMatchers("/listing/**").permitAll()             // Listings
-
-                /* Landing */
-                .antMatchers("/").permitAll()                       // Landing page
-
                 /* Default */
                 .anyRequest().permitAll()                         // Non-listed endpoints require authentication
 

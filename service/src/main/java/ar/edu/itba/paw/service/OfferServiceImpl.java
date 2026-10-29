@@ -504,6 +504,7 @@ public class OfferServiceImpl implements OfferService {
             userDao.incrementBuyerRatingCounter(buyer.getId(), rating);
         }
 
+        // FIXME unnecessary fetch
         return getById(offer.getId()).orElseThrow();
     }
 

@@ -6,7 +6,6 @@ import ar.edu.itba.paw.service.ListingService;
 import ar.edu.itba.paw.service.RatingService;
 import ar.edu.itba.paw.service.ProvinceService;
 import ar.edu.itba.paw.service.UserService;
-import ar.edu.itba.paw.service.dto.ImageData;
 import ar.edu.itba.paw.service.dto.ListingFilterDto;
 import ar.edu.itba.paw.service.dto.UserCreationDto;
 import ar.edu.itba.paw.service.dto.UserEditDto;
@@ -24,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -130,6 +130,7 @@ public class UserController {
     }
 
     @GetMapping("/profile")
+    @PreAuthorize("isAuthenticated()")
     public ModelAndView currentUserProfile(@CurrentUser User currentUser) {
         LOGGER.debug("Accessing current user profile for user {}", currentUser.getId());
         return new ModelAndView("redirect:/profile/" + currentUser.getId());
@@ -138,6 +139,7 @@ public class UserController {
     /* PROFILE EDIT */
 
     @GetMapping("/profile/edit")
+    @PreAuthorize("isAuthenticated()")
     public ModelAndView editProfileForm(@CurrentUser User currentUser, @ModelAttribute("userEditForm") UserEditForm form) {
         LOGGER.debug("Accessing profile edit form for user {}", currentUser.getId());
         form.setDisplayName(currentUser.getDisplayName());
@@ -177,6 +179,7 @@ public class UserController {
     }
 
     @PostMapping("/profile/edit")
+    @PreAuthorize("isAuthenticated()")
     public ModelAndView editProfile(
             @CurrentUser User currentUser,
             @Valid @ModelAttribute("userEditForm") UserEditForm form,
@@ -212,12 +215,14 @@ public class UserController {
     /* REGISTER */
 
     @GetMapping("/register")
+    @PreAuthorize("not isAuthenticated()")
     public ModelAndView registerForm(@ModelAttribute("userForm") UserForm form) {
         LOGGER.debug("Accessing register form");
         return new ModelAndView("register");
     }
 
     @PostMapping("/register")
+    @PreAuthorize("not isAuthenticated()")
     public ModelAndView register(@Valid @ModelAttribute("userForm") UserForm form, BindingResult errors) {
         if(errors.hasErrors()) {
             LOGGER.debug("Validation failed for registration form");
@@ -243,6 +248,7 @@ public class UserController {
     /* LOGIN */
 
     @GetMapping("/login")
+    @PreAuthorize("not isAuthenticated()")
     public ModelAndView loginForm() {
         LOGGER.debug("Accessing login form");
         return new ModelAndView("login");
