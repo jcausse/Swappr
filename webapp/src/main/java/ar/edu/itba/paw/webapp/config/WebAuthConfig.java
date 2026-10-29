@@ -71,16 +71,7 @@ public class WebAuthConfig extends WebSecurityConfigurerAdapter {
             .invalidSessionUrl("/")
 
             /* Access Control */
-            .and().authorizeRequests()
-
-                /* Administrator Back-office */
-                .antMatchers("/admin")                              // Administrator panel root
-                    .hasRole(Role.ADMIN.getRoleName())
-                .antMatchers("/admin/**")                           // Administrator panel subpages
-                    .hasRole(Role.ADMIN.getRoleName())
-
-                /* Default */
-                .anyRequest().permitAll()                         // Non-listed endpoints require authentication
+            .and().authorizeRequests().anyRequest().permitAll() // Disable access control as we're using method security (PreAuthorize)
 
             /* Login */
             .and().formLogin()
