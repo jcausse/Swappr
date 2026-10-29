@@ -1,11 +1,11 @@
 package ar.edu.itba.paw.webapp.controller.advice;
 
 import ar.edu.itba.paw.service.exception.BadParameterException;
-import ar.edu.itba.paw.service.exception.ForbiddenException;
 import ar.edu.itba.paw.service.exception.NotFoundException;
 import ar.edu.itba.paw.webapp.exception.UserNotAuthenticatedException;
 import ar.edu.itba.paw.webapp.exception.UserNotFoundException;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -68,9 +68,9 @@ public class GlobalExceptionHandler {
         return new ModelAndView("error/unauthorized");
     }
 
-    @ExceptionHandler(ForbiddenException.class)
+    @ExceptionHandler(AccessDeniedException.class)
     @ResponseStatus(HttpStatus.FORBIDDEN)
-    public ModelAndView handleForbidden(ForbiddenException ex) {
+    public ModelAndView handleForbidden(AccessDeniedException ex) {
         LOGGER.warn("Forbidden access: {}", ex.getMessage());
         return new ModelAndView("error/forbidden");
     }
