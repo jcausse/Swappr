@@ -52,10 +52,10 @@
                         <div>
                             <c:if test="${not offer.isFullPrice}">
                                 <p class="text-xs font-medium line-through text-black/60">
-                                    $<c:out value="${offer.listing.price.amount}"/>
+                                    <paw:price amount="${offer.listing.price.amount}"/>
                                 </p>
                             </c:if>
-                            $<c:out value="${offer.amount}"/>
+                            <paw:price amount="${offer.amount}"/>
                         </div>
                     </td>
                     <td class="py-1">

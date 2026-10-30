@@ -102,7 +102,7 @@
                                 <div class="flex-1 min-w-0 flex flex-col justify-between">
                                     <paw:product product="${listing.product}" size="sm" />
                                     <div class="text-xl font-bold mt-2 sm:mt-0">
-                                        $<c:out value="${listing.price.amount}"/>
+                                        <paw:price amount="${listing.price.amount}"/>
                                     </div>
                                 </div>
 

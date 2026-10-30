@@ -20,9 +20,10 @@
     <paw:card classname="flex flex-col gap-4">
         <div class="text-center">
             <c:set var="offerAmount" value="${offer.amount}"/>
+            <spring:message code="currency.symbol" var="currencySymbol"/>
             <c:set var="tradeAndAmount" value=""/>
             <c:if test="${offerAmount != null and offerAmount > 0.0}">
-                <spring:message var="tradeAndAmount" code="offer.detail.tradeAndAmount" arguments="${offerAmount}"/>
+                <spring:message var="tradeAndAmount" code="offer.detail.tradeAndAmount" arguments="${currencySymbol} ${offerAmount}"/>
             </c:if>
 
             <c:choose>
@@ -34,7 +35,7 @@
                 </c:when>
                 <c:otherwise>
                     <spring:message code="offer.detail.title"
-                                    arguments="${offer.buyer.displayName},${offer.amount},${offer.listing.product.brand},${offer.listing.product.model},${offer.listing.product.year}"
+                                    arguments="${offer.buyer.displayName},${currencySymbol} ${offer.amount},${offer.listing.product.brand},${offer.listing.product.model},${offer.listing.product.year}"
                                     var="title"/>
                 </c:otherwise>
             </c:choose>
@@ -109,23 +110,23 @@
                             (<c:out value="${offeredListing.product.year}"/>)
                         </p>
                         <p class="text-sm text-black/60 mt-1">
-                            $<c:out value="${offeredListing.price.amount}"/>
+                            <paw:price amount="${offeredListing.price.amount}"/>
                         </p>
                     </div>
                 </div>
                 <c:if test="${offer.amount != null and offer.amount > 0.0}">
-                    <spring:message code="offer.tradePlusAmount" arguments="${offer.amount}" var="plusAmountLabel"/>
+                    <spring:message code="offer.tradePlusAmount" arguments="${currencySymbol} ${offer.amount}" var="plusAmountLabel"/>
                     <span class="text-2xl text-end font-bold mt-2"><c:out value="${plusAmountLabel}"/></span>
                 </c:if>
             </c:if>
             <c:if test="${not offer.offeredListing.present}">
                 <c:if test="${not offer.isFullPrice}">
                     <p class="text-lg font-medium line-through text-black/60">
-                        $<c:out value="${offer.listing.price.getAmount()}"/>
+                        <paw:price amount="${offer.listing.price.amount}"/>
                     </p>
                 </c:if>
                 <p class="text-3xl font-bold">
-                    $<c:out value="${offer.amount}"/>
+                    <paw:price amount="${offer.amount}"/>
                     <c:if test="${not offer.isFullPrice}">
                         <c:set var="listingPrice" value="${offer.listing.price.getAmount()}"/>
                         <c:set var="offerAmount" value="${offer.amount}"/>

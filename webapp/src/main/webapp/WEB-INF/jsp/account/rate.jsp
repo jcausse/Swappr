@@ -45,9 +45,9 @@
                         (<c:out value="${offer.listing.product.year}"/>)
                     </p>
                     <c:if test="${not offer.isFullPrice}">
-                        <p class="text-sm line-through text-black/60 mt-1">$<c:out value="${offer.listing.price.amount}"/></p>
+                        <p class="text-sm line-through text-black/60 mt-1"><paw:price amount="${offer.listing.price.amount}"/></p>
                     </c:if>
-                    <p class="text-lg font-bold text-black mt-1">$<c:out value="${offer.amount}"/></p>
+                    <p class="text-lg font-bold text-black mt-1"><paw:price amount="${offer.amount}"/></p>
                 </div>
             </div>
 

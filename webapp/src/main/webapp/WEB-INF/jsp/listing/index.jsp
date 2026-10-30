@@ -61,7 +61,7 @@
                         </c:choose>
                     </p>
 
-                    <p class="text-3xl font-bold">$<c:out value="${listing.price.getAmount()}"/></p>
+                    <p class="text-3xl font-bold"><paw:price amount="${listing.price.amount}"/></p>
 
                     <c:choose>
                         <c:when test="${isCanceled}">
@@ -90,7 +90,8 @@
                         </c:when>
                         <c:when test="${userPendingOffer.isPresent()}">
                             <div class="flex flex-col gap-2">
-                                <spring:message code="listing.detail.pendingOffer" arguments="${userPendingOffer.get().amount}" var="pendingOfferMsg"/>
+                                <spring:message code="currency.symbol" var="currencySymbol"/>
+                                <spring:message code="listing.detail.pendingOffer" arguments="${currencySymbol} ${userPendingOffer.get().amount}" var="pendingOfferMsg"/>
                                 <p class="text-black/60 text-sm"><c:out value="${pendingOfferMsg}"/></p>
                                 <form action="<c:url value='/offer/${userPendingOffer.get().id}/withdraw'/>" method="POST">
                                     <spring:message code="account.myOffers.withdraw" var="withdrawLabel"/>
