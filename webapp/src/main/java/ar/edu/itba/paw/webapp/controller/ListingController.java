@@ -150,7 +150,7 @@ public class ListingController {
         return mav;
     }
 
-    @GetMapping("by-product/{subcategoryId}/{brand}/{model}")
+    @GetMapping("/by-product")
     public ModelAndView product(@ModelAttribute("productForm") ProductSearchForm productForm) {
         var listingInfoSummaryByProduct = productService.getListingInfoSummary(
             productForm.getBrand(),
