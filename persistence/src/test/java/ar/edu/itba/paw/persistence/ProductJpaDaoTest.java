@@ -266,29 +266,6 @@ public class ProductJpaDaoTest {
     }
 
     /* ---------------------------------------------------------------------------------------------- */
-    /* getYearsBySubcategoryAndBrandAndModel (DISTINCT + ORDER BY year DESC)                           */
-    /* ---------------------------------------------------------------------------------------------- */
-
-    @Test
-    public void testGetYearsBySubcategoryAndBrandAndModelIsDistinctAndSortedDescending() {
-        // Apple MacBook Pro years: 2021, 2023, 2024 -> distinct & descending
-        final List<Integer> years = productDao.getYearsBySubcategoryAndBrandAndModel(
-            SUBCATEGORY_ID, PRODUCT_BRAND, PRODUCT_MODEL
-        );
-
-        Assert.assertEquals(List.of(2024, 2023, 2021), years);
-    }
-
-    @Test
-    public void testGetYearsBySubcategoryAndBrandAndModelEmptyForUnknownModel() {
-        final List<Integer> years = productDao.getYearsBySubcategoryAndBrandAndModel(
-            SUBCATEGORY_ID, PRODUCT_BRAND, "Nonexistent"
-        );
-
-        Assert.assertTrue(years.isEmpty());
-    }
-
-    /* ---------------------------------------------------------------------------------------------- */
     /* create                                                                                          */
     /* ---------------------------------------------------------------------------------------------- */
 

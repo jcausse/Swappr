@@ -17,6 +17,7 @@ import ar.edu.itba.paw.webapp.auth.CurrentUser;
 import ar.edu.itba.paw.webapp.form.ChooseProductForm;
 import ar.edu.itba.paw.webapp.form.ListingDetailsForm;
 import ar.edu.itba.paw.webapp.form.ListingFilterForm;
+import ar.edu.itba.paw.webapp.form.ProductSearchForm;
 import ar.edu.itba.paw.webapp.form.SelectOption;
 import ar.edu.itba.paw.webapp.form.StringSelectOption;
 import java.io.IOException;
@@ -147,6 +148,19 @@ public class ListingController {
             }
         }
         return mav;
+    }
+
+    @GetMapping("by-product/{subcategoryId}/{brand}/{model}")
+    public ModelAndView product(@ModelAttribute("productForm") ProductSearchForm productForm) {
+        var listingInfoSummaryByProduct = productService.getListingInfoSummary(
+            productForm.getBrand(),
+            productForm.getModel(),
+            productForm.getYearMin(),
+            productForm.getYearMax(),
+            productForm.getSubcategoryId()
+        );
+
+        return null;
     }
 
     @GetMapping("/{id}")
