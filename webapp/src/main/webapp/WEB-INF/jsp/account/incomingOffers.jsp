@@ -16,7 +16,7 @@
 <account:layout titleKey="account.incomingOffers.title" title="${titleMsg}" subtitle="${subtitleMsg}">
     <form:form modelAttribute="filterForm" action="${filterAction}" method="get" id="filterForm">
         <paw:card classname="p-2! mb-4">
-            <paw:formButtonToggle path="statusGroup" items="${statusGroupOptions}" selectedOption="${filterForm.getStatusGroup()}" />
+            <paw:formButtonToggle path="statusGroup" items="${statusGroupOptions}" badgeCounts="${offerCountByStatus}" selectedOption="${filterForm.getStatusGroup()}" />
         </paw:card>
     </form:form>
 
