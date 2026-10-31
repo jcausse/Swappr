@@ -152,15 +152,59 @@ public class ListingController {
 
     @GetMapping("/by-product")
     public ModelAndView product(@ModelAttribute("productForm") ProductSearchForm productForm) {
-        var listingInfoSummaryByProduct = productService.getListingInfoSummary(
-            productForm.getBrand(),
-            productForm.getModel(),
-            productForm.getYearMin(),
-            productForm.getYearMax(),
-            productForm.getSubcategoryId()
-        );
+        LOGGER.debug("Accessing products by brand and model page");
+        final var mav = new ModelAndView("listing/byProduct");
 
-        return null;
+        final var brand = blankToNull(productForm.getBrand());
+        final var model = blankToNull(productForm.getModel());
+
+        if (productForm.getSubcategoryId() != null) {
+            mav.addObject("productSummaries", productService.getListingInfoSummary(
+                brand,
+                model,
+                productForm.getYearMin(),
+                productForm.getYearMax(),
+                productForm.getSubcategoryId()
+            ));
+        } else {
+            mav.addObject("productSummaries", List.of());
+        }
+
+        var categoryOptions = new java.util.ArrayList<SelectOption>();
+        for (var cat : productService.getAllCategories()) {
+            categoryOptions.add(new SelectOption(cat.getId(), messageSource.getMessage("category." + cat.getName(), null, LocaleContextHolder.getLocale())));
+        }
+        mav.addObject("categoryOptions", categoryOptions);
+
+        if (productForm.getCategoryId() != null) {
+            var subcategoryOptions = new java.util.ArrayList<SelectOption>();
+            for (var sub : productService.getSubcategoriesByCategory(productForm.getCategoryId())) {
+                subcategoryOptions.add(new SelectOption(sub.getId(), messageSource.getMessage("subcategory." + sub.getName(), null, LocaleContextHolder.getLocale())));
+            }
+            mav.addObject("subcategoryOptions", subcategoryOptions);
+        }
+
+        if (productForm.getSubcategoryId() != null) {
+            var brandOptions = new java.util.ArrayList<StringSelectOption>();
+            for (var productBrand : productService.getBrandsBySubcategory(productForm.getSubcategoryId())) {
+                brandOptions.add(new StringSelectOption(productBrand, productBrand));
+            }
+            mav.addObject("brandOptions", brandOptions);
+
+            if (brand != null) {
+                var modelOptions = new java.util.ArrayList<StringSelectOption>();
+                for (var productModel : productService.getModelsBySubcategoryAndBrand(productForm.getSubcategoryId(), brand)) {
+                    modelOptions.add(new StringSelectOption(productModel, productModel));
+                }
+                mav.addObject("modelOptions", modelOptions);
+            }
+        }
+
+        return mav;
+    }
+
+    private String blankToNull(String value) {
+        return value == null || value.isBlank() ? null : value;
     }
 
     @GetMapping("/{id}")

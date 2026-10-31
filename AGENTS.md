@@ -102,6 +102,12 @@ While you as an AI agent are allowed to edit this file on your own, you must **a
   - Write permissions are only given to those methods that explicitly need those permissions. Never give extra permissions in advance. Always give read permissions by default and then elevate those to write permissions if needed.
 - To obtain the logged-in user in a controller handler method, use `@CurrentUser User currentUser` (see **Current User Resolution**). Never receive `Optional<User>` or use `@ModelAttribute("currentUser")` as a controller method parameter.
 
+### Product Discovery by Brand/Model
+
+- `/listing/by-product` (`ListingController#product`) renders `listing/byProduct.jsp` using `ProductSearchForm` as `productForm`.
+- It uses `ProductService#getListingInfoSummary` and displays, per product, the price range for each condition that has active listings. This page is not paginated.
+- Filters cascade category → subcategory → brand → model and auto-submit on change, mirroring `discovery.jsp`.
+
 ## Spring Security
 
 - Spring Security configuration is at `ar.edu.itba.paw.webapp.config.WebAuthConfig` and that file should remain the only source of truth about security configurations, especially

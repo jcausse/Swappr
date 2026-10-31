@@ -1,6 +1,7 @@
 package ar.edu.itba.paw.persistence;
 
 import ar.edu.itba.paw.model.Condition;
+import ar.edu.itba.paw.model.ListingStatus;
 import ar.edu.itba.paw.model.Price;
 import ar.edu.itba.paw.model.Product;
 import ar.edu.itba.paw.model.ProductListingInfo;
@@ -90,7 +91,7 @@ public class ProductJpaDao implements ProductDao {
 
     @Override
     public List<ProductListingInfo> getListingInfoSummary(String brand, String model, Integer fromYear, Integer toYear, Long subcategoryId) {
-        var where = " WHERE l.product.subcategory.id = :subcategoryId";
+        var where = " WHERE l.product.subcategory.id = :subcategoryId AND l.status = :status";
         if (brand != null) where += " AND l.product.brand = :brand";
         if (model != null) where += " AND l.product.model = :model";
         if (fromYear != null) where += " AND l.product.year >= :fromYear";
@@ -103,7 +104,8 @@ public class ProductJpaDao implements ProductDao {
 
         // TODO type safe way of doing this??
         var query = em.createQuery(queryStr, Object[].class)
-                .setParameter("subcategoryId", subcategoryId);
+                .setParameter("subcategoryId", subcategoryId)
+                .setParameter("status", ListingStatus.ACTIVE);
         if (brand != null) query.setParameter("brand", brand);
         if (model != null) query.setParameter("model", model);
         if (fromYear != null) query.setParameter("fromYear", fromYear);
