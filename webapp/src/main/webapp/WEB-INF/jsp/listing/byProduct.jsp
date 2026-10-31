@@ -37,15 +37,15 @@
 
 <paw:layout variant="wide" titleKey="byProduct.title">
     <div class="flex flex-col gap-6">
-        <nav class="flex flex-wrap items-center gap-1 text-sm text-black/60" aria-label="Breadcrumb">
-            <paw:linkButton href="${productsUrl}" text="${productsLabel}" variant="ghost" size="sm" role="secondary" classname="min-w-0! px-1!"/>
+        <nav class="flex flex-wrap items-center gap-1 text-sm" aria-label="Breadcrumb">
+            <paw:linkButton href="${productsUrl}" text="${productsLabel}" variant="ghost" classname="min-w-0!"/>
             <c:if test="${not empty productForm.categoryId}">
-                <paw:icon name="chevron-right" classname="text-black/30"/>
-                <paw:linkButton href="${categoryBreadcrumbUrl}" text="${selectedCategoryLabel}" variant="ghost" size="sm" role="secondary" classname="min-w-0! px-1!"/>
+                <paw:icon name="chevron-right" classname="text-black/60"/>
+                <paw:linkButton href="${categoryBreadcrumbUrl}" text="${selectedCategoryLabel}" variant="ghost" classname="min-w-0!"/>
             </c:if>
             <c:if test="${not empty productForm.subcategoryId}">
-                <paw:icon name="chevron-right" classname="text-black/30"/>
-                <span class="px-1 font-medium text-black"><c:out value="${selectedSubcategoryLabel}"/></span>
+                <paw:icon name="chevron-right" classname="text-black/60"/>
+                <span class="px-4 font-semibold text-black/60"><c:out value="${selectedSubcategoryLabel}"/></span>
             </c:if>
         </nav>
 
@@ -139,10 +139,35 @@
                                     </div>
                                 </c:when>
                                 <c:otherwise>
-                                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <c:forEach var="summary" items="${productSummaries}">
-                                            <paw:card title="${summary.brand} ${summary.model}" classname="h-full">
-                                                <div class="flex flex-col gap-2 mt-2">
+                                            <c:url value="/listing" var="discoveryUrlAllConditions">
+                                                <c:param name="categoryId" value="${productForm.categoryId}"/>
+                                                <c:param name="subcategoryId" value="${productForm.subcategoryId}"/>
+                                                <c:param name="brand" value="${summary.brand}"/>
+                                                <c:param name="model" value="${summary.model}"/>
+                                                <c:if test="${not empty productForm.yearMin}">
+                                                    <c:param name="yearMin" value="${productForm.yearMin}"/>
+                                                </c:if>
+                                                <c:if test="${not empty productForm.yearMax}">
+                                                    <c:param name="yearMax" value="${productForm.yearMax}"/>
+                                                </c:if>
+                                            </c:url>
+                                            <paw:card classname="h-full">
+                                                <div class="flex flex-col gap-2">
+                                                    <div class="flex flex-row items-center gap-2">
+                                                        <h3 class="text-base font-semibold">
+                                                            <c:out value="${summary.brand} ${summary.model}" />
+                                                        </h3>
+                                                        <spring:message code="byProduct.seeAll" var="seeAllLabel" />
+                                                        <paw:linkButton
+                                                            href="${discoveryUrlAllConditions}"
+                                                            variant="outline"
+                                                            size="sm"
+                                                            text="${seeAllLabel}"
+                                                            classname="ml-auto"
+                                                        />
+                                                    </div>
                                                     <c:forEach var="info" items="${summary.listingInfoByCondition}">
                                                         <spring:message code="condition.${info.condition}" var="conditionLabel"/>
                                                         <c:url value="/listing" var="discoveryUrl">
@@ -161,16 +186,13 @@
                                                         <paw:linkButton
                                                             href="${discoveryUrl}"
                                                             variant="ghost"
-                                                            size="sm"
-                                                            role="secondary"
-                                                            classname="w-full justify-between border-t border-black/5 first:border-t-0 px-2! py-2!"
                                                         >
-                                                            <span class="flex w-full items-center justify-between gap-3 text-sm">
-                                                                <span class="text-black/70">
+                                                            <div class="flex w-full items-center gap-2 text-sm">
+                                                                <span class="text-black font-medium">
                                                                     <c:out value="${conditionLabel}"/>
-                                                                    <span class="text-black/40">(<c:out value="${info.listingCount}"/>)</span>
+                                                                    <span class="text-black/40 font-normal">(<c:out value="${info.listingCount}"/>)</span>
                                                                 </span>
-                                                                <span class="flex items-center gap-1 font-semibold text-black whitespace-nowrap">
+                                                                <span class="ml-auto font-semibold text-black text-base whitespace-nowrap">
                                                                     <c:choose>
                                                                         <c:when test="${info.minPrice.amount == info.maxPrice.amount}">
                                                                             $<c:out value="${info.minPrice.amount}"/>
@@ -179,9 +201,9 @@
                                                                             $<c:out value="${info.minPrice.amount}"/> - $<c:out value="${info.maxPrice.amount}"/>
                                                                         </c:otherwise>
                                                                     </c:choose>
-                                                                    <paw:icon name="chevron-right" classname="text-black/40"/>
                                                                 </span>
-                                                            </span>
+                                                                <paw:icon name="chevron-right" />
+                                                            </div>
                                                         </paw:linkButton>
                                                     </c:forEach>
                                                 </div>
