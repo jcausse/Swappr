@@ -106,7 +106,7 @@ While you as an AI agent are allowed to edit this file on your own, you must **a
 
 - `/listing/by-product` (`ListingController#product`) renders `listing/byProduct.jsp` using `ProductSearchForm` as `productForm`.
 - It uses `ProductService#getListingInfoSummary` and displays, per product, the price range for each condition that has active listings. This page is not paginated.
-- Filters cascade category → subcategory → brand → model and auto-submit on change, mirroring `discovery.jsp`.
+- Category and subcategory are chosen from button grids (mirroring the landing page) with breadcrumbs to step back. Once both are selected, brand/model/year filters appear; brand changes auto-submit and clear the model. The filter clear action keeps category and subcategory intact.
 
 ## Spring Security
 
