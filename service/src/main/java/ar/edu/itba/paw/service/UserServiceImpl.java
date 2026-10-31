@@ -5,12 +5,14 @@ import ar.edu.itba.paw.model.Role;
 import ar.edu.itba.paw.model.Province;
 import ar.edu.itba.paw.model.User;
 import ar.edu.itba.paw.model.Language;
+import ar.edu.itba.paw.model.OneTimePassword;
 import ar.edu.itba.paw.persistence.UserDao;
 import ar.edu.itba.paw.persistence.UserRoleDao;
 import ar.edu.itba.paw.service.dto.ImageData;
 import ar.edu.itba.paw.service.dto.UserCreationDto;
 import ar.edu.itba.paw.service.dto.UserEditDto;
 import ar.edu.itba.paw.service.dto.mail.UserMailDto;
+import ar.edu.itba.paw.service.enumeration.OneTimePasswordVerificationResult;
 
 import java.time.Instant;
 import java.util.List;
@@ -39,6 +41,7 @@ public class UserServiceImpl implements UserService {
     private final ImageService imageService;
     private final PasswordEncoder passwordEncoder;
     private final MailingService mailingService;
+    private final OneTimePasswordService otpService;
 
 
     @Override
@@ -83,7 +86,18 @@ public class UserServiceImpl implements UserService {
         );
         userRoleDao.addRole(user, Role.USER);
         LOGGER.info("User created: id={}, username='{}'", user.getId(), user.getUsername());
+
+        sendVerificationEmail(user);
+
         return user;
+    }
+
+    private OneTimePassword sendVerificationEmail(@NonNull User user) {
+        LOGGER.debug("Sending verification email to user id={}", user.getId());
+        final var otp = otpService.create(user);
+        mailingService.sendVerificationEmail(UserMailDto.from(user), otp.getOtpValue());
+        LOGGER.info("Verification email sent to user id={}", user.getId());
+        return otp;
     }
 
     @Override
@@ -171,7 +185,54 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public User markEmailAsVerified(@NonNull User user) {
+    public Optional<OneTimePassword> resendVerificationEmail(@NonNull String usernameOrEmail) {
+        LOGGER.debug("Resending verification email requested for '{}'", usernameOrEmail);
+        final var maybeUser = getByUsernameOrEmail(usernameOrEmail);
+        if (maybeUser.isEmpty()) {
+            LOGGER.warn("Resend verification email failed: user '{}' not found", usernameOrEmail);
+            return Optional.empty();
+        }
+
+        final var user = maybeUser.get();
+        if (user.isVerified()) {
+            LOGGER.warn("Resend verification email aborted: user id={} is already verified", user.getId());
+            return Optional.empty();
+        }
+
+        final var otp = otpService.create(user);
+        mailingService.sendVerificationEmail(UserMailDto.from(user), otp.getOtpValue());
+        LOGGER.info("Resent verification email to user id={}", user.getId());
+        return Optional.of(otp);
+    }
+
+    @Override
+    @Transactional
+    public OneTimePasswordVerificationResult verifyEmail(@NonNull String usernameOrEmail, @NonNull String otpValue) {
+        LOGGER.debug("Verifying email for '{}'", usernameOrEmail);
+        final var maybeUser = getByUsernameOrEmail(usernameOrEmail);
+        if (maybeUser.isEmpty()) {
+            LOGGER.warn("Email verification rejected: user '{}' not found", usernameOrEmail);
+            return OneTimePasswordVerificationResult.REJECTED;
+        }
+
+        final var user = maybeUser.get();
+        if (user.isVerified()) {
+            LOGGER.debug("Email verification for user id={}: user already verified", user.getId());
+            return OneTimePasswordVerificationResult.ACCEPTED;
+        }
+
+        final var result = otpService.verify(user, otpValue);
+        LOGGER.info("Email verification result for user id={}: {}", user.getId(), result);
+        if (result == OneTimePasswordVerificationResult.ACCEPTED) {
+            markEmailAsVerified(user);
+            mailingService.sendWelcomeEmail(UserMailDto.from(user));
+            LOGGER.info("User id={} email successfully verified and welcome email dispatched", user.getId());
+        }
+
+        return result;
+    }
+
+    private User markEmailAsVerified(@NonNull User user) {
         LOGGER.info("Marking email as verified for user id={}", user.getId());
         return userDao.verifyEmail(user.getId(), Instant.now())
                 .orElseThrow(() -> new IllegalArgumentException("Non-valid User received"));
