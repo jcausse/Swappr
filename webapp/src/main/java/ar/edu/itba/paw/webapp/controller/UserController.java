@@ -65,7 +65,7 @@ public class UserController {
         final boolean isSelfRequest = currentUser != null && Objects.equals(id, currentUser.getId());
 
         final var filter = ListingFilterDto.builder()
-                .sort(ListingSort.RECENT.getKey())
+                .sort(ListingSort.RECENT.getKey())  // TODO: SACAR LOS PARSEOS Y HACER QUE EL FORM TOME UN ENUM USANDO CONVERTERS
                 .creatorId(user.getId())
                 .status(ListingStatus.ACTIVE.name())
                 .page(1)

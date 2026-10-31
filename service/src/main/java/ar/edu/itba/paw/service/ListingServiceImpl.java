@@ -86,7 +86,7 @@ public class ListingServiceImpl implements ListingService {
         return page == null || page < 1 ? 1 : page;
     }
 
-    private static ListingStatus parseStatus(final String value) {
+    private static ListingStatus parseStatus(final String value) { // TODO: SACAR LOS PARSEOS Y HACER QUE EL FORM TOME UN ENUM USANDO CONVERTERS
         return value == null || value.isBlank()
             ? null
             : ListingStatus.fromString(value).orElse(null);
