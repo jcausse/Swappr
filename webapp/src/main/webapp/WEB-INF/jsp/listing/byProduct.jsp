@@ -145,22 +145,44 @@
                                                 <div class="flex flex-col gap-2 mt-2">
                                                     <c:forEach var="info" items="${summary.listingInfoByCondition}">
                                                         <spring:message code="condition.${info.condition}" var="conditionLabel"/>
-                                                        <div class="flex items-center justify-between gap-3 text-sm border-t border-black/5 pt-2 first:border-t-0 first:pt-0">
-                                                            <span class="text-black/70">
-                                                                <c:out value="${conditionLabel}"/>
-                                                                <span class="text-black/40">(<c:out value="${info.listingCount}"/>)</span>
+                                                        <c:url value="/listing" var="discoveryUrl">
+                                                            <c:param name="categoryId" value="${productForm.categoryId}"/>
+                                                            <c:param name="subcategoryId" value="${productForm.subcategoryId}"/>
+                                                            <c:param name="brand" value="${summary.brand}"/>
+                                                            <c:param name="model" value="${summary.model}"/>
+                                                            <c:param name="condition" value="${info.condition}"/>
+                                                            <c:if test="${not empty productForm.yearMin}">
+                                                                <c:param name="yearMin" value="${productForm.yearMin}"/>
+                                                            </c:if>
+                                                            <c:if test="${not empty productForm.yearMax}">
+                                                                <c:param name="yearMax" value="${productForm.yearMax}"/>
+                                                            </c:if>
+                                                        </c:url>
+                                                        <paw:linkButton
+                                                            href="${discoveryUrl}"
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            role="secondary"
+                                                            classname="w-full justify-between border-t border-black/5 first:border-t-0 px-2! py-2!"
+                                                        >
+                                                            <span class="flex w-full items-center justify-between gap-3 text-sm">
+                                                                <span class="text-black/70">
+                                                                    <c:out value="${conditionLabel}"/>
+                                                                    <span class="text-black/40">(<c:out value="${info.listingCount}"/>)</span>
+                                                                </span>
+                                                                <span class="flex items-center gap-1 font-semibold text-black whitespace-nowrap">
+                                                                    <c:choose>
+                                                                        <c:when test="${info.minPrice.amount == info.maxPrice.amount}">
+                                                                            $<c:out value="${info.minPrice.amount}"/>
+                                                                        </c:when>
+                                                                        <c:otherwise>
+                                                                            $<c:out value="${info.minPrice.amount}"/> - $<c:out value="${info.maxPrice.amount}"/>
+                                                                        </c:otherwise>
+                                                                    </c:choose>
+                                                                    <paw:icon name="chevron-right" classname="text-black/40"/>
+                                                                </span>
                                                             </span>
-                                                            <span class="font-semibold text-right whitespace-nowrap">
-                                                                <c:choose>
-                                                                    <c:when test="${info.minPrice.amount == info.maxPrice.amount}">
-                                                                        $<c:out value="${info.minPrice.amount}"/>
-                                                                    </c:when>
-                                                                    <c:otherwise>
-                                                                        $<c:out value="${info.minPrice.amount}"/> - $<c:out value="${info.maxPrice.amount}"/>
-                                                                    </c:otherwise>
-                                                                </c:choose>
-                                                            </span>
-                                                        </div>
+                                                        </paw:linkButton>
                                                     </c:forEach>
                                                 </div>
                                             </paw:card>
