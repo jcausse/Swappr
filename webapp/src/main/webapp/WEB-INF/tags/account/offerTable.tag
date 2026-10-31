@@ -67,8 +67,8 @@
                         <c:choose>
                             <c:when test="${offer.status.name() == 'ACCEPTED' and not myRating.isPresent()}">
                                 <c:url value="/account/rate/${offer.id}" var="rateUrl"/>
-                                <spring:message code="${user == 'buyer' ? 'account.offerTable.rateSeller' : 'account.offerTable.rateBuyer'}" var="rateLabel"/>
-                                <paw:linkButton href="${rateUrl}" variant="outline" size="sm" icon="star-plus" text="${rateLabel}" />
+                                <spring:message code="${user == 'seller' ? 'account.offerTable.rateSeller' : 'account.offerTable.rateBuyer'}" var="rateLabel"/>
+                                <paw:linkButton href="${rateUrl}" variant="outline" icon="star-plus" text="${rateLabel}" />
                             </c:when>
                             <c:when test="${offer.status.name() == 'ACCEPTED' and myRating.isPresent()}">
                                 <div class="flex flex-row justify-start">
