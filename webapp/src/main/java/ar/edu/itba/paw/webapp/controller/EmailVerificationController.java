@@ -1,6 +1,6 @@
 package ar.edu.itba.paw.webapp.controller;
 
-import ar.edu.itba.paw.service.EmailVerificationService;
+import ar.edu.itba.paw.service.UserService;
 import ar.edu.itba.paw.service.enumeration.OneTimePasswordVerificationResult;
 import ar.edu.itba.paw.webapp.auth.AuthHelper;
 import ar.edu.itba.paw.webapp.form.EmailVerificationForm;
@@ -22,10 +22,9 @@ import java.nio.charset.StandardCharsets;
 @RequiredArgsConstructor
 @Controller
 public class EmailVerificationController {
-
     private static final Logger LOGGER = LoggerFactory.getLogger(EmailVerificationController.class);
 
-    private final EmailVerificationService emailVerificationService;
+    private final UserService userService;
     private final AuthHelper authHelper;
 
     @GetMapping("/verify")
@@ -48,7 +47,7 @@ public class EmailVerificationController {
             return new ModelAndView("verify");
         }
 
-        final var result = emailVerificationService.verifyEmail(form.getUsernameOrEmail(), form.getOtp());
+        final var result = userService.verifyEmail(form.getUsernameOrEmail(), form.getOtp());
         if (result == OneTimePasswordVerificationResult.ACCEPTED) {
             LOGGER.info("User {} successfully verified email", form.getUsernameOrEmail());
             authHelper.login(form.getUsernameOrEmail());
@@ -67,7 +66,7 @@ public class EmailVerificationController {
     public ModelAndView resendVerificationCode(@RequestParam("usernameOrEmail") String usernameOrEmail) {
         if (usernameOrEmail != null && !usernameOrEmail.isBlank()) {            // TODO: Usar Bean Validation
             LOGGER.info("Requested resend of verification email for {}", usernameOrEmail);
-            emailVerificationService.resendVerificationEmail(usernameOrEmail);
+            userService.resendVerificationEmail(usernameOrEmail);
             return new ModelAndView("redirect:/verify?email=" +
                             URLEncoder.encode(usernameOrEmail.trim(), StandardCharsets.UTF_8) +
                             "&resent=true"
