@@ -121,7 +121,9 @@ public class ProductJpaDao implements ProductDao {
                     .maxPrice((Price)fields[5])
                     .avgPrice(new Price(new BigDecimal((Double)fields[6])))
                     .build()
-                ).toList();
+                )
+                .sorted((a, b) -> a.getCondition().ordinal() - b.getCondition().ordinal())
+                .toList();
     }
 
     @Override
