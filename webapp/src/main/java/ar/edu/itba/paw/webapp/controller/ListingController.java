@@ -170,33 +170,37 @@ public class ListingController {
             mav.addObject("productSummaries", List.of());
         }
 
-        var categoryOptions = new java.util.ArrayList<SelectOption>();
-        for (var cat : productService.getAllCategories()) {
-            categoryOptions.add(new SelectOption(cat.getId(), messageSource.getMessage("category." + cat.getName(), null, LocaleContextHolder.getLocale())));
-        }
-        mav.addObject("categoryOptions", categoryOptions);
+        mav.addObject(
+            "categoryOptions",
+            productService.getAllCategories().stream()
+                .map((cat) -> new SelectOption(cat.getId(), messageSource.getMessage("category." + cat.getName(), null, LocaleContextHolder.getLocale())))
+                .toList()
+        );
 
         if (productForm.getCategoryId() != null) {
-            var subcategoryOptions = new java.util.ArrayList<SelectOption>();
-            for (var sub : productService.getSubcategoriesByCategory(productForm.getCategoryId())) {
-                subcategoryOptions.add(new SelectOption(sub.getId(), messageSource.getMessage("subcategory." + sub.getName(), null, LocaleContextHolder.getLocale())));
-            }
-            mav.addObject("subcategoryOptions", subcategoryOptions);
+            mav.addObject(
+                "subcategoryOptions",
+                productService.getSubcategoriesByCategory(productForm.getCategoryId()).stream()
+                    .map((sub) -> new SelectOption(sub.getId(), messageSource.getMessage("subcategory." + sub.getName(), null, LocaleContextHolder.getLocale())))
+                    .toList()
+            );
         }
 
         if (productForm.getSubcategoryId() != null) {
-            var brandOptions = new java.util.ArrayList<StringSelectOption>();
-            for (var productBrand : productService.getBrandsBySubcategory(productForm.getSubcategoryId())) {
-                brandOptions.add(new StringSelectOption(productBrand, productBrand));
-            }
-            mav.addObject("brandOptions", brandOptions);
+            mav.addObject(
+                "brandOptions",
+                productService.getBrandsBySubcategory(productForm.getSubcategoryId()).stream()
+                            .map((b) -> new StringSelectOption(b, b))
+                            .toList()
+            );
 
             if (brand != null) {
-                var modelOptions = new java.util.ArrayList<StringSelectOption>();
-                for (var productModel : productService.getModelsBySubcategoryAndBrand(productForm.getSubcategoryId(), brand)) {
-                    modelOptions.add(new StringSelectOption(productModel, productModel));
-                }
-                mav.addObject("modelOptions", modelOptions);
+                mav.addObject(
+                    "modelOptions",
+                    productService.getModelsBySubcategoryAndBrand(productForm.getSubcategoryId(), brand).stream()
+                        .map((m) -> new StringSelectOption(m, m))
+                        .toList()
+                );
             }
         }
 
