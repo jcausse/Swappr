@@ -10,7 +10,7 @@
 <spring:message code="account.incomingOffers.title" var="titleMsg"/>
 <spring:message code="account.incomingOffers.subtitle" var="subtitleMsg"/>
 
-<account:layout titleKey="offer.detail.title" title="${titleMsg}" subtitle="${subtitleMsg}">
++<account:layout titleKey="account.incomingOffers.title" title="${titleMsg}" subtitle="${subtitleMsg}">
     <!-- Back link -->
     <div class="mb-4">
         <spring:message code="offer.detail.back" var="backLabel"/>
