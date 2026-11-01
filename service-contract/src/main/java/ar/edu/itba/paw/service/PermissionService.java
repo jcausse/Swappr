@@ -9,7 +9,6 @@ public interface PermissionService {
 	boolean canManageOfferAsBuyer(User user, long offerId);
 	boolean canAccessOffer(User user, long offerId);
 
-	boolean isAdmin(User user);
 	boolean isListingCreator(User user, long listingId);
 	boolean isOfferSeller(User user, long offerId);
 	boolean isOfferBuyer(User user, long offerId);

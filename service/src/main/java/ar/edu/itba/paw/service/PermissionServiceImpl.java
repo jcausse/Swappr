@@ -39,11 +39,6 @@ public class PermissionServiceImpl implements PermissionService {
 	}
 
 	@Override
-	public boolean isAdmin(User user) {
-		return false; // TODO
-	}
-
-	@Override
 	@Transactional
 	public boolean isListingCreator(User user, long listingId) {
     	var listing = listingService.getById(listingId);
@@ -54,19 +49,13 @@ public class PermissionServiceImpl implements PermissionService {
 	@Transactional
 	public boolean isOfferSeller(User user, long offerId) {
 		var offer = offerService.getById(offerId);
-		if (offer.isEmpty()) return false;
-		System.out.println("BABABABA " + user.getId());
-		System.out.println("BABABABA " + offer.get().getListing().getCreator().getId());
-
-		return user.getId().equals(offer.get().getListing().getCreator().getId());
-	}
+        return offer.filter(value -> user.getId().equals(value.getListing().getCreator().getId())).isPresent();
+    }
 
 	@Override
 	@Transactional
 	public boolean isOfferBuyer(User user, long offerId) {
     	var offer = offerService.getById(offerId);
-    	if (offer.isEmpty()) return false;
-
-    	return user.getId().equals(offer.get().getBuyer().getId());
-	}
+        return offer.filter(value -> user.getId().equals(value.getBuyer().getId())).isPresent();
+    }
 }

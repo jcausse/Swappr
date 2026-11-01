@@ -4,19 +4,17 @@ import ar.edu.itba.paw.model.Language;
 import ar.edu.itba.paw.model.User;
 import ar.edu.itba.paw.service.UserService;
 import ar.edu.itba.paw.webapp.auth.AuthHelper;
-import ar.edu.itba.paw.webapp.auth.AuthUserDetails;
 import java.util.Locale;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
+
+import org.springframework.lang.NonNull;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.i18n.CookieLocaleResolver;
 
 /**
  * Resolves the request locale from the logged-in user's persisted preferred language,
  * making the stored preference the single source of truth for the website locale.
- *
  * For anonymous visitors it falls back to a wrapped {@link CookieLocaleResolver}, so the
  * language switch still works before logging in. When an authenticated user switches
  * language (via LocaleChangeInterceptor's '?lang='), {@link #setLocale} persists the choice
@@ -36,26 +34,25 @@ public class DatabaseLocaleResolver implements LocaleResolver {
     }
 
     @Override
-    public Locale resolveLocale(final HttpServletRequest request) {
-        final User user = currentUser();
-        if (user != null) {
-            return localeOf(user);
-        }
-        return cookieLocaleResolver.resolveLocale(request);
+    public Locale resolveLocale(@NonNull final HttpServletRequest request) {
+        return authHelper.getCurrentUser()
+                .map(DatabaseLocaleResolver::localeOf)
+                .orElseGet(() -> cookieLocaleResolver.resolveLocale(request));
     }
 
     @Override
-    public void setLocale(final HttpServletRequest request, final HttpServletResponse response, final Locale locale) {
+    public void setLocale(@NonNull final HttpServletRequest request, final HttpServletResponse response, final Locale locale) {
         // Always keep the cookie coherent (used while anonymous or after logout).
         cookieLocaleResolver.setLocale(request, response, locale);
 
-        final User user = currentUser();
-        if (user != null && locale != null) {
-            final Language chosen = Language.fromCode(locale.getLanguage());
-            if (chosen != user.getPreferredLanguage()) {
-                final User updated = userService.updatePreferredLanguage(user, chosen);
-                authHelper.update(updated);
-            }
+        if (locale != null) {
+            authHelper.getCurrentUser().ifPresent(user -> {
+                final Language chosen = Language.fromCode(locale.getLanguage());
+                if (chosen != user.getPreferredLanguage()) {
+                    final User updated = userService.updatePreferredLanguage(user, chosen);
+                    authHelper.update(updated);
+                }
+            });
         }
     }
 
@@ -63,14 +60,6 @@ public class DatabaseLocaleResolver implements LocaleResolver {
         final Language language = user.getPreferredLanguage() != null
                 ? user.getPreferredLanguage()
                 : Language.getDefault();
-        return new Locale(language.getCode());
-    }
-
-    private static User currentUser() {
-        final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && authentication.getPrincipal() instanceof AuthUserDetails details) {
-            return details.getDomainUser();
-        }
-        return null;
+        return Locale.of(language.getCode());
     }
 }
