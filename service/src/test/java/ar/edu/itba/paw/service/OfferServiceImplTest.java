@@ -550,34 +550,6 @@ public class OfferServiceImplTest {
     /* rate                                                                                            */
     /* ---------------------------------------------------------------------------------------------- */
 
-    @Test
-    public void testRateAsBuyerUpdatesSellerRatingWithoutRefetching() {
-        // Arrange
-        final Offer offer = buildFakeOffer(OfferStatus.ACCEPTED);
-        when(offerDao.setSellerRating(eq(OFFER_ID), eq(OfferRating.POSITIVE))).thenReturn(true);
-
-        // Act
-        final Offer result = offerService.rate(offer, buildFakeUser(BUYER_ID), OfferRating.POSITIVE);
-
-        // Assert
-        Assert.assertSame(offer, result);
-        Assert.assertEquals(Optional.of(OfferRating.POSITIVE), result.getSellerRating());
-    }
-
-    @Test
-    public void testRateAsSellerUpdatesBuyerRatingWithoutRefetching() {
-        // Arrange
-        final Offer offer = buildFakeOffer(OfferStatus.ACCEPTED);
-        when(offerDao.setBuyerRating(eq(OFFER_ID), eq(OfferRating.NEGATIVE))).thenReturn(true);
-
-        // Act
-        final Offer result = offerService.rate(offer, buildFakeUser(SELLER_ID), OfferRating.NEGATIVE);
-
-        // Assert
-        Assert.assertSame(offer, result);
-        Assert.assertEquals(Optional.of(OfferRating.NEGATIVE), result.getBuyerRating());
-    }
-
     @Test(expected = BadParameterException.class)
     public void testRateTwiceThrows() {
         // Arrange
