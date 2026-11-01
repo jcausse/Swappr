@@ -11,6 +11,7 @@ import ar.edu.itba.paw.service.dto.OfferFilterDto;
 import ar.edu.itba.paw.model.OfferRating;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public interface OfferService {
@@ -32,6 +33,8 @@ public interface OfferService {
     List<Offer> rejectPendingOffersForListing(Long listingId, Long exceptOfferId);
 
     int getPendingOffersCount(User seller);
+
+    Map<String, Long> getOfferCountByStatus(User currentUser, Boolean incoming);
 
     Offer uploadProofOfPayment(Long offerId, Long buyerId, FileDto fileDto);
 
