@@ -562,7 +562,6 @@ public class OfferServiceImplTest {
         // Assert
         Assert.assertSame(offer, result);
         Assert.assertEquals(Optional.of(OfferRating.POSITIVE), result.getSellerRating());
-        verify(offerDao, never()).getById(anyLong());
     }
 
     @Test
@@ -577,7 +576,6 @@ public class OfferServiceImplTest {
         // Assert
         Assert.assertSame(offer, result);
         Assert.assertEquals(Optional.of(OfferRating.NEGATIVE), result.getBuyerRating());
-        verify(offerDao, never()).getById(anyLong());
     }
 
     @Test(expected = BadParameterException.class)

@@ -119,9 +119,7 @@ While you as an AI agent are allowed to edit this file on your own, you must **a
 - **In JSPs & Views**: `CurrentUserControllerAdvice` exposes `${currentUser}` (as `Optional<User>`) globally to all views and custom tags (such as `navbar.tag`). **Never** re-add `"currentUser"` to `ModelAndView` in controllers — the controller advice already supplies it to the view.
 - **Why `@ModelAttribute` in `@ControllerAdvice` cannot enforce authentication**: `@ModelAttribute` methods in a `@ControllerAdvice` run globally for **every request** across the entire application before any controller handler method is selected. A `@ModelAttribute` method that throws an exception when unauthenticated would break all public routes (including `/login`, `/register`, etc.). Argument resolvers, by contrast, are lazy and run on-demand only for the specific parameters declared by a handler.
 
-## JPA / Hibernate Conventions (Active Stage)
-
-The project has entered the **JPA / Hibernate ORM stage**. All domain models are unified JPA entities and DAOs are being migrated to use `EntityManager`.
+## JPA / Hibernate Conventions
 
 ### Entity Guidelines
 - **Unified Location**: All entities live directly in `ar.edu.itba.paw.model` (there is no `entity` subpackage; models are unified).
@@ -147,9 +145,6 @@ The project has entered the **JPA / Hibernate ORM stage**. All domain models are
 - **Embeddables & Value Objects**:
   - Domain value objects like `Price` are mapped as `@Embeddable` with a protected no-args constructor, `@AllArgsConstructor`, and Lombok `@Builder`.
   - Owning entities embed them with `@Embedded` (and `@AttributeOverride` where needed). In JPQL/HQL queries, navigate embeddable attributes using property dot notation (e.g., `l.price.amount`).
-- **DAO Migration to JPA (Completed)**:
-  - All 12 DAOs have been fully migrated from `JdbcTemplate` to `EntityManager` (`*JpaDao`).
-  - JDBC DAOs have been removed, and all DAO tests target the JPA implementations (`*JpaDaoTest`).
 
 ## Other Conventions
 
@@ -159,6 +154,7 @@ The project has entered the **JPA / Hibernate ORM stage**. All domain models are
 - Use Optional for return values which may not be present, but DO NOT use Optional as method parameters, as it is a code smell.
 - Prefer using `var` for type inference when possible.
 - DAOs (in `persistence` layer): Each DAO should manage one domain aggregate entity. DAOs must never call other DAOs, nor have them injected as dependencies. If DAO A needs entities or data from entity B, it queries it directly via `EntityManager`.
+- **Important: never use `Mockito.verify()`**. The usage of `Mockito.verify()` is strictly forbidden by the PAW course rules. Tests should NEVER use it.
 
 ## Mailing and Email Templates
 
