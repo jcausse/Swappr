@@ -45,8 +45,6 @@ public class ListingDetailsForm {
     @Size(max = 2000)
     private String description;
 
-    private Long editListingId;
-
     public List<ImageData> getImages() {
         List<ImageData> imageDataList = new ArrayList<>();
         if (this.images != null) {
