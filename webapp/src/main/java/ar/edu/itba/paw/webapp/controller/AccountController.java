@@ -134,6 +134,7 @@ public class AccountController {
                 .addObject("offerPage", offerPage)
                 .addObject("offers", offerPage.getContent())
                 .addObject("statusGroupOptions", statusGroupOptions)
+                .addObject("offerCountByStatus", offerService.getOfferCountByStatus(currentUser, true))
                 .addObject("pendingOffersCount", getPendingOffersCount(currentUser));
     }
 
@@ -162,6 +163,7 @@ public class AccountController {
                 .addObject("offerPage", offerPage)
                 .addObject("offers", offerPage.getContent())
                 .addObject("statusGroupOptions", statusGroupOptions)
+                .addObject("offerCountByStatus", offerService.getOfferCountByStatus(currentUser, false))
                 .addObject("pendingOffersCount", getPendingOffersCount(currentUser));
     }
 

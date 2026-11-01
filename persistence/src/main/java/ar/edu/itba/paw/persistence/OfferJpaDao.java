@@ -6,6 +6,7 @@ import ar.edu.itba.paw.model.Offer;
 import ar.edu.itba.paw.model.OfferFilter;
 import ar.edu.itba.paw.model.OfferRating;
 import ar.edu.itba.paw.model.OfferStatus;
+import ar.edu.itba.paw.model.OfferStatusGroup;
 import ar.edu.itba.paw.model.Page;
 import ar.edu.itba.paw.model.User;
 import org.springframework.stereotype.Repository;
@@ -159,6 +160,32 @@ public class OfferJpaDao implements OfferDao {
                 .setParameter("status", OfferStatus.PENDING)
                 .getSingleResult()
                 .intValue();
+    }
+
+    @Override
+    public Map<String, Long> countByStatus(User currentUser, Boolean incoming) {
+        var where = " WHERE "
+                  + (incoming ? "o.listing.creator.id" : "o.buyer.id")
+                  + " = :userId"
+                  + " AND (NOT (o.status IN (:resolvedStatuses)) OR (o.status = :acceptedStatus AND " + (incoming ? "o.buyerRating" : "o.sellerRating") + " IS NULL))";
+
+        var query = "SELECT COUNT(o) AS offerCount, o.status FROM Offer o"
+                  + where
+                  + " GROUP BY o.status";
+
+        Map<String, Long> results = new HashMap<>();
+        em.createQuery(query, Object[].class)
+                .setParameter("userId", currentUser.getId())
+                .setParameter("resolvedStatuses", OfferStatusGroup.RESOLVED.toStatusList())
+                .setParameter("acceptedStatus", OfferStatus.ACCEPTED)
+                .getResultStream()
+                .forEach((result) -> {
+                    var count = (Long)result[0];
+                    var group = OfferStatusGroup.fromStatus((OfferStatus)result[1]);
+                    results.merge(group.getStatus(), count, (a, b) -> a + b);
+                });
+
+        return results;
     }
 
     @Override

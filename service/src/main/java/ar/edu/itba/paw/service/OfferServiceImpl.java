@@ -25,6 +25,7 @@ import ar.edu.itba.paw.service.exception.NotFoundException;
 import java.time.Instant;
 import java.time.Duration;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import org.springframework.stereotype.Service;
@@ -458,6 +459,11 @@ public class OfferServiceImpl implements OfferService {
     @Override
     public int getPendingOffersCount(User seller) {
         return offerDao.countPendingBySeller(seller);
+    }
+
+    @Override
+    public Map<String, Long> getOfferCountByStatus(User currentUser, Boolean incoming) {
+		return offerDao.countByStatus(currentUser, incoming);
     }
 
     @Override
