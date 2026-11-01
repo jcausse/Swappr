@@ -109,6 +109,7 @@ While you as an AI agent are allowed to edit this file on your own, you must **a
   related to access control lists.
 - Authentication is made using `username` and `password` and is handled by service `ar.edu.itba.paw.webapp.auth.AuthUserDetailsService`.
 - User details for Spring Security uses class `ar.edu.itba.paw.webapp.auth.AuthUserDetails`, which contains a domain user (`ar.edu.itba.paw.model.User`).
+- `ar.edu.itba.paw.webapp.auth.AuthHelper` is the single source of truth in `webapp` for reading or mutating `SecurityContextHolder` / `AuthUserDetails` (`getCurrentUser`, `isAuthenticated`, `login`, `update`). Do not duplicate `SecurityContextHolder` / `instanceof AuthUserDetails` checks elsewhere, and keep `WebPermissionService` strictly focused on `@PreAuthorize` authorization predicates.
 - Passwords must be BCrypt-encoded.
 
 ### Current User Resolution (`@CurrentUser`)
