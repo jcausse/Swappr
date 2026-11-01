@@ -310,6 +310,10 @@ public class ListingController {
             if (form.getNewProductBrand() != null && !form.getNewProductBrand().isBlank() && !OTHER_VALUE.equals(form.getNewProductBrand())) {
                 models = productService.getModelsBySubcategoryAndBrand(form.getSubcategoryId(), form.getNewProductBrand());
             }
+            // A custom brand has no known models, so the model is necessarily custom too
+            if (OTHER_VALUE.equals(form.getNewProductBrand())) {
+                form.setNewProductModel(OTHER_VALUE);
+            }
             mav.addObject("models", models);
             mav.addObject("modelsEmpty", models.isEmpty());
         }
@@ -358,7 +362,7 @@ public class ListingController {
                 form.getDescription(),
                 form.getImages()
         ));
-        return new ModelAndView("redirect:/listing/" + newListing.getId());
+        return new ModelAndView("redirect:/account/listings");
     }
 
     @GetMapping("/{id}/edit")
@@ -410,7 +414,7 @@ public class ListingController {
             form.isAcceptsShipping(),
             form.getDescription()
         ), currentUser.getId());
-        return new ModelAndView("redirect:/listing/" + updated.getId());
+        return new ModelAndView("redirect:/account/listings");
     }
 
     private ModelAndView detailsWithErrors(ListingDetailsForm form) {
