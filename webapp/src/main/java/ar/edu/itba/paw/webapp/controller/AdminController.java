@@ -16,6 +16,7 @@ import ar.edu.itba.paw.webapp.form.AdminTakeDownOfferForm;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,7 +37,6 @@ import java.util.Optional;
 @Controller
 @RequestMapping("/admin")
 public class AdminController {
-
     private static final Logger LOGGER = LoggerFactory.getLogger(AdminController.class);
     private static final int DEFAULT_PAGE_SIZE = 10;
 
@@ -46,6 +46,7 @@ public class AdminController {
     private final UserService userService;
 
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ModelAndView dashboard(
             @CurrentUser User currentUser,
             @ModelAttribute("takeDownListingForm") AdminTakeDownListingForm takeDownListingForm,
@@ -58,6 +59,7 @@ public class AdminController {
     }
 
     @GetMapping("/listings")
+    @PreAuthorize("hasRole('ADMIN')")
     public ModelAndView listings(
             @CurrentUser User currentUser,
             @RequestParam(value = "query", required = false) String query,
@@ -80,6 +82,7 @@ public class AdminController {
     }
 
     @PostMapping("/listings/takedown")
+    @PreAuthorize("hasRole('ADMIN')")
     public ModelAndView takeDownListingByForm(
             @CurrentUser User currentUser,
             @Valid @ModelAttribute("takeDownListingForm") AdminTakeDownListingForm form,
@@ -111,6 +114,7 @@ public class AdminController {
     }
 
     @PostMapping("/listings/{id}/takedown")
+    @PreAuthorize("hasRole('ADMIN')")
     public ModelAndView takeDownListingById(
             @CurrentUser User currentUser,
             @PathVariable Long id,
@@ -125,6 +129,7 @@ public class AdminController {
     }
 
     @GetMapping("/offers")
+    @PreAuthorize("hasRole('ADMIN')")
     public ModelAndView offers(
             @CurrentUser User currentUser,
             @RequestParam(value = "statusGroup", required = false) String statusGroup,
@@ -144,6 +149,7 @@ public class AdminController {
     }
 
     @PostMapping("/offers/takedown")
+    @PreAuthorize("hasRole('ADMIN')")
     public ModelAndView takeDownOfferByForm(
             @CurrentUser User currentUser,
             @Valid @ModelAttribute("takeDownOfferForm") AdminTakeDownOfferForm form,
@@ -175,6 +181,7 @@ public class AdminController {
     }
 
     @PostMapping("/offers/{id}/takedown")
+    @PreAuthorize("hasRole('ADMIN')")
     public ModelAndView takeDownOfferById(
             @CurrentUser User currentUser,
             @PathVariable Long id,
@@ -189,6 +196,7 @@ public class AdminController {
     }
 
     @GetMapping("/users")
+    @PreAuthorize("hasRole('ADMIN')")
     public ModelAndView users(
             @CurrentUser User currentUser,
             @RequestParam(value = "username", required = false) String username,
@@ -216,6 +224,7 @@ public class AdminController {
     }
 
     @PostMapping("/users/suspend")
+    @PreAuthorize("hasRole('ADMIN')")
     public ModelAndView suspendUser(
             @CurrentUser User currentUser,
             @Valid @ModelAttribute("suspendUserForm") AdminSuspendUserForm form,
@@ -244,6 +253,7 @@ public class AdminController {
     }
 
     @PostMapping("/users/unsuspend")
+    @PreAuthorize("hasRole('ADMIN')")
     public ModelAndView unsuspendUser(
             @CurrentUser User currentUser,
             @Valid @ModelAttribute("suspendUserForm") AdminSuspendUserForm form,
@@ -264,7 +274,7 @@ public class AdminController {
     }
 
     @PostMapping("/users/grant-admin")
-
+    @PreAuthorize("hasRole('ADMIN')")
     public ModelAndView grantAdminRole(
             @CurrentUser User currentUser,
             @Valid @ModelAttribute("grantRoleForm") AdminGrantRoleForm form,

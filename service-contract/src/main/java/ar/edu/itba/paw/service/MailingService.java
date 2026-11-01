@@ -1,53 +1,53 @@
 package ar.edu.itba.paw.service;
 
-import ar.edu.itba.paw.model.Listing;
-import ar.edu.itba.paw.model.Offer;
-import ar.edu.itba.paw.model.User;
+import ar.edu.itba.paw.service.dto.mail.ListingMailDto;
+import ar.edu.itba.paw.service.dto.mail.OfferMailDto;
+import ar.edu.itba.paw.service.dto.mail.UserMailDto;
 
 public interface MailingService {
 
     /** Send a welcome email to a newly registered user. */
-    void sendWelcomeEmail(User user);
+    void sendWelcomeEmail(UserMailDto user);
 
     /** Notify the seller that their listing has been published. */
-    void sendListingPublishedEmail(User seller, Listing listing);
+    void sendListingPublishedEmail(UserMailDto seller, ListingMailDto listing);
 
     /** Notify the seller that their listing was purchased, including the buyer contact email and message. */
-    void sendPurchaseSellerEmail(User seller, User buyer, Listing listing, String message);
+    void sendPurchaseSellerEmail(UserMailDto seller, UserMailDto buyer, ListingMailDto listing, String message);
 
     /** Confirm the purchase to the buyer, including the seller contact email. */
-    void sendPurchaseBuyerEmail(User buyer, User seller, Listing listing);
+    void sendPurchaseBuyerEmail(UserMailDto buyer, UserMailDto seller, ListingMailDto listing);
 
     /** Notify the seller that they received a new offer on their listing. */
-    void sendNewOfferEmail(User seller, User buyer, Listing listing, Offer offer);
+    void sendNewOfferEmail(OfferMailDto offer);
 
     /** Notify the buyer that their offer was rejected. */
-    void sendOfferRejectedEmail(User buyer, Listing listing, Offer offer);
+    void sendOfferRejectedEmail(OfferMailDto offer);
 
     /** Notify the seller that an offer on their listing was withdrawn by the buyer. */
-    void sendOfferWithdrawnEmail(User seller, User buyer, Listing listing, Offer offer);
+    void sendOfferWithdrawnEmail(OfferMailDto offer);
 
     /** Notify the buyer that their offer was accepted and is pending payment. */
-    void sendOfferPendingPaymentEmail(User buyer, User seller, Listing listing, Offer offer);
+    void sendOfferPendingPaymentEmail(OfferMailDto offer);
 
     /** Notify the seller that their listing has a pending transaction. */
-    void sendPendingTransactionEmail(User seller, User buyer, Listing listing, Offer offer);
+    void sendPendingTransactionEmail(OfferMailDto offer);
 
     /** Notify the seller that proof of payment was uploaded. */
-    void sendProofOfPaymentUploadedEmail(User seller, User buyer, Listing listing, Offer offer);
+    void sendProofOfPaymentUploadedEmail(OfferMailDto offer);
 
     /** Notify the buyer that proof of shipping was uploaded. */
-    void sendProofOfShippingUploadedEmail(User buyer, User seller, Listing listing, Offer offer);
+    void sendProofOfShippingUploadedEmail(OfferMailDto offer);
 
     /** Send password recovery email containing the one-time password code. */
-    void sendPasswordRecoveryEmail(User user, String otpValue);
+    void sendPasswordRecoveryEmail(UserMailDto user, String otpValue);
 
     /** Send email verification email containing the one-time password code. */
-    void sendVerificationEmail(User user, String otpValue);
+    void sendVerificationEmail(UserMailDto user, String otpValue);
 
     /** Notify user that their account has been suspended by an administrator. */
-    void sendAccountSuspendedEmail(User user);
+    void sendAccountSuspendedEmail(UserMailDto user);
 
     /** Notify user that their account has been unsuspended by an administrator. */
-    void sendAccountUnsuspendedEmail(User user);
+    void sendAccountUnsuspendedEmail(UserMailDto user);
 }

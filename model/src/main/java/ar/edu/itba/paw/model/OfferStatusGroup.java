@@ -22,6 +22,13 @@ public enum OfferStatusGroup {
                 .findFirst();
     }
 
+    public static OfferStatusGroup fromStatus(final OfferStatus status) {
+        return Arrays.stream(OfferStatusGroup.values())
+                .filter(s -> s.toStatusList().contains(status))
+                .findFirst()
+                .get();
+    }
+
     public List<OfferStatus> toStatusList() {
         return switch (this) {
             case PENDING -> List.of(OfferStatus.PENDING);

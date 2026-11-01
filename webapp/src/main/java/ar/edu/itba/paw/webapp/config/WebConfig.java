@@ -5,6 +5,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.MessageSource;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
@@ -55,14 +57,16 @@ import java.util.Properties;
 public class WebConfig implements WebMvcConfigurer {
 
     /* --------------------------------------------------------------- */
-    /* ENVIRONMENT (properties management) */
+    /* ENVIRONMENT (properties management) and other dependencies */
     /* --------------------------------------------------------------- */
 
     private final Environment env;
+    private final CurrentUserArgumentResolver currentUserArgumentResolver;
 
     @Autowired
-    public WebConfig(Environment env) {
+    public WebConfig(Environment env, @Lazy CurrentUserArgumentResolver currentUserArgumentResolver) {
         this.env = env;
+        this.currentUserArgumentResolver = currentUserArgumentResolver;
     }
 
     /* --------------------------------------------------------------- */
@@ -162,6 +166,7 @@ public class WebConfig implements WebMvcConfigurer {
     }
 
     @Bean
+    @DependsOn("flyway")
     public LocalContainerEntityManagerFactoryBean entityManagerFactory() {
         final var factoryBean = new LocalContainerEntityManagerFactoryBean();
         factoryBean.setPackagesToScan("ar.edu.itba.paw.model");             // Set Model package to be scanned by JPA
@@ -173,13 +178,13 @@ public class WebConfig implements WebMvcConfigurer {
 
     private static Properties createHibernateProperties() {
         final Properties properties = new Properties();
-        properties.setProperty("hibernate.hbm2ddl.auto", "update");
+        properties.setProperty("hibernate.hbm2ddl.auto", "none");
         properties.setProperty("hibernate.dialect", "org.hibernate.dialect.PostgreSQL92Dialect");
 
         /* IMPORTANT: REVIEW BEFORE DEPLOY. DO NOT CHANGE THIS COMMENT AS IT IS SEARCHED BY GREP */
         properties.setProperty("hibernate.show_sql", "true");               // Remove this before deploy
         /* IMPORTANT: REVIEW BEFORE DEPLOY. DO NOT CHANGE THIS COMMENT AS IT IS SEARCHED BY GREP */
-        properties.setProperty("format_sql", "true");                       // Remove this before deploy
+        properties.setProperty("hibernate.format_sql", "true");             // Remove this before deploy
 
         return properties;
     }
@@ -197,13 +202,8 @@ public class WebConfig implements WebMvcConfigurer {
     /* Current User HandlerMethodArgumentResolver (for @CurrentUser) */
     /* --------------------------------------------------------------- */
 
-    @Bean
-    public CurrentUserArgumentResolver currentUserArgumentResolver() {
-        return new CurrentUserArgumentResolver();
-    }
-
     @Override
     public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
-        resolvers.add(currentUserArgumentResolver());
+        resolvers.add(currentUserArgumentResolver);
     }
 }

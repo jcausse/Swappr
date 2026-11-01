@@ -82,6 +82,22 @@ public class ListingJpaDao implements ListingDao {
             whereClause.append(" AND l.product.subcategory.id = :subcategoryId");
             params.put("subcategoryId", filter.getSubcategoryId());
         }
+        if (filter.getBrand() != null && !filter.getBrand().isBlank()) {
+            whereClause.append(" AND l.product.brand = :brand");
+            params.put("brand", filter.getBrand());
+        }
+        if (filter.getModel() != null && !filter.getModel().isBlank()) {
+            whereClause.append(" AND l.product.model = :model");
+            params.put("model", filter.getModel());
+        }
+        if (filter.getYearMin() != null) {
+            whereClause.append(" AND l.product.year >= :yearMin");
+            params.put("yearMin", filter.getYearMin());
+        }
+        if (filter.getYearMax() != null) {
+            whereClause.append(" AND l.product.year <= :yearMax");
+            params.put("yearMax", filter.getYearMax());
+        }
         if (filter.getMinPrice() != null) {
             whereClause.append(" AND l.price.amount >= :minPrice");
             params.put("minPrice", filter.getMinPrice());

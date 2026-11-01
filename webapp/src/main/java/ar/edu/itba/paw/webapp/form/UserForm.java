@@ -1,10 +1,15 @@
 package ar.edu.itba.paw.webapp.form;
 
+import ar.edu.itba.paw.service.dto.ImageData;
 import ar.edu.itba.paw.webapp.form.validation.FieldMatch;
 import ar.edu.itba.paw.webapp.form.validation.UniqueEmail;
 import ar.edu.itba.paw.webapp.form.validation.UniqueUsername;
 import ar.edu.itba.paw.webapp.form.validation.Username;
 import ar.edu.itba.paw.webapp.form.validation.ValidFile;
+
+import java.io.IOException;
+import java.util.Optional;
+
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
@@ -45,4 +50,22 @@ public class UserForm {
 
     @ValidFile(message = "{ValidFiles.userForm.profilePicture}", allowedTypes = {"image/*"}, optional = true)
     private MultipartFile profilePicture;
+
+    public Optional<ImageData> getProfilePicture() {
+        if (this.profilePicture == null || this.profilePicture.isEmpty()) {
+            return Optional.empty();
+        }
+
+        try {
+            return Optional.of(new ImageData(
+                this.profilePicture.getBytes(),
+                this.profilePicture.getOriginalFilename(),
+                this.profilePicture.getContentType()
+            ));
+        } catch (IOException e) {
+            var rte = new RuntimeException("Failed to read profile picture for user registration");
+            rte.initCause(e);
+            throw rte;
+        }
+    }
 }

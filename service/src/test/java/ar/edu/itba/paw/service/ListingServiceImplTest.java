@@ -136,7 +136,7 @@ public class ListingServiceImplTest {
         final Boolean acceptsTrade
     ) {
         return new ListingFilterDto(
-            null, null, minPrice, maxPrice, condition, acceptsTrade, null, sort, null, status, page, PAGE_SIZE, null, null, null
+            null, null, minPrice, maxPrice, condition, acceptsTrade, null, sort, null, status, page, PAGE_SIZE, null, null, null, null, null, null, null
         );
     }
 

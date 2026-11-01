@@ -1,5 +1,24 @@
 package ar.edu.itba.paw.webapp.controller;
 
+import java.util.List;
+
+import javax.validation.Valid;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.stereotype.Controller;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.ModelAndView;
+
 import ar.edu.itba.paw.model.Condition;
 import ar.edu.itba.paw.model.ListingSort;
 import ar.edu.itba.paw.model.ListingStatus;
@@ -9,36 +28,16 @@ import ar.edu.itba.paw.service.ListingService;
 import ar.edu.itba.paw.service.OfferService;
 import ar.edu.itba.paw.service.ProductService;
 import ar.edu.itba.paw.service.ProvinceService;
-import ar.edu.itba.paw.service.dto.ImageData;
 import ar.edu.itba.paw.service.dto.ListingCreationDto;
 import ar.edu.itba.paw.service.dto.ListingFilterDto;
 import ar.edu.itba.paw.service.dto.ListingUpdateDto;
-import ar.edu.itba.paw.service.exception.ForbiddenException;
 import ar.edu.itba.paw.webapp.auth.CurrentUser;
 import ar.edu.itba.paw.webapp.form.ChooseProductForm;
 import ar.edu.itba.paw.webapp.form.ListingDetailsForm;
 import ar.edu.itba.paw.webapp.form.ListingFilterForm;
 import ar.edu.itba.paw.webapp.form.SelectOption;
 import ar.edu.itba.paw.webapp.form.StringSelectOption;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import javax.validation.Valid;
-import org.springframework.validation.BindingResult;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.MessageSource;
-import org.springframework.context.i18n.LocaleContextHolder;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.ModelAndView;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @RequiredArgsConstructor
 @Controller
@@ -58,6 +57,7 @@ public class ListingController {
     private final MessageSource messageSource;
 
     @GetMapping
+    @PreAuthorize("permitAll()")
     public ModelAndView discovery(@ModelAttribute("filterForm") ListingFilterForm filterForm) {
         LOGGER.debug("Accessing discovery page with query '{}', category {}", filterForm.getQuery(), filterForm.getCategoryId());
         final var filter = ListingFilterDto.builder()
@@ -74,6 +74,10 @@ public class ListingController {
             .pageSize(DISCOVERY_PAGE_SIZE)
             .provinceId(filterForm.getProvinceId())
             .acceptsShipping(filterForm.getAcceptsShipping())
+            .brand(filterForm.getBrand())
+            .model(filterForm.getModel())
+            .yearMin(filterForm.getYearMin())
+            .yearMax(filterForm.getYearMax())
             .build();
 
         final var listingPage = listingService.search(filter);
@@ -126,10 +130,27 @@ public class ListingController {
             }
             mav.addObject("subcategoryOptions", subcategoryOptions);
         }
+
+        if (filterForm.getSubcategoryId() != null) {
+            var brandOptions = new java.util.ArrayList<StringSelectOption>();
+            for (var brand : productService.getBrandsBySubcategory(filterForm.getSubcategoryId())) {
+                brandOptions.add(new StringSelectOption(brand, brand));
+            }
+            mav.addObject("brandOptions", brandOptions);
+
+            if (filterForm.getBrand() != null && !filterForm.getBrand().isBlank()) {
+                var modelOptions = new java.util.ArrayList<StringSelectOption>();
+                for (var model : productService.getModelsBySubcategoryAndBrand(filterForm.getSubcategoryId(), filterForm.getBrand())) {
+                    modelOptions.add(new StringSelectOption(model, model));
+                }
+                mav.addObject("modelOptions", modelOptions);
+            }
+        }
         return mav;
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("permitAll()")
     public ModelAndView listing(@PathVariable Long id, @CurrentUser(required = false) User currentUser) {
         LOGGER.debug("Accessing listing {}", id);
         var listing = listingService.getById(id);
@@ -151,6 +172,7 @@ public class ListingController {
     }
 
     @GetMapping("/new/choose-product")
+    @PreAuthorize("isAuthenticated()")
     public ModelAndView chooseProduct(@ModelAttribute("chooseProductForm") ChooseProductForm form,
                                       @RequestParam(value = "productId", required = false) Long productId) {
         LOGGER.debug("Accessing choose product page");
@@ -175,6 +197,7 @@ public class ListingController {
     }
 
     @PostMapping("/new/choose-product")
+    @PreAuthorize("isAuthenticated()")
     public ModelAndView chooseProductPost(@Valid @ModelAttribute("chooseProductForm") ChooseProductForm form, BindingResult bindingResult) {
         LOGGER.debug("Submitted choose product form, step {}", form.getStep());
         var mav = new ModelAndView("listing/new/chooseProduct");
@@ -257,100 +280,6 @@ public class ListingController {
         return mav;
     }
 
-    @GetMapping("/new/details")
-    public ModelAndView details(@RequestParam("productId") Long productId,
-                                @RequestParam(value = "editListingId", required = false) Long editListingId,
-                                @ModelAttribute("detailsForm") ListingDetailsForm form,
-                                @CurrentUser User currentUser) {
-        LOGGER.debug("Accessing new listing details page for product {}", productId);
-        var product = productService.getById(productId);
-        var mav = new ModelAndView("listing/new/details");
-
-        mav.addObject("product", product);
-        mav.addObject("conditionOptions", buildConditionOptions());
-        form.setProductId(product.getId());
-        form.setEditListingId(editListingId);
-
-        if (editListingId != null) {
-            var listing = listingService.getById(editListingId);
-            if (!listing.getCreator().getId().equals(currentUser.getId())) {
-                throw new ForbiddenException("Not authorized to edit this listing");
-            }
-            form.setTitle(listing.getTitle());
-            form.setPrice(listing.getPrice().getAmount());
-            form.setCondition(listing.getCondition().name());
-            form.setAcceptsTrade(listing.isAcceptsTrade());
-            form.setDescription(listing.getDescription());
-        }
-        return mav;
-    }
-
-    @PostMapping("/new/details")
-    public ModelAndView detailsPost(
-            @Valid @ModelAttribute("detailsForm") ListingDetailsForm form,
-            BindingResult bindingResult,
-            @CurrentUser User currentUser
-    ) {
-        LOGGER.info("User {} submitted listing creation/edit for product {}", currentUser.getId(), form.getProductId());
-        if (bindingResult.hasErrors()) {
-            LOGGER.debug("Validation failed for listing creation/edit for product {}", form.getProductId());
-            return detailsWithErrors(form);
-        }
-
-        List<ImageData> imageDataList = new ArrayList<>();
-        if (form.getImages() != null) {
-            for (MultipartFile imageFile : form.getImages()) {
-                if (imageFile != null && !imageFile.isEmpty()) {
-                    try {
-                        imageDataList.add(new ImageData(
-                            imageFile.getBytes(),
-                            imageFile.getOriginalFilename(),
-                            imageFile.getContentType()
-                        ));
-                    } catch (IOException e) {
-                        LOGGER.error("Failed to read uploaded image", e);
-                        bindingResult.rejectValue("images", "error.image.upload");
-                        return detailsWithErrors(form);
-                    }
-                }
-            }
-        }
-
-        if (form.getEditListingId() != null) {
-            var updated = listingService.update(new ListingUpdateDto(
-                form.getEditListingId(),
-                form.getTitle(),
-                new Price(form.getPrice()),
-                form.getProductId(),
-                form.getCondition(),
-                form.isAcceptsTrade(),
-                form.isAcceptsShipping(),
-                form.getDescription()
-            ), currentUser.getId());
-            return new ModelAndView("redirect:/listing/" + updated.getId());
-        }
-
-        var newListing = listingService.create(new ListingCreationDto(
-                form.getTitle(),
-                new Price(form.getPrice()),
-                currentUser.getId(),
-                form.getProductId(),
-                form.getCondition(),
-                form.isAcceptsTrade(),
-                form.isAcceptsShipping(),
-                form.getDescription(),
-                imageDataList
-        ));
-        return new ModelAndView("redirect:/listing/" + newListing.getId());
-    }
-
-    private ModelAndView detailsWithErrors(ListingDetailsForm form) {
-        var product = productService.getById(form.getProductId());
-        return new ModelAndView("listing/new/details")
-                .addObject("product", product)
-                .addObject("conditionOptions", buildConditionOptions());
-    }
-
     private void populateModel(ModelAndView mav, ChooseProductForm form) {
         var categories = productService.getAllCategories();
         mav.addObject("categories", categories);
@@ -386,21 +315,113 @@ public class ListingController {
         }
     }
 
+    @GetMapping("/new/details")
+    @PreAuthorize("isAuthenticated()")
+    public ModelAndView details(
+        @RequestParam("productId") Long productId,
+        @ModelAttribute("detailsForm") ListingDetailsForm form,
+        @CurrentUser User currentUser
+    ) {
+        LOGGER.debug("Accessing new listing details page for product {}", productId);
+        var product = productService.getById(productId);
+        form.setProductId(product.getId());
+
+        var mav = new ModelAndView("listing/new/details");
+        mav.addObject("product", product);
+        mav.addObject("conditionOptions", buildConditionOptions());
+        mav.addObject("actionUrl", "/listing/new/details");
+        mav.addObject("edit", false);
+        return mav;
+    }
+
+    @PostMapping("/new/details")
+    @PreAuthorize("isAuthenticated()")
+    public ModelAndView detailsPost(
+        @Valid @ModelAttribute("detailsForm") ListingDetailsForm form,
+        BindingResult bindingResult,
+        @CurrentUser User currentUser
+    ) {
+        LOGGER.info("User {} submitted listing creation for product {}", currentUser.getId(), form.getProductId());
+        if (bindingResult.hasErrors()) {
+            LOGGER.debug("Validation failed for listing creation for product {}", form.getProductId());
+            return detailsWithErrors(form);
+        }
+
+        var newListing = listingService.create(new ListingCreationDto(
+                form.getTitle(),
+                new Price(form.getPrice()),
+                currentUser.getId(),
+                form.getProductId(),
+                form.getCondition(),
+                form.isAcceptsTrade(),
+                form.isAcceptsShipping(),
+                form.getDescription(),
+                form.getImages()
+        ));
+        return new ModelAndView("redirect:/listing/" + newListing.getId());
+    }
+
     @GetMapping("/{id}/edit")
-    public ModelAndView editListing(@PathVariable Long id, @CurrentUser User currentUser) {
-        LOGGER.debug("User {} accessing edit page for listing {}", currentUser.getId(), id);
+    @PreAuthorize("@webPermissionService.canManageListing(authentication, #id)")
+    public ModelAndView editListing(
+        @PathVariable Long id,
+        @ModelAttribute("detailsForm") ListingDetailsForm form,
+        @CurrentUser User currentUser
+    ) {
+        LOGGER.debug("Accessing edit listing details page for {}", id);
+
         var listing = listingService.getById(id);
-        if (!listing.getCreator().getId().equals(currentUser.getId())) {
-            throw new ForbiddenException("Not authorized to edit this listing");
+        form.setProductId(listing.getProduct().getId());
+        form.setTitle(listing.getTitle());
+        form.setPrice(listing.getPrice().getAmount());
+        form.setCondition(listing.getCondition().name());
+        form.setAcceptsTrade(listing.isAcceptsTrade());
+        form.setDescription(listing.getDescription());
+
+        var mav = new ModelAndView("listing/new/details");
+        mav.addObject("conditionOptions", buildConditionOptions());
+        mav.addObject("product", listing.getProduct());
+        mav.addObject("actionUrl", "/listing/" + id + "/edit");
+        mav.addObject("edit", true);
+        return mav;
+    }
+
+    @PostMapping("/{id}/edit")
+    @PreAuthorize("@webPermissionService.canManageListing(authentication, #id)")
+    public ModelAndView editListing(
+        @PathVariable Long id,
+        @Valid @ModelAttribute("detailsForm") ListingDetailsForm form,
+        BindingResult bindingResult,
+        @CurrentUser User currentUser
+    ) {
+        LOGGER.info("User {} submitted listing edit for product {}", currentUser.getId(), form.getProductId());
+        if (bindingResult.hasErrors()) {
+            LOGGER.debug("Validation failed for listing edit for product {}", form.getProductId());
+            return detailsWithErrors(form);
         }
-        if (listing.getStatus() == ListingStatus.CANCELED) {
-            throw new ForbiddenException("Cannot edit a canceled listing");
-        }
-        return new ModelAndView("redirect:/listing/new/details?productId="
-            + listing.getProduct().getId() + "&editListingId=" + id);
+
+        var updated = listingService.update(new ListingUpdateDto(
+            id,
+            form.getTitle(),
+            new Price(form.getPrice()),
+            form.getProductId(),
+            form.getCondition(),
+            form.isAcceptsTrade(),
+            form.isAcceptsShipping(),
+            form.getDescription()
+        ), currentUser.getId());
+        return new ModelAndView("redirect:/listing/" + updated.getId());
+    }
+
+    private ModelAndView detailsWithErrors(ListingDetailsForm form) {
+        var product = productService.getById(form.getProductId());
+        return new ModelAndView("listing/new/details")
+                .addObject("product", product)
+                .addObject("conditionOptions", buildConditionOptions());
     }
 
     @PostMapping("/{id}/cancel")
+    @PreAuthorize("@webPermissionService.canManageListing(authentication, #id)")
     public ModelAndView cancelListing(@PathVariable Long id, @CurrentUser User currentUser) {
         LOGGER.info("User {} canceled listing {}", currentUser.getId(), id);
         listingService.cancel(id, currentUser.getId());

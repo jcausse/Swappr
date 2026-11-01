@@ -71,6 +71,7 @@ public class AdminServiceImpl implements AdminService {
         return user;
     }
 
+    // TODO: Bro, this is just AI slop
     @Override
     @Transactional
     public User suspendUser(@NonNull String usernameOrEmail) {

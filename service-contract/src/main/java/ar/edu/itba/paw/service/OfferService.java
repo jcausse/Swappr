@@ -5,11 +5,13 @@ import ar.edu.itba.paw.model.Offer;
 import ar.edu.itba.paw.model.File;
 import ar.edu.itba.paw.model.Page;
 import ar.edu.itba.paw.model.User;
+import ar.edu.itba.paw.service.dto.FileDto;
 import ar.edu.itba.paw.service.dto.OfferCreationDto;
 import ar.edu.itba.paw.service.dto.OfferFilterDto;
 import ar.edu.itba.paw.model.OfferRating;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public interface OfferService {
@@ -32,9 +34,11 @@ public interface OfferService {
 
     int getPendingOffersCount(User seller);
 
-    Offer uploadProofOfPayment(Long offerId, Long buyerId, String filename, String alt, String contentType, byte[] data);
+    Map<String, Long> getOfferCountByStatus(User currentUser, Boolean incoming);
 
-    Offer uploadProofOfShipping(Long offerId, Long sellerId, String filename, String alt, String contentType, byte[] data, String trackingNumber);
+    Offer uploadProofOfPayment(Long offerId, Long buyerId, FileDto fileDto);
+
+    Offer uploadProofOfShipping(Long offerId, Long sellerId, FileDto fileDto, String trackingNumber);
 
     Offer confirmPayment(Long offerId, Long sellerId);
 

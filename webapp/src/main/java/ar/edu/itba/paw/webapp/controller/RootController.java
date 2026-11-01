@@ -1,5 +1,14 @@
 package ar.edu.itba.paw.webapp.controller;
 
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.servlet.ModelAndView;
+
 import ar.edu.itba.paw.model.Category;
 import ar.edu.itba.paw.model.Listing;
 import ar.edu.itba.paw.model.ListingSort;
@@ -8,15 +17,9 @@ import ar.edu.itba.paw.model.Page;
 import ar.edu.itba.paw.service.ListingService;
 import ar.edu.itba.paw.service.ProductService;
 import ar.edu.itba.paw.service.dto.ListingFilterDto;
-import org.springframework.stereotype.Controller;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.servlet.ModelAndView;
-
-import java.util.List;
 
 @Controller
+@PreAuthorize("permitAll()")
 public class RootController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RootController.class);

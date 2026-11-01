@@ -13,7 +13,9 @@ import ar.edu.itba.paw.persistence.ListingDao;
 import ar.edu.itba.paw.service.dto.ImageData;
 import ar.edu.itba.paw.service.dto.ListingCreationDto;
 import ar.edu.itba.paw.service.dto.ListingFilterDto;
+import ar.edu.itba.paw.service.dto.mail.ListingMailDto;
 import ar.edu.itba.paw.service.dto.ListingUpdateDto;
+import ar.edu.itba.paw.service.dto.mail.UserMailDto;
 import ar.edu.itba.paw.service.exception.BadParameterException;
 import ar.edu.itba.paw.service.exception.ForbiddenException;
 import ar.edu.itba.paw.service.exception.NotFoundException;
@@ -71,6 +73,10 @@ public class ListingServiceImpl implements ListingService {
             .hasActiveOffers(dto.hasActiveOffers())
             .provinceId(dto.provinceId())
             .acceptsShipping(Boolean.TRUE.equals(dto.acceptsShipping()) ? Boolean.TRUE : null)
+            .brand(dto.brand())
+            .model(dto.model())
+            .yearMin(dto.yearMin())
+            .yearMax(dto.yearMax())
             .build();
 
         return listingDao.search(filter);
@@ -80,7 +86,7 @@ public class ListingServiceImpl implements ListingService {
         return page == null || page < 1 ? 1 : page;
     }
 
-    private static ListingStatus parseStatus(final String value) {
+    private static ListingStatus parseStatus(final String value) { // TODO: SACAR LOS PARSEOS Y HACER QUE EL FORM TOME UN ENUM USANDO CONVERTERS
         return value == null || value.isBlank()
             ? null
             : ListingStatus.fromString(value).orElse(null);
@@ -151,7 +157,7 @@ public class ListingServiceImpl implements ListingService {
         LOGGER.info("Listing created: id={}, title='{}', creatorId={}, price={}, images={}",
                 listing.getId(), listing.getTitle(), creator.getId(), dto.price(), imageIds.size());
 
-        mailingService.sendListingPublishedEmail(creator, listing);
+        mailingService.sendListingPublishedEmail(UserMailDto.from(creator), ListingMailDto.from(listing));
 
         return listing;
     }
@@ -175,8 +181,12 @@ public class ListingServiceImpl implements ListingService {
             .orElseThrow(() -> new BadParameterException("Invalid buyerId"));
         final User seller = listing.getCreator();
 
-        mailingService.sendPurchaseSellerEmail(seller, buyer, listing, message);
-        mailingService.sendPurchaseBuyerEmail(buyer, seller, listing);
+        final var sellerMail = UserMailDto.from(seller);
+        final var buyerMail = UserMailDto.from(buyer);
+        final var listingMail = ListingMailDto.from(listing);
+
+        mailingService.sendPurchaseSellerEmail(sellerMail, buyerMail, listingMail, message);
+        mailingService.sendPurchaseBuyerEmail(buyerMail, sellerMail, listingMail);
 
         LOGGER.info("Listing purchased: id={}, buyerId={}, sellerId={}", id, buyerId, seller.getId());
         return listing;

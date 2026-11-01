@@ -1,12 +1,10 @@
 package ar.edu.itba.paw.webapp.controller;
 
-import ar.edu.itba.paw.model.Listing;
-import ar.edu.itba.paw.model.Offer;
 import ar.edu.itba.paw.model.User;
 import ar.edu.itba.paw.service.OfferService;
-import ar.edu.itba.paw.service.exception.NotFoundException;
 import ar.edu.itba.paw.webapp.auth.CurrentUser;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import javax.servlet.http.HttpServletRequest;
 import java.net.URI;
 import org.springframework.stereotype.Controller;
@@ -25,6 +23,7 @@ public class OfferController {
     private final OfferService offerService;
 
     @PostMapping("/{offerId}/accept")
+    @PreAuthorize("@webPermissionService.canManageOfferAsSeller(authentication, #offerId)")
     public ModelAndView acceptOffer(@PathVariable Long offerId, @CurrentUser User currentUser) {
         LOGGER.info("User {} accepted offer {}", currentUser.getId(), offerId);
         offerService.accept(offerId, currentUser.getId());
@@ -33,6 +32,7 @@ public class OfferController {
     }
 
     @PostMapping("/{offerId}/reject")
+    @PreAuthorize("@webPermissionService.canManageOfferAsSeller(authentication, #offerId)")
     public ModelAndView rejectOffer(@PathVariable Long offerId, @CurrentUser User currentUser) {
         LOGGER.info("User {} rejected offer {}", currentUser.getId(), offerId);
         offerService.reject(offerId, currentUser.getId());
@@ -41,25 +41,28 @@ public class OfferController {
     }
 
     @PostMapping("/{offerId}/withdraw")
+    @PreAuthorize("@webPermissionService.canManageOfferAsBuyer(authentication, #offerId)")
     public ModelAndView withdrawOffer(@PathVariable Long offerId,
                                       @CurrentUser User currentUser,
                                       HttpServletRequest request) {
         LOGGER.info("User {} withdrew offer {}", currentUser.getId(), offerId);
-        final Offer offer = offerService.getById(offerId)
-                .orElseThrow(() -> NotFoundException.createFor("Offer"));           // TODO: Mover al Service
 
-        final Listing listing = offer.getListing();
-        offerService.withdraw(offerId, currentUser.getId());
+        final var offer = offerService.withdraw(offerId, currentUser.getId());
 
-        String redirectUrl = "/listing/" + listing.getId();
+        var redirectUrl = "/listing/" + offer.getListing().getId();
         final var referer = request.getHeader("Referer");
-        if (referer != null && isSameHost(referer, request) && (referer.contains("/account/my-offers") || referer.contains("/account/incoming-offers"))) {
+        if (
+            referer != null &&
+            isSameHost(referer, request) &&
+            (referer.contains("/account/my-offers") || referer.contains("/account/incoming-offers"))
+        ) {
             redirectUrl = referer;
         }
         return new ModelAndView("redirect:" + redirectUrl);
     }
 
     @PostMapping("/{offerId}/confirm-payment")
+    @PreAuthorize("@webPermissionService.canManageOfferAsSeller(authentication, #offerId)")
     public ModelAndView confirmPayment(@PathVariable Long offerId, @CurrentUser User currentUser) {
         LOGGER.info("User {} confirmed payment for offer {}", currentUser.getId(), offerId);
         offerService.confirmPayment(offerId, currentUser.getId());

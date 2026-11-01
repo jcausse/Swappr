@@ -1,5 +1,6 @@
 package ar.edu.itba.paw.webapp.form;
 
+import ar.edu.itba.paw.service.dto.ImageData;
 import ar.edu.itba.paw.webapp.form.validation.EmptyOrSize;
 import ar.edu.itba.paw.webapp.form.validation.FieldMatch;
 import ar.edu.itba.paw.webapp.form.validation.ValidFile;
@@ -7,6 +8,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.util.Optional;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
@@ -36,4 +40,22 @@ public class UserEditForm {
 
     @NotEmpty
     private String preferredLanguage;
+
+    public Optional<ImageData> getProfilePicture() {
+        if (this.profilePicture == null || this.profilePicture.isEmpty()) {
+            return Optional.empty();
+        }
+
+        try {
+            return Optional.of(new ImageData(
+                this.profilePicture.getBytes(),
+                this.profilePicture.getOriginalFilename(),
+                this.profilePicture.getContentType()
+            ));
+        } catch (IOException e) {
+            var rte = new RuntimeException("Failed to read profile picture for user profile modification");
+            rte.initCause(e);
+            throw rte;
+        }
+    }
 }

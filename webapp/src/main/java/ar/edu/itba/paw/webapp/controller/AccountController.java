@@ -1,6 +1,5 @@
 package ar.edu.itba.paw.webapp.controller;
 
-import java.io.IOException;
 import java.util.Arrays;
 
 import javax.validation.Valid;
@@ -14,6 +13,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,7 +24,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
 import ar.edu.itba.paw.model.File;
-import ar.edu.itba.paw.model.Listing;
 import ar.edu.itba.paw.model.ListingSort;
 import ar.edu.itba.paw.model.ListingStatus;
 import ar.edu.itba.paw.model.Offer;
@@ -36,7 +35,6 @@ import ar.edu.itba.paw.service.OfferService;
 import ar.edu.itba.paw.service.dto.ListingFilterDto;
 import ar.edu.itba.paw.service.dto.OfferFilterDto;
 import ar.edu.itba.paw.service.exception.BadParameterException;
-import ar.edu.itba.paw.service.exception.ForbiddenException;
 import ar.edu.itba.paw.service.exception.NotFoundException;
 import ar.edu.itba.paw.webapp.auth.CurrentUser;
 import ar.edu.itba.paw.webapp.form.ListingFilterForm;
@@ -61,6 +59,7 @@ public class AccountController {
     private final MessageSource messageSource;
 
     @GetMapping
+    @PreAuthorize("isAuthenticated()")
     public ModelAndView index(@CurrentUser User currentUser) {
         LOGGER.debug("User {} accessing account index", currentUser.getId());
         return new ModelAndView("account/index")
@@ -68,6 +67,7 @@ public class AccountController {
     }
 
     @GetMapping("/listings")
+    @PreAuthorize("isAuthenticated()")
     public ModelAndView listings(@CurrentUser User currentUser, @ModelAttribute("filterForm") ListingFilterForm filterForm) {
         LOGGER.debug("User {} accessing account listings", currentUser.getId());
 
@@ -92,7 +92,7 @@ public class AccountController {
             .map(s -> {
                 String key;
                 if (s == ListingSort.RECENT) key = "discovery.sort.recent";
-                else if (s == ListingSort.PRICE_ASC) key = "discovery.sort.price_asc";
+                else if (s == ListingSort.PRICE_ASC) key = "discovery.sort.price_asc"; // TODO: TRADUCCION DUPLICADA
                 else if (s == ListingSort.PRICE_DESC) key = "discovery.sort.price_desc";
                 else if (s == ListingSort.NAME_ASC) key = "account.listings.sort.name_asc";
                 else if (s == ListingSort.NAME_DESC) key = "account.listings.sort.name_desc";
@@ -110,6 +110,7 @@ public class AccountController {
     }
 
     @GetMapping("/incoming-offers")
+    @PreAuthorize("isAuthenticated()")
     public ModelAndView incomingOffers(@CurrentUser User currentUser, @ModelAttribute("filterForm") OfferFilterForm filterForm) {
         LOGGER.debug("User {} accessing incoming offers", currentUser.getId());
         if (filterForm.getStatusGroup() == null || filterForm.getStatusGroup().isBlank()) {
@@ -133,10 +134,12 @@ public class AccountController {
                 .addObject("offerPage", offerPage)
                 .addObject("offers", offerPage.getContent())
                 .addObject("statusGroupOptions", statusGroupOptions)
+                .addObject("offerCountByStatus", offerService.getOfferCountByStatus(currentUser, true))
                 .addObject("pendingOffersCount", getPendingOffersCount(currentUser));
     }
 
     @GetMapping("/my-offers")
+    @PreAuthorize("isAuthenticated()")
     public ModelAndView myOffers(@CurrentUser User currentUser, @ModelAttribute("filterForm") OfferFilterForm filterForm) {
         LOGGER.debug("User {} accessing my offers", currentUser.getId());
         if (filterForm.getStatusGroup() == null || filterForm.getStatusGroup().isBlank()) {
@@ -160,6 +163,7 @@ public class AccountController {
                 .addObject("offerPage", offerPage)
                 .addObject("offers", offerPage.getContent())
                 .addObject("statusGroupOptions", statusGroupOptions)
+                .addObject("offerCountByStatus", offerService.getOfferCountByStatus(currentUser, false))
                 .addObject("pendingOffersCount", getPendingOffersCount(currentUser));
     }
 
@@ -167,38 +171,24 @@ public class AccountController {
 		return offerService.getPendingOffersCount(user);
 	}
 
-    // Offer detail page - seller view
     @GetMapping("/incoming-offers/{offerId}")
+    @PreAuthorize("@webPermissionService.canManageOfferAsSeller(authentication, #offerId)")
     public ModelAndView incomingOfferDetail(@PathVariable Long offerId, @CurrentUser User currentUser) {
         LOGGER.debug("User {} viewing incoming offer {}", currentUser.getId(), offerId);
-        final Offer offer = offerService.getById(offerId)
-                .orElseThrow(() -> NotFoundException.createFor("Offer"));
 
-        final Listing listing = offer.getListing();
-        final Long currentUserId = currentUser.getId();
-
-        // Verify the current user is the seller (listing creator)
-        if (!listing.getCreator().getId().equals(currentUserId)) {
-            throw new ForbiddenException("Not authorized to view this offer");
-        }
-
-        var mav = new ModelAndView("account/incomingOfferDetail");
-        mav.addObject("offer", offer);
-        mav.addObject("pendingOffersCount", getPendingOffersCount(currentUser));
-        return mav;
+        return new ModelAndView("account/incomingOfferDetail")
+                .addObject("offer", offerService.getById(offerId).orElseThrow(() -> NotFoundException.createFor("Offer")))
+                .addObject("pendingOffersCount", getPendingOffersCount(currentUser));
     }
 
-    // Proof of payment upload - buyer
     @GetMapping("/my-offers/{offerId}/payment")
+    @PreAuthorize("@webPermissionService.canManageOfferAsBuyer(authentication, #offerId)")
     public ModelAndView showProofOfPaymentUpload(@PathVariable Long offerId, @CurrentUser User currentUser) {
         LOGGER.debug("User {} accessing proof of payment upload for offer {}", currentUser.getId(), offerId);
         final Offer offer = offerService.getById(offerId)
                 .orElseThrow(() -> NotFoundException.createFor("Offer"));
 
-        if (!offer.getBuyer().getId().equals(currentUser.getId())) {
-            throw new ForbiddenException("Not authorized to upload proof of payment");
-        }
-
+        // TODO check this
         if (offer.getStatus() != OfferStatus.PENDING_PAYMENT) {
             throw new BadParameterException("Offer is not pending payment");
         }
@@ -211,6 +201,7 @@ public class AccountController {
     }
 
     @PostMapping("/my-offers/{offerId}/payment")
+    @PreAuthorize("@webPermissionService.canManageOfferAsBuyer(authentication, #offerId)")
     public ModelAndView uploadProofOfPayment(@PathVariable Long offerId,
                                               @CurrentUser User currentUser,
                                               @Valid @ModelAttribute("proofOfPaymentUploadForm") ProofOfPaymentUploadForm form,
@@ -223,35 +214,24 @@ public class AccountController {
             return mav;
         }
 
-        try {
-            offerService.uploadProofOfPayment(
-                    offerId,
-                    currentUser.getId(),
-                    form.getFile().getOriginalFilename(),
-                    "Proof of payment for offer " + offerId,
-                    form.getFile().getContentType(),
-                    form.getFile().getBytes()
-            );
-            LOGGER.info("User {} uploaded proof of payment for offer {}", currentUser.getId(), offerId);
-        } catch (IOException e) {
-            LOGGER.error("Failed to read uploaded file for offer {}", offerId, e);
-            throw new RuntimeException("Failed to read uploaded file", e);
-        }
+        offerService.uploadProofOfPayment(
+                offerId,
+                currentUser.getId(),
+                form.getFileDto()
+        );
+        LOGGER.info("User {} uploaded proof of payment for offer {}", currentUser.getId(), offerId);
 
         return new ModelAndView("redirect:/account/my-offers?statusGroup=pending_payment");
     }
 
-    // Proof of shipping upload - seller
     @GetMapping("/my-offers/{offerId}/shipping")
+    @PreAuthorize("@webPermissionService.canManageOfferAsSeller(authentication, #offerId)")
     public ModelAndView showProofOfShippingUpload(@PathVariable Long offerId, @CurrentUser User currentUser) {
         LOGGER.debug("User {} accessing proof of shipping upload for offer {}", currentUser.getId(), offerId);
         final Offer offer = offerService.getById(offerId)
                 .orElseThrow(() -> NotFoundException.createFor("Offer"));
 
-        if (!offer.getListing().getCreator().getId().equals(currentUser.getId())) {
-            throw new ForbiddenException("Not authorized to upload proof of shipping");
-        }
-
+        // TODO check this
         if (offer.getStatus() != OfferStatus.PENDING_PAYMENT) {
             throw new BadParameterException("Offer is not pending payment");
         }
@@ -264,6 +244,7 @@ public class AccountController {
     }
 
     @PostMapping("/my-offers/{offerId}/shipping")
+    @PreAuthorize("@webPermissionService.canManageOfferAsSeller(authentication, #offerId)")
     public ModelAndView uploadProofOfShipping(@PathVariable Long offerId,
                                                @CurrentUser User currentUser,
                                                @Valid @ModelAttribute("proofOfShippingUploadForm") ProofOfShippingUploadForm form,
@@ -276,35 +257,19 @@ public class AccountController {
             return mav;
         }
 
-        try {
-            byte[] fileData = null;
-            String filename = null;
-            String contentType = null;
-            if (form.getFile() != null && !form.getFile().isEmpty()) {          // TODO: Usar Bean Validation
-                fileData = form.getFile().getBytes();
-                filename = form.getFile().getOriginalFilename();
-                contentType = form.getFile().getContentType();
-            }
-            offerService.uploadProofOfShipping(
-                    offerId,
-                    currentUser.getId(),
-                    filename,
-                    "Proof of shipping for offer " + offerId,
-                    contentType,
-                    fileData,
-                    form.getTrackingNumber()
-            );
-            LOGGER.info("User {} uploaded proof of shipping for offer {}", currentUser.getId(), offerId);
-        } catch (IOException e) {
-            LOGGER.error("Failed to read uploaded file for offer {}", offerId, e);
-            throw new RuntimeException("Failed to read uploaded file", e);
-        }
+        offerService.uploadProofOfShipping(
+                offerId,
+                currentUser.getId(),
+                form.getFileDto(),
+                form.getTrackingNumber()
+        );
+        LOGGER.info("User {} uploaded proof of shipping for offer {}", currentUser.getId(), offerId);
 
         return new ModelAndView("redirect:/account/incoming-offers?statusGroup=pending_payment");
     }
 
-    // Download proof of payment - buyer or seller
     @GetMapping("/my-offers/{offerId}/payment/download")
+    @PreAuthorize("@webPermissionService.canAccessOffer(authentication, #offerId)")
     public ResponseEntity<Resource> downloadProofOfPayment(@PathVariable Long offerId, @CurrentUser User currentUser) {
         LOGGER.debug("User {} downloading proof of payment for offer {}", currentUser.getId(), offerId);
         final Long currentUserId = currentUser.getId();
@@ -320,8 +285,8 @@ public class AccountController {
                 .body(resource);
     }
 
-    // Download proof of shipping - buyer or seller
     @GetMapping("/my-offers/{offerId}/shipping/download")
+    @PreAuthorize("@webPermissionService.canAccessOffer(authentication, #offerId)")
     public ResponseEntity<Resource> downloadProofOfShipping(@PathVariable Long offerId, @CurrentUser User currentUser) {
         LOGGER.debug("User {} downloading proof of shipping for offer {}", currentUser.getId(), offerId);
         final Long currentUserId = currentUser.getId();
@@ -337,29 +302,16 @@ public class AccountController {
                 .body(resource);
     }
 
-    // Rate offer page
     @GetMapping("/rate/{offerId}")
+    @PreAuthorize("@webPermissionService.canAccessOffer(authentication, #offerId)")
     public ModelAndView showRateForm(@PathVariable Long offerId, @CurrentUser User currentUser,
                                       @ModelAttribute("rateForm") RateForm rateForm) {
         final Offer offer = offerService.getById(offerId)
                 .orElseThrow(() -> NotFoundException.createFor("Offer"));
 
+        // TODO check this
         if (offer.getStatus() != OfferStatus.ACCEPTED) {
             throw new BadParameterException("Only accepted offers can be rated");
-        }
-
-        final Long currentUserId = currentUser.getId();
-        final boolean isBuyer = offer.getBuyer().getId().equals(currentUserId);
-        final boolean isSeller = offer.getListing().getCreator().getId().equals(currentUserId);
-
-        if (!isBuyer && !isSeller) {
-            throw new ForbiddenException("You did not participate in this offer");
-        }
-
-        // Check if already rated
-        boolean alreadyRated = isBuyer ? offer.getSellerRating().isPresent() : offer.getBuyerRating().isPresent();
-        if (alreadyRated) {
-            throw new BadParameterException("You have already rated this offer");
         }
 
         var mav = new ModelAndView("account/rate");
@@ -369,6 +321,7 @@ public class AccountController {
     }
 
     @PostMapping("/rate/{offerId}")
+    @PreAuthorize("@webPermissionService.canAccessOffer(authentication, #offerId)")
     public ModelAndView submitRateForm(@PathVariable Long offerId,
                                         @CurrentUser User currentUser,
                                         @Valid @ModelAttribute("rateForm") RateForm rateForm,
@@ -385,6 +338,7 @@ public class AccountController {
 
         offerService.rate(offer, currentUser, rateForm.getRating(), rateForm.getReviewText());
 
+        // TODO check this
         final Long currentUserId = currentUser.getId();
         final boolean isBuyer = offer.getBuyer().getId().equals(currentUserId);
 

@@ -12,12 +12,16 @@ public record ListingFilterDto(
     String condition,
     Boolean acceptsTrade,
     String query,
-    String sort,
+    String sort,    // TODO: SACAR LOS PARSEOS Y HACER QUE EL FORM TOME UN ENUM USANDO CONVERTERS
     Long creatorId,
     String status,
     Integer page,
     Integer pageSize,
     Boolean hasActiveOffers,
     Long provinceId,
-    Boolean acceptsShipping
+    Boolean acceptsShipping,
+    String brand,
+    String model,
+    Integer yearMin,
+    Integer yearMax
 ) {}
