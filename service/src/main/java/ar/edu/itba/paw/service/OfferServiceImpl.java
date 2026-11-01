@@ -495,17 +495,18 @@ public class OfferServiceImpl implements OfferService {
             if (!updated) {
                 throw new BadParameterException("You have already rated this offer");
             }
+            offer.setSellerRating(rating);
             userDao.incrementSellerRatingCounter(seller.getId(), rating);
         } else {
             final boolean updated = offerDao.setBuyerRating(offer.getId(), rating);
             if (!updated) {
                 throw new BadParameterException("You have already rated this offer");
             }
+            offer.setBuyerRating(rating);
             userDao.incrementBuyerRatingCounter(buyer.getId(), rating);
         }
 
-        // FIXME unnecessary fetch
-        return getById(offer.getId()).orElseThrow();
+        return offer;
     }
 
     @Override
