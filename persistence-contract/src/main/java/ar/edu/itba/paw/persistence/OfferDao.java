@@ -11,6 +11,7 @@ import ar.edu.itba.paw.model.OfferRating;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public interface OfferDao {
@@ -30,6 +31,8 @@ public interface OfferDao {
     List<Offer> rejectPendingOffers(Long listingId, Long exceptOfferId);
 
     int countPendingBySeller(User seller);
+
+    Map<String, Long> countByStatus(User currentUser, Boolean incoming);
 
     boolean updateProofOfPaymentId(Long offerId, Long proofOfPaymentId);
 

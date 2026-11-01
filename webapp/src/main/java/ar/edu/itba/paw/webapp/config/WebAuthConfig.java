@@ -8,6 +8,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.Resource;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -23,6 +24,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Configuration
 @EnableWebSecurity
+@EnableGlobalMethodSecurity(prePostEnabled = true)
 @ComponentScan("ar.edu.itba.paw.webapp.auth")
 public class WebAuthConfig extends WebSecurityConfigurerAdapter {
 
@@ -69,47 +71,7 @@ public class WebAuthConfig extends WebSecurityConfigurerAdapter {
             .invalidSessionUrl("/")
 
             /* Access Control */
-            .and().authorizeRequests()
-
-                /* Administrator Back-office */
-                .antMatchers("/admin")                              // Administrator panel root
-                    .hasRole(Role.ADMIN.getRoleName())
-                .antMatchers("/admin/**")                           // Administrator panel subpages
-                    .hasRole(Role.ADMIN.getRoleName())
-
-                /* Login, Register, Logout and Password Recovery */
-                .antMatchers("/login").anonymous()                  // User login page
-                .antMatchers("/register").anonymous()               // User registration page
-                .antMatchers("/logout").authenticated()             // User logout endpoint (Spring-managed)
-                .antMatchers("/recovery/**").permitAll()            // Password recovery page
-                .antMatchers("/verify/**").permitAll()              // Email verification page
-
-                /* Profiles and User Accounts */
-                .antMatchers("/profile").authenticated()            // Current user's profile
-                .antMatchers("/profile/edit").authenticated()       // Profile editing
-                .antMatchers("/profile/**").permitAll()             // Profiles of users other than the current user
-                .antMatchers("/account/**").authenticated()         // Current user account details and settings
-
-                /* Language Selector */
-                .antMatchers("/language/**").permitAll()            // Language selector in the navbar
-
-                /* Sell Page (create new listing) */
-                .antMatchers("/listing/new/**").authenticated()     // Listing creation
-
-                /* Listings */
-                .antMatchers("/listing/**").permitAll()             // Listings
-
-                /* Images */
-                .antMatchers("/image/**").permitAll()               // Images
-
-                /* Landing */
-                .antMatchers("/").permitAll()                       // Landing page
-
-                /* Miscellaneous */
-                .antMatchers("/appinfo").permitAll()                // Deploy info
-
-                /* Default */
-                .anyRequest().authenticated()                         // Non-listed endpoints require authentication
+            .and().authorizeRequests().anyRequest().permitAll() // Disable access control as we're using method security (PreAuthorize)
 
             /* Login */
             .and().formLogin()

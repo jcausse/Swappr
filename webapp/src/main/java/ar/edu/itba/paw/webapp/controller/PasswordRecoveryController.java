@@ -1,24 +1,27 @@
 package ar.edu.itba.paw.webapp.controller;
 
-import ar.edu.itba.paw.service.PasswordRecoveryService;
-import ar.edu.itba.paw.service.enumeration.OneTimePasswordVerificationResult;
-import ar.edu.itba.paw.webapp.auth.AuthHelper;
-import ar.edu.itba.paw.webapp.form.PasswordRecoveryRequestForm;
-import ar.edu.itba.paw.webapp.form.PasswordRecoveryVerificationForm;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Controller;
+import javax.validation.Valid;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.servlet.ModelAndView;
 
-import javax.validation.Valid;
+import ar.edu.itba.paw.service.PasswordRecoveryService;
+import ar.edu.itba.paw.service.enumeration.OneTimePasswordVerificationResult;
+import ar.edu.itba.paw.webapp.auth.AuthHelper;
+import ar.edu.itba.paw.webapp.form.PasswordRecoveryRequestForm;
+import ar.edu.itba.paw.webapp.form.PasswordRecoveryVerificationForm;
+import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @Controller
+@PreAuthorize("permitAll()")
 public class PasswordRecoveryController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PasswordRecoveryController.class);

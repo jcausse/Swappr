@@ -10,11 +10,28 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
+
 @Component
 @RequiredArgsConstructor
 public class AuthHelper {
 
     private final UserDetailsService userDetailsService;
+
+    public Optional<User> getCurrentUser() {
+        return getCurrentUser(SecurityContextHolder.getContext().getAuthentication());
+    }
+
+    public Optional<User> getCurrentUser(final Authentication auth) {
+        if (auth != null && auth.getPrincipal() instanceof AuthUserDetails authUserDetails) {
+            return Optional.of(authUserDetails.getDomainUser());
+        }
+        return Optional.empty();
+    }
+
+    public boolean isAuthenticated() {
+        return getCurrentUser().isPresent();
+    }
 
     public void login(final @NonNull String usernameOrEmail) {
         final UserDetails ud = userDetailsService.loadUserByUsername(usernameOrEmail);

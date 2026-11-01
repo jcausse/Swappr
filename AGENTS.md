@@ -38,6 +38,7 @@ While you as an AI agent are allowed to edit this file on your own, you must **a
   - `webapp` → Controllers, forms, JSP views, Spring config. Depends on `service-contract` (compile) and `service`/`persistence` (runtime).
 - **Never** leak `webapp` form classes into `service-contract` or `persistence-contract`.
 - **Never** leak DTOs from `service-contract` into `persistence-contract` — DAOs take domain models or flat query parameters.
+- **Never** import or throw Spring Security authentication/authorization classes (e.g., `AccessDeniedException`, `Authentication`, `SecurityContextHolder`) in `service` or `service-contract` (`service` only depends on `spring-security-crypto` for `PasswordEncoder`, never `spring-security-core`). Services must throw custom `service-contract` exceptions (such as `ForbiddenException`), while `GlobalExceptionHandler` in `webapp` handles both `ForbiddenException` (from `service`) and `AccessDeniedException` (from `@PreAuthorize` in `webapp`).
 - Schema constants live in `persistence` package `schema/` (e.g., `UserSchema.java`), used for native queries or legacy references. Those will be removed later.
 
 ## JSP Best Practices (Mandatory)
@@ -108,6 +109,7 @@ While you as an AI agent are allowed to edit this file on your own, you must **a
   related to access control lists.
 - Authentication is made using `username` and `password` and is handled by service `ar.edu.itba.paw.webapp.auth.AuthUserDetailsService`.
 - User details for Spring Security uses class `ar.edu.itba.paw.webapp.auth.AuthUserDetails`, which contains a domain user (`ar.edu.itba.paw.model.User`).
+- `ar.edu.itba.paw.webapp.auth.AuthHelper` is the single source of truth in `webapp` for reading or mutating `SecurityContextHolder` / `AuthUserDetails` (`getCurrentUser`, `isAuthenticated`, `login`, `update`). Do not duplicate `SecurityContextHolder` / `instanceof AuthUserDetails` checks elsewhere, and keep `WebPermissionService` strictly focused on `@PreAuthorize` authorization predicates.
 - Passwords must be BCrypt-encoded.
 
 ### Current User Resolution (`@CurrentUser`)
@@ -118,9 +120,7 @@ While you as an AI agent are allowed to edit this file on your own, you must **a
 - **In JSPs & Views**: `CurrentUserControllerAdvice` exposes `${currentUser}` (as `Optional<User>`) globally to all views and custom tags (such as `navbar.tag`). **Never** re-add `"currentUser"` to `ModelAndView` in controllers — the controller advice already supplies it to the view.
 - **Why `@ModelAttribute` in `@ControllerAdvice` cannot enforce authentication**: `@ModelAttribute` methods in a `@ControllerAdvice` run globally for **every request** across the entire application before any controller handler method is selected. A `@ModelAttribute` method that throws an exception when unauthenticated would break all public routes (including `/login`, `/register`, etc.). Argument resolvers, by contrast, are lazy and run on-demand only for the specific parameters declared by a handler.
 
-## JPA / Hibernate Conventions (Active Stage)
-
-The project has entered the **JPA / Hibernate ORM stage**. All domain models are unified JPA entities and DAOs are being migrated to use `EntityManager`.
+## JPA / Hibernate Conventions
 
 ### Entity Guidelines
 - **Unified Location**: All entities live directly in `ar.edu.itba.paw.model` (there is no `entity` subpackage; models are unified).
@@ -146,9 +146,6 @@ The project has entered the **JPA / Hibernate ORM stage**. All domain models are
 - **Embeddables & Value Objects**:
   - Domain value objects like `Price` are mapped as `@Embeddable` with a protected no-args constructor, `@AllArgsConstructor`, and Lombok `@Builder`.
   - Owning entities embed them with `@Embedded` (and `@AttributeOverride` where needed). In JPQL/HQL queries, navigate embeddable attributes using property dot notation (e.g., `l.price.amount`).
-- **DAO Migration to JPA (Completed)**:
-  - All 12 DAOs have been fully migrated from `JdbcTemplate` to `EntityManager` (`*JpaDao`).
-  - JDBC DAOs have been removed, and all DAO tests target the JPA implementations (`*JpaDaoTest`).
 
 ## Other Conventions
 
@@ -158,6 +155,7 @@ The project has entered the **JPA / Hibernate ORM stage**. All domain models are
 - Use Optional for return values which may not be present, but DO NOT use Optional as method parameters, as it is a code smell.
 - Prefer using `var` for type inference when possible.
 - DAOs (in `persistence` layer): Each DAO should manage one domain aggregate entity. DAOs must never call other DAOs, nor have them injected as dependencies. If DAO A needs entities or data from entity B, it queries it directly via `EntityManager`.
+- **Important: never use `Mockito.verify()`**. The usage of `Mockito.verify()` is strictly forbidden by the PAW course rules. Tests should NEVER use it.
 
 ## Mailing and Email Templates
 
