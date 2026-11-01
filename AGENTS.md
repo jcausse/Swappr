@@ -38,7 +38,7 @@ While you as an AI agent are allowed to edit this file on your own, you must **a
   - `webapp` → Controllers, forms, JSP views, Spring config. Depends on `service-contract` (compile) and `service`/`persistence` (runtime).
 - **Never** leak `webapp` form classes into `service-contract` or `persistence-contract`.
 - **Never** leak DTOs from `service-contract` into `persistence-contract` — DAOs take domain models or flat query parameters.
-- **Never** import or throw Spring Security authentication/authorization classes (e.g., `AccessDeniedException`, `Authentication`, `SecurityContextHolder`) in `service` or `service-contract`. Services must throw custom `service-contract` exceptions (such as `ForbiddenException`), while `GlobalExceptionHandler` in `webapp` handles both `ForbiddenException` (from `service`) and `AccessDeniedException` (from `@PreAuthorize` in `webapp`).
+- **Never** import or throw Spring Security authentication/authorization classes (e.g., `AccessDeniedException`, `Authentication`, `SecurityContextHolder`) in `service` or `service-contract` (`service` only depends on `spring-security-crypto` for `PasswordEncoder`, never `spring-security-core`). Services must throw custom `service-contract` exceptions (such as `ForbiddenException`), while `GlobalExceptionHandler` in `webapp` handles both `ForbiddenException` (from `service`) and `AccessDeniedException` (from `@PreAuthorize` in `webapp`).
 - Schema constants live in `persistence` package `schema/` (e.g., `UserSchema.java`), used for native queries or legacy references. Those will be removed later.
 
 ## JSP Best Practices (Mandatory)
