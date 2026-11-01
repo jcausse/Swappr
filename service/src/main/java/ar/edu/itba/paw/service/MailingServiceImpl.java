@@ -1,9 +1,9 @@
 package ar.edu.itba.paw.service;
 
 import ar.edu.itba.paw.model.Language;
-import ar.edu.itba.paw.model.Listing;
-import ar.edu.itba.paw.model.Offer;
-import ar.edu.itba.paw.model.User;
+import ar.edu.itba.paw.service.dto.mail.ListingMailDto;
+import ar.edu.itba.paw.service.dto.mail.OfferMailDto;
+import ar.edu.itba.paw.service.dto.mail.UserMailDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -47,33 +47,36 @@ public class MailingServiceImpl implements MailingService {
 
     @Async
     @Override
-    public void sendWelcomeEmail(User user) {
-        var context = new Context(localeOf(user));
+    public void sendWelcomeEmail(UserMailDto user) {
+        final var locale = localeOf(user);
+        var context = new Context(locale);
         context.setVariable("user", user);
         context.setVariable("baseUrl", baseUrl);
         context.setVariable("actionUrl", baseUrl + "/profile/" + user.getId());
 
-        String subject = messageSource.getMessage("email.welcome.subject", null, localeOf(user));
+        String subject = messageSource.getMessage("email.welcome.subject", null, locale);
         sendEmail(user.getEmail(), subject, "welcome", context);
     }
 
     @Async
     @Override
-    public void sendListingPublishedEmail(User seller, Listing listing) {
-        var context = new Context(localeOf(seller));
+    public void sendListingPublishedEmail(UserMailDto seller, ListingMailDto listing) {
+        final var locale = localeOf(seller);
+        var context = new Context(locale);
         context.setVariable("user", seller);
         context.setVariable("listing", listing);
         context.setVariable("baseUrl", baseUrl);
         context.setVariable("actionUrl", baseUrl + "/listing/" + listing.getId());
 
-        String subject = messageSource.getMessage("email.listing.subject", null, localeOf(seller));
+        String subject = messageSource.getMessage("email.listing.subject", null, locale);
         sendEmail(seller.getEmail(), subject, "listing-published", context);
     }
 
     @Async
     @Override
-    public void sendPurchaseSellerEmail(User seller, User buyer, Listing listing, String message) {
-        var context = new Context(localeOf(seller));
+    public void sendPurchaseSellerEmail(UserMailDto seller, UserMailDto buyer, ListingMailDto listing, String message) {
+        final var locale = localeOf(seller);
+        var context = new Context(locale);
         context.setVariable("seller", seller);
         context.setVariable("buyer", buyer);
         context.setVariable("listing", listing);
@@ -81,131 +84,148 @@ public class MailingServiceImpl implements MailingService {
         context.setVariable("baseUrl", baseUrl);
         context.setVariable("actionUrl", "mailto:" + buyer.getEmail());
 
-        String subject = messageSource.getMessage("email.purchase.seller.subject", null, localeOf(seller));
+        String subject = messageSource.getMessage("email.purchase.seller.subject", null, locale);
         sendEmail(seller.getEmail(), subject, "purchase-seller", context);
     }
 
     @Async
     @Override
-    public void sendPurchaseBuyerEmail(User buyer, User seller, Listing listing) {
-        var context = new Context(localeOf(buyer));
+    public void sendPurchaseBuyerEmail(UserMailDto buyer, UserMailDto seller, ListingMailDto listing) {
+        final var locale = localeOf(buyer);
+        var context = new Context(locale);
         context.setVariable("buyer", buyer);
         context.setVariable("seller", seller);
         context.setVariable("listing", listing);
         context.setVariable("baseUrl", baseUrl);
         context.setVariable("actionUrl", "mailto:" + seller.getEmail());
 
-        String subject = messageSource.getMessage("email.purchase.buyer.subject", null, localeOf(buyer));
+        String subject = messageSource.getMessage("email.purchase.buyer.subject", null, locale);
         sendEmail(buyer.getEmail(), subject, "purchase-buyer", context);
     }
 
     @Async
     @Override
-    public void sendNewOfferEmail(User seller, User buyer, Listing listing, Offer offer) {
-        var context = new Context(localeOf(seller));
-        context.setVariable("buyer", buyer);
-        context.setVariable("listing", listing);
+    public void sendNewOfferEmail(OfferMailDto offer) {
+        final var seller = offer.getSeller();
+        final var locale = localeOf(seller);
+        var context = new Context(locale);
+        context.setVariable("buyer", offer.getBuyer());
+        context.setVariable("listing", offer.getListing());
         context.setVariable("offer", offer);
         context.setVariable("baseUrl", baseUrl);
         context.setVariable("actionUrl", baseUrl + "/account/incoming-offers/" + offer.getId());
 
-        String subject = messageSource.getMessage("email.offer.new.subject", null, localeOf(seller));
+        String subject = messageSource.getMessage("email.offer.new.subject", null, locale);
         sendEmail(seller.getEmail(), subject, "offer-new", context);
     }
 
     @Async
     @Override
-    public void sendOfferRejectedEmail(User buyer, Listing listing, Offer offer) {
-        var context = new Context(localeOf(buyer));
+    public void sendOfferRejectedEmail(OfferMailDto offer) {
+        final var buyer = offer.getBuyer();
+        final var locale = localeOf(buyer);
+        var context = new Context(locale);
         context.setVariable("buyer", buyer);
-        context.setVariable("listing", listing);
+        context.setVariable("listing", offer.getListing());
         context.setVariable("offer", offer);
         context.setVariable("baseUrl", baseUrl);
 
-        String subject = messageSource.getMessage("email.offer.rejected.subject", null, localeOf(buyer));
+        String subject = messageSource.getMessage("email.offer.rejected.subject", null, locale);
         sendEmail(buyer.getEmail(), subject, "offer-rejected", context);
     }
 
     @Async
     @Override
-    public void sendOfferWithdrawnEmail(User seller, User buyer, Listing listing, Offer offer) {
-        var context = new Context(localeOf(seller));
+    public void sendOfferWithdrawnEmail(OfferMailDto offer) {
+        final var seller = offer.getSeller();
+        final var listing = offer.getListing();
+        final var locale = localeOf(seller);
+        var context = new Context(locale);
         context.setVariable("seller", seller);
-        context.setVariable("buyer", buyer);
+        context.setVariable("buyer", offer.getBuyer());
         context.setVariable("listing", listing);
         context.setVariable("offer", offer);
         context.setVariable("baseUrl", baseUrl);
         context.setVariable("actionUrl", baseUrl + "/listing/" + listing.getId());
 
-        String subject = messageSource.getMessage("email.offer.withdrawn.subject", null, localeOf(seller));
+        String subject = messageSource.getMessage("email.offer.withdrawn.subject", null, locale);
         sendEmail(seller.getEmail(), subject, "offer-withdrawn", context);
     }
 
     @Async
     @Override
-    public void sendOfferPendingPaymentEmail(User buyer, User seller, Listing listing, Offer offer) {
-        var context = new Context(localeOf(buyer));
+    public void sendOfferPendingPaymentEmail(OfferMailDto offer) {
+        final var buyer = offer.getBuyer();
+        final var locale = localeOf(buyer);
+        var context = new Context(locale);
         context.setVariable("buyer", buyer);
-        context.setVariable("seller", seller);
-        context.setVariable("listing", listing);
+        context.setVariable("seller", offer.getSeller());
+        context.setVariable("listing", offer.getListing());
         context.setVariable("offer", offer);
         context.setVariable("baseUrl", baseUrl);
         context.setVariable("actionUrl", baseUrl + "/account/my-offers/" + offer.getId() + "/payment");
 
-        String subject = messageSource.getMessage("email.offer.pendingPayment.subject", null, localeOf(buyer));
+        String subject = messageSource.getMessage("email.offer.pendingPayment.subject", null, locale);
         sendEmail(buyer.getEmail(), subject, "offer-pending-payment", context);
     }
 
     @Async
     @Override
-    public void sendPendingTransactionEmail(User seller, User buyer, Listing listing, Offer offer) {
-        var context = new Context(localeOf(seller));
+    public void sendPendingTransactionEmail(OfferMailDto offer) {
+        final var seller = offer.getSeller();
+        final var locale = localeOf(seller);
+        var context = new Context(locale);
         context.setVariable("seller", seller);
-        context.setVariable("buyer", buyer);
-        context.setVariable("listing", listing);
+        context.setVariable("buyer", offer.getBuyer());
+        context.setVariable("listing", offer.getListing());
         context.setVariable("offer", offer);
         context.setVariable("baseUrl", baseUrl);
         context.setVariable("actionUrl", baseUrl + "/account/incoming-offers/" + offer.getId());
 
-        String subject = messageSource.getMessage("email.pendingTransaction.subject", null, localeOf(seller));
+        String subject = messageSource.getMessage("email.pendingTransaction.subject", null, locale);
         sendEmail(seller.getEmail(), subject, "pending-transaction", context);
     }
 
     @Async
     @Override
-    public void sendProofOfPaymentUploadedEmail(User seller, User buyer, Listing listing, Offer offer) {
-        var context = new Context(localeOf(seller));
+    public void sendProofOfPaymentUploadedEmail(OfferMailDto offer) {
+        final var seller = offer.getSeller();
+        final var locale = localeOf(seller);
+        var context = new Context(locale);
         context.setVariable("seller", seller);
-        context.setVariable("buyer", buyer);
-        context.setVariable("listing", listing);
+        context.setVariable("buyer", offer.getBuyer());
+        context.setVariable("listing", offer.getListing());
         context.setVariable("offer", offer);
         context.setVariable("baseUrl", baseUrl);
         context.setVariable("actionUrl", baseUrl + "/account/incoming-offers/" + offer.getId());
 
-        String subject = messageSource.getMessage("email.proofOfPayment.uploaded.subject", null, localeOf(seller));
+        String subject = messageSource.getMessage("email.proofOfPayment.uploaded.subject", null, locale);
         sendEmail(seller.getEmail(), subject, "proof-of-payment-uploaded", context);
     }
 
     @Async
     @Override
-    public void sendProofOfShippingUploadedEmail(User buyer, User seller, Listing listing, Offer offer) {
-        var context = new Context(localeOf(buyer));
+    public void sendProofOfShippingUploadedEmail(OfferMailDto offer) {
+        final var buyer = offer.getBuyer();
+        final var locale = localeOf(buyer);
+        var context = new Context(locale);
         context.setVariable("buyer", buyer);
-        context.setVariable("seller", seller);
-        context.setVariable("listing", listing);
+        context.setVariable("seller", offer.getSeller());
+        context.setVariable("listing", offer.getListing());
         context.setVariable("offer", offer);
         context.setVariable("baseUrl", baseUrl);
-        context.setVariable("actionUrl", baseUrl + "/account/my-offers");
+        context.setVariable("actionUrl", baseUrl + "/account/my-offers?statusGroup=pending_payment");
         context.setVariable("trackingNumber", offer.getTrackingNumber());
 
-        String subject = messageSource.getMessage("email.proofOfShipping.uploaded.subject", null, localeOf(buyer));
+        String subject = messageSource.getMessage("email.proofOfShipping.uploaded.subject", null, locale);
         sendEmail(buyer.getEmail(), subject, "proof-of-shipping-uploaded", context);
     }
 
     @Async
     @Override
-    public void sendPasswordRecoveryEmail(User user, String otpValue) {
-        var context = new Context(localeOf(user));
+    public void sendPasswordRecoveryEmail(UserMailDto user, String otpValue) {
+        final var locale = localeOf(user);
+        var context = new Context(locale);
         context.setVariable("user", user);
         context.setVariable("otpValue", otpValue);
         context.setVariable("baseUrl", baseUrl);
@@ -213,14 +233,15 @@ public class MailingServiceImpl implements MailingService {
                 + URLEncoder.encode(user.getEmail(), StandardCharsets.UTF_8)
                 + "&otp=" + URLEncoder.encode(otpValue, StandardCharsets.UTF_8));
 
-        String subject = messageSource.getMessage("email.passwordRecovery.subject", null, localeOf(user));
+        String subject = messageSource.getMessage("email.passwordRecovery.subject", null, locale);
         sendEmail(user.getEmail(), subject, "password-recovery", context);
     }
 
     @Async
     @Override
-    public void sendVerificationEmail(User user, String otpValue) {
-        var context = new Context(localeOf(user));
+    public void sendVerificationEmail(UserMailDto user, String otpValue) {
+        final var locale = localeOf(user);
+        var context = new Context(locale);
         context.setVariable("user", user);
         context.setVariable("otpValue", otpValue);
         context.setVariable("baseUrl", baseUrl);
@@ -228,8 +249,34 @@ public class MailingServiceImpl implements MailingService {
                 + URLEncoder.encode(user.getEmail(), StandardCharsets.UTF_8)
                 + "&otp=" + URLEncoder.encode(otpValue, StandardCharsets.UTF_8));
 
-        String subject = messageSource.getMessage("email.verification.subject", null, localeOf(user));
+        String subject = messageSource.getMessage("email.verification.subject", null, locale);
         sendEmail(user.getEmail(), subject, "email-verification", context);
+    }
+
+    @Async
+    @Override
+    public void sendAccountSuspendedEmail(UserMailDto user) {
+        final var locale = localeOf(user);
+        var context = new Context(locale);
+        context.setVariable("user", user);
+        context.setVariable("baseUrl", baseUrl);
+        context.setVariable("actionUrl", baseUrl);
+
+        String subject = messageSource.getMessage("email.user.suspended.subject", null, locale);
+        sendEmail(user.getEmail(), subject, "user-suspended", context);
+    }
+
+    @Async
+    @Override
+    public void sendAccountUnsuspendedEmail(UserMailDto user) {
+        final var locale = localeOf(user);
+        var context = new Context(locale);
+        context.setVariable("user", user);
+        context.setVariable("baseUrl", baseUrl);
+        context.setVariable("actionUrl", baseUrl + "/login");
+
+        String subject = messageSource.getMessage("email.user.unsuspended.subject", null, locale);
+        sendEmail(user.getEmail(), subject, "user-unsuspended", context);
     }
 
     /**
@@ -237,37 +284,12 @@ public class MailingServiceImpl implements MailingService {
      * (not the acting user's request locale). This is what makes emails arrive in the
      * recipient's language regardless of who triggered the action.
      */
-    private static Locale localeOf(final User recipient) {
+    private static Locale localeOf(final UserMailDto recipient) {
         final Language language = recipient.getPreferredLanguage() != null
                 ? recipient.getPreferredLanguage()
                 : Language.getDefault();
-        return new Locale(language.getCode());
+        return Locale.of(language.getCode());
     }
-
-    @Async
-    @Override
-    public void sendAccountSuspendedEmail(User user) {
-        var context = new Context(localeOf(user));
-        context.setVariable("user", user);
-        context.setVariable("baseUrl", baseUrl);
-        context.setVariable("actionUrl", baseUrl);
-
-        String subject = messageSource.getMessage("email.user.suspended.subject", null, localeOf(user));
-        sendEmail(user.getEmail(), subject, "user-suspended", context);
-    }
-
-    @Async
-    @Override
-    public void sendAccountUnsuspendedEmail(User user) {
-        var context = new Context(localeOf(user));
-        context.setVariable("user", user);
-        context.setVariable("baseUrl", baseUrl);
-        context.setVariable("actionUrl", baseUrl + "/login");
-
-        String subject = messageSource.getMessage("email.user.unsuspended.subject", null, localeOf(user));
-        sendEmail(user.getEmail(), subject, "user-unsuspended", context);
-    }
-
 
     private void sendEmail(String to, String subject, String templateName, Context context) {
         final var maskedEmail = maskEmail(to);

@@ -26,7 +26,8 @@
                         <c:if test="${not status.last}">,</c:if>
                     </c:forEach>
                 </c:set>
-                <paw:imageGallery id="listing-gallery" images="${fn:split(imageUrlsList, ',')}" alt="${listing.title}" />
+                <c:set var="galleryImages" value="${empty listing.imageIds ? null : fn:split(imageUrlsList, ',')}"/>
+                <paw:imageGallery id="listing-gallery" images="${galleryImages}" alt="${listing.title}" />
                 <paw:listingHotBadge listing="${listing}" />
             </paw:card>
         </div>

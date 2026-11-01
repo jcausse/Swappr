@@ -1,12 +1,10 @@
 package ar.edu.itba.paw.webapp.controller;
 
 import ar.edu.itba.paw.model.*;
-import ar.edu.itba.paw.service.EmailVerificationService;
 import ar.edu.itba.paw.service.ListingService;
 import ar.edu.itba.paw.service.RatingService;
 import ar.edu.itba.paw.service.ProvinceService;
 import ar.edu.itba.paw.service.UserService;
-import ar.edu.itba.paw.service.dto.ImageData;
 import ar.edu.itba.paw.service.dto.ListingFilterDto;
 import ar.edu.itba.paw.service.dto.UserCreationDto;
 import ar.edu.itba.paw.service.dto.UserEditDto;
@@ -24,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -47,7 +46,6 @@ public class UserController {
     private final UserService userService;
     private final ListingService listingService;
     private final RatingService ratingService;
-    private final EmailVerificationService emailVerificationService;
     private final ProvinceService provinceService;
     private final AuthHelper authHelper;
     private final MessageSource messageSource;
@@ -58,6 +56,7 @@ public class UserController {
     /* PROFILE */
 
     @GetMapping("/profile/{id}")
+    @PreAuthorize("permitAll()")
     public ModelAndView profile(@PathVariable Long id, @CurrentUser(required = false) User currentUser,
                                 @ModelAttribute("ratingFilterForm") RatingFilterForm ratingFilterForm) {
         LOGGER.debug("Accessing profile for user id: {}", id);
@@ -65,7 +64,7 @@ public class UserController {
         final boolean isSelfRequest = currentUser != null && Objects.equals(id, currentUser.getId());
 
         final var filter = ListingFilterDto.builder()
-                .sort(ListingSort.RECENT.getKey())
+                .sort(ListingSort.RECENT.getKey())  // TODO: SACAR LOS PARSEOS Y HACER QUE EL FORM TOME UN ENUM USANDO CONVERTERS
                 .creatorId(user.getId())
                 .status(ListingStatus.ACTIVE.name())
                 .page(1)
@@ -130,6 +129,7 @@ public class UserController {
     }
 
     @GetMapping("/profile")
+    @PreAuthorize("isAuthenticated()")
     public ModelAndView currentUserProfile(@CurrentUser User currentUser) {
         LOGGER.debug("Accessing current user profile for user {}", currentUser.getId());
         return new ModelAndView("redirect:/profile/" + currentUser.getId());
@@ -138,6 +138,7 @@ public class UserController {
     /* PROFILE EDIT */
 
     @GetMapping("/profile/edit")
+    @PreAuthorize("isAuthenticated()")
     public ModelAndView editProfileForm(@CurrentUser User currentUser, @ModelAttribute("userEditForm") UserEditForm form) {
         LOGGER.debug("Accessing profile edit form for user {}", currentUser.getId());
         form.setDisplayName(currentUser.getDisplayName());
@@ -177,6 +178,7 @@ public class UserController {
     }
 
     @PostMapping("/profile/edit")
+    @PreAuthorize("isAuthenticated()")
     public ModelAndView editProfile(
             @CurrentUser User currentUser,
             @Valid @ModelAttribute("userEditForm") UserEditForm form,
@@ -212,12 +214,14 @@ public class UserController {
     /* REGISTER */
 
     @GetMapping("/register")
+    @PreAuthorize("not isAuthenticated()")
     public ModelAndView registerForm(@ModelAttribute("userForm") UserForm form) {
         LOGGER.debug("Accessing register form");
         return new ModelAndView("register");
     }
 
     @PostMapping("/register")
+    @PreAuthorize("not isAuthenticated()")
     public ModelAndView register(@Valid @ModelAttribute("userForm") UserForm form, BindingResult errors) {
         if(errors.hasErrors()) {
             LOGGER.debug("Validation failed for registration form");
@@ -227,7 +231,7 @@ public class UserController {
         LOGGER.info("User registration submitted: {}", form.getUsername());
         LOGGER.debug("Registering new user with username: {}", form.getUsername());
 
-        var user = userService.create(new UserCreationDto(
+        userService.create(new UserCreationDto(
             form.getUsername(),
             form.getDisplayName(),
             form.getEmail(),
@@ -235,14 +239,13 @@ public class UserController {
             form.getProfilePicture().orElse(null)
         ));
 
-        emailVerificationService.sendVerificationEmail(user);
-
         return new ModelAndView("redirect:/verify?email=" + URLEncoder.encode(form.getEmail().trim().toLowerCase(), StandardCharsets.UTF_8));
     }
 
     /* LOGIN */
 
     @GetMapping("/login")
+    @PreAuthorize("not isAuthenticated()")
     public ModelAndView loginForm() {
         LOGGER.debug("Accessing login form");
         return new ModelAndView("login");
