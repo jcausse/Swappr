@@ -1,7 +1,9 @@
 
-`getListingInfoSummary`:
+`getListingInfoSummary` (`ProductJpaDao`):
   - Hay una mejor forma de hacerlo sin castear un `Object[]`?
   - Llamada a `sorted()` se puede evitar?
+
+Idem `countByStatus` (`OfferJpaDao`)
 
 ---
 
