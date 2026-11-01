@@ -1,13 +1,14 @@
 package ar.edu.itba.paw.webapp.controller.advice;
 
 import ar.edu.itba.paw.service.exception.BadParameterException;
+import ar.edu.itba.paw.service.exception.ForbiddenException;
 import ar.edu.itba.paw.service.exception.NotFoundException;
-import ar.edu.itba.paw.webapp.auth.AuthUserDetails;
+import ar.edu.itba.paw.webapp.auth.AuthHelper;
 import ar.edu.itba.paw.webapp.exception.UserNotAuthenticatedException;
 import ar.edu.itba.paw.webapp.exception.UserNotFoundException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -22,9 +23,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @ControllerAdvice
+@RequiredArgsConstructor
 public class GlobalExceptionHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
+    private final AuthHelper authHelper;
 
     /* Routes that do not have a mapping fall here */
     @ExceptionHandler(NoHandlerFoundException.class)
@@ -70,13 +74,13 @@ public class GlobalExceptionHandler {
         return new ModelAndView("error/unauthorized");
     }
 
-    @ExceptionHandler(AccessDeniedException.class)
+    @ExceptionHandler({AccessDeniedException.class, ForbiddenException.class})
     @ResponseStatus(HttpStatus.FORBIDDEN)
-    public ModelAndView handleForbidden(AccessDeniedException ex) {
+    public ModelAndView handleForbidden(RuntimeException ex) {
         // If user is not authenticated, we want to treat it as such instead of just showing 403 forbidden
-        var auth = SecurityContextHolder.getContext().getAuthentication();
-        var isAuthenticated = auth != null && auth.getPrincipal() instanceof AuthUserDetails;
-        if (!isAuthenticated) throw new UserNotAuthenticatedException("User not authenticated", ex);
+        if (!authHelper.isAuthenticated()) {
+            throw new UserNotAuthenticatedException("User not authenticated", ex);
+        }
 
         LOGGER.warn("Forbidden access: {}", ex.getMessage());
         return new ModelAndView("error/forbidden");

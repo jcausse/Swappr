@@ -15,6 +15,7 @@ import ar.edu.itba.paw.persistence.UserDao;
 import ar.edu.itba.paw.service.dto.FileDto;
 import ar.edu.itba.paw.service.dto.OfferCreationDto;
 import ar.edu.itba.paw.service.exception.BadParameterException;
+import ar.edu.itba.paw.service.exception.ForbiddenException;
 import ar.edu.itba.paw.service.exception.NotFoundException;
 import org.junit.Assert;
 import org.junit.Test;
@@ -22,7 +23,6 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.springframework.security.access.AccessDeniedException;
 
 import java.math.BigDecimal;
 import java.time.Duration;
@@ -284,7 +284,7 @@ public class OfferServiceImplTest {
         Assert.assertEquals(OFFER_ID, (long) result.getId());
     }
 
-    @Test(expected = AccessDeniedException.class)
+    @Test(expected = ForbiddenException.class)
     public void testAcceptByNonSellerThrows() {
         // Arrange
         givenOffer(buildFakeOffer(OfferStatus.PENDING));
@@ -315,7 +315,7 @@ public class OfferServiceImplTest {
     /* reject                                                                                          */
     /* ---------------------------------------------------------------------------------------------- */
 
-    @Test(expected = AccessDeniedException.class)
+    @Test(expected = ForbiddenException.class)
     public void testRejectByNonSellerThrows() {
         // Arrange
         givenOffer(buildFakeOffer(OfferStatus.PENDING));
@@ -569,7 +569,7 @@ public class OfferServiceImplTest {
         offerService.rate(offer, buildFakeUser(BUYER_ID), OfferRating.POSITIVE);
     }
 
-    @Test(expected = AccessDeniedException.class)
+    @Test(expected = ForbiddenException.class)
     public void testRateByOutsiderThrows() {
         // Arrange
         final Offer offer = buildFakeOffer(OfferStatus.ACCEPTED);

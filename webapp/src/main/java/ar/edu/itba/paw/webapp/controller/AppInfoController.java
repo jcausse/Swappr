@@ -2,6 +2,7 @@ package ar.edu.itba.paw.webapp.controller;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,7 +11,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
 @PropertySource(value = "classpath:git.properties", ignoreResourceNotFound = true)
-// TODO do we need preauthorize if everyone is allowed?
 public class AppInfoController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AppInfoController.class);
@@ -34,6 +34,7 @@ public class AppInfoController {
     private String totalCommitCount;
 
     @GetMapping(value = "/appinfo", produces = "text/plain;charset=UTF-8")
+    @PreAuthorize("permitAll()")
     @ResponseBody
     public String appInfo() {
         LOGGER.debug("Accessing app info");

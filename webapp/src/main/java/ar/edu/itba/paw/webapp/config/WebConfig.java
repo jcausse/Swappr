@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.MessageSource;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
@@ -56,14 +57,16 @@ import java.util.Properties;
 public class WebConfig implements WebMvcConfigurer {
 
     /* --------------------------------------------------------------- */
-    /* ENVIRONMENT (properties management) */
+    /* ENVIRONMENT (properties management) and other dependencies */
     /* --------------------------------------------------------------- */
 
     private final Environment env;
+    private final CurrentUserArgumentResolver currentUserArgumentResolver;
 
     @Autowired
-    public WebConfig(Environment env) {
+    public WebConfig(Environment env, @Lazy CurrentUserArgumentResolver currentUserArgumentResolver) {
         this.env = env;
+        this.currentUserArgumentResolver = currentUserArgumentResolver;
     }
 
     /* --------------------------------------------------------------- */
@@ -199,13 +202,8 @@ public class WebConfig implements WebMvcConfigurer {
     /* Current User HandlerMethodArgumentResolver (for @CurrentUser) */
     /* --------------------------------------------------------------- */
 
-    @Bean
-    public CurrentUserArgumentResolver currentUserArgumentResolver() {
-        return new CurrentUserArgumentResolver();
-    }
-
     @Override
     public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
-        resolvers.add(currentUserArgumentResolver());
+        resolvers.add(currentUserArgumentResolver);
     }
 }

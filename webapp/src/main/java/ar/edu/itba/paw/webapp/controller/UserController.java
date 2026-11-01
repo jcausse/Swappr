@@ -1,7 +1,6 @@
 package ar.edu.itba.paw.webapp.controller;
 
 import ar.edu.itba.paw.model.*;
-import ar.edu.itba.paw.service.EmailVerificationService;
 import ar.edu.itba.paw.service.ListingService;
 import ar.edu.itba.paw.service.RatingService;
 import ar.edu.itba.paw.service.ProvinceService;
@@ -47,7 +46,6 @@ public class UserController {
     private final UserService userService;
     private final ListingService listingService;
     private final RatingService ratingService;
-    private final EmailVerificationService emailVerificationService;
     private final ProvinceService provinceService;
     private final AuthHelper authHelper;
     private final MessageSource messageSource;
@@ -58,6 +56,7 @@ public class UserController {
     /* PROFILE */
 
     @GetMapping("/profile/{id}")
+    @PreAuthorize("permitAll()")
     public ModelAndView profile(@PathVariable Long id, @CurrentUser(required = false) User currentUser,
                                 @ModelAttribute("ratingFilterForm") RatingFilterForm ratingFilterForm) {
         LOGGER.debug("Accessing profile for user id: {}", id);
@@ -232,15 +231,13 @@ public class UserController {
         LOGGER.info("User registration submitted: {}", form.getUsername());
         LOGGER.debug("Registering new user with username: {}", form.getUsername());
 
-        var user = userService.create(new UserCreationDto(
+        userService.create(new UserCreationDto(
             form.getUsername(),
             form.getDisplayName(),
             form.getEmail(),
             form.getPassword(),
             form.getProfilePicture().orElse(null)
         ));
-
-        emailVerificationService.sendVerificationEmail(user);
 
         return new ModelAndView("redirect:/verify?email=" + URLEncoder.encode(form.getEmail().trim().toLowerCase(), StandardCharsets.UTF_8));
     }
