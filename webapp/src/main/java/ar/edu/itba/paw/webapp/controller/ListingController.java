@@ -1,13 +1,12 @@
 package ar.edu.itba.paw.webapp.controller;
 
+import java.util.Arrays;
 import java.util.List;
 
 import javax.validation.Valid;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.MessageSource;
-import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
@@ -54,7 +53,6 @@ public class ListingController {
     private final OfferService offerService;
     private final ProductService productService;
     private final ProvinceService provinceService;
-    private final MessageSource messageSource;
 
     @GetMapping
     @PreAuthorize("permitAll()")
@@ -86,64 +84,34 @@ public class ListingController {
         mav.addObject("listingPage", listingPage);
         mav.addObject("listings", listingPage.getContent());
 
-        // Create translated condition options for paw:formSelect
-        var conditionOptions = new java.util.ArrayList<StringSelectOption>();
-        for (var c : Condition.values()) {
-            conditionOptions.add(new StringSelectOption(
-                c.name(),
-                messageSource.getMessage("condition." + c.name(), null, LocaleContextHolder.getLocale())
-            ));
-        }
-        mav.addObject("conditionOptions", conditionOptions);
+        mav.addObject("conditionOptions", Arrays.stream(Condition.values())
+            .map(c -> new StringSelectOption(c.name(), "condition." + c.name()))
+            .toList());
 
-        // Create translated sort options for paw:formSelect
-        var sortOptions = new java.util.ArrayList<StringSelectOption>();
-        for (var s : ListingSort.values()) {
-            sortOptions.add(new StringSelectOption(
-                s.getKey(),
-                messageSource.getMessage("discovery.sort." + s.getKey(), null, LocaleContextHolder.getLocale())
-            ));
-        }
-        mav.addObject("sortOptions", sortOptions);
+        mav.addObject("sortOptions", Arrays.stream(ListingSort.values())
+            .map(s -> new StringSelectOption(s.getKey(), "discovery.sort." + s.getKey()))
+            .toList());
 
-        // Create translated category options for paw:formSelect
         var categories = productService.getAllCategories();
-        var categoryOptions = new java.util.ArrayList<SelectOption>();
-        for (var cat : categories) {
-            categoryOptions.add(new SelectOption(cat.getId(), messageSource.getMessage("category." + cat.getName(), null, LocaleContextHolder.getLocale())));
-        }
-        mav.addObject("categoryOptions", categoryOptions);
+        mav.addObject("categoryOptions", categories.stream()
+            .map(cat -> new SelectOption(cat.getId(), "category." + cat.getName()))
+            .toList());
 
-        // Create translated province options for paw:formSelect
-        var provinceOptions = new java.util.ArrayList<SelectOption>();
-        for (var province : provinceService.getAll()) {
-            provinceOptions.add(new SelectOption(province.getId(), messageSource.getMessage("province." + province.getName(), null, LocaleContextHolder.getLocale())));
-        }
-        mav.addObject("provinceOptions", provinceOptions);
+        mav.addObject("provinceOptions", provinceService.getAll().stream()
+            .map(province -> new SelectOption(province.getId(), "province." + province.getName()))
+            .toList());
 
         if (filterForm.getCategoryId() != null) {
-            // Create translated subcategory options for paw:formSelect
-            var subcategories = productService.getSubcategoriesByCategory(filterForm.getCategoryId());
-            var subcategoryOptions = new java.util.ArrayList<SelectOption>();
-            for (var sub : subcategories) {
-                subcategoryOptions.add(new SelectOption(sub.getId(), messageSource.getMessage("subcategory." + sub.getName(), null, LocaleContextHolder.getLocale())));
-            }
-            mav.addObject("subcategoryOptions", subcategoryOptions);
+            mav.addObject("subcategoryOptions", productService.getSubcategoriesByCategory(filterForm.getCategoryId()).stream()
+                .map(sub -> new SelectOption(sub.getId(), "subcategory." + sub.getName()))
+                .toList());
         }
 
         if (filterForm.getSubcategoryId() != null) {
-            var brandOptions = new java.util.ArrayList<StringSelectOption>();
-            for (var brand : productService.getBrandsBySubcategory(filterForm.getSubcategoryId())) {
-                brandOptions.add(new StringSelectOption(brand, brand));
-            }
-            mav.addObject("brandOptions", brandOptions);
+            mav.addObject("brandOptions", productService.getBrandsBySubcategory(filterForm.getSubcategoryId()));
 
             if (filterForm.getBrand() != null && !filterForm.getBrand().isBlank()) {
-                var modelOptions = new java.util.ArrayList<StringSelectOption>();
-                for (var model : productService.getModelsBySubcategoryAndBrand(filterForm.getSubcategoryId(), filterForm.getBrand())) {
-                    modelOptions.add(new StringSelectOption(model, model));
-                }
-                mav.addObject("modelOptions", modelOptions);
+                mav.addObject("modelOptions", productService.getModelsBySubcategoryAndBrand(filterForm.getSubcategoryId(), filterForm.getBrand()));
             }
         }
         return mav;
@@ -284,23 +252,17 @@ public class ListingController {
         var categories = productService.getAllCategories();
         mav.addObject("categories", categories);
 
-        // Create translated category options
-        var categoryOptions = new java.util.ArrayList<SelectOption>();
-        for (var cat : categories) {
-            categoryOptions.add(new SelectOption(cat.getId(), messageSource.getMessage("category." + cat.getName(), null, LocaleContextHolder.getLocale())));
-        }
-        mav.addObject("categoryOptions", categoryOptions);
+        mav.addObject("categoryOptions", categories.stream()
+            .map(cat -> new SelectOption(cat.getId(), "category." + cat.getName()))
+            .toList());
 
         if (form.getCategoryId() != null) {
             var subcategories = productService.getSubcategoriesByCategory(form.getCategoryId());
             mav.addObject("subcategories", subcategories);
 
-            // Create translated subcategory options
-            var subcategoryOptions = new java.util.ArrayList<SelectOption>();
-            for (var sub : subcategories) {
-                subcategoryOptions.add(new SelectOption(sub.getId(), messageSource.getMessage("subcategory." + sub.getName(), null, LocaleContextHolder.getLocale())));
-            }
-            mav.addObject("subcategoryOptions", subcategoryOptions);
+            mav.addObject("subcategoryOptions", subcategories.stream()
+                .map(sub -> new SelectOption(sub.getId(), "subcategory." + sub.getName()))
+                .toList());
         }
 
         if (form.getSubcategoryId() != null) {
@@ -429,13 +391,8 @@ public class ListingController {
     }
 
     private List<StringSelectOption> buildConditionOptions() {
-        var options = new java.util.ArrayList<StringSelectOption>();
-        for (var c : Condition.values()) {
-            options.add(new StringSelectOption(
-                c.name(),
-                messageSource.getMessage("condition." + c.name(), null, LocaleContextHolder.getLocale())
-            ));
-        }
-        return options;
+        return Arrays.stream(Condition.values())
+            .map(c -> new StringSelectOption(c.name(), "condition." + c.name()))
+            .toList();
     }
 }
