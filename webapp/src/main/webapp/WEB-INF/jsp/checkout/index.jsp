@@ -134,11 +134,9 @@
                 if (tradeRadio && tradeRadio.checked) {
                     tradeFields.classList.remove('hidden');
                     if (tradeListingSelect) tradeListingSelect.required = true;
-                    if (tradeAmountInput) tradeAmountInput.required = true;
                 } else {
                     tradeFields.classList.add('hidden');
                     if (tradeListingSelect) tradeListingSelect.required = false;
-                    if (tradeAmountInput) tradeAmountInput.required = false;
                 }
             }
 

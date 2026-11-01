@@ -74,7 +74,7 @@ public class CheckoutController {
             amount = form.getCustomAmount();
             isFullPrice = false;
         } else { // "trade"
-            amount = form.getTradeAmount();
+            amount = form.getTradeAmount() != null ? form.getTradeAmount() : BigDecimal.ZERO;
             isFullPrice = false;
             offeredListingId = form.getOfferedListingId();
         }

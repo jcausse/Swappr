@@ -71,19 +71,13 @@ public class CheckoutValidator implements ConstraintValidator<ValidCheckout, Che
                         .addConstraintViolation();
                 valid = false;
             }
-            if (form.getTradeAmount() == null) {
+            if (form.getTradeAmount() != null && form.getTradeAmount().compareTo(BigDecimal.ZERO) < 0) {
                 context.disableDefaultConstraintViolation();
                 context.buildConstraintViolationWithTemplate(messageSource.getMessage("NotNull.checkoutForm.tradeAmount", null, locale))
                         .addPropertyNode("tradeAmount")
                         .addConstraintViolation();
                 valid = false;
-            } else if (form.getTradeAmount().compareTo(BigDecimal.ZERO) < 0) {
-                context.disableDefaultConstraintViolation();
-                context.buildConstraintViolationWithTemplate(messageSource.getMessage("NotNull.checkoutForm.tradeAmount", null, locale))
-                        .addPropertyNode("tradeAmount")
-                        .addConstraintViolation();
-                valid = false;
-            } else if (form.getListingPrice() != null && form.getTradeAmount().compareTo(form.getListingPrice()) > 0) {
+            } else if (form.getTradeAmount() != null && form.getListingPrice() != null && form.getTradeAmount().compareTo(form.getListingPrice()) > 0) {
                 context.disableDefaultConstraintViolation();
                 context.buildConstraintViolationWithTemplate(messageSource.getMessage("Max.checkoutForm.tradeAmount", new Object[]{form.getListingPrice()}, locale))
                         .addPropertyNode("tradeAmount")
