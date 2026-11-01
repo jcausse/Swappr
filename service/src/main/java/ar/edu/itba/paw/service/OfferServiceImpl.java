@@ -33,8 +33,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.scheduling.annotation.Scheduled;
-
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -503,16 +501,18 @@ public class OfferServiceImpl implements OfferService {
             if (!updated) {
                 throw new BadParameterException("You have already rated this offer");
             }
+            offer.setSellerRating(rating);
             userDao.incrementSellerRatingCounter(seller.getId(), rating);
         } else {
             final boolean updated = offerDao.setBuyerRating(offer.getId(), rating);
             if (!updated) {
                 throw new BadParameterException("You have already rated this offer");
             }
+            offer.setBuyerRating(rating);
             userDao.incrementBuyerRatingCounter(buyer.getId(), rating);
         }
 
-        return getById(offer.getId()).orElseThrow();
+        return offer;
     }
 
     @Override

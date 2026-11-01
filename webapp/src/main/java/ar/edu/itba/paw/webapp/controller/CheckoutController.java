@@ -12,6 +12,8 @@ import ar.edu.itba.paw.webapp.form.CheckoutForm;
 import java.math.BigDecimal;
 import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -34,6 +36,7 @@ public class CheckoutController {
     private final OfferService offerService;
 
     @GetMapping
+    @PreAuthorize("isAuthenticated()")
     public ModelAndView checkout(@RequestParam("listingId") Long listingId, @ModelAttribute("checkoutForm") CheckoutForm form, @CurrentUser(required = false) User currentUser) {
         LOGGER.debug("User accessing checkout page for listing {}", listingId);
         Listing listing = listingService.getById(listingId);
@@ -45,6 +48,7 @@ public class CheckoutController {
     }
 
     @PostMapping
+    @PreAuthorize("isAuthenticated()")
     public ModelAndView checkoutPost(
             @Valid @ModelAttribute("checkoutForm") CheckoutForm form,
             BindingResult bindingResult,
