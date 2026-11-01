@@ -17,6 +17,7 @@ import ar.edu.itba.paw.service.dto.mail.ListingMailDto;
 import ar.edu.itba.paw.service.dto.ListingUpdateDto;
 import ar.edu.itba.paw.service.dto.mail.UserMailDto;
 import ar.edu.itba.paw.service.exception.BadParameterException;
+import ar.edu.itba.paw.service.exception.ForbiddenException;
 import ar.edu.itba.paw.service.exception.NotFoundException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -25,7 +26,6 @@ import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -214,10 +214,10 @@ public class ListingServiceImpl implements ListingService {
         var existing = getById(dto.listingId());
 
         if (!existing.getCreator().getId().equals(currentUserId)) {
-            throw new AccessDeniedException("Not authorized to update this listing");
+            throw new ForbiddenException("Not authorized to update this listing");
         }
         if (existing.getStatus() == ListingStatus.CANCELED) {
-            throw new AccessDeniedException("Cannot edit a canceled listing");
+            throw new ForbiddenException("Cannot edit a canceled listing");
         }
 
         Product product;
@@ -253,7 +253,7 @@ public class ListingServiceImpl implements ListingService {
         LOGGER.info("Canceling listing id={} by user {}", id, currentUserId);
         var listing = getById(id);
         if (!listing.getCreator().getId().equals(currentUserId)) {
-            throw new AccessDeniedException("Not authorized to cancel this listing");
+            throw new ForbiddenException("Not authorized to cancel this listing");
         }
         offerService.rejectPendingOffersForListing(id, null);
         listingDao.cancel(id);

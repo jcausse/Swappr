@@ -19,6 +19,7 @@ import ar.edu.itba.paw.service.dto.OfferCreationDto;
 import ar.edu.itba.paw.service.dto.OfferFilterDto;
 import ar.edu.itba.paw.service.dto.mail.OfferMailDto;
 import ar.edu.itba.paw.service.exception.BadParameterException;
+import ar.edu.itba.paw.service.exception.ForbiddenException;
 import ar.edu.itba.paw.service.exception.NotFoundException;
 
 import java.time.Instant;
@@ -31,7 +32,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.security.access.AccessDeniedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -168,7 +168,7 @@ public class OfferServiceImpl implements OfferService {
 
         if (!offer.getListing().getCreator().getId().equals(currentUserId)) {
             LOGGER.warn("User {} unauthorized to accept offer {}", currentUserId, offerId);
-            throw new AccessDeniedException("Not authorized to accept this offer");
+            throw new ForbiddenException("Not authorized to accept this offer");
         }
 
         if (offer.getStatus() != OfferStatus.PENDING) {
@@ -207,7 +207,7 @@ public class OfferServiceImpl implements OfferService {
 
         if (!offer.getListing().getCreator().getId().equals(currentUserId)) {
             LOGGER.warn("User {} unauthorized to reject offer {}", currentUserId, offerId);
-            throw new AccessDeniedException("Not authorized to reject this offer");
+            throw new ForbiddenException("Not authorized to reject this offer");
         }
 
         switch (offer.getStatus()) {
@@ -426,7 +426,7 @@ public class OfferServiceImpl implements OfferService {
         final boolean isSeller = offer.getListing().getCreator().getId().equals(currentUserId);
 
         if (!isBuyer && !isSeller) {
-            throw new AccessDeniedException("Not authorized to download proof of payment");
+            throw new ForbiddenException("Not authorized to download proof of payment");
         }
 
         if (offer.getProofOfPaymentId() == null) {
@@ -445,7 +445,7 @@ public class OfferServiceImpl implements OfferService {
         final boolean isSeller = offer.getListing().getCreator().getId().equals(currentUserId);
 
         if (!isBuyer && !isSeller) {
-            throw new AccessDeniedException("Not authorized to download proof of shipping");
+            throw new ForbiddenException("Not authorized to download proof of shipping");
         }
 
         if (offer.getProofOfShippingId() == null) {
@@ -480,7 +480,7 @@ public class OfferServiceImpl implements OfferService {
 		final boolean isSeller = seller.getId().equals(currentUser.getId());
 
         if (!isBuyer && !isSeller) {
-            throw new AccessDeniedException("You did not participate in this offer");
+            throw new ForbiddenException("You did not participate in this offer");
         }
 
         final var role = isBuyer ? RatingRole.SELLER : RatingRole.BUYER;

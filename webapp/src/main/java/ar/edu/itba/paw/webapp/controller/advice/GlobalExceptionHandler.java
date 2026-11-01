@@ -1,6 +1,7 @@
 package ar.edu.itba.paw.webapp.controller.advice;
 
 import ar.edu.itba.paw.service.exception.BadParameterException;
+import ar.edu.itba.paw.service.exception.ForbiddenException;
 import ar.edu.itba.paw.service.exception.NotFoundException;
 import ar.edu.itba.paw.webapp.auth.AuthUserDetails;
 import ar.edu.itba.paw.webapp.exception.UserNotAuthenticatedException;
@@ -70,9 +71,9 @@ public class GlobalExceptionHandler {
         return new ModelAndView("error/unauthorized");
     }
 
-    @ExceptionHandler(AccessDeniedException.class)
+    @ExceptionHandler({AccessDeniedException.class, ForbiddenException.class})
     @ResponseStatus(HttpStatus.FORBIDDEN)
-    public ModelAndView handleForbidden(AccessDeniedException ex) {
+    public ModelAndView handleForbidden(RuntimeException ex) {
         // If user is not authenticated, we want to treat it as such instead of just showing 403 forbidden
         var auth = SecurityContextHolder.getContext().getAuthentication();
         var isAuthenticated = auth != null && auth.getPrincipal() instanceof AuthUserDetails;
