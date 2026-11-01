@@ -5,6 +5,8 @@ import ar.edu.itba.paw.service.enumeration.OneTimePasswordVerificationResult;
 import ar.edu.itba.paw.webapp.auth.AuthHelper;
 import ar.edu.itba.paw.webapp.form.EmailVerificationForm;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +23,7 @@ import java.nio.charset.StandardCharsets;
 
 @RequiredArgsConstructor
 @Controller
+@PreAuthorize("permitAll()")
 public class EmailVerificationController {
     private static final Logger LOGGER = LoggerFactory.getLogger(EmailVerificationController.class);
 

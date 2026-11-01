@@ -56,6 +56,7 @@ public class UserController {
     /* PROFILE */
 
     @GetMapping("/profile/{id}")
+    @PreAuthorize("permitAll()")
     public ModelAndView profile(@PathVariable Long id, @CurrentUser(required = false) User currentUser,
                                 @ModelAttribute("ratingFilterForm") RatingFilterForm ratingFilterForm) {
         LOGGER.debug("Accessing profile for user id: {}", id);
