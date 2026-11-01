@@ -6,7 +6,6 @@ import ar.edu.itba.paw.webapp.auth.CurrentUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import javax.servlet.http.HttpServletRequest;
-import java.net.URI;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
@@ -49,15 +48,11 @@ public class OfferController {
 
         final var offer = offerService.withdraw(offerId, currentUser.getId());
 
-        var redirectUrl = "/listing/" + offer.getListing().getId();
-        final var referer = request.getHeader("Referer");
-        if (
-            referer != null &&
-            isSameHost(referer, request) &&
-            (referer.contains("/account/my-offers") || referer.contains("/account/incoming-offers"))
-        ) {
-            redirectUrl = referer;
-        }
+        final var redirectUrl = RedirectHelper.resolveReferer(
+                request,
+                "/listing/" + offer.getListing().getId(),
+                RedirectHelper.hasPathPrefix("/account/my-offers", "/account/incoming-offers")
+        );
         return new ModelAndView("redirect:" + redirectUrl);
     }
 
@@ -68,22 +63,5 @@ public class OfferController {
         offerService.confirmPayment(offerId, currentUser.getId());
 
         return new ModelAndView("redirect:/account/incoming-offers?statusGroup=resolved");
-    }
-
-    private boolean isSameHost(String referer, HttpServletRequest request) {
-        try {
-            URI refererUri = new URI(referer);
-            String refererHost = refererUri.getHost();
-            String requestHost = request.getServerName();
-            int refererPort = refererUri.getPort();
-            int requestPort = request.getServerPort();
-            if (refererPort == -1) {
-                refererPort = "https".equalsIgnoreCase(refererUri.getScheme()) ? 443 : 80;
-            }
-            return refererHost != null && refererHost.equalsIgnoreCase(requestHost) && refererPort == requestPort;
-        } catch (Exception e) {
-            LOGGER.warn("Invalid referer URL: {}", referer);
-            return false;
-        }
     }
 }
