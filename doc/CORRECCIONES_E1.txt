@@ -17,6 +17,7 @@
   -- RESUELTO: PR https://bitbucket.org/itba/paw-2026b-08/pull-requests/82
 
 [ ] Tienen lógica de negocio en los controllers, por ejemplo (pero no únicamente): deciden el monto y el tipo de la oferta, qué estados cuentan como vendido, si una oferta ya fue calificada o si un admin puede suspenderse en CheckoutController.checkoutPost Y ListingController.listing. Esto es un error conceptual grave.
+  -- CheckoutController: PR https://bitbucket.org/itba/paw-2026b-08/pull-requests/95
 
 [ ] Verifican el resultado de una escritura con otro método del mismo DAO en lugar de consultar la tabla. Por ejemplo, OfferJdbcDaoTest.testUpdateProof0fPaymentId usa offerDao.getById. Esto es un error conceptual grave.
 

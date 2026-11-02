@@ -6,6 +6,7 @@ import ar.edu.itba.paw.model.Offer;
 import ar.edu.itba.paw.model.OfferFilter;
 import ar.edu.itba.paw.model.OfferStatus;
 import ar.edu.itba.paw.model.OfferStatusGroup;
+import ar.edu.itba.paw.model.OfferType;
 import ar.edu.itba.paw.model.Page;
 import ar.edu.itba.paw.model.File;
 import ar.edu.itba.paw.model.User;
@@ -23,6 +24,7 @@ import ar.edu.itba.paw.service.exception.ForbiddenException;
 import ar.edu.itba.paw.service.exception.NotFoundException;
 
 import java.time.Instant;
+import java.math.BigDecimal;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
@@ -106,10 +108,27 @@ public class OfferServiceImpl implements OfferService {
     @Transactional
     public Offer create(OfferCreationDto dto) {
         Objects.requireNonNull(dto, "OfferCreationDto cannot be null");
-        LOGGER.debug("Creating offer: listingId={}, buyerId={}, amount={}", dto.listingId(), dto.buyerId(), dto.amount());
+        if (dto.offerType() == null) {
+            throw BadParameterException.create("offerType", "Offer type is required");
+        }
+        if (dto.offerType() == OfferType.TRADE && dto.offeredListingId() == null) {
+            throw BadParameterException.create("offeredListingId", "Trade offers require an offered listing");
+        }
 
-        final Listing listing = listingService.getById(dto.listingId());
+        final var listing = listingService.getById(dto.listingId());
         final var listingPrice = listing.getPrice().getAmount();
+
+        final BigDecimal amount = switch (dto.offerType()) {
+            case FULL -> listingPrice;
+            case CUSTOM -> dto.customAmount();
+            case TRADE -> dto.tradeAmount() != null ? dto.tradeAmount() : BigDecimal.ZERO;
+        };
+        final boolean isFullPrice = dto.offerType() == OfferType.FULL;
+
+        final Long offeredListingId = dto.offerType() == OfferType.TRADE ? dto.offeredListingId() : null;
+
+        LOGGER.debug("Creating offer: listingId={}, buyerId={}, amount={}", dto.listingId(), dto.buyerId(), amount);
+
         if (listing.getStatus() != ListingStatus.ACTIVE) {
             LOGGER.warn("Offer attempted on listing {} with non-ACTIVE status: {}", dto.listingId(), listing.getStatus());
             throw BadParameterException.create("listingId", "Listing is not available for offers");
@@ -118,19 +137,18 @@ public class OfferServiceImpl implements OfferService {
             LOGGER.warn("User {} attempted to buy their own listing {}", dto.buyerId(), dto.listingId());
             throw BadParameterException.create("buyerId", "User cannot buy their own listing");
         }
-        if (dto.amount() == null || dto.amount().signum() < 0) {
+        if (amount == null || amount.signum() < 0) {
             throw BadParameterException.create("amount", "Offer amount must be non-negative");
         }
-        if (dto.amount().compareTo(listingPrice) > 0) {
-            LOGGER.warn("Offer amount {} exceeds price {} of listing {}", dto.amount(), listingPrice, dto.listingId());
+        if (amount.compareTo(listingPrice) > 0) {
+            LOGGER.warn("Offer amount {} exceeds price {} of listing {}", amount, listingPrice, dto.listingId());
             throw BadParameterException.create("amount", "Offer amount cannot exceed the listing price");
         }
 
         final User buyer = userService.getById(dto.buyerId())
                 .orElseThrow(() -> new BadParameterException("Invalid buyerId"));
 
-        Long offeredListingId = dto.offeredListingId();
-        boolean isTrade = offeredListingId != null;
+        final boolean isTrade = offeredListingId != null;
 
         if (isTrade) {
             if (!listing.isAcceptsTrade()) {
@@ -151,8 +169,8 @@ public class OfferServiceImpl implements OfferService {
         final Offer offer = offerDao.create(
             dto.listingId(),
             buyer,
-            dto.amount(),
-            dto.isFullPrice(),
+            amount,
+            isFullPrice,
             OfferStatus.PENDING,
             dto.message(),
             Instant.now(),
@@ -160,7 +178,7 @@ public class OfferServiceImpl implements OfferService {
         );
 
         LOGGER.info("Offer created: id={}, listingId={}, buyerId={}, amount={}, isTrade={}",
-                offer.getId(), dto.listingId(), dto.buyerId(), dto.amount(), isTrade);
+                offer.getId(), dto.listingId(), dto.buyerId(), amount, isTrade);
 
         // Send email notification to seller about the new offer
         mailingService.sendNewOfferEmail(OfferMailDto.from(offer));

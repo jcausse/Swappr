@@ -19,14 +19,14 @@
                         <div class="flex flex-col gap-3">
                             <div class="flex flex-col gap-2">
                                 <label class="flex items-center gap-2 min-h-8 cursor-pointer">
-                                    <form:radiobutton path="offerType" value="full" class="w-4 h-4 text-lime-600 border-black/20 focus:ring-lime-500"/>
+                                    <form:radiobutton path="offerType" value="FULL" class="w-4 h-4 text-lime-600 border-black/20 focus:ring-lime-500"/>
                                     <spring:message code="checkout.form.fullPrice" var="fullPriceLabel"/>
                                     <span class="text-sm text-black/90"><c:out value="${fullPriceLabel}"/> - <paw:price amount="${listing.price.amount}"/></span>
                                 </label>
 
                                 <div class="flex flex-row gap-2 items-center justify-between">
                                     <label class="flex items-center gap-2 min-h-8 cursor-pointer">
-                                        <form:radiobutton path="offerType" value="custom" class="w-4 h-4 text-lime-600 border-black/20 focus:ring-lime-500"/>
+                                        <form:radiobutton path="offerType" value="CUSTOM" class="w-4 h-4 text-lime-600 border-black/20 focus:ring-lime-500"/>
                                         <spring:message code="checkout.form.customPrice" var="customPriceLabel"/>
                                         <span class="text-sm text-black/90"><c:out value="${customPriceLabel}"/></span>
                                     </label>
@@ -43,7 +43,7 @@
                                 <c:if test="${listing.acceptsTrade and not empty userListings}">
                                     <div class="flex flex-col gap-2">
                                         <label class="flex items-center gap-2 min-h-8 cursor-pointer">
-                                            <form:radiobutton path="offerType" value="trade" class="w-4 h-4 text-lime-600 border-black/20 focus:ring-lime-500"/>
+                                            <form:radiobutton path="offerType" value="TRADE" class="w-4 h-4 text-lime-600 border-black/20 focus:ring-lime-500"/>
                                             <spring:message code="checkout.form.tradePrice" var="tradePriceLabel"/>
                                             <span class="text-sm text-black/90"><c:out value="${tradePriceLabel}"/></span>
                                         </label>
@@ -121,9 +121,9 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const fullRadio = document.querySelector('input[name="offerType"][value="full"]');
-            const customRadio = document.querySelector('input[name="offerType"][value="custom"]');
-            const tradeRadio = document.querySelector('input[name="offerType"][value="trade"]');
+            const fullRadio = document.querySelector('input[name="offerType"][value="FULL"]');
+            const customRadio = document.querySelector('input[name="offerType"][value="CUSTOM"]');
+            const tradeRadio = document.querySelector('input[name="offerType"][value="TRADE"]');
             const customField = document.getElementById('customAmountField');
             const customInput = document.querySelector('input[name="customAmount"]');
             const tradeFields = document.getElementById('tradeFields');
