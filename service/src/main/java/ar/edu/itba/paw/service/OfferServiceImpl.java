@@ -6,6 +6,7 @@ import ar.edu.itba.paw.model.Offer;
 import ar.edu.itba.paw.model.OfferFilter;
 import ar.edu.itba.paw.model.OfferStatus;
 import ar.edu.itba.paw.model.OfferStatusGroup;
+import ar.edu.itba.paw.model.OfferType;
 import ar.edu.itba.paw.model.Page;
 import ar.edu.itba.paw.model.File;
 import ar.edu.itba.paw.model.User;
@@ -107,17 +108,24 @@ public class OfferServiceImpl implements OfferService {
     @Transactional
     public Offer create(OfferCreationDto dto) {
         Objects.requireNonNull(dto, "OfferCreationDto cannot be null");
+        if (dto.offerType() == null) {
+            throw BadParameterException.create("offerType", "Offer type is required");
+        }
+        if (dto.offerType() == OfferType.TRADE && dto.offeredListingId() == null) {
+            throw BadParameterException.create("offeredListingId", "Trade offers require an offered listing");
+        }
 
         final var listing = listingService.getById(dto.listingId());
         final var listingPrice = listing.getPrice().getAmount();
 
-        BigDecimal amount = switch (dto.offerType()) {
+        final BigDecimal amount = switch (dto.offerType()) {
             case FULL -> listingPrice;
             case CUSTOM -> dto.customAmount();
             case TRADE -> dto.tradeAmount() != null ? dto.tradeAmount() : BigDecimal.ZERO;
         };
+        final boolean isFullPrice = dto.offerType() == OfferType.FULL;
 
-        var isFullPrice = amount.equals(listingPrice);
+        final Long offeredListingId = dto.offerType() == OfferType.TRADE ? dto.offeredListingId() : null;
 
         LOGGER.debug("Creating offer: listingId={}, buyerId={}, amount={}", dto.listingId(), dto.buyerId(), amount);
 
@@ -140,8 +148,7 @@ public class OfferServiceImpl implements OfferService {
         final User buyer = userService.getById(dto.buyerId())
                 .orElseThrow(() -> new BadParameterException("Invalid buyerId"));
 
-        Long offeredListingId = dto.offeredListingId();
-        boolean isTrade = offeredListingId != null;
+        final boolean isTrade = offeredListingId != null;
 
         if (isTrade) {
             if (!listing.isAcceptsTrade()) {
