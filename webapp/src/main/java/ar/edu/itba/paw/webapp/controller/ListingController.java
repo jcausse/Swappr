@@ -84,10 +84,7 @@ public class ListingController {
         mav.addObject("listingPage", listingPage);
         mav.addObject("listings", listingPage.getContent());
 
-        mav.addObject("conditionOptions", Arrays.stream(Condition.values())
-            .map(c -> new StringSelectOption(c.name(), "condition." + c.name()))
-            .toList());
-
+        mav.addObject("conditionOptions", buildConditionOptions());
         mav.addObject("sortOptions", Arrays.stream(ListingSort.values())
             .map(s -> new StringSelectOption(s.getKey(), "discovery.sort." + s.getKey()))
             .toList());
@@ -105,13 +102,13 @@ public class ListingController {
             mav.addObject("subcategoryOptions", productService.getSubcategoriesByCategory(filterForm.getCategoryId()).stream()
                 .map(sub -> new SelectOption(sub.getId(), "subcategory." + sub.getName()))
                 .toList());
-        }
 
-        if (filterForm.getSubcategoryId() != null) {
-            mav.addObject("brandOptions", productService.getBrandsBySubcategory(filterForm.getSubcategoryId()));
+            if (filterForm.getSubcategoryId() != null) {
+                mav.addObject("brandOptions", productService.getBrandsBySubcategory(filterForm.getSubcategoryId()));
 
-            if (filterForm.getBrand() != null && !filterForm.getBrand().isBlank()) {
-                mav.addObject("modelOptions", productService.getModelsBySubcategoryAndBrand(filterForm.getSubcategoryId(), filterForm.getBrand()));
+                if (filterForm.getBrand() != null && !filterForm.getBrand().isBlank()) {
+                    mav.addObject("modelOptions", productService.getModelsBySubcategoryAndBrand(filterForm.getSubcategoryId(), filterForm.getBrand()));
+                }
             }
         }
         return mav;
