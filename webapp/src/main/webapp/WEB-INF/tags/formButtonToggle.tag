@@ -3,7 +3,7 @@
 <%@ attribute name="items" required="true" type="java.lang.Object" %>
 <%@ attribute name="badgeCounts" required="false" type="java.lang.Object" %>
 <%@ attribute name="translateLabels" required="false" type="java.lang.Boolean" %>
-<%@ attribute name="selectedOption" required="true" %>
+<%@ attribute name="selectedOption" required="true" type="java.lang.String" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
 <%@ taglib prefix="spring" uri="http://www.springframework.org/tags" %>

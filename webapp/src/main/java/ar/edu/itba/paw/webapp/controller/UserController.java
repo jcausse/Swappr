@@ -81,10 +81,10 @@ public class UserController {
 
         int page = ratingFilterForm.getPage() != null ? ratingFilterForm.getPage() : 1;
 
-        var ratingFilter = ar.edu.itba.paw.model.RatingFilter.builder()
+        var ratingFilter = RatingFilter.builder()
                 .ratedId(user.getId())
-                .roles(java.util.List.of(role))
-                .types(type != null ? java.util.List.of(type) : null)
+                .roles(List.of(role))
+                .types(type != null ? List.of(type) : null)
                 .page(page)
                 .pageSize(PROFILE_RATINGS_PAGE_SIZE)
                 .build();
