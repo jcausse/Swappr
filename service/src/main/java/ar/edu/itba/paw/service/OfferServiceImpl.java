@@ -109,6 +109,7 @@ public class OfferServiceImpl implements OfferService {
         LOGGER.debug("Creating offer: listingId={}, buyerId={}, amount={}", dto.listingId(), dto.buyerId(), dto.amount());
 
         final Listing listing = listingService.getById(dto.listingId());
+        final var listingPrice = listing.getPrice().getAmount();
         if (listing.getStatus() != ListingStatus.ACTIVE) {
             LOGGER.warn("Offer attempted on listing {} with non-ACTIVE status: {}", dto.listingId(), listing.getStatus());
             throw BadParameterException.create("listingId", "Listing is not available for offers");
@@ -116,6 +117,13 @@ public class OfferServiceImpl implements OfferService {
         if (Objects.equals(dto.buyerId(), listing.getCreator().getId())) {
             LOGGER.warn("User {} attempted to buy their own listing {}", dto.buyerId(), dto.listingId());
             throw BadParameterException.create("buyerId", "User cannot buy their own listing");
+        }
+        if (dto.amount() == null || dto.amount().signum() < 0) {
+            throw BadParameterException.create("amount", "Offer amount must be non-negative");
+        }
+        if (dto.amount().compareTo(listingPrice) > 0) {
+            LOGGER.warn("Offer amount {} exceeds price {} of listing {}", dto.amount(), listingPrice, dto.listingId());
+            throw BadParameterException.create("amount", "Offer amount cannot exceed the listing price");
         }
 
         final User buyer = userService.getById(dto.buyerId())

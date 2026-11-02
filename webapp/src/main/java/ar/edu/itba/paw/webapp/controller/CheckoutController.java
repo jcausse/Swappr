@@ -42,7 +42,6 @@ public class CheckoutController {
         Listing listing = listingService.getById(listingId);
         form.setListingId(listingId);
         form.setOfferType("full");
-        form.setListingPrice(listing.getPrice().getAmount());
 
         return withUserListings(listing, currentUser);
     }
@@ -74,7 +73,7 @@ public class CheckoutController {
             amount = form.getCustomAmount();
             isFullPrice = false;
         } else { // "trade"
-            amount = form.getTradeAmount();
+            amount = form.getTradeAmount() != null ? form.getTradeAmount() : BigDecimal.ZERO;
             isFullPrice = false;
             offeredListingId = form.getOfferedListingId();
         }

@@ -58,7 +58,7 @@
                                                 <label for="tradeAmount" class="text-xs text-black/70 font-medium"><c:out value="${tradeAmountLabel}"/></label>
                                                 <div class="flex items-start gap-2">
                                                     <span class="py-1 border border-transparent text-sm text-black/70"><c:out value="${currencySymbol}"/></span>
-                                                    <paw:formInput path="tradeAmount" type="number" step="0.01" min="0" placeholder="${tradeAmountPlaceholder}" variant="outline" classname="flex-1"/>
+                                                    <paw:formInput path="tradeAmount" type="number" step="0.01" placeholder="${tradeAmountPlaceholder}" variant="outline" classname="flex-1"/>
                                                 </div>
                                             </div>
                                         </div>
@@ -133,20 +133,16 @@
             function toggleFields() {
                 if (customRadio.checked) {
                     customField.classList.remove('hidden');
-                    customInput.required = true;
                 } else {
                     customField.classList.add('hidden');
-                    customInput.required = false;
                 }
 
                 if (tradeRadio && tradeRadio.checked) {
                     tradeFields.classList.remove('hidden');
                     if (tradeListingSelect) tradeListingSelect.required = true;
-                    if (tradeAmountInput) tradeAmountInput.required = true;
                 } else {
                     tradeFields.classList.add('hidden');
                     if (tradeListingSelect) tradeListingSelect.required = false;
-                    if (tradeAmountInput) tradeAmountInput.required = false;
                 }
             }
 
