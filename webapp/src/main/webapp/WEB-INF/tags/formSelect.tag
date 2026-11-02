@@ -2,6 +2,7 @@
 <%@ attribute name="path" required="true" %>
 <%@ attribute name="items" required="true" type="java.lang.Object" %>
 <%@ attribute name="plainStrings" required="false" type="java.lang.Boolean" %>
+<%@ attribute name="translateLabels" required="false" type="java.lang.Boolean" %>
 <%@ attribute name="itemLabel" required="false" type="java.lang.String" %>
 <%@ attribute name="itemValue" required="false" type="java.lang.String" %>
 <%@ attribute name="label" required="false" %>
@@ -14,6 +15,7 @@
 <%@ attribute name="classname" required="false" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
+<%@ taglib prefix="spring" uri="http://www.springframework.org/tags" %>
 
 <c:set var="inputVariant" value="${not empty variant ? variant : 'default'}"/>
 <c:set var="inputClass" value="${not empty classname ? classname : ''}"/>
@@ -30,6 +32,7 @@
 
 <c:set var="isDisabled" value="${disabled ne null ? disabled : false}"/>
 <c:set var="isIncludeOther" value="${includeOther ne null ? includeOther : false}"/>
+<c:set var="isTranslateLabels" value="${translateLabels ne null ? translateLabels : false}"/>
 <c:set var="otherVal" value="${not empty otherValue ? otherValue : '__OTHER__'}"/>
 <c:set var="otherLbl" value="${not empty otherLabel ? otherLabel : 'Other...'}"/>
 
@@ -50,6 +53,22 @@
     <form:option value="" label="${placeholder}" />
 
     <c:choose>
+      <c:when test="${isTranslateLabels}">
+        <c:forEach var="item" items="${items}">
+          <c:choose>
+            <c:when test="${not empty plainStrings}">
+              <c:set var="optionValue" value="${item}"/>
+              <c:set var="optionLabelKey" value="${item}"/>
+            </c:when>
+            <c:otherwise>
+              <c:set var="optionValue" value="${item[resolvedItemValue]}"/>
+              <c:set var="optionLabelKey" value="${item[resolvedItemLabel]}"/>
+            </c:otherwise>
+          </c:choose>
+          <spring:message code="${optionLabelKey}" var="optionLabel"/>
+          <form:option value="${optionValue}" label="${optionLabel}"/>
+        </c:forEach>
+      </c:when>
       <c:when test="${not empty plainStrings}">
         <form:options items="${items}" />
       </c:when>
