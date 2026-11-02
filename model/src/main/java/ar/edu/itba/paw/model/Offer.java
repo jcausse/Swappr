@@ -162,16 +162,40 @@ public class Offer {
         return filename.substring(lastDot + 1).toLowerCase();
     }
 
+    public boolean isPending() {
+        return status == OfferStatus.PENDING;
+    }
+
+    public boolean isPendingPayment() {
+        return status == OfferStatus.PENDING_PAYMENT;
+    }
+
+    public boolean isAccepted() {
+        return status == OfferStatus.ACCEPTED;
+    }
+
+    public boolean isBuyer(Long userId) {
+        return userId != null && userId.equals(buyer.getId());
+    }
+
     public boolean isBuyer(User user) {
-        return user.getId() == buyer.getId();
+        return user != null && isBuyer(user.getId());
+    }
+
+    public boolean isSeller(Long userId) {
+        return userId != null && userId.equals(listing.getCreator().getId());
     }
 
     public boolean isSeller(User user) {
-        return user.getId() == listing.getCreator().getId();
+        return user != null && isSeller(user.getId());
+    }
+
+    public boolean isParticipant(Long userId) {
+        return isBuyer(userId) || isSeller(userId);
     }
 
     public boolean isParticipant(User user) {
-        return isBuyer(user) || isSeller(user);
+        return user != null && isParticipant(user.getId());
     }
 
     public RatingRole getUserRole(User user) {
@@ -181,11 +205,11 @@ public class Offer {
     }
 
     public boolean canUploadDocuments() {
-        return status == OfferStatus.PENDING_PAYMENT;
+        return isPendingPayment();
     }
 
     public boolean canBeRatedBy(RatingRole userRole) {
-        if (status != OfferStatus.ACCEPTED) return false;
+        if (!isAccepted() || userRole == null) return false;
         return switch (userRole) {
             case BUYER -> sellerRating == null;
             case SELLER -> buyerRating == null;

@@ -1,9 +1,9 @@
 package ar.edu.itba.paw.service.dto;
-import ar.edu.itba.paw.model.Price;
+import java.math.BigDecimal;
 import java.util.List;
 public record ListingCreationDto(
     String title,
-    Price price,
+    BigDecimal price,
     Long creatorId,
     Long productId,
     String condition,

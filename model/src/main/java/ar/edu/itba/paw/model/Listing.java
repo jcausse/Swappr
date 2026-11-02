@@ -92,6 +92,14 @@ public class Listing {
         return Boolean.TRUE.equals(acceptsShipping);
     }
 
+    public boolean isActive() {
+        return status == ListingStatus.ACTIVE;
+    }
+
+    public boolean isPendingTransaction() {
+        return status == ListingStatus.PENDING_TRANSACTION;
+    }
+
     public boolean isSoldForDisplay() {
         return status == ListingStatus.SOLD
             || status == ListingStatus.PENDING_TRANSACTION
@@ -102,11 +110,15 @@ public class Listing {
         return status == ListingStatus.CANCELED;
     }
 
+    public boolean isCreator(Long userId) {
+        return userId != null && userId.equals(creator.getId());
+    }
+
     public boolean isCreator(User user) {
-        return user != null && user.getId() == creator.getId();
+        return user != null && isCreator(user.getId());
     }
 
     public boolean isCreator(Optional<User> maybeUser) {
-        return maybeUser.map(u -> this.isCreator(u)).orElse(false);
+        return maybeUser.map(this::isCreator).orElse(false);
     }
 }

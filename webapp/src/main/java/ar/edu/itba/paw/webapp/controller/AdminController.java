@@ -221,7 +221,7 @@ public class AdminController {
                 mav.addObject("targetUser", user);
                 List<Role> roles = userService.getRoles(user);
                 mav.addObject("targetUserRoles", roles);
-                mav.addObject("isTargetUserAdmin", roles.contains(Role.ADMIN));
+                mav.addObject("isTargetUserAdmin", user.hasRole(Role.ADMIN));
                 suspendUserForm.setUsername(user.getUsername());
                 grantRoleForm.setUsername(user.getUsername());
             } else {
@@ -239,16 +239,14 @@ public class AdminController {
             BindingResult errors,
             @ModelAttribute("grantRoleForm") AdminGrantRoleForm grantRoleForm
     ) {
-        final var formUsernameOrEmail = form.getUsernameOrEmail().trim().toLowerCase();
+        final var formUsernameOrEmail = form.getUsernameOrEmail();
         LOGGER.info("Admin {} requested user suspension for '{}'", currentUser.getUsername(), formUsernameOrEmail);
 
         if (errors.hasErrors()) {
             return new ModelAndView("admin/users");
         }
 
-        final var cuUsername = currentUser.getUsername();
-        final var cuEmail = currentUser.getEmail();
-        if (cuUsername.equalsIgnoreCase(formUsernameOrEmail) || cuEmail.equalsIgnoreCase(formUsernameOrEmail)) {
+        if (currentUser.matchesUsernameOrEmail(formUsernameOrEmail)) {
             LOGGER.warn("Admin {} prevented from suspending theirself", currentUser.getUsername());
             errors.rejectValue("username", "admin.users.error.selfSuspend");
             return new ModelAndView("admin/users");
@@ -268,7 +266,7 @@ public class AdminController {
             BindingResult errors,
             @ModelAttribute("grantRoleForm") AdminGrantRoleForm grantRoleForm
     ) {
-        final var formUsernameOrEmail = form.getUsernameOrEmail().trim().toLowerCase();
+        final var formUsernameOrEmail = form.getUsernameOrEmail();
         LOGGER.info("Admin {} requested user unsuspension for '{}'", currentUser.getUsername(), formUsernameOrEmail);
 
         if (errors.hasErrors()) {

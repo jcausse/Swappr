@@ -21,7 +21,6 @@ import org.springframework.web.servlet.ModelAndView;
 import ar.edu.itba.paw.model.Condition;
 import ar.edu.itba.paw.model.ListingSort;
 import ar.edu.itba.paw.model.ListingStatus;
-import ar.edu.itba.paw.model.Price;
 import ar.edu.itba.paw.model.User;
 import ar.edu.itba.paw.service.ListingService;
 import ar.edu.itba.paw.service.OfferService;
@@ -302,7 +301,7 @@ public class ListingController {
 
         listingService.create(new ListingCreationDto(
                 form.getTitle(),
-                new Price(form.getPrice()),
+                form.getPrice(),
                 currentUser.getId(),
                 form.getProductId(),
                 form.getCondition(),
@@ -356,7 +355,7 @@ public class ListingController {
         listingService.update(new ListingUpdateDto(
             id,
             form.getTitle(),
-            new Price(form.getPrice()),
+            form.getPrice(),
             form.getProductId(),
             form.getCondition(),
             form.isAcceptsTrade(),

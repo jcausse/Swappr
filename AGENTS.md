@@ -157,6 +157,8 @@ While you as an AI agent are allowed to edit this file on your own, you must **a
 - Use Optional for return values which may not be present, but DO NOT use Optional as method parameters, as it is a code smell.
 - Prefer using `var` for type inference when possible.
 - DAOs (in `persistence` layer): Each DAO should manage one domain aggregate entity. DAOs must never call other DAOs, nor have them injected as dependencies. If DAO A needs entities or data from entity B, it queries it directly via `EntityManager`.
+- **Business rules belong in the model/services, not controllers**: Query logic such as "is this listing sold/canceled", "is this user the creator/buyer/seller", "can this offer be rated/edited" belongs on the domain model (`Listing`, `Offer`, `User`, etc.) as boolean helper methods. Services and controllers must call those helpers instead of re-implementing status or ownership comparisons. Core examples: `Listing.isActive()`, `Listing.isSoldForDisplay()`, `Listing.isCreator(...)`, `Offer.isPending()`, `Offer.isBuyer(...)`, `Offer.canUploadDocuments()`, `Offer.canBeRatedBy(...)`, `User.isSameUser(...)`, `User.matchesUsernameOrEmail(...)`.
+- **DTOs carry raw input; services build domain value objects**: Service DTOs should store raw values coming from the web layer (e.g. `BigDecimal price`) and the service constructs value objects (`new Price(...)`) so that controllers do not perform domain transformations.
 - **Important: never use `Mockito.verify()`**. The usage of `Mockito.verify()` is strictly forbidden by the PAW course rules. Tests should NEVER use it.
 
 ## Mailing and Email Templates

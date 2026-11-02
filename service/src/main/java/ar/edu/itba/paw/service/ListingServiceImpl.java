@@ -7,6 +7,7 @@ import ar.edu.itba.paw.model.ListingFilter;
 import ar.edu.itba.paw.model.ListingSort;
 import ar.edu.itba.paw.model.Page;
 import ar.edu.itba.paw.model.ListingStatus;
+import ar.edu.itba.paw.model.Price;
 import ar.edu.itba.paw.model.Product;
 import ar.edu.itba.paw.model.User;
 import ar.edu.itba.paw.persistence.ListingDao;
@@ -144,7 +145,7 @@ public class ListingServiceImpl implements ListingService {
 
         var listing = listingDao.create(
             dto.title(),
-            dto.price(),
+            new Price(dto.price()),
             creator,
             product,
             condition,
@@ -170,7 +171,7 @@ public class ListingServiceImpl implements ListingService {
             .getById(id)
             .orElseThrow(() -> NotFoundException.createFor("Listing with ID " + id));
 
-        if (listing.getStatus() != ListingStatus.PENDING_TRANSACTION) {
+        if (!listing.isPendingTransaction()) {
             LOGGER.warn("Purchase attempted on listing {} with non-PENDING_TRANSACTION status: {}", id, listing.getStatus());
             throw new BadParameterException("Listing is not in a pending transaction state");
         }
@@ -213,10 +214,10 @@ public class ListingServiceImpl implements ListingService {
 
         var existing = getById(dto.listingId());
 
-        if (!existing.getCreator().getId().equals(currentUserId)) {
+        if (!existing.isCreator(currentUserId)) {
             throw new ForbiddenException("Not authorized to update this listing");
         }
-        if (existing.getStatus() == ListingStatus.CANCELED) {
+        if (existing.isCanceled()) {
             throw new ForbiddenException("Cannot edit a canceled listing");
         }
 
@@ -236,7 +237,7 @@ public class ListingServiceImpl implements ListingService {
         var updated = listingDao.update(
             existing.getId(),
             dto.title(),
-            dto.price(),
+            new Price(dto.price()),
             product,
             condition,
             dto.acceptsTrade(),
@@ -252,7 +253,7 @@ public class ListingServiceImpl implements ListingService {
     public void cancel(Long id, Long currentUserId) {
         LOGGER.info("Canceling listing id={} by user {}", id, currentUserId);
         var listing = getById(id);
-        if (!listing.getCreator().getId().equals(currentUserId)) {
+        if (!listing.isCreator(currentUserId)) {
             throw new ForbiddenException("Not authorized to cancel this listing");
         }
         offerService.rejectPendingOffersForListing(id, null);
