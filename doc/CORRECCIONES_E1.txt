@@ -1,6 +1,7 @@
 [ ] Sin resolver
 [/] Falta testear
 [X] Resuelto y confirmado
+[-] Irrelevante (el código al que refiere no existe más)
 
 # Errores graves
 
@@ -43,18 +44,20 @@
 [X] Redirigen a URLs que vienen del cliente sin validar que sean internas, lo que permite un open redirect. Por ejemplo, OfferController.withdrawoffer con el header Referer y AdminController.takeDownListingByForm con el parámetro redirect.
   -- RESUELTO: PR https://bitbucket.org/itba/paw-2026b-08/pull-requests/91
 
-[ ] Dejan textos visibles hardcodeados en inglés en atributos alt / aria-label de los tags en lugar de usar ‹spring: message>. Por ejemplo, en imageGallery.tag y userAvatar.tag
+[ ] Dejan textos visibles hardcodeados en inglés en atributos alt / aria-label de los tags en lugar de usar <spring: message>. Por ejemplo, en imageGallery.tag y userAvatar.tag
 
-[ ] Resuelven operaciones masivas llamando a services/DAOs en un loop, una entidad por vez. Por ejemplo, AdminServiceImpl. suspendUser, que además descarta excepciones dentro de la misma transacción (que igual queda marcada para rollback) y trunca a 1000 elementos.
+[ ] Resuelven operaciones masivas llamando a services/DAOs en un loop, una entidad por vez. Por ejemplo, AdminServiceImpl.suspendUser, que además descarta excepciones dentro de la misma transacción (que igual queda marcada para rollback) y trunca a 1000 elementos.
 
-[ ] Resuelven asociaciones con queries extra o inserts uno por uno en lugar de un JOIN o un batch. Por ejemplo, ListingJdbcDao getById (imágenes en una segunda query) y ListingJdbcDao.create.
+[-] Resuelven asociaciones con queries extra o inserts uno por uno en lugar de un JOIN o un batch. Por ejemplo, ListingJdbcDao getById (imágenes en una segunda query) y ListingJdbcDao.create.
+  -- IRRELEVANTE con la migración a JPA, pero hay que ver de no tener el mismo problema en los DAO nuevos
 
 [ ] Mezclan DDL con datos de seed en las mismas migraciones, y el schema de tests quedó desactualizado respecto de los DAOs (le faltan users_roles y suspended_at).
 
 [X] Arman las opciones traducidas de los «select» en Java en varios controllers. Esas copias ya divergieron entre sí, cuando la vista lo resuelve Con <spring:message>. Por ejemplo, ListingController.discovery y AccountController.listings.
   -- RESUELTO: PR https://bitbucket.org/itba/paw-2026b-08/pull-requests/88
 
-[ ] Pasan los filtros como string entre capas y los convierten a enum a mano en cada una, con comportamientos distintos ante valores inválidos, en lugar de bindear el enum en el form. Por ejemplo, ListingServiceImpl.search y UserController.profile.
+[X] Pasan los filtros como string entre capas y los convierten a enum a mano en cada una, con comportamientos distintos ante valores inválidos, en lugar de bindear el enum en el form. Por ejemplo, ListingServiceImpl.search y UserController.profile.
+  -- RESUELTO: PR https://bitbucket.org/itba/paw-2026b-08/pull-requests/96
 
 [-] Duplican código que ya divergió: el mapeo de Listing / User está copiado entre OfferJdbcDao ListingJdbcDao (y devuelve objetos incompletos según quién los carga),
   -- IRRELEVANTE con la migración a JPA, lo resuelve el entity manager
