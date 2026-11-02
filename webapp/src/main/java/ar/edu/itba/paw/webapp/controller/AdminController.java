@@ -32,6 +32,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Predicate;
 
 @RequiredArgsConstructor
 @Controller
@@ -39,6 +40,7 @@ import java.util.Optional;
 public class AdminController {
     private static final Logger LOGGER = LoggerFactory.getLogger(AdminController.class);
     private static final int DEFAULT_PAGE_SIZE = 10;
+    private static final Predicate<String> ADMIN_PATH_FILTER = RedirectHelper.hasPathPrefix("/admin");
 
     private final AdminService adminService;
     private final ListingService listingService;
@@ -107,9 +109,11 @@ public class AdminController {
                     .addObject("grantRoleForm", new AdminGrantRoleForm());
         }
 
-        String target = (redirectUrl != null && !redirectUrl.isBlank())
-                ? redirectUrl
-                : "/admin/listings?success=listing_takedown";
+        final var target = RedirectHelper.resolvePath(
+                redirectUrl,
+                "/admin/listings?success=listing_takedown",
+                ADMIN_PATH_FILTER
+        );
         return new ModelAndView("redirect:" + target);
     }
 
@@ -122,9 +126,10 @@ public class AdminController {
     ) {
         LOGGER.info("Admin {} took down listing id={}", currentUser.getUsername(), id);
         boolean success = adminService.takeDownListing(id);
-        String target = (redirectUrl != null && !redirectUrl.isBlank())
-                ? redirectUrl
-                : (success ? "/admin/listings?success=listing_takedown" : "/admin/listings?error=listingNotFound");
+        final var fallback = success
+                ? "/admin/listings?success=listing_takedown"
+                : "/admin/listings?error=listingNotFound";
+        final var target = RedirectHelper.resolvePath(redirectUrl, fallback, ADMIN_PATH_FILTER);
         return new ModelAndView("redirect:" + target);
     }
 
@@ -174,9 +179,11 @@ public class AdminController {
                     .addObject("grantRoleForm", new AdminGrantRoleForm());
         }
 
-        String target = (redirectUrl != null && !redirectUrl.isBlank())
-                ? redirectUrl
-                : "/admin/offers?success=offer_takedown";
+        final var target = RedirectHelper.resolvePath(
+                redirectUrl,
+                "/admin/offers?success=offer_takedown",
+                ADMIN_PATH_FILTER
+        );
         return new ModelAndView("redirect:" + target);
     }
 
@@ -189,9 +196,10 @@ public class AdminController {
     ) {
         LOGGER.info("Admin {} took down offer id={}", currentUser.getUsername(), id);
         boolean success = adminService.takeDownOffer(id);
-        String target = (redirectUrl != null && !redirectUrl.isBlank())
-                ? redirectUrl
-                : (success ? "/admin/offers?success=offer_takedown" : "/admin/offers?error=offerNotFound");
+        final var fallback = success
+                ? "/admin/offers?success=offer_takedown"
+                : "/admin/offers?error=offerNotFound";
+        final var target = RedirectHelper.resolvePath(redirectUrl, fallback, ADMIN_PATH_FILTER);
         return new ModelAndView("redirect:" + target);
     }
 

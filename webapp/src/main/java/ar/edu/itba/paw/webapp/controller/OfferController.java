@@ -4,8 +4,8 @@ import ar.edu.itba.paw.model.User;
 import ar.edu.itba.paw.service.OfferService;
 import ar.edu.itba.paw.webapp.auth.CurrentUser;
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.security.access.prepost.PreAuthorize;
+import javax.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
@@ -43,15 +43,16 @@ public class OfferController {
     @PreAuthorize("@webPermissionService.canManageOfferAsBuyer(authentication, #offerId)")
     public ModelAndView withdrawOffer(@PathVariable Long offerId,
                                       @CurrentUser User currentUser,
-                                      @RequestHeader(value = "Referer", required = false) String referer) {
+                                      HttpServletRequest request) {
         LOGGER.info("User {} withdrew offer {}", currentUser.getId(), offerId);
 
         final var offer = offerService.withdraw(offerId, currentUser.getId());
 
-        String redirectUrl = "/listing/" + offer.getListing().getId();
-        if (referer != null && (referer.contains("/account/my-offers") || referer.contains("/account/incoming-offers"))) {
-            redirectUrl = referer;
-        }
+        final var redirectUrl = RedirectHelper.resolveReferer(
+                request,
+                "/listing/" + offer.getListing().getId(),
+                RedirectHelper.hasPathPrefix("/account/my-offers", "/account/incoming-offers")
+        );
         return new ModelAndView("redirect:" + redirectUrl);
     }
 
