@@ -112,9 +112,9 @@ public class OfferServiceImpl implements OfferService {
         final var listingPrice = listing.getPrice().getAmount();
 
         BigDecimal amount = switch (dto.offerType()) {
-            case "full" -> listingPrice;
-            case "custom" -> dto.customAmount();
-            default -> dto.tradeAmount() != null ? dto.tradeAmount() : BigDecimal.ZERO;
+            case FULL -> listingPrice;
+            case CUSTOM -> dto.customAmount();
+            case TRADE -> dto.tradeAmount() != null ? dto.tradeAmount() : BigDecimal.ZERO;
         };
 
         var isFullPrice = amount.equals(listingPrice);

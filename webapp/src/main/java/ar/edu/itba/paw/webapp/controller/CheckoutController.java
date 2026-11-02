@@ -2,6 +2,7 @@ package ar.edu.itba.paw.webapp.controller;
 
 import ar.edu.itba.paw.model.Listing;
 import ar.edu.itba.paw.model.ListingStatus;
+import ar.edu.itba.paw.model.OfferType;
 import ar.edu.itba.paw.model.User;
 import ar.edu.itba.paw.service.ListingService;
 import ar.edu.itba.paw.service.OfferService;
@@ -41,7 +42,7 @@ public class CheckoutController {
         LOGGER.debug("User accessing checkout page for listing {}", listingId);
         Listing listing = listingService.getById(listingId);
         form.setListingId(listingId);
-        form.setOfferType("full");
+        form.setOfferType(OfferType.FULL);
 
         return withUserListings(listing, currentUser);
     }
