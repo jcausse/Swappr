@@ -119,6 +119,26 @@ public class User {
         return suspendedAt != null;
     }
 
+    public boolean isSameUser(User other) {
+        return other != null && id != null && id.equals(other.getId());
+    }
+
+    public boolean matchesUsernameOrEmail(String usernameOrEmail) {
+        if (usernameOrEmail == null) {
+            return false;
+        }
+        final String normalized = usernameOrEmail.trim();
+        return username.equalsIgnoreCase(normalized) || email.equalsIgnoreCase(normalized);
+    }
+
+    public boolean hasRole(Role role) {
+        return role != null && roles.contains(role);
+    }
+
+    public Language getPreferredLanguageOrDefault() {
+        return preferredLanguage != null ? preferredLanguage : Language.getDefault();
+    }
+
     public Optional<Province> getProvince() {
         return Optional.ofNullable(province);
     }

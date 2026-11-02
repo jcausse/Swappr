@@ -161,4 +161,62 @@ public class Offer {
         if (lastDot == -1 || lastDot == filename.length() - 1) return "";
         return filename.substring(lastDot + 1).toLowerCase();
     }
+
+    public boolean isPending() {
+        return status == OfferStatus.PENDING;
+    }
+
+    public boolean isPendingPayment() {
+        return status == OfferStatus.PENDING_PAYMENT;
+    }
+
+    public boolean isAccepted() {
+        return status == OfferStatus.ACCEPTED;
+    }
+
+    public boolean isBuyer(Long userId) {
+        return userId != null && userId.equals(buyer.getId());
+    }
+
+    public boolean isBuyer(User user) {
+        return user != null && isBuyer(user.getId());
+    }
+
+    public boolean isSeller(Long userId) {
+        return userId != null && userId.equals(listing.getCreator().getId());
+    }
+
+    public boolean isSeller(User user) {
+        return user != null && isSeller(user.getId());
+    }
+
+    public boolean isParticipant(Long userId) {
+        return isBuyer(userId) || isSeller(userId);
+    }
+
+    public boolean isParticipant(User user) {
+        return user != null && isParticipant(user.getId());
+    }
+
+    public RatingRole getUserRole(User user) {
+        if (isBuyer(user)) return RatingRole.BUYER;
+        if (isSeller(user)) return RatingRole.SELLER;
+        return null;
+    }
+
+    public boolean canUploadDocuments() {
+        return isPendingPayment();
+    }
+
+    public boolean canBeRatedBy(RatingRole userRole) {
+        if (!isAccepted() || userRole == null) return false;
+        return switch (userRole) {
+            case BUYER -> sellerRating == null;
+            case SELLER -> buyerRating == null;
+        };
+    }
+
+    public boolean canBeRatedBy(User user) {
+        return canBeRatedBy(getUserRole(user));
+    }
 }

@@ -125,11 +125,11 @@ public class OfferServiceImpl implements OfferService {
 
         LOGGER.debug("Creating offer: listingId={}, buyerId={}, amount={}", dto.listingId(), dto.buyerId(), amount);
 
-        if (listing.getStatus() != ListingStatus.ACTIVE) {
+        if (!listing.isActive()) {
             LOGGER.warn("Offer attempted on listing {} with non-ACTIVE status: {}", dto.listingId(), listing.getStatus());
             throw BadParameterException.create("listingId", "Listing is not available for offers");
         }
-        if (Objects.equals(dto.buyerId(), listing.getCreator().getId())) {
+        if (listing.isCreator(dto.buyerId())) {
             LOGGER.warn("User {} attempted to buy their own listing {}", dto.buyerId(), dto.listingId());
             throw BadParameterException.create("buyerId", "User cannot buy their own listing");
         }
@@ -152,10 +152,10 @@ public class OfferServiceImpl implements OfferService {
                 throw BadParameterException.create("listingId", "This listing does not accept trades");
             }
             final Listing offeredListing = listingService.getById(offeredListingId);
-            if (!Objects.equals(offeredListing.getCreator().getId(), buyer.getId())) {
+            if (!offeredListing.isCreator(buyer)) {
                 throw BadParameterException.create("offeredListingId", "Offered listing must belong to the buyer");
             }
-            if (offeredListing.getStatus() != ListingStatus.ACTIVE) {
+            if (!offeredListing.isActive()) {
                 throw BadParameterException.create("offeredListingId", "Offered listing must be active");
             }
             // Set offered listing to OFFERED_IN_TRADE
@@ -189,12 +189,12 @@ public class OfferServiceImpl implements OfferService {
         final Offer offer = offerDao.getById(offerId)
             .orElseThrow(() -> NotFoundException.createFor("Offer with ID " + offerId));
 
-        if (!offer.getListing().getCreator().getId().equals(currentUserId)) {
+        if (!offer.isSeller(currentUserId)) {
             LOGGER.warn("User {} unauthorized to accept offer {}", currentUserId, offerId);
             throw new ForbiddenException("Not authorized to accept this offer");
         }
 
-        if (offer.getStatus() != OfferStatus.PENDING) {
+        if (!offer.isPending()) {
             LOGGER.warn("Cannot accept offer {} in status {}", offerId, offer.getStatus());
             throw new BadParameterException("Offer is not pending");
         }
@@ -228,20 +228,17 @@ public class OfferServiceImpl implements OfferService {
         final Offer offer = offerDao.getById(offerId)
             .orElseThrow(() -> NotFoundException.createFor("Offer with ID " + offerId));
 
-        if (!offer.getListing().getCreator().getId().equals(currentUserId)) {
+        if (!offer.isSeller(currentUserId)) {
             LOGGER.warn("User {} unauthorized to reject offer {}", currentUserId, offerId);
             throw new ForbiddenException("Not authorized to reject this offer");
         }
 
-        switch (offer.getStatus()) {
-           	case OfferStatus.PENDING -> {}
-            case OfferStatus.PENDING_PAYMENT ->
-                // Reset listing to ACTIVE
-                listingService.updateStatus(offer.getListing().getId(), ListingStatus.ACTIVE);
-            default -> {
-                LOGGER.warn("Cannot reject offer {} in status {}", offerId, offer.getStatus());
-                throw new BadParameterException("Offer cannot be rejected in its current state");
-            }
+        if (offer.isPendingPayment()) {
+            // Reset listing to ACTIVE
+            listingService.updateStatus(offer.getListing().getId(), ListingStatus.ACTIVE);
+        } else if (!offer.isPending()) {
+            LOGGER.warn("Cannot reject offer {} in status {}", offerId, offer.getStatus());
+            throw new BadParameterException("Offer cannot be rejected in its current state");
         }
 
         // Handle trade offer: reset offered listing to ACTIVE
@@ -267,12 +264,12 @@ public class OfferServiceImpl implements OfferService {
         final Offer offer = offerDao.getById(offerId)
             .orElseThrow(() -> NotFoundException.createFor("Offer with ID " + offerId));
 
-        if (!offer.getBuyer().getId().equals(currentUserId)) {
+        if (!offer.isBuyer(currentUserId)) {
             LOGGER.warn("User {} unauthorized to withdraw offer {}", currentUserId, offerId);
             throw new BadParameterException("Not authorized to withdraw this offer");
         }
 
-        if (offer.getStatus() != OfferStatus.PENDING) {
+        if (!offer.isPending()) {
             LOGGER.warn("Cannot withdraw offer {} in status {}", offerId, offer.getStatus());
             throw new BadParameterException("Offer is not pending");
         }
@@ -322,12 +319,12 @@ public class OfferServiceImpl implements OfferService {
         final Offer offer = offerDao.getById(offerId)
             .orElseThrow(() -> NotFoundException.createFor("Offer with ID " + offerId));
 
-        if (!offer.getBuyer().getId().equals(buyerId)) {
+        if (!offer.isBuyer(buyerId)) {
             LOGGER.warn("User {} unauthorized to upload proof of payment for offer {}", buyerId, offerId);
             throw new BadParameterException("Only the buyer can upload proof of payment");
         }
 
-        if (offer.getStatus() != OfferStatus.PENDING_PAYMENT) {
+        if (!offer.canUploadDocuments()) {
             throw new BadParameterException("Offer is not pending payment");
         }
 
@@ -368,12 +365,12 @@ public class OfferServiceImpl implements OfferService {
             .orElseThrow(() -> NotFoundException.createFor("Offer with ID " + offerId));
 
         // TODO remove this validation after implementing preatuhorize
-        if (!offer.getListing().getCreator().getId().equals(sellerId)) {
+        if (!offer.isSeller(sellerId)) {
             LOGGER.warn("User {} unauthorized to upload proof of shipping for offer {}", sellerId, offerId);
             throw new BadParameterException("Only the seller can upload proof of shipping");
         }
 
-        if (offer.getStatus() != OfferStatus.PENDING_PAYMENT) {
+        if (!offer.canUploadDocuments()) {
             throw new BadParameterException("Offer is not pending payment");
         }
 
@@ -422,12 +419,12 @@ public class OfferServiceImpl implements OfferService {
         final Offer offer = offerDao.getById(offerId)
             .orElseThrow(() -> NotFoundException.createFor("Offer with ID " + offerId));
 
-        if (!offer.getListing().getCreator().getId().equals(sellerId)) {
+        if (!offer.isSeller(sellerId)) {
             LOGGER.warn("User {} unauthorized to confirm payment for offer {}", sellerId, offerId);
             throw new BadParameterException("Only the seller can confirm payment");
         }
 
-        if (offer.getStatus() != OfferStatus.PENDING_PAYMENT) {
+        if (!offer.isPendingPayment()) {
             LOGGER.warn("Cannot confirm payment for offer {} in status {}", offerId, offer.getStatus());
             throw new BadParameterException("Offer is not pending payment");
         }
@@ -445,10 +442,7 @@ public class OfferServiceImpl implements OfferService {
         final Offer offer = offerDao.getById(offerId)
             .orElseThrow(() -> NotFoundException.createFor("Offer with ID " + offerId));
 
-        final boolean isBuyer = offer.getBuyer().getId().equals(currentUserId);
-        final boolean isSeller = offer.getListing().getCreator().getId().equals(currentUserId);
-
-        if (!isBuyer && !isSeller) {
+        if (!offer.isParticipant(currentUserId)) {
             throw new ForbiddenException("Not authorized to download proof of payment");
         }
 
@@ -464,10 +458,7 @@ public class OfferServiceImpl implements OfferService {
         final Offer offer = offerDao.getById(offerId)
             .orElseThrow(() -> NotFoundException.createFor("Offer with ID " + offerId));
 
-        final boolean isBuyer = offer.getBuyer().getId().equals(currentUserId);
-        final boolean isSeller = offer.getListing().getCreator().getId().equals(currentUserId);
-
-        if (!isBuyer && !isSeller) {
+        if (!offer.isParticipant(currentUserId)) {
             throw new ForbiddenException("Not authorized to download proof of shipping");
         }
 
@@ -497,18 +488,20 @@ public class OfferServiceImpl implements OfferService {
     @Override
     @Transactional
     public Offer rate(Offer offer, User currentUser, OfferRating rating, String reviewText) {
-        if (offer.getStatus() != OfferStatus.ACCEPTED) {
+        if (!offer.isAccepted()) {
             throw new BadParameterException("Only accepted offers can be rated");
         }
 
 		final var buyer = offer.getBuyer();
 		final var seller = offer.getListing().getCreator();
 
-		final boolean isBuyer = buyer.getId().equals(currentUser.getId());
-		final boolean isSeller = seller.getId().equals(currentUser.getId());
+		final boolean isBuyer = offer.isBuyer(currentUser);
 
-        if (!isBuyer && !isSeller) {
+        if (!offer.isParticipant(currentUser)) {
             throw new ForbiddenException("You did not participate in this offer");
+        }
+        if (!offer.canBeRatedBy(currentUser)) {
+            throw new BadParameterException("You have already rated this offer");
         }
 
         final var role = isBuyer ? RatingRole.SELLER : RatingRole.BUYER;
@@ -570,14 +563,11 @@ public class OfferServiceImpl implements OfferService {
             .orElseThrow(() -> NotFoundException.createFor("Offer with ID " + offerId));
 
         /* Reset listing status to ACTIVE if the current offer is holding it PENDING_TRANSACTION */
-        switch (offer.getStatus()) {
-            case OfferStatus.PENDING -> {}  // Listings with pending offers are still ACTIVE
-            case OfferStatus.PENDING_PAYMENT ->
-                listingService.updateStatus(offer.getListing().getId(), ListingStatus.ACTIVE);
-            default -> {
-                LOGGER.warn("Cannot cancel offer {} in status {}", offerId, offer.getStatus());
-                throw new BadParameterException("Offer cannot be canceled in its current state");
-            }
+        if (offer.isPendingPayment()) {
+            listingService.updateStatus(offer.getListing().getId(), ListingStatus.ACTIVE);
+        } else if (!offer.isPending()) {
+            LOGGER.warn("Cannot cancel offer {} in status {}", offerId, offer.getStatus());
+            throw new BadParameterException("Offer cannot be canceled in its current state");
         }
 
         /* If there is an offered listing, reset it to ACTIVE */
