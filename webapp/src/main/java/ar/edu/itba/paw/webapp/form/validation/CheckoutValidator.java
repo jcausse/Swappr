@@ -51,12 +51,6 @@ public class CheckoutValidator implements ConstraintValidator<ValidCheckout, Che
                         .addPropertyNode("customAmount")
                         .addConstraintViolation();
                 valid = false;
-            } else if (form.getCustomAmount().compareTo(BigDecimal.ZERO) <= 0) {
-                context.disableDefaultConstraintViolation();
-                context.buildConstraintViolationWithTemplate(messageSource.getMessage("NotNull.checkoutForm.customAmount", null, locale))
-                        .addPropertyNode("customAmount")
-                        .addConstraintViolation();
-                valid = false;
             } else if (listingPrice != null && form.getCustomAmount().compareTo(listingPrice) > 0) {
                 context.disableDefaultConstraintViolation();
                 context.buildConstraintViolationWithTemplate(messageSource.getMessage("Max.checkoutForm.customAmount", new Object[]{listingPrice}, locale))
@@ -75,13 +69,7 @@ public class CheckoutValidator implements ConstraintValidator<ValidCheckout, Che
                         .addConstraintViolation();
                 valid = false;
             }
-            if (form.getTradeAmount() != null && form.getTradeAmount().compareTo(BigDecimal.ZERO) < 0) {
-                context.disableDefaultConstraintViolation();
-                context.buildConstraintViolationWithTemplate(messageSource.getMessage("NotNull.checkoutForm.tradeAmount", null, locale))
-                        .addPropertyNode("tradeAmount")
-                        .addConstraintViolation();
-                valid = false;
-            } else if (listingPrice != null && form.getTradeAmount().compareTo(listingPrice) > 0) {
+            if (listingPrice != null && form.getTradeAmount() != null && form.getTradeAmount().compareTo(listingPrice) > 0) {
                 context.disableDefaultConstraintViolation();
                 context.buildConstraintViolationWithTemplate(messageSource.getMessage("Max.checkoutForm.tradeAmount", new Object[]{listingPrice}, locale))
                         .addPropertyNode("tradeAmount")

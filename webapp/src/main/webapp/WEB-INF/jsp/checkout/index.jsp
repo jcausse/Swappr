@@ -51,7 +51,7 @@
                                             <spring:message code="checkout.form.tradeAmount" var="tradeAmountLabel"/>
                                             <spring:message code="checkout.form.tradeAmount.placeholder" var="tradeAmountPlaceholder"/>
                                             <div class="w-full max-w-md">
-                                                <paw:formInput path="tradeAmount" type="number" step="0.01" min="0" placeholder="${tradeAmountPlaceholder}" label="${tradeAmountLabel}" variant="outline"/>
+                                                <paw:formInput path="tradeAmount" type="number" step="0.01" placeholder="${tradeAmountPlaceholder}" label="${tradeAmountLabel}" variant="outline"/>
                                             </div>
                                         </div>
                                     </div>
@@ -125,10 +125,8 @@
             function toggleFields() {
                 if (customRadio.checked) {
                     customField.classList.remove('hidden');
-                    customInput.required = true;
                 } else {
                     customField.classList.add('hidden');
-                    customInput.required = false;
                 }
 
                 if (tradeRadio && tradeRadio.checked) {
