@@ -78,7 +78,7 @@ public class CheckoutController {
         if (currentUser != null && listing.isAcceptsTrade()) {
             var filter = ListingFilterDto.builder()
                 .creatorId(currentUser.getId())
-                .status(ListingStatus.ACTIVE.name())
+                .status(ListingStatus.ACTIVE)
                 .page(1)
                 .pageSize(100)
                 .build();

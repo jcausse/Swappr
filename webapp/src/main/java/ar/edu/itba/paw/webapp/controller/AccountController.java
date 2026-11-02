@@ -92,7 +92,7 @@ public class AccountController {
                 else if (s == ListingSort.NAME_ASC) key = "account.listings.sort.name_asc";
                 else if (s == ListingSort.NAME_DESC) key = "account.listings.sort.name_desc";
                 else key = s.getKey();
-                return new StringSelectOption(s.getKey(), key);
+                return new StringSelectOption(s.name(), key);
             })
             .toList();
 
@@ -118,7 +118,7 @@ public class AccountController {
         final var offerPage = offerService.get(filter);
 
         final var statusGroupOptions = Arrays.stream(OfferStatusGroup.values())
-            .map(s -> new StringSelectOption(s.getStatus(), "offer.statusGroup." + s.getStatus()))
+            .map(s -> new StringSelectOption(s.name(), "offer.statusGroup." + s.getStatus()))
             .toList();
 
 		return new ModelAndView("account/incomingOffers")
@@ -143,7 +143,7 @@ public class AccountController {
         final var offerPage = offerService.get(filter);
 
         final var statusGroupOptions = Arrays.stream(OfferStatusGroup.values())
-            .map(s -> new StringSelectOption(s.getStatus(), "offer.statusGroup." + s.getStatus()))
+            .map(s -> new StringSelectOption(s.name(), "offer.statusGroup." + s.getStatus()))
             .toList();
 
 		return new ModelAndView("account/myOffers")
@@ -201,7 +201,7 @@ public class AccountController {
         );
         LOGGER.info("User {} uploaded proof of payment for offer {}", currentUser.getId(), offerId);
 
-        return new ModelAndView("redirect:/account/my-offers?statusGroup=pending_payment");
+        return new ModelAndView("redirect:/account/my-offers?statusGroup=PENDING_PAYMENT");
     }
 
     @GetMapping("/my-offers/{offerId}/shipping")
@@ -242,7 +242,7 @@ public class AccountController {
         );
         LOGGER.info("User {} uploaded proof of shipping for offer {}", currentUser.getId(), offerId);
 
-        return new ModelAndView("redirect:/account/incoming-offers?statusGroup=pending_payment");
+        return new ModelAndView("redirect:/account/incoming-offers?statusGroup=PENDING_PAYMENT");
     }
 
     @GetMapping("/my-offers/{offerId}/payment/download")
@@ -311,7 +311,7 @@ public class AccountController {
         offerService.rate(offer, currentUser, rateForm.getRating(), rateForm.getReviewText());
 
         return new ModelAndView("redirect:" + (offer.isBuyer(currentUser)
-            ? "/account/incoming-offers?statusGroup=resolved"
-            : "/account/my-offers?statusGroup=resolved"));
+            ? "/account/incoming-offers?statusGroup=RESOLVED"
+            : "/account/my-offers?statusGroup=RESOLVED"));
     }
 }

@@ -95,7 +95,7 @@ public class AdminServiceImpl implements AdminService {
             final Page<Listing> activeListings = listingService.search(
                     ListingFilterDto.builder()
                             .creatorId(user.getId())
-                            .status(ListingStatus.ACTIVE.getStatus())
+                            .status(ListingStatus.ACTIVE)
                             .page(1)
                             .pageSize(1000)
                             .build()
@@ -118,7 +118,7 @@ public class AdminServiceImpl implements AdminService {
                 final Page<Offer> buyerOffers = offerService.get(
                         OfferFilterDto.builder()
                                 .buyerId(user.getId())
-                                .statusGroup(group.getStatus())
+                                .statusGroup(group)
                                 .page(1)
                                 .pageSize(1000)
                                 .build()
@@ -142,7 +142,7 @@ public class AdminServiceImpl implements AdminService {
             final Page<Offer> sellerPendingPaymentOffers = offerService.get(
                     OfferFilterDto.builder()
                             .sellerId(user.getId())
-                            .statusGroup(OfferStatusGroup.PENDING_PAYMENT.getStatus())
+                            .statusGroup(OfferStatusGroup.PENDING_PAYMENT)
                             .page(1)
                             .pageSize(1000)
                             .build()

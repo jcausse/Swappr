@@ -39,8 +39,8 @@ public class RootController {
         LOGGER.debug("Accessing landing page");
         // Hot items: active listings with most active offers
         var hotItemsFilter = ListingFilterDto.builder()
-            .sort(ListingSort.MOST_OFFERS.getKey())
-            .status(ListingStatus.ACTIVE.getStatus())
+            .sort(ListingSort.MOST_OFFERS)
+            .status(ListingStatus.ACTIVE)
             .page(1)
             .pageSize(LANDING_LIST_SIZE)
             .hasActiveOffers(true)
@@ -49,8 +49,8 @@ public class RootController {
 
         // Trending items: active listings with most recent active offers
         var trendingItemsFilter = ListingFilterDto.builder()
-            .sort(ListingSort.RECENT_OFFERS.getKey())
-            .status(ListingStatus.ACTIVE.getStatus())
+            .sort(ListingSort.RECENT_OFFERS)
+            .status(ListingStatus.ACTIVE)
             .page(1)
             .pageSize(LANDING_LIST_SIZE)
             .hasActiveOffers(true)
@@ -59,8 +59,8 @@ public class RootController {
 
         // New items: most recently created active listings
         var newItemsFilter = ListingFilterDto.builder()
-            .sort(ListingSort.RECENT.getKey())
-            .status(ListingStatus.ACTIVE.getStatus())
+            .sort(ListingSort.RECENT)
+            .status(ListingStatus.ACTIVE)
             .page(1)
             .pageSize(LANDING_LIST_SIZE)
             .build();

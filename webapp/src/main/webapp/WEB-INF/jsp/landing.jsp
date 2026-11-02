@@ -67,7 +67,7 @@
     <main class="max-w-6xl mx-auto px-6 py-8 flex flex-col gap-12">
         <!-- Hot Items -->
         <c:if test="${not empty hotItems}">
-            <c:url value="/listing?sort=most_offers" var="hotItemsSeeMoreUrl"/>
+            <c:url value="/listing?sort=MOST_OFFERS" var="hotItemsSeeMoreUrl"/>
             <spring:message code="landing.hotItems.title" var="hotItemsTitle"/>
             <spring:message code="landing.hotItems.subtitle" var="hotItemsSubtitle"/>
             <spring:message code="landing.seeMore" var="seeMoreLabel"/>
@@ -83,7 +83,7 @@
 
         <!-- Trending Items -->
         <c:if test="${not empty trendingItems}">
-            <c:url value="/listing?sort=recent_offers" var="trendingItemsSeeMoreUrl"/>
+            <c:url value="/listing?sort=RECENT_OFFERS" var="trendingItemsSeeMoreUrl"/>
             <spring:message code="landing.trendingItems.title" var="trendingItemsTitle"/>
             <spring:message code="landing.trendingItems.subtitle" var="trendingItemsSubtitle"/>
             <spring:message code="landing.seeMore" var="seeMoreLabel"/>
@@ -99,7 +99,7 @@
 
         <!-- New Items -->
         <c:if test="${not empty newItems}">
-            <c:url value="/listing?sort=recent" var="newItemsSeeMoreUrl"/>
+            <c:url value="/listing?sort=RECENT" var="newItemsSeeMoreUrl"/>
             <spring:message code="landing.newItems.title" var="newItemsTitle"/>
             <spring:message code="landing.newItems.subtitle" var="newItemsSubtitle"/>
             <spring:message code="landing.seeMore" var="seeMoreLabel"/>

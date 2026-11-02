@@ -17,7 +17,7 @@ public enum ListingStatus {
 
     public static Optional<ListingStatus> fromString(final String status) {
         return Arrays.stream(ListingStatus.values())
-            .filter(s -> s.status.equalsIgnoreCase(status))
+            .filter(s -> s.status.equalsIgnoreCase(status) || s.name().equalsIgnoreCase(status))
             .findFirst();
     }
 }

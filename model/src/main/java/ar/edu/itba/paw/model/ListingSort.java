@@ -18,7 +18,7 @@ public enum ListingSort {
 
     public static Optional<ListingSort> fromString(final String key) {
         return Arrays.stream(ListingSort.values())
-            .filter(s -> s.key.equalsIgnoreCase(key))
+            .filter(s -> s.key.equalsIgnoreCase(key) || s.name().equalsIgnoreCase(key))
             .findFirst();
     }
 }

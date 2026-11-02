@@ -1,5 +1,7 @@
 package ar.edu.itba.paw.webapp.controller;
 
+import ar.edu.itba.paw.model.ListingStatus;
+import ar.edu.itba.paw.model.OfferStatusGroup;
 import ar.edu.itba.paw.model.Role;
 import ar.edu.itba.paw.model.User;
 import ar.edu.itba.paw.service.AdminService;
@@ -66,7 +68,7 @@ public class AdminController {
     public ModelAndView listings(
             @CurrentUser User currentUser,
             @RequestParam(value = "query", required = false) String query,
-            @RequestParam(value = "status", required = false) String status,
+            @RequestParam(value = "status", required = false) ListingStatus status,
             @RequestParam(value = "page", defaultValue = "1") int page,
             @ModelAttribute("takeDownListingForm") AdminTakeDownListingForm takeDownListingForm
     ) {
@@ -138,7 +140,7 @@ public class AdminController {
     @PreAuthorize("hasRole('ADMIN')")
     public ModelAndView offers(
             @CurrentUser User currentUser,
-            @RequestParam(value = "statusGroup", required = false) String statusGroup,
+            @RequestParam(value = "statusGroup", required = false) OfferStatusGroup statusGroup,
             @RequestParam(value = "page", defaultValue = "1") int page,
             @ModelAttribute("takeDownOfferForm") AdminTakeDownOfferForm takeDownOfferForm
     ) {

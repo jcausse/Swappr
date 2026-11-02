@@ -4,7 +4,6 @@ import ar.edu.itba.paw.model.Condition;
 import ar.edu.itba.paw.model.Image;
 import ar.edu.itba.paw.model.Listing;
 import ar.edu.itba.paw.model.ListingFilter;
-import ar.edu.itba.paw.model.ListingSort;
 import ar.edu.itba.paw.model.Page;
 import ar.edu.itba.paw.model.ListingStatus;
 import ar.edu.itba.paw.model.Price;
@@ -63,14 +62,14 @@ public class ListingServiceImpl implements ListingService {
             .subcategoryId(dto.subcategoryId())
             .minPrice(sanitizePrice(dto.minPrice()))
             .maxPrice(sanitizePrice(dto.maxPrice()))
-            .condition(parseCondition(dto.condition()))
+            .condition(dto.condition())
             .acceptsTrade(Boolean.TRUE.equals(dto.acceptsTrade()) ? Boolean.TRUE : null)
             .query(dto.query())
-            .sort(parseSort(dto.sort()))
+            .sort(dto.sort())
             .page(sanitizePage(dto.page()))
             .pageSize(dto.pageSize())
             .creatorId(dto.creatorId())
-            .status(parseStatus(dto.status()))
+            .status(dto.status())
             .hasActiveOffers(dto.hasActiveOffers())
             .provinceId(dto.provinceId())
             .acceptsShipping(Boolean.TRUE.equals(dto.acceptsShipping()) ? Boolean.TRUE : null)
@@ -85,24 +84,6 @@ public class ListingServiceImpl implements ListingService {
 
     private static int sanitizePage(final Integer page) {
         return page == null || page < 1 ? 1 : page;
-    }
-
-    private static ListingStatus parseStatus(final String value) { // TODO: SACAR LOS PARSEOS Y HACER QUE EL FORM TOME UN ENUM USANDO CONVERTERS
-        return value == null || value.isBlank()
-            ? null
-            : ListingStatus.fromString(value).orElse(null);
-    }
-
-    private static Condition parseCondition(final String value) {
-        return value == null || value.isBlank()
-            ? null
-            : Condition.fromString(value).orElse(null);
-    }
-
-    private static ListingSort parseSort(final String value) {
-        return value == null || value.isBlank()
-            ? null
-            : ListingSort.fromString(value).orElse(null);
     }
 
     private static BigDecimal sanitizePrice(final BigDecimal value) {
@@ -137,11 +118,10 @@ public class ListingServiceImpl implements ListingService {
             }
         }
 
-        if (dto.condition() == null || dto.condition().isBlank()) {
+        if (dto.condition() == null) {
             throw BadParameterException.create("condition", "Condition is required");
         }
-        final Condition condition = Condition.fromString(dto.condition())
-            .orElseThrow(() -> BadParameterException.create("condition", "Invalid condition value"));
+        final Condition condition = dto.condition();
 
         var listing = listingDao.create(
             dto.title(),
@@ -228,11 +208,10 @@ public class ListingServiceImpl implements ListingService {
             throw BadParameterException.create("productId", e.getMessage());
         }
 
-        if (dto.condition() == null || dto.condition().isBlank()) {
+        if (dto.condition() == null) {
             throw BadParameterException.create("condition", "Condition is required");
         }
-        final Condition condition = Condition.fromString(dto.condition())
-            .orElseThrow(() -> BadParameterException.create("condition", "Invalid condition value"));
+        final Condition condition = dto.condition();
 
         var updated = listingDao.update(
             existing.getId(),

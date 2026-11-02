@@ -114,22 +114,22 @@ public class ListingServiceImplTest {
             .build();
     }
 
-    private static ListingCreationDto buildCreationDto(final String condition, final List<ImageData> images) {
+    private static ListingCreationDto buildCreationDto(final Condition condition, final List<ImageData> images) {
         return new ListingCreationDto(
             LISTING_TITLE, LISTING_PRICE.getAmount(), SELLER_ID, PRODUCT_ID, condition, true, false, LISTING_DESCRIPTION, images
         );
     }
 
-    private static ListingUpdateDto buildUpdateDto(final long listingId, final String condition) {
+    private static ListingUpdateDto buildUpdateDto(final long listingId, final Condition condition) {
         return new ListingUpdateDto(
             listingId, LISTING_TITLE, LISTING_PRICE.getAmount(), PRODUCT_ID, condition, true, false, LISTING_DESCRIPTION
         );
     }
 
     private static ListingFilterDto buildFilterDto(
-        final String condition,
-        final String sort,
-        final String status,
+        final Condition condition,
+        final ListingSort sort,
+        final ListingStatus status,
         final Integer page,
         final BigDecimal minPrice,
         final BigDecimal maxPrice,
@@ -208,7 +208,7 @@ public class ListingServiceImplTest {
         )).thenReturn(listing);
 
         // Act
-        final Listing result = listingService.create(buildCreationDto("good", null));
+        final Listing result = listingService.create(buildCreationDto(Condition.GOOD, null));
 
         // Assert
         Assert.assertEquals(LISTING_ID, (long) result.getId());
@@ -234,7 +234,7 @@ public class ListingServiceImplTest {
             .thenReturn(listing);
 
         // Act
-        final Listing result = listingService.create(buildCreationDto("GOOD", images));
+        final Listing result = listingService.create(buildCreationDto(Condition.GOOD, images));
 
         // Assert
         Assert.assertEquals(LISTING_ID, (long) result.getId());
@@ -246,7 +246,7 @@ public class ListingServiceImplTest {
         when(userService.getById(eq(SELLER_ID))).thenReturn(Optional.empty());
 
         // Act
-        listingService.create(buildCreationDto("GOOD", null));
+        listingService.create(buildCreationDto(Condition.GOOD, null));
     }
 
     @Test(expected = BadParameterException.class)
@@ -256,7 +256,7 @@ public class ListingServiceImplTest {
         when(productService.getById(eq(PRODUCT_ID))).thenThrow(NotFoundException.createFor("Product with ID " + PRODUCT_ID));
 
         // Act
-        listingService.create(buildCreationDto("GOOD", null));
+        listingService.create(buildCreationDto(Condition.GOOD, null));
     }
 
     @Test(expected = BadParameterException.class)
@@ -266,17 +266,7 @@ public class ListingServiceImplTest {
         when(productService.getById(eq(PRODUCT_ID))).thenReturn(buildFakeProduct());
 
         // Act
-        listingService.create(buildCreationDto("  ", null));
-    }
-
-    @Test(expected = BadParameterException.class)
-    public void testCreateInvalidConditionThrows() {
-        // Arrange
-        when(userService.getById(eq(SELLER_ID))).thenReturn(Optional.of(buildFakeUser(SELLER_ID, "seller")));
-        when(productService.getById(eq(PRODUCT_ID))).thenReturn(buildFakeProduct());
-
-        // Act
-        listingService.create(buildCreationDto("BRAND_NEW_IN_BOX", null));
+        listingService.create(buildCreationDto(null, null));
     }
 
     @Test(expected = NullPointerException.class)
@@ -353,7 +343,7 @@ public class ListingServiceImplTest {
         )).thenReturn(listing);
 
         // Act
-        final Listing result = listingService.update(buildUpdateDto(LISTING_ID, "fair"), SELLER_ID);
+        final Listing result = listingService.update(buildUpdateDto(LISTING_ID, Condition.FAIR), SELLER_ID);
 
         // Assert
         Assert.assertEquals(LISTING_ID, (long) result.getId());
@@ -365,7 +355,7 @@ public class ListingServiceImplTest {
         when(listingDao.getById(eq(NON_EXISTING_ID))).thenReturn(Optional.empty());
 
         // Act
-        listingService.update(buildUpdateDto(NON_EXISTING_ID, "GOOD"), SELLER_ID);
+        listingService.update(buildUpdateDto(NON_EXISTING_ID, Condition.GOOD), SELLER_ID);
     }
 
     @Test(expected = BadParameterException.class)
@@ -375,17 +365,17 @@ public class ListingServiceImplTest {
         when(productService.getById(eq(PRODUCT_ID))).thenThrow(NotFoundException.createFor("Product with ID " + PRODUCT_ID));
 
         // Act
-        listingService.update(buildUpdateDto(LISTING_ID, "GOOD"), SELLER_ID);
+        listingService.update(buildUpdateDto(LISTING_ID, Condition.GOOD), SELLER_ID);
     }
 
     @Test(expected = BadParameterException.class)
-    public void testUpdateInvalidConditionThrows() {
+    public void testUpdateMissingConditionThrows() {
         // Arrange
         when(listingDao.getById(eq(LISTING_ID))).thenReturn(Optional.of(buildFakeListing(buildFakeUser(SELLER_ID, "seller"))));
         when(productService.getById(eq(PRODUCT_ID))).thenReturn(buildFakeProduct());
 
         // Act
-        listingService.update(buildUpdateDto(LISTING_ID, "BRAND_NEW_IN_BOX"), SELLER_ID);
+        listingService.update(buildUpdateDto(LISTING_ID, null), SELLER_ID);
     }
 
     /* ---------------------------------------------------------------------------------------------- */

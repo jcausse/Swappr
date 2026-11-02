@@ -9,6 +9,7 @@ import ar.edu.itba.paw.service.dto.FileDto;
 import ar.edu.itba.paw.service.dto.OfferCreationDto;
 import ar.edu.itba.paw.service.dto.OfferFilterDto;
 import ar.edu.itba.paw.model.OfferRating;
+import ar.edu.itba.paw.model.OfferStatusGroup;
 
 import java.util.List;
 import java.util.Map;
@@ -34,7 +35,7 @@ public interface OfferService {
 
     int getPendingOffersCount(User seller);
 
-    Map<String, Long> getOfferCountByStatus(User currentUser, Boolean incoming);
+    Map<OfferStatusGroup, Long> getOfferCountByStatus(User currentUser, Boolean incoming);
 
     Offer uploadProofOfPayment(Long offerId, Long buyerId, FileDto fileDto);
 

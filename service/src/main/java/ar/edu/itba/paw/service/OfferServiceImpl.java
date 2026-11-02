@@ -86,7 +86,7 @@ public class OfferServiceImpl implements OfferService {
             .pageSize(dto.pageSize())
             .sellerId(dto.sellerId())
             .buyerId(dto.buyerId())
-            .status(parseStatusGroup(dto.statusGroup()))
+            .status(resolveStatusGroup(dto.statusGroup()))
             .build();
 
         return offerDao.search(filter);
@@ -96,11 +96,7 @@ public class OfferServiceImpl implements OfferService {
         return page == null || page < 1 ? 1 : page;
     }
 
-    private static List<OfferStatus> parseStatusGroup(final String value) {
-        final var statusGroup = value == null || value.isBlank()
-            ? null
-            : OfferStatusGroup.fromString(value).orElse(null);
-
+    private static List<OfferStatus> resolveStatusGroup(final OfferStatusGroup statusGroup) {
         return statusGroup == null ? OfferStatusGroup.PENDING.toStatusList() : statusGroup.toStatusList();
     }
 
@@ -479,7 +475,7 @@ public class OfferServiceImpl implements OfferService {
     }
 
     @Override
-    public Map<String, Long> getOfferCountByStatus(User currentUser, Boolean incoming) {
+    public Map<OfferStatusGroup, Long> getOfferCountByStatus(User currentUser, Boolean incoming) {
 		return offerDao.countByStatus(currentUser, incoming);
     }
 
