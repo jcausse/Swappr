@@ -42,7 +42,7 @@
                 <spring:message code="offer.detail.amount" var="amountLabel"/>
                 <span class="text-sm text-black/60"><c:out value="${amountLabel}"/></span>
                 <p class="text-3xl font-bold">
-                    $<c:out value="${offer.amount}"/>
+                    <paw:price amount="${offer.amount}"/>
                 </p>
             </div>
         </div>

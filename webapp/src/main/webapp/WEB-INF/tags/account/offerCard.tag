@@ -53,21 +53,22 @@
                                         <c:out value="${offeredListing.product.model}"/>
                                         (<c:out value="${offeredListing.product.year}"/>)
                                     </p>
-                                    <p class="text-xs text-black/60 font-normal">$<c:out value="${offeredListing.price.amount}"/></p>
+                                    <p class="text-xs text-black/60 font-normal"><paw:price amount="${offeredListing.price.amount}"/></p>
                                 </div>
                             </paw:linkButton>
                             <c:if test="${offer.amount != null and offer.amount > 0.0}">
-                                <spring:message code="offer.tradePlusAmount" arguments="${offer.amount}" var="plusAmountLabel"/>
+                                <spring:message code="currency.symbol" var="currencySymbol"/>
+                                <spring:message code="offer.tradePlusAmount" arguments="${currencySymbol} ${offer.amount}" var="plusAmountLabel"/>
                                 <span class="text-2xl font-bold"><c:out value="${plusAmountLabel}"/></span>
                             </c:if>
                         </div>
                     </c:if>
                     <c:if test="${not offer.offeredListing.present}">
                         <c:if test="${not offer.isFullPrice}">
-                            <p class="text-base font-medium line-through text-black/60"> $<c:out value="${offer.listing.price.amount}"/> </p>
+                            <p class="text-base font-medium line-through text-black/60"> <paw:price amount="${offer.listing.price.amount}"/> </p>
                         </c:if>
                         <p class="text-2xl font-bold">
-                            $<c:out value="${offer.amount}"/>
+                            <paw:price amount="${offer.amount}"/>
                             <c:if test="${not offer.isFullPrice}">
                                  <c:set var="listingPrice" value="${offer.listing.price.amount}"/>
                                  <c:set var="offerAmount" value="${offer.amount}"/>

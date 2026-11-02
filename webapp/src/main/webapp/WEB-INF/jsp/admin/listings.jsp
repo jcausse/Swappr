@@ -137,7 +137,7 @@
                                                 </a>
                                             </span>
                                             <span class="font-bold text-sm text-black">
-                                                $<c:out value="${listing.price.amount}"/>
+                                                <paw:price amount="${listing.price.amount}"/>
                                             </span>
                                         </div>
                                     </div>

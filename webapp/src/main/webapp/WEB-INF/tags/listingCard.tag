@@ -45,7 +45,7 @@
                 <paw:listingHotBadge listing="${listing}" classname="top-1! left-1!" />
                 <h3 class="text-sm font-medium"><c:out value="${listing.title}"/></h3>
                 <div class="flex items-center gap-2 flex-wrap mt-auto">
-                    <p class="text-lg font-bold">$<c:out value="${listing.price.amount}"/></p>
+                    <p class="text-lg font-bold"><paw:price amount="${listing.price.amount}"/></p>
                     <c:if test="${listing.acceptsTrade}">
                         <span class="text-sm text-lime-600 bg-lime-50 border border-lime-200 rounded-full w-5 h-5 flex items-center justify-center">
                             <paw:icon name="arrow-right-left" />
@@ -58,7 +58,7 @@
                 <h3 class="text-base font-semibold"><c:out value="${listing.title}"/></h3>
                 <p class="text-sm text-black/60 mb-2"><c:out value="${subLabel}"/></p>
                 <div class="flex items-center gap-2 flex-wrap mt-auto">
-                    <p class="text-xl font-bold">$<c:out value="${listing.price.amount}"/></p>
+                    <p class="text-xl font-bold"><paw:price amount="${listing.price.amount}"/></p>
                     <c:if test="${listing.acceptsTrade}">
                         <span class="text-sm text-lime-600 bg-lime-50 border border-lime-200 rounded-full w-5 h-5 flex items-center justify-center">
                             <paw:icon name="arrow-right-left" />

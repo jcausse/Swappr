@@ -134,7 +134,7 @@
                                             </a>
                                         </span>
                                         <span class="font-bold text-sm text-black">
-                                            $<c:out value="${offer.amount}"/>
+                                            <paw:price amount="${offer.amount}"/>
                                         </span>
                                         <c:if test="${offer.offeredListing.present}">
                                             <c:set var="offeredListing" value="${offer.offeredListing.get()}"/>
