@@ -215,7 +215,7 @@ public class AccountController {
         );
         LOGGER.info("User {} uploaded proof of payment for offer {}", currentUser.getId(), offerId);
 
-        return new ModelAndView("redirect:/account/my-offers?statusGroup=pending_payment");
+        return new ModelAndView("redirect:/account/my-offers?statusGroup=PENDING_PAYMENT");
     }
 
     @GetMapping("/my-offers/{offerId}/shipping")
@@ -259,7 +259,7 @@ public class AccountController {
         );
         LOGGER.info("User {} uploaded proof of shipping for offer {}", currentUser.getId(), offerId);
 
-        return new ModelAndView("redirect:/account/incoming-offers?statusGroup=pending_payment");
+        return new ModelAndView("redirect:/account/incoming-offers?statusGroup=PENDING_PAYMENT");
     }
 
     @GetMapping("/my-offers/{offerId}/payment/download")
@@ -336,7 +336,7 @@ public class AccountController {
         final Long currentUserId = currentUser.getId();
         final boolean isBuyer = offer.getBuyer().getId().equals(currentUserId);
 
-        String redirectUrl = isBuyer ? "/account/incoming-offers?statusGroup=resolved" : "/account/my-offers?statusGroup=resolved";
+        String redirectUrl = isBuyer ? "/account/incoming-offers?statusGroup=RESOLVED" : "/account/my-offers?statusGroup=RESOLVED";
         return new ModelAndView("redirect:" + redirectUrl);
     }
 }
