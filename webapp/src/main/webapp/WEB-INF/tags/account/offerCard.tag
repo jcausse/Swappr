@@ -5,10 +5,7 @@
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ taglib prefix="spring" uri="http://www.springframework.org/tags" %>
 <%@ taglib prefix="paw" tagdir="/WEB-INF/tags" %>
-<%@ taglib prefix="account" tagdir="/WEB-INF/tags/account" %>
 
-<%-- user is the counterparty shown on the card, so the viewer holds the opposite role --%>
-<c:set var="viewerRole" value="${user == 'buyer' ? 'seller' : 'buyer'}"/>
 
 <paw:card classname="flex flex-col h-full gap-2">
     <div class="flex items-start justify-between gap-2">
@@ -99,8 +96,6 @@
             <jsp:doBody />
         </div>
     </div>
-
-    <account:offerHint offer="${offer}" role="${viewerRole}"/>
 
     <c:if test="${offer.hasOtherOffers && user == 'buyer'}">
         <spring:message code="${offer.hasBetterOffers ? 'offer.warning.betterOffers' : 'offer.warning.otherOffers'}" var="warningMsg"/>
