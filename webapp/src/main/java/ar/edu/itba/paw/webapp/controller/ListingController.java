@@ -67,7 +67,7 @@ public class ListingController {
             .acceptsTrade(filterForm.getAcceptsTrade())
             .query(filterForm.getQuery())
             .sort(filterForm.getSort())
-            .status(ListingStatus.ACTIVE.getStatus())
+            .status(ListingStatus.ACTIVE)
             .page(filterForm.getPage())
             .pageSize(DISCOVERY_PAGE_SIZE)
             .provinceId(filterForm.getProvinceId())
@@ -86,7 +86,7 @@ public class ListingController {
 
         mav.addObject("conditionOptions", buildConditionOptions());
         mav.addObject("sortOptions", Arrays.stream(ListingSort.values())
-            .map(s -> new StringSelectOption(s.getKey(), "discovery.sort." + s.getKey()))
+            .map(s -> new StringSelectOption(s.name(), "discovery.sort." + s.getKey()))
             .toList());
 
         var categories = productService.getAllCategories();
@@ -337,7 +337,7 @@ public class ListingController {
         form.setProductId(listing.getProduct().getId());
         form.setTitle(listing.getTitle());
         form.setPrice(listing.getPrice().getAmount());
-        form.setCondition(listing.getCondition().name());
+        form.setCondition(listing.getCondition());
         form.setAcceptsTrade(listing.isAcceptsTrade());
         form.setDescription(listing.getDescription());
 

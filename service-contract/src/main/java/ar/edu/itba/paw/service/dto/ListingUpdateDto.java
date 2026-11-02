@@ -1,4 +1,5 @@
 package ar.edu.itba.paw.service.dto;
+import ar.edu.itba.paw.model.Condition;
 import ar.edu.itba.paw.model.Price;
 
 public record ListingUpdateDto(
@@ -6,7 +7,7 @@ public record ListingUpdateDto(
     String title,
     Price price,
     Long productId,
-    String condition,
+    Condition condition,
     boolean acceptsTrade,
     boolean acceptsShipping,
     String description

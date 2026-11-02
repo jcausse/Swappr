@@ -44,9 +44,9 @@
                             <spring:message code="admin.offers.statusGroup.pendingPayment" var="pendingPaymentStatusGroupText"/>
                             <spring:message code="admin.offers.statusGroup.resolved" var="resolvedStatusGroupText"/>
                             <option value="" ${empty currentStatusGroup ? 'selected' : ''}><c:out value="${allStatusGroupText}"/></option>
-                            <option value="pending" ${currentStatusGroup eq 'pending' ? 'selected' : ''}><c:out value="${pendingStatusGroupText}"/></option>
-                            <option value="pending_payment" ${currentStatusGroup eq 'pending_payment' ? 'selected' : ''}><c:out value="${pendingPaymentStatusGroupText}"/></option>
-                            <option value="resolved" ${currentStatusGroup eq 'resolved' ? 'selected' : ''}><c:out value="${resolvedStatusGroupText}"/></option>
+                            <option value="pending" ${currentStatusGroup.name() eq 'PENDING' ? 'selected' : ''}><c:out value="${pendingStatusGroupText}"/></option>
+                            <option value="pending_payment" ${currentStatusGroup.name() eq 'PENDING_PAYMENT' ? 'selected' : ''}><c:out value="${pendingPaymentStatusGroupText}"/></option>
+                            <option value="resolved" ${currentStatusGroup.name() eq 'RESOLVED' ? 'selected' : ''}><c:out value="${resolvedStatusGroupText}"/></option>
                         </select>
                     </div>
                 </div>

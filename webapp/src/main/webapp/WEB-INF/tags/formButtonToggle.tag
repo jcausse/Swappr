@@ -22,7 +22,7 @@
                 <c:set var="optionLabel" value="${option.getLabel()}"/>
             </c:otherwise>
         </c:choose>
-        <paw:fakeButton htmlFor="${path}_${option.getValue()}" variant="ghost" classname="grow" on="${option.getValue() == selectedOption ? 'true' : 'false'}">
+        <paw:fakeButton htmlFor="${path}_${option.getValue()}" variant="ghost" classname="grow" on="${(empty option.getValue() and empty selectedOption) or option.getValue() == selectedOption ? 'true' : 'false'}">
             <c:out value="${optionLabel}" />
             <c:if test="${not empty badgeCounts}">
                 <c:set var="countValue" value="${badgeCounts.get(option.getValue())}" />

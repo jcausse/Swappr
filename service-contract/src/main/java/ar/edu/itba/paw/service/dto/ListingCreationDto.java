@@ -1,4 +1,5 @@
 package ar.edu.itba.paw.service.dto;
+import ar.edu.itba.paw.model.Condition;
 import ar.edu.itba.paw.model.Price;
 import java.util.List;
 public record ListingCreationDto(
@@ -6,7 +7,7 @@ public record ListingCreationDto(
     Price price,
     Long creatorId,
     Long productId,
-    String condition,
+    Condition condition,
     boolean acceptsTrade,
     boolean acceptsShipping,
     String description,

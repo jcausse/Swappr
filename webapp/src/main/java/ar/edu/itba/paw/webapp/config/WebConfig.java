@@ -1,5 +1,12 @@
 package ar.edu.itba.paw.webapp.config;
 
+import ar.edu.itba.paw.model.Condition;
+import ar.edu.itba.paw.model.Language;
+import ar.edu.itba.paw.model.ListingSort;
+import ar.edu.itba.paw.model.ListingStatus;
+import ar.edu.itba.paw.model.OfferRating;
+import ar.edu.itba.paw.model.OfferStatusGroup;
+import ar.edu.itba.paw.model.RatingRole;
 import org.flywaydb.core.Flyway;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -11,6 +18,7 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.MessageSource;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.core.env.Environment;
+import org.springframework.format.FormatterRegistry;
 import org.springframework.jdbc.datasource.SimpleDriverDataSource;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
@@ -42,7 +50,9 @@ import javax.sql.DataSource;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.Properties;
+import java.util.function.Function;
 
 @Configuration
 @EnableWebMvc
@@ -140,6 +150,28 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public Validator getValidator() {
         return validator();
+    }
+
+    /* --------------------------------------------------------------- */
+    /* CONVERSION (global String -> enum conversion for forms and DTOs) */
+    /* --------------------------------------------------------------- */
+
+    @Override
+    public void addFormatters(FormatterRegistry registry) {
+        registry.addConverter(String.class, Condition.class, source -> parseEnum(source, Condition::fromString));
+        registry.addConverter(String.class, ListingSort.class, source -> parseEnum(source, ListingSort::fromString));
+        registry.addConverter(String.class, ListingStatus.class, source -> parseEnum(source, ListingStatus::fromString));
+        registry.addConverter(String.class, OfferStatusGroup.class, source -> parseEnum(source, OfferStatusGroup::fromString));
+        registry.addConverter(String.class, RatingRole.class, source -> parseEnum(source, RatingRole::fromString));
+        registry.addConverter(String.class, OfferRating.class, source -> parseEnum(source, OfferRating::fromString));
+        registry.addConverter(String.class, Language.class, source -> parseEnum(source, value -> Optional.of(Language.fromCode(value))));
+    }
+
+    private static <T> T parseEnum(final String source, final Function<String, Optional<T>> parser) {
+        if (source == null || source.isBlank()) {
+            return null;
+        }
+        return parser.apply(source.trim()).orElse(null);
     }
 
     /* --------------------------------------------------------------- */

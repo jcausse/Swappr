@@ -1,5 +1,9 @@
 package ar.edu.itba.paw.webapp.form;
 
+import ar.edu.itba.paw.model.Condition;
+import ar.edu.itba.paw.model.ListingSort;
+import ar.edu.itba.paw.model.ListingStatus;
+
 import java.math.BigDecimal;
 import javax.validation.constraints.Min;
 import lombok.Getter;
@@ -15,11 +19,11 @@ public class ListingFilterForm {
     private Long subcategoryId;
     private BigDecimal minPrice;
     private BigDecimal maxPrice;
-    private String condition;
+    private Condition condition;
     private Boolean acceptsTrade;
     private String query;
-    private String sort;
-    private String status;
+    private ListingSort sort;
+    private ListingStatus status;
     @Min(1)
     private Integer page;
     private Long provinceId;

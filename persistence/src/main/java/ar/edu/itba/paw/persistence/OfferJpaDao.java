@@ -182,7 +182,7 @@ public class OfferJpaDao implements OfferDao {
                 .forEach((result) -> {
                     var count = (Long)result[0];
                     var group = OfferStatusGroup.fromStatus((OfferStatus)result[1]);
-                    results.merge(group.getStatus(), count, (a, b) -> a + b);
+                    results.merge(group.name(), count, (a, b) -> a + b);
                 });
 
         return results;

@@ -27,7 +27,7 @@
                 <p class="text-black/50 text-lg"><c:out value="${emptyMsg}"/></p>
             </div>
         </c:when>
-        <c:when test="${filterForm.getStatusGroup() == 'pending' || filterForm.getStatusGroup() == 'pending_payment'}">
+        <c:when test="${filterForm.getStatusGroup().name() == 'PENDING' || filterForm.getStatusGroup().name() == 'PENDING_PAYMENT'}">
             <div class="flex flex-col gap-4 mb-8">
                 <c:forEach var="offer" items="${offers}">
                     <account:offerCard offer="${offer}" user="buyer">
@@ -65,7 +65,7 @@
                 <paw:pagination page="${offerPage}" baseUrl="/account/incoming-offers"/>
             </div>
         </c:when>
-        <c:when test="${filterForm.getStatusGroup() == 'resolved'}">
+        <c:when test="${filterForm.getStatusGroup().name() == 'RESOLVED'}">
             <paw:card>
                 <account:offerTable offers="${offers}" user="buyer" />
                 <paw:pagination page="${offerPage}" baseUrl="/account/incoming-offers"/>

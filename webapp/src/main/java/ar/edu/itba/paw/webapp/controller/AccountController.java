@@ -93,7 +93,7 @@ public class AccountController {
                 else if (s == ListingSort.NAME_ASC) key = "account.listings.sort.name_asc";
                 else if (s == ListingSort.NAME_DESC) key = "account.listings.sort.name_desc";
                 else key = s.getKey();
-                return new StringSelectOption(s.getKey(), key);
+                return new StringSelectOption(s.name(), key);
             })
             .toList();
 
@@ -109,8 +109,8 @@ public class AccountController {
     @PreAuthorize("isAuthenticated()")
     public ModelAndView incomingOffers(@CurrentUser User currentUser, @ModelAttribute("filterForm") OfferFilterForm filterForm) {
         LOGGER.debug("User {} accessing incoming offers", currentUser.getId());
-        if (filterForm.getStatusGroup() == null || filterForm.getStatusGroup().isBlank()) {
-            filterForm.setStatusGroup(OfferStatusGroup.PENDING.getStatus());
+        if (filterForm.getStatusGroup() == null) {
+            filterForm.setStatusGroup(OfferStatusGroup.PENDING);
         }
 
         final var filter = OfferFilterDto.builder()
@@ -122,7 +122,7 @@ public class AccountController {
         final var offerPage = offerService.get(filter);
 
         final var statusGroupOptions = Arrays.stream(OfferStatusGroup.values())
-            .map(s -> new StringSelectOption(s.getStatus(), "offer.statusGroup." + s.getStatus()))
+            .map(s -> new StringSelectOption(s.name(), "offer.statusGroup." + s.getStatus()))
             .toList();
 
         return new ModelAndView("account/incomingOffers")
@@ -137,8 +137,8 @@ public class AccountController {
     @PreAuthorize("isAuthenticated()")
     public ModelAndView myOffers(@CurrentUser User currentUser, @ModelAttribute("filterForm") OfferFilterForm filterForm) {
         LOGGER.debug("User {} accessing my offers", currentUser.getId());
-        if (filterForm.getStatusGroup() == null || filterForm.getStatusGroup().isBlank()) {
-            filterForm.setStatusGroup(OfferStatusGroup.PENDING.getStatus());
+        if (filterForm.getStatusGroup() == null) {
+            filterForm.setStatusGroup(OfferStatusGroup.PENDING);
         }
 
         final var filter = OfferFilterDto.builder()
@@ -150,7 +150,7 @@ public class AccountController {
         final var offerPage = offerService.get(filter);
 
         final var statusGroupOptions = Arrays.stream(OfferStatusGroup.values())
-            .map(s -> new StringSelectOption(s.getStatus(), "offer.statusGroup." + s.getStatus()))
+            .map(s -> new StringSelectOption(s.name(), "offer.statusGroup." + s.getStatus()))
             .toList();
 
         return new ModelAndView("account/myOffers")
