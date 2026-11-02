@@ -42,7 +42,6 @@ public class CheckoutController {
         Listing listing = listingService.getById(listingId);
         form.setListingId(listingId);
         form.setOfferType("full");
-        form.setListingPrice(listing.getPrice().getAmount());
 
         return withUserListings(listing, currentUser);
     }

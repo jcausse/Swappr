@@ -47,6 +47,7 @@ public class OfferServiceImplTest {
     private static final long FILE_ID = 50L;
 
     private static final BigDecimal AMOUNT = new BigDecimal("1400.00");
+    private static final BigDecimal AMOUNT_ABOVE_PRICE = new BigDecimal("1600.00");
     private static final String MESSAGE = "Is it still available?";
 
     private static final String FILENAME_PNG = "receipt.png";
@@ -266,6 +267,24 @@ public class OfferServiceImplTest {
     public void testCreateNullDtoThrows() {
         // Act
         offerService.create(null);
+    }
+
+    @Test(expected = BadParameterException.class)
+    public void testCreateWithAmountAboveListingPriceThrows() {
+        // Arrange
+        when(listingService.getById(eq(LISTING_ID))).thenReturn(buildSellerListing());
+
+        // Act
+        offerService.create(new OfferCreationDto(LISTING_ID, BUYER_ID, AMOUNT_ABOVE_PRICE, false, MESSAGE, null));
+    }
+
+    @Test(expected = BadParameterException.class)
+    public void testCreateTradeWithAmountAboveListingPriceThrows() {
+        // Arrange
+        when(listingService.getById(eq(LISTING_ID))).thenReturn(buildSellerListing());
+
+        // Act
+        offerService.create(new OfferCreationDto(LISTING_ID, BUYER_ID, AMOUNT_ABOVE_PRICE, false, MESSAGE, OFFERED_LISTING_ID));
     }
 
     /* ---------------------------------------------------------------------------------------------- */

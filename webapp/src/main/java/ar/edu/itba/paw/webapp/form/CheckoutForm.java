@@ -31,7 +31,5 @@ public class CheckoutForm {
     @Digits(integer = 9, fraction = 2)
     private BigDecimal tradeAmount;
 
-    private BigDecimal listingPrice;
-
     private String message;
 }
