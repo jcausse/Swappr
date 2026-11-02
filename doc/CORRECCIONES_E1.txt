@@ -33,7 +33,8 @@
 [X] El alta de un producto pide más datos de los que después la aplicación usa, por ejemplo subcategorías.
   -- RESUELTO: estos datos se usan para filtrar, UX de los filtros mejorado.
 
-[ ] Redirigen a URLs que vienen del cliente sin validar que sean internas, lo que permite un open redirect. Por ejemplo, OfferController.withdrawoffer con el header Referer y AdminController.takeDownListingByForm con el parámetro redirect.
+[X] Redirigen a URLs que vienen del cliente sin validar que sean internas, lo que permite un open redirect. Por ejemplo, OfferController.withdrawoffer con el header Referer y AdminController.takeDownListingByForm con el parámetro redirect.
+  -- RESUELTO: PR https://bitbucket.org/itba/paw-2026b-08/pull-requests/91
 
 [ ] Dejan textos visibles hardcodeados en inglés en atributos alt / aria-label de los tags en lugar de usar ‹spring: message>. Por ejemplo, en imageGallery.tag y userAvatar.tag
 
