@@ -41,27 +41,7 @@
             </c:choose>
             <h1 class="text-xl font-medium text-balance"><c:out value="${title}"/></h1>
 
-            <c:choose>
-                <c:when test="${offer.status.name() == 'PENDING'}">
-                    <spring:message code="offer.detail.description.pending" var="description"/>
-                </c:when>
-                <c:when test="${offer.status.name() == 'PENDING_PAYMENT'}">
-                    <spring:message code="offer.detail.description.pendingPayment" var="description"/>
-                </c:when>
-                <c:when test="${offer.status.name() == 'ACCEPTED'}">
-                    <spring:message code="offer.detail.description.accepted" var="description"/>
-                </c:when>
-                <c:when test="${offer.status.name() == 'REJECTED'}">
-                    <spring:message code="offer.detail.description.rejected" var="description"/>
-                </c:when>
-                <c:when test="${offer.status.name() == 'WITHDRAWN'}">
-                    <spring:message code="offer.detail.description.withdrawn" var="description"/>
-                </c:when>
-                <c:otherwise>
-                    <spring:message code="offer.detail.description" var="description"/>
-                </c:otherwise>
-            </c:choose>
-            <p class="text-black/60 mt-2 text-balance"><c:out value="${description}"/></p>
+            <account:offerHint offer="${offer}" role="seller" classname="justify-center mt-2"/>
         </div>
 
         <c:if test="${offer.hasOtherOffers and offer.status.name() == 'PENDING'}">
