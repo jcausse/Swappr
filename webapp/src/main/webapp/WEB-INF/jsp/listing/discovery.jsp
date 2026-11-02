@@ -40,20 +40,20 @@
                 <div class="sticky top-24">
                     <paw:card title="${filtersTitle}">
                         <div class="flex flex-col gap-4">
-                            <paw:formSelect path="categoryId" label="${categoryLabel}" placeholder="${allLabel}" items="${categoryOptions}" />
+                            <paw:formSelect path="categoryId" label="${categoryLabel}" placeholder="${allLabel}" items="${categoryOptions}" translateLabels="true" />
                             <c:if test="${not empty subcategoryOptions}">
-                                <paw:formSelect path="subcategoryId" label="${subcategoryLabel}" placeholder="${allLabel}" items="${subcategoryOptions}" />
+                                <paw:formSelect path="subcategoryId" label="${subcategoryLabel}" placeholder="${allLabel}" items="${subcategoryOptions}" translateLabels="true" />
                             </c:if>
                             <c:if test="${not empty brandOptions}">
-                                <paw:formSelect path="brand" label="${brandLabel}" placeholder="${allLabel}" items="${brandOptions}" itemLabel="label" itemValue="value" />
+                                <paw:formSelect path="brand" label="${brandLabel}" placeholder="${allLabel}" items="${brandOptions}" plainStrings="true" />
                             </c:if>
                             <c:if test="${not empty modelOptions}">
-                                <paw:formSelect path="model" label="${modelLabel}" placeholder="${allLabel}" items="${modelOptions}" itemLabel="label" itemValue="value" />
+                                <paw:formSelect path="model" label="${modelLabel}" placeholder="${allLabel}" items="${modelOptions}" plainStrings="true" />
                             </c:if>
 
-                            <paw:formSelect path="condition" label="${conditionLabel}" placeholder="${allLabel}" items="${conditionOptions}" itemLabel="label" itemValue="value" />
+                            <paw:formSelect path="condition" label="${conditionLabel}" placeholder="${allLabel}" items="${conditionOptions}" itemLabel="label" itemValue="value" translateLabels="true" />
 
-                            <paw:formSelect path="provinceId" label="${provinceLabel}" placeholder="${allLabel}" items="${provinceOptions}" />
+                            <paw:formSelect path="provinceId" label="${provinceLabel}" placeholder="${allLabel}" items="${provinceOptions}" translateLabels="true" />
 
                             <div class="flex flex-row gap-2">
                                 <paw:formInput path="minPrice" type="number" step="0.01" min="0" label="${minPriceLabel}" classname="min-w-0" />
@@ -92,7 +92,7 @@
                         <spring:message code="discovery.results.count" arguments="${fn:length(listings)}"/>
                     </span>
                     <div class="flex items-center gap-2">
-                        <paw:formSelect path="sort" label="${sortLabel}" placeholder="${allLabel}" items="${sortOptions}" itemLabel="label" itemValue="value" classname="w-auto" />
+                        <paw:formSelect path="sort" label="${sortLabel}" placeholder="${allLabel}" items="${sortOptions}" itemLabel="label" itemValue="value" translateLabels="true" classname="w-auto" />
                     </div>
                 </div>
 
