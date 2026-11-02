@@ -1,3 +1,7 @@
+[ ] Sin resolver
+[/] Falta testear
+[X] Resuelto y confirmado
+
 # Errores graves
 
 [X] Cuando tengo contenido en pending payment el tab demora muchísimo en cargar. Esto es un error grave.
