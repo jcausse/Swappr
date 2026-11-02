@@ -23,6 +23,7 @@ import ar.edu.itba.paw.service.exception.ForbiddenException;
 import ar.edu.itba.paw.service.exception.NotFoundException;
 
 import java.time.Instant;
+import java.math.BigDecimal;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
@@ -106,10 +107,20 @@ public class OfferServiceImpl implements OfferService {
     @Transactional
     public Offer create(OfferCreationDto dto) {
         Objects.requireNonNull(dto, "OfferCreationDto cannot be null");
-        LOGGER.debug("Creating offer: listingId={}, buyerId={}, amount={}", dto.listingId(), dto.buyerId(), dto.amount());
 
-        final Listing listing = listingService.getById(dto.listingId());
+        final var listing = listingService.getById(dto.listingId());
         final var listingPrice = listing.getPrice().getAmount();
+
+        BigDecimal amount = switch (dto.offerType()) {
+            case "full" -> listingPrice;
+            case "custom" -> dto.customAmount();
+            default -> dto.tradeAmount() != null ? dto.tradeAmount() : BigDecimal.ZERO;
+        };
+
+        var isFullPrice = amount.equals(listingPrice);
+
+        LOGGER.debug("Creating offer: listingId={}, buyerId={}, amount={}", dto.listingId(), dto.buyerId(), amount);
+
         if (listing.getStatus() != ListingStatus.ACTIVE) {
             LOGGER.warn("Offer attempted on listing {} with non-ACTIVE status: {}", dto.listingId(), listing.getStatus());
             throw BadParameterException.create("listingId", "Listing is not available for offers");
@@ -118,11 +129,11 @@ public class OfferServiceImpl implements OfferService {
             LOGGER.warn("User {} attempted to buy their own listing {}", dto.buyerId(), dto.listingId());
             throw BadParameterException.create("buyerId", "User cannot buy their own listing");
         }
-        if (dto.amount() == null || dto.amount().signum() < 0) {
+        if (amount == null || amount.signum() < 0) {
             throw BadParameterException.create("amount", "Offer amount must be non-negative");
         }
-        if (dto.amount().compareTo(listingPrice) > 0) {
-            LOGGER.warn("Offer amount {} exceeds price {} of listing {}", dto.amount(), listingPrice, dto.listingId());
+        if (amount.compareTo(listingPrice) > 0) {
+            LOGGER.warn("Offer amount {} exceeds price {} of listing {}", amount, listingPrice, dto.listingId());
             throw BadParameterException.create("amount", "Offer amount cannot exceed the listing price");
         }
 
@@ -151,8 +162,8 @@ public class OfferServiceImpl implements OfferService {
         final Offer offer = offerDao.create(
             dto.listingId(),
             buyer,
-            dto.amount(),
-            dto.isFullPrice(),
+            amount,
+            isFullPrice,
             OfferStatus.PENDING,
             dto.message(),
             Instant.now(),
@@ -160,7 +171,7 @@ public class OfferServiceImpl implements OfferService {
         );
 
         LOGGER.info("Offer created: id={}, listingId={}, buyerId={}, amount={}, isTrade={}",
-                offer.getId(), dto.listingId(), dto.buyerId(), dto.amount(), isTrade);
+                offer.getId(), dto.listingId(), dto.buyerId(), amount, isTrade);
 
         // Send email notification to seller about the new offer
         mailingService.sendNewOfferEmail(OfferMailDto.from(offer));

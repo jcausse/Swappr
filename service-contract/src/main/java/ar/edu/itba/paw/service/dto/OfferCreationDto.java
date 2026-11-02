@@ -5,8 +5,9 @@ import java.math.BigDecimal;
 public record OfferCreationDto(
     Long listingId,
     Long buyerId,
-    BigDecimal amount,
-    Boolean isFullPrice,
+    String offerType,
+    BigDecimal customAmount,
+    BigDecimal tradeAmount,
     String message,
     Long offeredListingId
 ) {}
