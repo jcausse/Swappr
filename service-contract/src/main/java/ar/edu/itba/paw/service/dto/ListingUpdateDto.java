@@ -1,10 +1,10 @@
 package ar.edu.itba.paw.service.dto;
-import ar.edu.itba.paw.model.Price;
+import java.math.BigDecimal;
 
 public record ListingUpdateDto(
     Long listingId,
     String title,
-    Price price,
+    BigDecimal price,
     Long productId,
     String condition,
     boolean acceptsTrade,

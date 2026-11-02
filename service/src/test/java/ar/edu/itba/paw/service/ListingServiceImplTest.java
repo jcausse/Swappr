@@ -116,13 +116,13 @@ public class ListingServiceImplTest {
 
     private static ListingCreationDto buildCreationDto(final String condition, final List<ImageData> images) {
         return new ListingCreationDto(
-            LISTING_TITLE, LISTING_PRICE, SELLER_ID, PRODUCT_ID, condition, true, false, LISTING_DESCRIPTION, images
+            LISTING_TITLE, LISTING_PRICE.getAmount(), SELLER_ID, PRODUCT_ID, condition, true, false, LISTING_DESCRIPTION, images
         );
     }
 
     private static ListingUpdateDto buildUpdateDto(final long listingId, final String condition) {
         return new ListingUpdateDto(
-            listingId, LISTING_TITLE, LISTING_PRICE, PRODUCT_ID, condition, true, false, LISTING_DESCRIPTION
+            listingId, LISTING_TITLE, LISTING_PRICE.getAmount(), PRODUCT_ID, condition, true, false, LISTING_DESCRIPTION
         );
     }
 

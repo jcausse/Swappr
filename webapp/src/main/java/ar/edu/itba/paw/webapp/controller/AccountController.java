@@ -108,9 +108,6 @@ public class AccountController {
     @PreAuthorize("isAuthenticated()")
     public ModelAndView incomingOffers(@CurrentUser User currentUser, @ModelAttribute("filterForm") OfferFilterForm filterForm) {
         LOGGER.debug("User {} accessing incoming offers", currentUser.getId());
-        if (filterForm.getStatusGroup() == null || filterForm.getStatusGroup().isBlank()) {
-            filterForm.setStatusGroup(OfferStatusGroup.PENDING.getStatus());
-        }
 
         final var filter = OfferFilterDto.builder()
             .sellerId(currentUser.getId())
@@ -136,9 +133,6 @@ public class AccountController {
     @PreAuthorize("isAuthenticated()")
     public ModelAndView myOffers(@CurrentUser User currentUser, @ModelAttribute("filterForm") OfferFilterForm filterForm) {
         LOGGER.debug("User {} accessing my offers", currentUser.getId());
-        if (filterForm.getStatusGroup() == null || filterForm.getStatusGroup().isBlank()) {
-            filterForm.setStatusGroup(OfferStatusGroup.PENDING.getStatus());
-        }
 
         final var filter = OfferFilterDto.builder()
             .buyerId(currentUser.getId())

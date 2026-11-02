@@ -33,7 +33,6 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 
 @RequiredArgsConstructor
 @Controller
@@ -58,7 +57,7 @@ public class UserController {
                                 @ModelAttribute("ratingFilterForm") RatingFilterForm ratingFilterForm) {
         LOGGER.debug("Accessing profile for user id: {}", id);
         final User user = userService.getById(id).orElseThrow(() -> UserNotFoundException.byId(id));
-        final boolean isSelfRequest = currentUser != null && Objects.equals(id, currentUser.getId());
+        final boolean isSelfRequest = user.isSameUser(currentUser);
 
         final var filter = ListingFilterDto.builder()
                 .sort(ListingSort.RECENT.getKey())  // TODO: SACAR LOS PARSEOS Y HACER QUE EL FORM TOME UN ENUM USANDO CONVERTERS
@@ -139,10 +138,7 @@ public class UserController {
         form.setDisplayName(currentUser.getDisplayName());
         form.setProvinceId(currentUser.getProvince().map(Province::getId).orElse(null));
         form.setLocationDetail(currentUser.getLocationDetail().orElse(null));
-        final Language currentLanguage = currentUser.getPreferredLanguage() != null
-                ? currentUser.getPreferredLanguage()
-                : Language.getDefault();
-        form.setPreferredLanguage(currentLanguage.getCode());
+        form.setPreferredLanguage(currentUser.getPreferredLanguageOrDefault().getCode());
         return profileEditView(currentUser);
     }
 
@@ -225,7 +221,7 @@ public class UserController {
         LOGGER.info("User registration submitted: {}", form.getUsername());
         LOGGER.debug("Registering new user with username: {}", form.getUsername());
 
-        userService.create(new UserCreationDto(
+        final User created = userService.create(new UserCreationDto(
             form.getUsername(),
             form.getDisplayName(),
             form.getEmail(),
@@ -233,7 +229,7 @@ public class UserController {
             form.getProfilePicture().orElse(null)
         ));
 
-        return new ModelAndView("redirect:/verify?email=" + URLEncoder.encode(form.getEmail().trim().toLowerCase(), StandardCharsets.UTF_8));
+        return new ModelAndView("redirect:/verify?email=" + URLEncoder.encode(created.getEmail(), StandardCharsets.UTF_8));
     }
 
     /* LOGIN */
