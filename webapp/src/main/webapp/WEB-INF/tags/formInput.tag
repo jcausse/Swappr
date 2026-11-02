@@ -39,9 +39,11 @@
 <c:set var="variantClassnames" value="${
   inputVariant eq 'outline'
     ? 'border border-black/20 focus-visible:border-lime-600 focus-visible:outline-2
+       disabled:bg-black/5 disabled:text-black/40
        peer-[.errors]/errors:border-red-600! peer-[.errors]/errors:outline-red-600/30'
     : 'border-t border-b border-black/15 border-b-white/20 bg-gradient-to-b from-black/5 to-black/2 bg-border
        focus-visible:outline outline-lime-600 focus-visible:shadow-[0_0_0_3px] shadow-lime-600/30
+       disabled:from-black/10 disabled:to-black/8 disabled:text-black/40
        peer-[.errors]/errors:outline peer-[.errors]/errors:outline-red-600 peer-[.errors]/errors:shadow-red-600/30
        peer-[.errors]/errors:from-red-600/5 peer-[.errors]/errors:to-red-600/2'
 }"/>
