@@ -3,7 +3,7 @@
 <%@ attribute name="items" required="true" type="java.lang.Object" %>
 <%@ attribute name="badgeCounts" required="false" type="java.lang.Object" %>
 <%@ attribute name="translateLabels" required="false" type="java.lang.Boolean" %>
-<%@ attribute name="selectedOption" required="true" %>
+<%@ attribute name="selectedOption" required="true" type="java.lang.String" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
 <%@ taglib prefix="spring" uri="http://www.springframework.org/tags" %>
@@ -22,7 +22,7 @@
                 <c:set var="optionLabel" value="${option.getLabel()}"/>
             </c:otherwise>
         </c:choose>
-        <paw:fakeButton htmlFor="${path}_${option.getValue()}" variant="ghost" classname="grow" on="${option.getValue() == selectedOption ? 'true' : 'false'}">
+        <paw:fakeButton htmlFor="${path}_${option.getValue()}" variant="ghost" classname="grow" on="${(empty option.getValue() and empty selectedOption) or option.getValue() == selectedOption ? 'true' : 'false'}">
             <c:out value="${optionLabel}" />
             <c:if test="${not empty badgeCounts}">
                 <c:set var="countValue" value="${badgeCounts.get(option.getValue())}" />

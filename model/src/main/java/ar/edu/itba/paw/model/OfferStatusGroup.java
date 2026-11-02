@@ -18,7 +18,7 @@ public enum OfferStatusGroup {
 
     public static Optional<OfferStatusGroup> fromString(final String status) {
         return Arrays.stream(OfferStatusGroup.values())
-                .filter(s -> s.status.equalsIgnoreCase(status))
+                .filter(s -> s.status.equalsIgnoreCase(status) || s.name().equalsIgnoreCase(status))
                 .findFirst();
     }
 

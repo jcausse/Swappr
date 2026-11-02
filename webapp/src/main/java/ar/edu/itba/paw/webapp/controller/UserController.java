@@ -61,9 +61,9 @@ public class UserController {
         final boolean isSelfRequest = currentUser != null && Objects.equals(id, currentUser.getId());
 
         final var filter = ListingFilterDto.builder()
-                .sort(ListingSort.RECENT.getKey())  // TODO: SACAR LOS PARSEOS Y HACER QUE EL FORM TOME UN ENUM USANDO CONVERTERS
+                .sort(ListingSort.RECENT)
                 .creatorId(user.getId())
-                .status(ListingStatus.ACTIVE.name())
+                .status(ListingStatus.ACTIVE)
                 .page(1)
                 .pageSize(PROFILE_LISTINGS_PAGE_SIZE)
                 .build();
@@ -71,29 +71,20 @@ public class UserController {
         final var listingPage = listingService.search(filter);
         final var listings = listingPage.getContent();
 
-        // Default role to SELLER if not provided
-        String role = ratingFilterForm.getRole();
-        if (role == null || role.isBlank()) {
-            role = RatingRole.SELLER.getRole();
+        RatingRole role = ratingFilterForm.getRole();
+        if (role == null) {
+            role = RatingRole.SELLER;
             ratingFilterForm.setRole(role);
         }
 
-        // Default type to null (all) if not provided
-        String type = ratingFilterForm.getType();
-        if (type != null && type.isBlank()) {
-            type = null;
-        }
+        OfferRating type = ratingFilterForm.getType();
 
         int page = ratingFilterForm.getPage() != null ? ratingFilterForm.getPage() : 1;
 
-        var ratingFilter = ar.edu.itba.paw.model.RatingFilter.builder()
+        var ratingFilter = RatingFilter.builder()
                 .ratedId(user.getId())
-                .roles(role != null ? java.util.List.of(RatingRole.fromString(role).orElse(RatingRole.SELLER)) : null)
-                .types(type != null
-                        ? java.util.List.of(OfferRating.fromString(type)
-                                    .orElseThrow(() -> new IllegalArgumentException("Illegal rating filter type")))
-                        : null
-                )
+                .roles(List.of(role))
+                .types(type != null ? List.of(type) : null)
                 .page(page)
                 .pageSize(PROFILE_RATINGS_PAGE_SIZE)
                 .build();
@@ -102,14 +93,14 @@ public class UserController {
         final var ratings = ratingPage.getContent();
 
         final var roleOptions = Arrays.asList(
-                new StringSelectOption("seller", "profile.ratings.filter.seller"),
-                new StringSelectOption("buyer", "profile.ratings.filter.buyer")
+                new StringSelectOption(RatingRole.SELLER.name(), "profile.ratings.filter.seller"),
+                new StringSelectOption(RatingRole.BUYER.name(), "profile.ratings.filter.buyer")
         );
         final var typeOptions = Arrays.asList(
                 new StringSelectOption("", "profile.ratings.filter.all"),
-                new StringSelectOption("positive", "profile.ratings.filter.positive"),
-                new StringSelectOption("neutral", "profile.ratings.filter.neutral"),
-                new StringSelectOption("negative", "profile.ratings.filter.negative")
+                new StringSelectOption(OfferRating.POSITIVE.name(), "profile.ratings.filter.positive"),
+                new StringSelectOption(OfferRating.NEUTRAL.name(), "profile.ratings.filter.neutral"),
+                new StringSelectOption(OfferRating.NEGATIVE.name(), "profile.ratings.filter.negative")
         );
 
         return new ModelAndView("profile")
@@ -142,7 +133,7 @@ public class UserController {
         final Language currentLanguage = currentUser.getPreferredLanguage() != null
                 ? currentUser.getPreferredLanguage()
                 : Language.getDefault();
-        form.setPreferredLanguage(currentLanguage.getCode());
+        form.setPreferredLanguage(currentLanguage);
         return profileEditView(currentUser);
     }
 
@@ -156,7 +147,7 @@ public class UserController {
     private List<StringSelectOption> buildLanguageOptions() {
         return Arrays.stream(Language.values())
                 .map(language -> new StringSelectOption(
-                        language.getCode(),
+                        language.name(),
                         "language." + language.getCode()
                 ))
                 .toList();
@@ -197,7 +188,7 @@ public class UserController {
             .updateLocationAndLanguage(true)
             .newProvinceId(form.getProvinceId())
             .newLocationDetail(form.getLocationDetail())
-            .newPreferredLanguage(Language.fromCode(form.getPreferredLanguage()))
+            .newPreferredLanguage(form.getPreferredLanguage())
             .build());
 
         authHelper.update(updatedUser);

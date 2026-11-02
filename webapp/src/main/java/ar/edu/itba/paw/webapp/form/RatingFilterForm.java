@@ -1,5 +1,8 @@
 package ar.edu.itba.paw.webapp.form;
 
+import ar.edu.itba.paw.model.OfferRating;
+import ar.edu.itba.paw.model.RatingRole;
+
 import javax.validation.constraints.Min;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -10,8 +13,8 @@ import lombok.Setter;
 @Setter
 public class RatingFilterForm {
 
-    private String role;
-    private String type;
+    private RatingRole role;
+    private OfferRating type;
     @Min(1)
     private Integer page;
 }

@@ -1,6 +1,8 @@
 package ar.edu.itba.paw.webapp.controller;
 
 import java.util.Arrays;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
@@ -93,7 +95,7 @@ public class AccountController {
                 else if (s == ListingSort.NAME_ASC) key = "account.listings.sort.name_asc";
                 else if (s == ListingSort.NAME_DESC) key = "account.listings.sort.name_desc";
                 else key = s.getKey();
-                return new StringSelectOption(s.getKey(), key);
+                return new StringSelectOption(s.name(), key);
             })
             .toList();
 
@@ -109,8 +111,8 @@ public class AccountController {
     @PreAuthorize("isAuthenticated()")
     public ModelAndView incomingOffers(@CurrentUser User currentUser, @ModelAttribute("filterForm") OfferFilterForm filterForm) {
         LOGGER.debug("User {} accessing incoming offers", currentUser.getId());
-        if (filterForm.getStatusGroup() == null || filterForm.getStatusGroup().isBlank()) {
-            filterForm.setStatusGroup(OfferStatusGroup.PENDING.getStatus());
+        if (filterForm.getStatusGroup() == null) {
+            filterForm.setStatusGroup(OfferStatusGroup.PENDING);
         }
 
         final var filter = OfferFilterDto.builder()
@@ -122,14 +124,14 @@ public class AccountController {
         final var offerPage = offerService.get(filter);
 
         final var statusGroupOptions = Arrays.stream(OfferStatusGroup.values())
-            .map(s -> new StringSelectOption(s.getStatus(), "offer.statusGroup." + s.getStatus()))
+            .map(s -> new StringSelectOption(s.name(), "offer.statusGroup." + s.getStatus()))
             .toList();
 
         return new ModelAndView("account/incomingOffers")
                 .addObject("offerPage", offerPage)
                 .addObject("offers", offerPage.getContent())
                 .addObject("statusGroupOptions", statusGroupOptions)
-                .addObject("offerCountByStatus", offerService.getOfferCountByStatus(currentUser, true))
+                .addObject("offerCountByStatus", getOfferCountByStatusOptions(currentUser, true))
                 .addObject("pendingOffersCount", getPendingOffersCount(currentUser));
     }
 
@@ -137,8 +139,8 @@ public class AccountController {
     @PreAuthorize("isAuthenticated()")
     public ModelAndView myOffers(@CurrentUser User currentUser, @ModelAttribute("filterForm") OfferFilterForm filterForm) {
         LOGGER.debug("User {} accessing my offers", currentUser.getId());
-        if (filterForm.getStatusGroup() == null || filterForm.getStatusGroup().isBlank()) {
-            filterForm.setStatusGroup(OfferStatusGroup.PENDING.getStatus());
+        if (filterForm.getStatusGroup() == null) {
+            filterForm.setStatusGroup(OfferStatusGroup.PENDING);
         }
 
         final var filter = OfferFilterDto.builder()
@@ -150,20 +152,25 @@ public class AccountController {
         final var offerPage = offerService.get(filter);
 
         final var statusGroupOptions = Arrays.stream(OfferStatusGroup.values())
-            .map(s -> new StringSelectOption(s.getStatus(), "offer.statusGroup." + s.getStatus()))
+            .map(s -> new StringSelectOption(s.name(), "offer.statusGroup." + s.getStatus()))
             .toList();
 
         return new ModelAndView("account/myOffers")
                 .addObject("offerPage", offerPage)
                 .addObject("offers", offerPage.getContent())
                 .addObject("statusGroupOptions", statusGroupOptions)
-                .addObject("offerCountByStatus", offerService.getOfferCountByStatus(currentUser, false))
+                .addObject("offerCountByStatus", getOfferCountByStatusOptions(currentUser, false))
                 .addObject("pendingOffersCount", getPendingOffersCount(currentUser));
     }
 
 	private int getPendingOffersCount(final User user) {
 		return offerService.getPendingOffersCount(user);
 	}
+
+    private Map<String, Long> getOfferCountByStatusOptions(final User user, final boolean incoming) {
+        return offerService.getOfferCountByStatus(user, incoming).entrySet().stream()
+                .collect(Collectors.toMap(e -> e.getKey().name(), Map.Entry::getValue));
+    }
 
     @GetMapping("/incoming-offers/{offerId}")
     @PreAuthorize("@webPermissionService.canManageOfferAsSeller(authentication, #offerId)")
@@ -215,7 +222,7 @@ public class AccountController {
         );
         LOGGER.info("User {} uploaded proof of payment for offer {}", currentUser.getId(), offerId);
 
-        return new ModelAndView("redirect:/account/my-offers?statusGroup=pending_payment");
+        return new ModelAndView("redirect:/account/my-offers?statusGroup=PENDING_PAYMENT");
     }
 
     @GetMapping("/my-offers/{offerId}/shipping")
@@ -259,7 +266,7 @@ public class AccountController {
         );
         LOGGER.info("User {} uploaded proof of shipping for offer {}", currentUser.getId(), offerId);
 
-        return new ModelAndView("redirect:/account/incoming-offers?statusGroup=pending_payment");
+        return new ModelAndView("redirect:/account/incoming-offers?statusGroup=PENDING_PAYMENT");
     }
 
     @GetMapping("/my-offers/{offerId}/payment/download")
@@ -336,7 +343,7 @@ public class AccountController {
         final Long currentUserId = currentUser.getId();
         final boolean isBuyer = offer.getBuyer().getId().equals(currentUserId);
 
-        String redirectUrl = isBuyer ? "/account/incoming-offers?statusGroup=resolved" : "/account/my-offers?statusGroup=resolved";
+        String redirectUrl = isBuyer ? "/account/incoming-offers?statusGroup=RESOLVED" : "/account/my-offers?statusGroup=RESOLVED";
         return new ModelAndView("redirect:" + redirectUrl);
     }
 }

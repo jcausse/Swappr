@@ -105,6 +105,13 @@ While you as an AI agent are allowed to edit this file on your own, you must **a
 - To obtain the logged-in user in a controller handler method, use `@CurrentUser User currentUser` (see **Current User Resolution**). Never receive `Optional<User>` or use `@ModelAttribute("currentUser")` as a controller method parameter.
 - **Safe Redirects (Open Redirect Prevention)**: **Never** pass unvalidated user-controlled input (such as the `Referer` header or a `@RequestParam("redirect")` query/form parameter) directly to `"redirect:" + ...`. Always resolve dynamic redirect targets through the stateless `ar.edu.itba.paw.webapp.controller.RedirectHelper` utility (`RedirectHelper.resolveReferer(...)` for `Referer` headers and `RedirectHelper.resolvePath(...)` for relative redirect parameters, optionally with `RedirectHelper.hasPathPrefix(...)`). `RedirectHelper` returns only normalized context-relative paths (`path[?query]`) without the `"redirect:"` prefix, so controllers explicitly concatenate `"redirect:" + target`.
 
+### Enum Binding
+
+- Form and service DTO fields whose values come from a fixed set must use the corresponding domain enum (e.g. `Condition`, `ListingSort`, `ListingStatus`, `OfferType`, `OfferStatusGroup`, `RatingRole`, `OfferRating`, `Language`), never raw `String`.
+- Global `String -> enum` conversion relies on Spring MVC's built-in default `StringToEnumConverterFactory` (enabled by `@EnableWebMvc`). **Do not register custom enum converters in `WebConfig` or use `@InitBinder` in controllers** for enum parsing. Empty input (`""`) converts to `null` so optional filters and `@NotNull` bean validation work naturally, while invalid values fail conversion (`400 Bad Request` on GET filters / `typeMismatch` field errors on POST forms).
+- **Never change existing enum constant names or stored string values**, as some are persisted in the database.
+- All JSP `<option>` / `<form:option>` / `<form:radiobutton>` values, query parameters, and redirect URLs bound to enum fields **must** use uppercase enum constant names (`name()`). Legacy lowercase enum query/form values are not supported.
+
 ## Spring Security
 
 - Spring Security configuration is at `ar.edu.itba.paw.webapp.config.WebAuthConfig` and that file should remain the only source of truth about security configurations, especially

@@ -1,5 +1,6 @@
 package ar.edu.itba.paw.webapp.form;
 
+import ar.edu.itba.paw.model.Condition;
 import ar.edu.itba.paw.service.dto.ImageData;
 import ar.edu.itba.paw.webapp.form.validation.ValidFile;
 
@@ -37,8 +38,8 @@ public class ListingDetailsForm {
     @ValidFile(message = "{ValidFiles.detailsForm.images}", allowedTypes = {"image/*"})
     private List<MultipartFile> images;
 
-    @NotBlank
-    private String condition;
+    @NotNull
+    private Condition condition;
     private boolean acceptsTrade;
     private boolean acceptsShipping;
 

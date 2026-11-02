@@ -1,4 +1,7 @@
 package ar.edu.itba.paw.service.dto;
+import ar.edu.itba.paw.model.Condition;
+import ar.edu.itba.paw.model.ListingSort;
+import ar.edu.itba.paw.model.ListingStatus;
 import lombok.Builder;
 
 import java.math.BigDecimal;
@@ -9,12 +12,12 @@ public record ListingFilterDto(
     Long subcategoryId,
     BigDecimal minPrice,
     BigDecimal maxPrice,
-    String condition,
+    Condition condition,
     Boolean acceptsTrade,
     String query,
-    String sort,    // TODO: SACAR LOS PARSEOS Y HACER QUE EL FORM TOME UN ENUM USANDO CONVERTERS
+    ListingSort sort,
     Long creatorId,
-    String status,
+    ListingStatus status,
     Integer page,
     Integer pageSize,
     Boolean hasActiveOffers,
