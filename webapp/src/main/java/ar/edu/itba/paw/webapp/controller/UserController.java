@@ -20,8 +20,6 @@ import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.MessageSource;
-import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
@@ -48,7 +46,6 @@ public class UserController {
     private final RatingService ratingService;
     private final ProvinceService provinceService;
     private final AuthHelper authHelper;
-    private final MessageSource messageSource;
 
     private static final int PROFILE_LISTINGS_PAGE_SIZE = 5;
     private static final int PROFILE_RATINGS_PAGE_SIZE = 5;
@@ -104,17 +101,15 @@ public class UserController {
         final var ratingPage = ratingService.get(ratingFilter);
         final var ratings = ratingPage.getContent();
 
-        // Build filter options for the form
-        final var locale = LocaleContextHolder.getLocale();
         final var roleOptions = Arrays.asList(
-                new StringSelectOption("seller", messageSource.getMessage("profile.ratings.filter.seller", null, locale)),
-                new StringSelectOption("buyer", messageSource.getMessage("profile.ratings.filter.buyer", null, locale))
+                new StringSelectOption("seller", "profile.ratings.filter.seller"),
+                new StringSelectOption("buyer", "profile.ratings.filter.buyer")
         );
         final var typeOptions = Arrays.asList(
-                new StringSelectOption("", messageSource.getMessage("profile.ratings.filter.all", null, locale)),
-                new StringSelectOption("positive", messageSource.getMessage("profile.ratings.filter.positive", null, locale)),
-                new StringSelectOption("neutral", messageSource.getMessage("profile.ratings.filter.neutral", null, locale)),
-                new StringSelectOption("negative", messageSource.getMessage("profile.ratings.filter.negative", null, locale))
+                new StringSelectOption("", "profile.ratings.filter.all"),
+                new StringSelectOption("positive", "profile.ratings.filter.positive"),
+                new StringSelectOption("neutral", "profile.ratings.filter.neutral"),
+                new StringSelectOption("negative", "profile.ratings.filter.negative")
         );
 
         return new ModelAndView("profile")
@@ -159,11 +154,10 @@ public class UserController {
     }
 
     private List<StringSelectOption> buildLanguageOptions() {
-        final var locale = LocaleContextHolder.getLocale();
         return Arrays.stream(Language.values())
                 .map(language -> new StringSelectOption(
                         language.getCode(),
-                        messageSource.getMessage("language." + language.getCode(), null, locale)
+                        "language." + language.getCode()
                 ))
                 .toList();
     }
@@ -172,7 +166,7 @@ public class UserController {
         return provinceService.getAll().stream()
                 .map(province -> new SelectOption(
                         province.getId(),
-                        messageSource.getMessage("province." + province.getName(), null, LocaleContextHolder.getLocale())
+                        "province." + province.getName()
                 ))
                 .toList();
     }

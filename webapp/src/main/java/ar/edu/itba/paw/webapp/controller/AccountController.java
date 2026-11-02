@@ -6,8 +6,6 @@ import javax.validation.Valid;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.MessageSource;
-import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -56,7 +54,6 @@ public class AccountController {
 
     private final ListingService listingService;
     private final OfferService offerService;
-    private final MessageSource messageSource;
 
     @GetMapping
     @PreAuthorize("isAuthenticated()")
@@ -83,9 +80,8 @@ public class AccountController {
         final var listingPage = listingService.search(filter);
         final var listings = listingPage.getContent();
 
-        final var locale = LocaleContextHolder.getLocale();
         final var statusOptions = Arrays.stream(ListingStatus.values())
-            .map(s -> new StringSelectOption(s.name(), messageSource.getMessage("listing.status." + s.name(), null, locale)))
+            .map(s -> new StringSelectOption(s.name(), "listing.status." + s.name()))
             .toList();
 
         final var sortOptions = Arrays.stream(ListingSort.values())
@@ -97,7 +93,7 @@ public class AccountController {
                 else if (s == ListingSort.NAME_ASC) key = "account.listings.sort.name_asc";
                 else if (s == ListingSort.NAME_DESC) key = "account.listings.sort.name_desc";
                 else key = s.getKey();
-                return new StringSelectOption(s.getKey(), messageSource.getMessage(key, null, locale));
+                return new StringSelectOption(s.getKey(), key);
             })
             .toList();
 
@@ -125,9 +121,8 @@ public class AccountController {
             .build();
         final var offerPage = offerService.get(filter);
 
-        final var locale = LocaleContextHolder.getLocale();
         final var statusGroupOptions = Arrays.stream(OfferStatusGroup.values())
-            .map(s -> new StringSelectOption(s.getStatus(), messageSource.getMessage("offer.statusGroup." + s.getStatus(), null, locale)))
+            .map(s -> new StringSelectOption(s.getStatus(), "offer.statusGroup." + s.getStatus()))
             .toList();
 
         return new ModelAndView("account/incomingOffers")
@@ -154,9 +149,8 @@ public class AccountController {
             .build();
         final var offerPage = offerService.get(filter);
 
-        final var locale = LocaleContextHolder.getLocale();
         final var statusGroupOptions = Arrays.stream(OfferStatusGroup.values())
-            .map(s -> new StringSelectOption(s.getStatus(), messageSource.getMessage("offer.statusGroup." + s.getStatus(), null, locale)))
+            .map(s -> new StringSelectOption(s.getStatus(), "offer.statusGroup." + s.getStatus()))
             .toList();
 
         return new ModelAndView("account/myOffers")

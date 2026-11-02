@@ -51,6 +51,7 @@ While you as an AI agent are allowed to edit this file on your own, you must **a
 - Inside `<form:form>`, use the `paw:formInput` tag (not `paw:input`) to get automatic Spring binding and error display.
 - Use `paw:input` only for standalone inputs outside of Spring forms (e.g., search bars, filters).
 - **Icons**: The project uses [Lucide Icons](https://lucide.dev/icons/). Render icons using `<paw:icon name="..."/>` (e.g. `<paw:icon name="eye"/>`). Look up icon names on [lucide.dev/icons](https://lucide.dev/icons/) and pass the name to the `name` attribute of `<paw:icon>` (or the `icon` attribute on tags like `<paw:button>` and `<paw:linkButton>`).
+- **Select option labels**: Controllers must not resolve select option labels with `MessageSource`. Instead, pass the message keys as option labels and set `translateLabels="true"` on `paw:formSelect` / `paw:formButtonToggle`, which resolves each label with `<spring:message>`. For plain string options whose label equals their value, pass a `List<String>` and use `plainStrings="true"` on `paw:formSelect` rather than building `StringSelectOption` pairs.
 
 ## Internationalization (i18n) Conventions
 
@@ -102,6 +103,7 @@ While you as an AI agent are allowed to edit this file on your own, you must **a
   - A class shall be marked `@Transactional(readOnly = true)` instead of marking every method. This shall only be done with `readOnly = true`.
   - Write permissions are only given to those methods that explicitly need those permissions. Never give extra permissions in advance. Always give read permissions by default and then elevate those to write permissions if needed.
 - To obtain the logged-in user in a controller handler method, use `@CurrentUser User currentUser` (see **Current User Resolution**). Never receive `Optional<User>` or use `@ModelAttribute("currentUser")` as a controller method parameter.
+- **Safe Redirects (Open Redirect Prevention)**: **Never** pass unvalidated user-controlled input (such as the `Referer` header or a `@RequestParam("redirect")` query/form parameter) directly to `"redirect:" + ...`. Always resolve dynamic redirect targets through the stateless `ar.edu.itba.paw.webapp.controller.RedirectHelper` utility (`RedirectHelper.resolveReferer(...)` for `Referer` headers and `RedirectHelper.resolvePath(...)` for relative redirect parameters, optionally with `RedirectHelper.hasPathPrefix(...)`). `RedirectHelper` returns only normalized context-relative paths (`path[?query]`) without the `"redirect:"` prefix, so controllers explicitly concatenate `"redirect:" + target`.
 
 ## Spring Security
 

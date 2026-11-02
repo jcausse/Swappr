@@ -1,6 +1,8 @@
 package ar.edu.itba.paw.webapp.form.validation;
 
 import ar.edu.itba.paw.webapp.form.CheckoutForm;
+import ar.edu.itba.paw.service.ListingService;
+import ar.edu.itba.paw.service.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -14,6 +16,7 @@ import java.util.Locale;
 public class CheckoutValidator implements ConstraintValidator<ValidCheckout, CheckoutForm> {
 
     private final MessageSource messageSource;
+    private final ListingService listingService;
 
     @Override
     public boolean isValid(CheckoutForm form, ConstraintValidatorContext context) {
@@ -23,6 +26,7 @@ public class CheckoutValidator implements ConstraintValidator<ValidCheckout, Che
 
         boolean valid = true;
         final Locale locale = LocaleContextHolder.getLocale();
+        final var listingPrice = resolveListingPrice(form.getListingId());
 
         // Validate offerType
         if (form.getOfferType() == null || form.getOfferType().isBlank()) {
@@ -53,9 +57,9 @@ public class CheckoutValidator implements ConstraintValidator<ValidCheckout, Che
                         .addPropertyNode("customAmount")
                         .addConstraintViolation();
                 valid = false;
-            } else if (form.getListingPrice() != null && form.getCustomAmount().compareTo(form.getListingPrice()) > 0) {
+            } else if (listingPrice != null && form.getCustomAmount().compareTo(listingPrice) > 0) {
                 context.disableDefaultConstraintViolation();
-                context.buildConstraintViolationWithTemplate(messageSource.getMessage("Max.checkoutForm.customAmount", new Object[]{form.getListingPrice()}, locale))
+                context.buildConstraintViolationWithTemplate(messageSource.getMessage("Max.checkoutForm.customAmount", new Object[]{listingPrice}, locale))
                         .addPropertyNode("customAmount")
                         .addConstraintViolation();
                 valid = false;
@@ -77,9 +81,9 @@ public class CheckoutValidator implements ConstraintValidator<ValidCheckout, Che
                         .addPropertyNode("tradeAmount")
                         .addConstraintViolation();
                 valid = false;
-            } else if (form.getTradeAmount() != null && form.getListingPrice() != null && form.getTradeAmount().compareTo(form.getListingPrice()) > 0) {
+            } else if (listingPrice != null && form.getTradeAmount().compareTo(listingPrice) > 0) {
                 context.disableDefaultConstraintViolation();
-                context.buildConstraintViolationWithTemplate(messageSource.getMessage("Max.checkoutForm.tradeAmount", new Object[]{form.getListingPrice()}, locale))
+                context.buildConstraintViolationWithTemplate(messageSource.getMessage("Max.checkoutForm.tradeAmount", new Object[]{listingPrice}, locale))
                         .addPropertyNode("tradeAmount")
                         .addConstraintViolation();
                 valid = false;
@@ -87,5 +91,16 @@ public class CheckoutValidator implements ConstraintValidator<ValidCheckout, Che
         }
 
         return valid;
+    }
+
+    private BigDecimal resolveListingPrice(final Long listingId) {
+        if (listingId == null) {
+            return null;
+        }
+        try {
+            return listingService.getById(listingId).getPrice().getAmount();
+        } catch (NotFoundException e) {
+            return null;
+        }
     }
 }
