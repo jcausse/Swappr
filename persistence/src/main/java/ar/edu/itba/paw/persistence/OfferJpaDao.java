@@ -16,6 +16,7 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -163,7 +164,7 @@ public class OfferJpaDao implements OfferDao {
     }
 
     @Override
-    public Map<String, Long> countByStatus(User currentUser, Boolean incoming) {
+    public Map<OfferStatusGroup, Long> countByStatus(User currentUser, Boolean incoming) {
         var where = " WHERE "
                   + (incoming ? "o.listing.creator.id" : "o.buyer.id")
                   + " = :userId"
@@ -173,7 +174,7 @@ public class OfferJpaDao implements OfferDao {
                   + where
                   + " GROUP BY o.status";
 
-        Map<String, Long> results = new HashMap<>();
+        Map<OfferStatusGroup, Long> results = new EnumMap<>(OfferStatusGroup.class);
         em.createQuery(query, Object[].class)
                 .setParameter("userId", currentUser.getId())
                 .setParameter("resolvedStatuses", OfferStatusGroup.RESOLVED.toStatusList())
@@ -182,7 +183,7 @@ public class OfferJpaDao implements OfferDao {
                 .forEach((result) -> {
                     var count = (Long)result[0];
                     var group = OfferStatusGroup.fromStatus((OfferStatus)result[1]);
-                    results.merge(group.name(), count, (a, b) -> a + b);
+                    results.merge(group, count, Long::sum);
                 });
 
         return results;

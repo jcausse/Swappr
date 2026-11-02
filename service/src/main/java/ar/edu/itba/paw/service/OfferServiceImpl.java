@@ -484,7 +484,7 @@ public class OfferServiceImpl implements OfferService {
     }
 
     @Override
-    public Map<String, Long> getOfferCountByStatus(User currentUser, Boolean incoming) {
+    public Map<OfferStatusGroup, Long> getOfferCountByStatus(User currentUser, Boolean incoming) {
 		return offerDao.countByStatus(currentUser, incoming);
     }
 
