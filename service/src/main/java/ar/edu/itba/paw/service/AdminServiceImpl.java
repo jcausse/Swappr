@@ -12,6 +12,7 @@ import ar.edu.itba.paw.service.dto.ListingFilterDto;
 import ar.edu.itba.paw.service.dto.OfferFilterDto;
 import ar.edu.itba.paw.service.exception.BadParameterException;
 import ar.edu.itba.paw.service.exception.NotFoundException;
+import ar.edu.itba.paw.service.exception.SelfSuspendException;
 import java.util.List;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -74,8 +75,13 @@ public class AdminServiceImpl implements AdminService {
     // TODO: Bro, this is just AI slop
     @Override
     @Transactional
-    public User suspendUser(@NonNull String usernameOrEmail) {
-        LOGGER.info("Admin suspending user '{}'", usernameOrEmail);
+    public User suspendUser(@NonNull User currentUser, @NonNull String usernameOrEmail) throws SelfSuspendException {
+        LOGGER.info("Admin {} suspending user '{}'", currentUser.getUsername(), usernameOrEmail);
+        if (currentUser.matchesUsernameOrEmail(usernameOrEmail)) {
+            LOGGER.warn("Admin {} prevented from suspending theirself", currentUser.getUsername());
+            throw new SelfSuspendException("An admin cannot suspend their own account");
+        }
+
         final var user = userService.getByUsernameOrEmail(usernameOrEmail)
                 .orElseThrow(() -> {
                     LOGGER.warn("User '{}' not found for suspension", usernameOrEmail);
