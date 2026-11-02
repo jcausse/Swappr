@@ -1,5 +1,6 @@
 package ar.edu.itba.paw.webapp.form.validation;
 
+import ar.edu.itba.paw.model.OfferType;
 import ar.edu.itba.paw.webapp.form.CheckoutForm;
 import ar.edu.itba.paw.service.ListingService;
 import ar.edu.itba.paw.service.exception.NotFoundException;
@@ -29,22 +30,16 @@ public class CheckoutValidator implements ConstraintValidator<ValidCheckout, Che
         final var listingPrice = resolveListingPrice(form.getListingId());
 
         // Validate offerType
-        if (form.getOfferType() == null || form.getOfferType().isBlank()) {
+        if (form.getOfferType() == null) {
             context.disableDefaultConstraintViolation();
             context.buildConstraintViolationWithTemplate(messageSource.getMessage("NotNull.checkoutForm.offerType", null, locale))
                     .addPropertyNode("offerType")
                     .addConstraintViolation();
             valid = false;
-        } else if (!"full".equals(form.getOfferType()) && !"custom".equals(form.getOfferType()) && !"trade".equals(form.getOfferType())) {
-            context.disableDefaultConstraintViolation();
-            context.buildConstraintViolationWithTemplate(messageSource.getMessage("Invalid.checkoutForm.offerType", null, locale))
-                    .addPropertyNode("offerType")
-                    .addConstraintViolation();
-            valid = false;
         }
 
-        // Validate customAmount when offerType is "custom"
-        if ("custom".equals(form.getOfferType())) {
+        // Validate customAmount when offerType is custom
+        if (form.getOfferType() == OfferType.CUSTOM) {
             if (form.getCustomAmount() == null) {
                 context.disableDefaultConstraintViolation();
                 context.buildConstraintViolationWithTemplate(messageSource.getMessage("NotNull.checkoutForm.customAmount", null, locale))
@@ -60,8 +55,8 @@ public class CheckoutValidator implements ConstraintValidator<ValidCheckout, Che
             }
         }
 
-        // Validate trade offer fields when offerType is "trade"
-        if ("trade".equals(form.getOfferType())) {
+        // Validate trade offer fields when offerType is trade
+        if (form.getOfferType() == OfferType.TRADE) {
             if (form.getOfferedListingId() == null) {
                 context.disableDefaultConstraintViolation();
                 context.buildConstraintViolationWithTemplate(messageSource.getMessage("NotNull.checkoutForm.offeredListingId", null, locale))

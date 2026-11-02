@@ -7,6 +7,7 @@ import ar.edu.itba.paw.model.ListingStatus;
 import ar.edu.itba.paw.model.Offer;
 import ar.edu.itba.paw.model.OfferRating;
 import ar.edu.itba.paw.model.OfferStatus;
+import ar.edu.itba.paw.model.OfferType;
 import ar.edu.itba.paw.model.Price;
 import ar.edu.itba.paw.model.User;
 import ar.edu.itba.paw.persistence.FileDao;
@@ -139,7 +140,16 @@ public class OfferServiceImplTest {
     }
 
     private static OfferCreationDto buildCreationDto(final long buyerId, final Long offeredListingId) {
-        return new OfferCreationDto(LISTING_ID, buyerId, AMOUNT, false, MESSAGE, offeredListingId);
+        final boolean isTrade = offeredListingId != null;
+        return new OfferCreationDto(
+            LISTING_ID,
+            buyerId,
+            isTrade ? OfferType.TRADE : OfferType.CUSTOM,
+            isTrade ? null : AMOUNT,
+            isTrade ? AMOUNT : null,
+            MESSAGE,
+            offeredListingId
+        );
     }
 
     private void givenOffer(final Offer offer) {
@@ -275,7 +285,7 @@ public class OfferServiceImplTest {
         when(listingService.getById(eq(LISTING_ID))).thenReturn(buildSellerListing());
 
         // Act
-        offerService.create(new OfferCreationDto(LISTING_ID, BUYER_ID, AMOUNT_ABOVE_PRICE, false, MESSAGE, null));
+        offerService.create(new OfferCreationDto(LISTING_ID, BUYER_ID, OfferType.CUSTOM, AMOUNT_ABOVE_PRICE, null, MESSAGE, null));
     }
 
     @Test(expected = BadParameterException.class)
@@ -284,7 +294,7 @@ public class OfferServiceImplTest {
         when(listingService.getById(eq(LISTING_ID))).thenReturn(buildSellerListing());
 
         // Act
-        offerService.create(new OfferCreationDto(LISTING_ID, BUYER_ID, AMOUNT_ABOVE_PRICE, false, MESSAGE, OFFERED_LISTING_ID));
+        offerService.create(new OfferCreationDto(LISTING_ID, BUYER_ID, OfferType.TRADE, null, AMOUNT_ABOVE_PRICE, MESSAGE, OFFERED_LISTING_ID));
     }
 
     /* ---------------------------------------------------------------------------------------------- */
