@@ -161,4 +161,38 @@ public class Offer {
         if (lastDot == -1 || lastDot == filename.length() - 1) return "";
         return filename.substring(lastDot + 1).toLowerCase();
     }
+
+    public boolean isBuyer(User user) {
+        return user.getId() == buyer.getId();
+    }
+
+    public boolean isSeller(User user) {
+        return user.getId() == listing.getCreator().getId();
+    }
+
+    public boolean isParticipant(User user) {
+        return isBuyer(user) || isSeller(user);
+    }
+
+    public RatingRole getUserRole(User user) {
+        if (isBuyer(user)) return RatingRole.BUYER;
+        if (isSeller(user)) return RatingRole.SELLER;
+        return null;
+    }
+
+    public boolean canUploadDocuments() {
+        return status == OfferStatus.PENDING_PAYMENT;
+    }
+
+    public boolean canBeRatedBy(RatingRole userRole) {
+        if (status != OfferStatus.ACCEPTED) return false;
+        return switch (userRole) {
+            case BUYER -> sellerRating == null;
+            case SELLER -> buyerRating == null;
+        };
+    }
+
+    public boolean canBeRatedBy(User user) {
+        return canBeRatedBy(getUserRole(user));
+    }
 }
