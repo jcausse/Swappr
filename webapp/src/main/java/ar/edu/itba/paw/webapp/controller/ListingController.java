@@ -119,20 +119,10 @@ public class ListingController {
     public ModelAndView listing(@PathVariable Long id, @CurrentUser(required = false) User currentUser) {
         LOGGER.debug("Accessing listing {}", id);
         var listing = listingService.getById(id);
-        var isCreator = currentUser != null && currentUser.getId().equals(listing.getCreator().getId());
-        var isCanceled = listing.getStatus() == ListingStatus.CANCELED;
-        // Pending transaction and offered in trade listings count as sold for public viewing purposes
-        var isSold = listing.getStatus() == ListingStatus.SOLD
-                || listing.getStatus() == ListingStatus.PENDING_TRANSACTION
-                || listing.getStatus() == ListingStatus.OFFERED_IN_TRADE;
-
         var userPendingOffer = offerService.getByListingAndBuyer(listing, currentUser);
 
         return new ModelAndView("listing/index")
                 .addObject("listing", listing)
-                .addObject("isCreator", isCreator)
-                .addObject("isSold", isSold)
-                .addObject("isCanceled", isCanceled)
                 .addObject("userPendingOffer", userPendingOffer);
     }
 
@@ -310,7 +300,7 @@ public class ListingController {
             return detailsWithErrors(form);
         }
 
-        var newListing = listingService.create(new ListingCreationDto(
+        listingService.create(new ListingCreationDto(
                 form.getTitle(),
                 new Price(form.getPrice()),
                 currentUser.getId(),
@@ -363,7 +353,7 @@ public class ListingController {
             return detailsWithErrors(form);
         }
 
-        var updated = listingService.update(new ListingUpdateDto(
+        listingService.update(new ListingUpdateDto(
             id,
             form.getTitle(),
             new Price(form.getPrice()),

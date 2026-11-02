@@ -8,6 +8,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 @Getter
 @Setter
@@ -89,5 +90,23 @@ public class Listing {
 
     public boolean isAcceptsShipping() {
         return Boolean.TRUE.equals(acceptsShipping);
+    }
+
+    public boolean isSoldForDisplay() {
+        return status == ListingStatus.SOLD
+            || status == ListingStatus.PENDING_TRANSACTION
+            || status == ListingStatus.OFFERED_IN_TRADE;
+    }
+
+    public boolean isCanceled() {
+        return status == ListingStatus.CANCELED;
+    }
+
+    public boolean isCreator(User user) {
+        return user != null && user.getId() == creator.getId();
+    }
+
+    public boolean isCreator(Optional<User> maybeUser) {
+        return maybeUser.map(u -> this.isCreator(u)).orElse(false);
     }
 }
