@@ -32,4 +32,8 @@ public class ListingFilterForm {
     private String model;
     private Integer yearMin;
     private Integer yearMax;
+
+    public Integer getPage() {
+        return page == null || page < 1 ? 1 : page;
+    }
 }

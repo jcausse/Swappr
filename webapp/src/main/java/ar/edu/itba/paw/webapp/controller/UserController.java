@@ -70,21 +70,14 @@ public class UserController {
         final var listingPage = listingService.search(filter);
         final var listings = listingPage.getContent();
 
-        RatingRole role = ratingFilterForm.getRole();
-        if (role == null) {
-            role = RatingRole.SELLER;
-            ratingFilterForm.setRole(role);
-        }
-
-        OfferRating type = ratingFilterForm.getType();
-
-        int page = ratingFilterForm.getPage() != null ? ratingFilterForm.getPage() : 1;
+        final var role = ratingFilterForm.getRole();
+        final var type = ratingFilterForm.getType();
 
         var ratingFilter = RatingFilter.builder()
                 .ratedId(user.getId())
                 .roles(List.of(role))
                 .types(type != null ? List.of(type) : null)
-                .page(page)
+                .page(ratingFilterForm.getPage())
                 .pageSize(PROFILE_RATINGS_PAGE_SIZE)
                 .build();
 
