@@ -115,7 +115,7 @@ While you as an AI agent are allowed to edit this file on your own, you must **a
 ### Product Discovery by Brand/Model
 
 - `/listing/by-product` (`ListingController#product`) renders `listing/byProduct.jsp` using `ProductSearchForm` as `productForm`.
-- It uses `ProductService#getListingInfoSummary` and displays, per product, the price range for each condition that has active listings. This page is not paginated.
+- It uses `ProductService#getListingInfoSummary` and displays, per product, the price range for each condition that has active listings. The page is paginated by product (10 per page) following the 1+1 query model: the DAO paginates product IDs first and then aggregates listings for those IDs by condition, brand and model.
 - Category and subcategory are chosen from button grids (mirroring the landing page) with breadcrumbs to step back. Once both are selected, brand/model/year filters appear; brand changes auto-submit and clear the model. The filter clear action keeps category and subcategory intact.
 - Each condition row links to `/listing` with category, subcategory, brand, model, condition, and any year filters applied.
 

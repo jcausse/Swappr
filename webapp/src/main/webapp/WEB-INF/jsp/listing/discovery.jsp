@@ -25,7 +25,7 @@
 <spring:message code="discovery.filter.acceptsShipping" var="acceptsShippingLabel"/>
 <spring:message code="discovery.filter.apply" var="applyLabel"/>
 <spring:message code="discovery.filter.clear" var="clearLabel"/>
-<spring:message code="discovery.sort.label" var="sortLabel"/>
+<spring:message code="listing.sort.label" var="sortLabel"/>
 <spring:message code="discovery.filter.all" var="allLabel"/>
 
 <paw:layout variant="wide" titleKey="discovery.title">

@@ -10,7 +10,9 @@
 <%@ attribute name="variant" required="false" %>
 <%@ attribute name="disabled" required="false" type="java.lang.Boolean" %>
 <%@ attribute name="includeOther" required="false" type="java.lang.Boolean" %>
+<%-- Value of the "other" option; must be passed whenever includeOther is true --%>
 <%@ attribute name="otherValue" required="false" type="java.lang.String" %>
+<%-- Translated label of the "other" option; must be passed whenever includeOther is true --%>
 <%@ attribute name="otherLabel" required="false" type="java.lang.String" %>
 <%@ attribute name="classname" required="false" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
@@ -36,8 +38,6 @@
 <c:set var="isDisabled" value="${disabled ne null ? disabled : false}"/>
 <c:set var="isIncludeOther" value="${includeOther ne null ? includeOther : false}"/>
 <c:set var="isTranslateLabels" value="${translateLabels ne null ? translateLabels : false}"/>
-<c:set var="otherVal" value="${not empty otherValue ? otherValue : '__OTHER__'}"/>
-<c:set var="otherLbl" value="${not empty otherLabel ? otherLabel : 'Other...'}"/>
 
 <c:set var="resolvedItemLabel" value="${not empty itemLabel ? itemLabel : 'name'}"/>
 <c:set var="resolvedItemValue" value="${not empty itemValue ? itemValue : 'id'}"/>
@@ -82,7 +82,7 @@
             </c:choose>
 
             <c:if test="${isIncludeOther}">
-                <form:option value="${otherVal}" label="${otherLbl}" />
+                <form:option value="${otherValue}" label="${otherLabel}" />
             </c:if>
         </form:select>
         <paw:icon name="chevron-down" classname="absolute top-1/2 right-1.5 -translate-y-1/2 pointer-events-none ${isDisabled ? 'text-black/40' : ''}" />

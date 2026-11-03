@@ -1,5 +1,5 @@
 [ ] Sin resolver
-[/] Falta testear
+[/] Falta testear/verificar
 [X] Resuelto y confirmado
 [-] Irrelevante (el código al que refiere no existe más)
 
@@ -22,7 +22,8 @@
   -- Otros controllers: PR https://bitbucket.org/itba/paw-2026b-08/pull-requests/98
   -- Falta segundo pase para asegurar que no quede nada
 
-[ ] Verifican el resultado de una escritura con otro método del mismo DAO en lugar de consultar la tabla. Por ejemplo, OfferJdbcDaoTest.testUpdateProof0fPaymentId usa offerDao.getById. Esto es un error conceptual grave.
+[/] Verifican el resultado de una escritura con otro método del mismo DAO en lugar de consultar la tabla. Por ejemplo, OfferJdbcDaoTest.testUpdateProof0fPaymentId usa offerDao.getById. Esto es un error conceptual grave.
+  -- Falta mergear: PR https://bitbucket.org/itba/paw-2026b-08/pull-requests/101
 
 # Otras correcciones
 
@@ -31,9 +32,11 @@
 [X] My Offers no da indicación de que tabs tienen o no contenido... siempre selecciona el primero y ya. Por ejemplo, si tengo ofertas aprobadas con pago pendiente, no tengo indicador visual.
   -- RESUELTO: PR https://bitbucket.org/itba/paw-2026b-08/pull-requests/86
 
-[/] Al publicar el form dice que la imagen es opcional, pero si no la incluyo me da un error que dice "Uploaded files must be valid images under 5MB"
+[X] Al publicar el form dice que la imagen es opcional, pero si no la incluyo me da un error que dice "Uploaded files must be valid images under 5MB"
+  -- RESUELTO
 
-[/] Los mails tienen links inválidos
+[X] Los mails tienen links inválidos
+  -- RESUELTO (último check 2026-11-03, commit 8f66792cde5a961062eef0a55087caafb6835172)
 
 [X] El link a rating desde la web en el listado de ofertas completas da un 404.
   -- RESUELTO: estaba mal la URL
@@ -44,7 +47,8 @@
 [X] Redirigen a URLs que vienen del cliente sin validar que sean internas, lo que permite un open redirect. Por ejemplo, OfferController.withdrawoffer con el header Referer y AdminController.takeDownListingByForm con el parámetro redirect.
   -- RESUELTO: PR https://bitbucket.org/itba/paw-2026b-08/pull-requests/91
 
-[ ] Dejan textos visibles hardcodeados en inglés en atributos alt / aria-label de los tags en lugar de usar <spring: message>. Por ejemplo, en imageGallery.tag y userAvatar.tag
+[X] Dejan textos visibles hardcodeados en inglés en atributos alt / aria-label de los tags en lugar de usar <spring: message>. Por ejemplo, en imageGallery.tag y userAvatar.tag
+  -- RESUELTO: PR https://bitbucket.org/itba/paw-2026b-08/pull-requests/102
 
 [ ] Resuelven operaciones masivas llamando a services/DAOs en un loop, una entidad por vez. Por ejemplo, AdminServiceImpl.suspendUser, que además descarta excepciones dentro de la misma transacción (que igual queda marcada para rollback) y trunca a 1000 elementos.
 
@@ -62,7 +66,8 @@
 [-] Duplican código que ya divergió: el mapeo de Listing / User está copiado entre OfferJdbcDao ListingJdbcDao (y devuelve objetos incompletos según quién los carga),
   -- IRRELEVANTE con la migración a JPA, lo resuelve el entity manager
 
-[ ] la constante "_OTHER_" está en tres lugares
+[/] la constante "_OTHER_" está en tres lugares
+  -- RESUELTO: PR https://bitbucket.org/itba/paw-2026b-08/pull-requests/106
 
 [ ] y las migraciones de test son una copia a mano de las de producción.
 
