@@ -32,7 +32,8 @@
 [X] My Offers no da indicación de que tabs tienen o no contenido... siempre selecciona el primero y ya. Por ejemplo, si tengo ofertas aprobadas con pago pendiente, no tengo indicador visual.
   -- RESUELTO: PR https://bitbucket.org/itba/paw-2026b-08/pull-requests/86
 
-[/] Al publicar el form dice que la imagen es opcional, pero si no la incluyo me da un error que dice "Uploaded files must be valid images under 5MB"
+[X] Al publicar el form dice que la imagen es opcional, pero si no la incluyo me da un error que dice "Uploaded files must be valid images under 5MB"
+  -- RESUELTO
 
 [/] Los mails tienen links inválidos
 
