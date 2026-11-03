@@ -1,3 +1,16 @@
+
+`getListingInfoSummary` (`ProductJpaDao`):
+  - Hay una mejor forma de hacerlo sin castear un `Object[]`?
+  - Llamada a `sorted()` se puede evitar?
+
+Idem `countByStatus` (`OfferJpaDao`)
+
+---
+
+Tenemos el problema de las `n + 1` queries? Cual es la forma mas facil de identificarlas?
+
+---
+
 Es necesario usar `GenerationType.SEQUENCE`? Con `GenerationType.IDENTITY` es automático y no se necesita 
 el `@SequenceGenerator`
 
@@ -25,9 +38,5 @@ Esto fue necesario para que el `EntityManager` se mantuviera mientras los JSP es
 propiedades que son _lazy-loaded_ de los modelos, causando `LazyInitializationException`.
 
 > **RTA:** No es un problema. Sacarlo para el final.
-
----
-
-Tenemos el problema de las `n + 1` queries? Cual es la forma mas facil de identificarlas?
 
 ---

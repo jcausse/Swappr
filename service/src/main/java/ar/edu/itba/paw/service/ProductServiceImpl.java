@@ -1,20 +1,26 @@
 package ar.edu.itba.paw.service;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import ar.edu.itba.paw.model.Category;
 import ar.edu.itba.paw.model.Product;
+import ar.edu.itba.paw.model.ProductListingInfo;
+import ar.edu.itba.paw.model.ProductListingInfoSummary;
 import ar.edu.itba.paw.model.Subcategory;
 import ar.edu.itba.paw.persistence.CategoryDao;
 import ar.edu.itba.paw.persistence.ProductDao;
 import ar.edu.itba.paw.persistence.SubcategoryDao;
 import ar.edu.itba.paw.service.exception.NotFoundException;
-import java.util.List;
-
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
 @Service
@@ -81,5 +87,28 @@ public class ProductServiceImpl implements ProductService {
                         created.getId(), brand, model, year);
                 return created;
             });
+    }
+
+    @Override
+    @Transactional
+    public List<ProductListingInfoSummary> getListingInfoSummary(String brand, String model, Integer fromYear, Integer toYear, @NonNull Long subcategoryId) {
+        var info = productDao.getListingInfoSummary(brand, model, fromYear, toYear, subcategoryId);
+
+        Map<String, List<ProductListingInfo>> infoByBrandModel = new HashMap<>();
+        for (var i : info) {
+            var brandAndModel = i.getBrand() + " " + i.getModel();
+            infoByBrandModel.putIfAbsent(brandAndModel, new ArrayList<>());
+            infoByBrandModel.get(brandAndModel).add(i);
+        }
+
+        return infoByBrandModel.entrySet()
+                .stream()
+                .map((entry) -> ProductListingInfoSummary.builder()
+                    .brand(entry.getValue().get(0).getBrand())
+                    .model(entry.getValue().get(0).getModel())
+                    .listingInfoByCondition(entry.getValue())
+                    .build()
+                )
+                .toList();
     }
 }
