@@ -12,17 +12,11 @@
 <spring:message code="account.listings.newListing" var="newListingLabel"/>
 <spring:message code="account.listings.filter.status" var="statusLabel"/>
 <spring:message code="account.listings.filter.all" var="allLabel"/>
-<spring:message code="account.listings.filter.sort" var="sortLabel"/>
+<spring:message code="listing.sort.label" var="sortLabel"/>
 <spring:message code="account.listings.filter.default" var="defaultLabel"/>
 <spring:message code="listing.status.ACTIVE" var="statusActive"/>
 <spring:message code="listing.status.SOLD" var="statusSold"/>
 <spring:message code="listing.status.CANCELED" var="statusCanceled"/>
-<%-- TODO: TRADUCCION DUPLICADA --%>
-<spring:message code="discovery.sort.recent" var="sortRecent"/>
-<spring:message code="discovery.sort.price_asc" var="sortPriceAsc"/>
-<spring:message code="discovery.sort.price_desc" var="sortPriceDesc"/>
-<spring:message code="account.listings.sort.name_asc" var="sortNameAsc"/>
-<spring:message code="account.listings.sort.name_desc" var="sortNameDesc"/>
 
 <c:url value="/account/listings" var="filterAction"/>
 <c:url value="/listing/new/choose-product" var="newListingUrl"/>

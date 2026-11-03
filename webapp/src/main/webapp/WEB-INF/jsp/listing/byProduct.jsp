@@ -36,7 +36,8 @@
 
 <paw:layout variant="wide" titleKey="byProduct.title">
     <div class="flex flex-col gap-6">
-        <nav class="flex flex-wrap items-center gap-1 text-sm" aria-label="Breadcrumb">
+        <spring:message code="byProduct.breadcrumb.ariaLabel" var="breadcrumbLabel"/>
+        <nav class="flex flex-wrap items-center gap-1 text-sm" aria-label="<c:out value='${breadcrumbLabel}'/>">
             <paw:linkButton href="${productsUrl}" text="${productsLabel}" variant="ghost" classname="min-w-0!"/>
             <c:if test="${not empty productForm.categoryId}">
                 <paw:icon name="chevron-right" classname="text-black/60"/>

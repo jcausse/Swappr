@@ -16,7 +16,8 @@
     <div class="absolute top-10 left-0 right-0 flex justify-center z-20">
         <div class="w-96 px-6">
             <a href="<c:url value='/'/>" class="w-full flex justify-center items-center bg-white/90 backdrop-blur-sm p-4 rounded-2xl shadow-lg border border-black/10 transition-transform hover:scale-105">
-                <img src="<c:url value='/static-image/logo.svg'/>" alt="Swappr Logo" class="h-12"/>
+                <spring:message code="a11y.logo" var="logoAlt"/>
+                <img src="<c:url value='/static-image/logo.svg'/>" alt="<c:out value='${logoAlt}'/>" class="h-12"/>
             </a>
         </div>
     </div>

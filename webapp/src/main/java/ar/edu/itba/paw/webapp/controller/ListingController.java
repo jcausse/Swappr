@@ -88,7 +88,7 @@ public class ListingController {
 
         mav.addObject("conditionOptions", buildConditionOptions());
         mav.addObject("sortOptions", Arrays.stream(ListingSort.values())
-            .map(s -> new StringSelectOption(s.name(), "discovery.sort." + s.getKey()))
+            .map(s -> new StringSelectOption(s.name(), "listing.sort." + s.getKey()))
             .toList());
 
         var categories = productService.getAllCategories();
