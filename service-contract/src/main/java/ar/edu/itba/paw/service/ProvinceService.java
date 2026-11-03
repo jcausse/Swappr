@@ -7,5 +7,4 @@ import java.util.Optional;
 public interface ProvinceService {
     List<Province> getAll();
     Optional<Province> getById(Long id);
-    boolean exists(Long id);
 }

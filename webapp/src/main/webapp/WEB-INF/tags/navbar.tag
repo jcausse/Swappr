@@ -9,16 +9,20 @@
         <div class="rounded-xl w-full p-2 flex flex-row items-center gap-2 bg-white/80 backdrop-blur-sm border border-black/10">
             <c:url value='/' var="homeUrl" />
             <c:url value='/listing' var="buyUrl" />
+            <c:url value='/listing/by-product' var="productsUrl" />
             <c:url value='/listing/new/choose-product' var="sellUrl" />
 
             <paw:linkButton href="${homeUrl}" variant="ghost" size="sm">
-                <img src="<c:url value='/static-image/logo.svg'/>" class="min-w-24" alt="Swappr Logo" />
+                <spring:message code="a11y.logo" var="logoAlt"/>
+                <img src="<c:url value='/static-image/logo.svg'/>" class="min-w-24" alt="<c:out value='${logoAlt}'/>" />
             </paw:linkButton>
 
             <spring:message code="navbar.discover" var="linkDiscover"/>
             <spring:message code="navbar.sell" var="linkSell"/>
+            <spring:message code="navbar.products" var="linkProducts"/>
             <spring:message code="navbar.categories" var="linkCategories"/>
             <paw:linkButton href="${buyUrl}" variant="ghost" text="${linkDiscover}" />
+            <paw:linkButton href="${productsUrl}" variant="ghost" text="${linkProducts}" />
             <paw:menu id="categoriesMenu" variant="ghost" text="${linkCategories}" panelWidth="w-64" panelAlign="left">
                 <c:forEach var="category" items="${categories}">
                     <c:url value="/listing" var="categoryUrl">

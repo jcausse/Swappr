@@ -6,7 +6,6 @@ import ar.edu.itba.paw.model.Subcategory;
 import ar.edu.itba.paw.persistence.CategoryDao;
 import ar.edu.itba.paw.persistence.ProductDao;
 import ar.edu.itba.paw.persistence.SubcategoryDao;
-import ar.edu.itba.paw.service.dto.ProductCreationDto;
 import ar.edu.itba.paw.service.exception.NotFoundException;
 import org.junit.Assert;
 import org.junit.Test;
@@ -93,33 +92,6 @@ public class ProductServiceImplTest {
     /* ---------------------------------------------------------------------------------------------- */
 
     @Test
-    public void testGetBySubcategoryDelegates() {
-        // Arrange
-        final List<Product> products = List.of(buildFakeProduct());
-        when(productDao.getBySubcategory(eq(SUBCATEGORY_ID))).thenReturn(products);
-
-        // Act
-        final List<Product> result = productService.getBySubcategory(SUBCATEGORY_ID);
-
-        // Assert
-        Assert.assertEquals(products, result);
-    }
-
-    @Test
-    public void testGetBySubcategoryBrandModelDelegates() {
-        // Arrange
-        final List<Product> products = List.of(buildFakeProduct());
-        when(productDao.getBySubcategoryBrandModel(eq(SUBCATEGORY_ID), eq(BRAND), eq(MODEL)))
-            .thenReturn(products);
-
-        // Act
-        final List<Product> result = productService.getBySubcategoryBrandModel(SUBCATEGORY_ID, BRAND, MODEL);
-
-        // Assert
-        Assert.assertEquals(products, result);
-    }
-
-    @Test
     public void testGetAllCategoriesDelegates() {
         // Arrange
         final List<Category> categories = List.of(Category.builder().id(CATEGORY_ID).name("Electronics").build());
@@ -181,18 +153,5 @@ public class ProductServiceImplTest {
 
         // Act
         productService.findOrCreateByBrandModelYear(BRAND, MODEL, YEAR, NON_EXISTING_SUBCATEGORY_ID);
-    }
-
-    /* ---------------------------------------------------------------------------------------------- */
-    /* create                                                                                          */
-    /* ---------------------------------------------------------------------------------------------- */
-
-    @Test(expected = NotFoundException.class)
-    public void testCreateUnknownSubcategoryThrows() {
-        // Arrange
-        when(subcategoryDao.getById(eq(NON_EXISTING_SUBCATEGORY_ID))).thenReturn(Optional.empty());
-
-        // Act
-        productService.create(new ProductCreationDto(BRAND, MODEL, YEAR, NON_EXISTING_SUBCATEGORY_ID));
     }
 }

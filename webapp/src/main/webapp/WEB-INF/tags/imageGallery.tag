@@ -1,7 +1,7 @@
 <%@ tag language="java" pageEncoding="UTF-8" %>
 <%@ attribute name="id" required="true" %>
 <%@ attribute name="images" required="true" type="java.lang.String[]" %>
-<%@ attribute name="alt" required="false" %>
+<%@ attribute name="alt" required="true" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="spring" uri="http://www.springframework.org/tags" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
@@ -9,7 +9,8 @@
 
 <spring:message code="imageGallery.noImages" var="noImagesLabel"/>
 
-<c:set var="xmlSafeAlt" value="${fn:escapeXml(alt)}"/>
+<spring:message code="imageGallery.thumbnails" var="thumbnailsLabel"/>
+<spring:message code="imageGallery.image" var="mainImageAlt"><spring:argument value="${alt}"/><spring:argument value="1"/></spring:message>
 
 <div class="w-full">
     <c:choose>
@@ -24,7 +25,7 @@
                 <img
                     id="${id}_main"
                     src="${images[0]}"
-                    alt="${empty xmlSafeAlt ? '' : xmlSafeAlt} - Image 1"
+                    alt="<c:out value='${mainImageAlt}'/>"
                     class="w-full h-full object-contain relative"
                 />
             </div>
@@ -33,16 +34,17 @@
                 id="${id}_thumbnails"
                 class="flex gap-2 overflow-x-auto scroll-smooth p-2 -mx-2 [scrollbar-width:none]"
                 role="list"
-                aria-label="Image thumbnails"
+                aria-label="<c:out value='${thumbnailsLabel}'/>"
             >
                 <c:forEach items="${images}" var="imageUrl" varStatus="status">
                     <c:set var="cleanImageUrl" value="${fn:trim(imageUrl)}"/>
+                    <spring:message code="imageGallery.image" var="thumbLabel"><spring:argument value="${alt}"/><spring:argument value="${status.count}"/></spring:message>
                     <button
                         type="button"
                         class="flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border border-black/10 transition-all duration-200
                                outline-transparent outline-2 focus-visible:outline-lime-600/30 outline-offset-0 focus-visible:border-lime-600
                                active:scale-[0.98] cursor-pointer group data-[state=on]:border-lime-600 data-[state=on]:outline-lime-600/30 relative"
-                        aria-label="${empty xmlSafeAlt ? 'Image' : xmlSafeAlt} ${status.count}"
+                        aria-label="<c:out value='${thumbLabel}'/>"
                         data-state="${status.first ? 'on' : 'off'}"
                         role="listitem"
                     >

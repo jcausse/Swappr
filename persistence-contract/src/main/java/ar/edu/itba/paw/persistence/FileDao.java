@@ -7,6 +7,4 @@ public interface FileDao {
     Optional<File> getById(Long id);
     
     File create(String filename, String alt, String contentType, byte[] data);
-    
-    void delete(Long id);
 }

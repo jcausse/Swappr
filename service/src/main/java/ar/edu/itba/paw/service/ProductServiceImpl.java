@@ -1,21 +1,26 @@
 package ar.edu.itba.paw.service;
 
-import ar.edu.itba.paw.model.Category;
-import ar.edu.itba.paw.model.Product;
-import ar.edu.itba.paw.model.Subcategory;
-import ar.edu.itba.paw.persistence.CategoryDao;
-import ar.edu.itba.paw.persistence.ProductDao;
-import ar.edu.itba.paw.persistence.SubcategoryDao;
-import ar.edu.itba.paw.service.dto.ProductCreationDto;
-import ar.edu.itba.paw.service.exception.NotFoundException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import ar.edu.itba.paw.model.Category;
+import ar.edu.itba.paw.model.Product;
+import ar.edu.itba.paw.model.ProductListingInfo;
+import ar.edu.itba.paw.model.ProductListingInfoSummary;
+import ar.edu.itba.paw.model.Subcategory;
+import ar.edu.itba.paw.persistence.CategoryDao;
+import ar.edu.itba.paw.persistence.ProductDao;
+import ar.edu.itba.paw.persistence.SubcategoryDao;
+import ar.edu.itba.paw.service.exception.NotFoundException;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @Service
@@ -35,21 +40,6 @@ public class ProductServiceImpl implements ProductService {
             .orElseThrow(() ->
                 NotFoundException.createFor("Product with ID " + id)
             );
-    }
-
-    @Override
-    public List<Product> getByCategory(Long categoryId) {
-        return productDao.getByCategory(categoryId);
-    }
-
-    @Override
-    public List<Product> getBySubcategory(Long subcategoryId) {
-        return productDao.getBySubcategory(subcategoryId);
-    }
-
-    @Override
-    public List<Product> getBySubcategoryBrandModel(Long subcategoryId, String brand, String model) {
-        return productDao.getBySubcategoryBrandModel(subcategoryId, brand, model);
     }
 
     @Override
@@ -101,14 +91,24 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional
-    public Product create(@NonNull ProductCreationDto dto) {
-        LOGGER.debug("Creating product: brand='{}', model='{}', year={}, subcategoryId={}",
-                dto.brand(), dto.model(), dto.year(), dto.subcategoryId());
-        var subcategory = subcategoryDao.getById(dto.subcategoryId())
-            .orElseThrow(() -> NotFoundException.createFor("Subcategory with ID " + dto.subcategoryId()));
-        var product = productDao.create(dto.brand(), dto.model(), dto.year(), subcategory);
-        LOGGER.info("Created product: id={}, brand='{}', model='{}', year={}",
-                product.getId(), product.getBrand(), product.getModel(), product.getYear());
-        return product;
+    public List<ProductListingInfoSummary> getListingInfoSummary(String brand, String model, Integer fromYear, Integer toYear, @NonNull Long subcategoryId) {
+        var info = productDao.getListingInfoSummary(brand, model, fromYear, toYear, subcategoryId);
+
+        Map<String, List<ProductListingInfo>> infoByBrandModel = new HashMap<>();
+        for (var i : info) {
+            var brandAndModel = i.getBrand() + " " + i.getModel();
+            infoByBrandModel.putIfAbsent(brandAndModel, new ArrayList<>());
+            infoByBrandModel.get(brandAndModel).add(i);
+        }
+
+        return infoByBrandModel.entrySet()
+                .stream()
+                .map((entry) -> ProductListingInfoSummary.builder()
+                    .brand(entry.getValue().get(0).getBrand())
+                    .model(entry.getValue().get(0).getModel())
+                    .listingInfoByCondition(entry.getValue())
+                    .build()
+                )
+                .toList();
     }
 }

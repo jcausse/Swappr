@@ -24,7 +24,6 @@ public interface UserService {
 
     User updateLocation(User user, Long provinceId, String locationDetail);
     User updatePreferredLanguage(User user, Language preferredLanguage);
-    User updateEmail(User user, String email);
 
     Optional<OneTimePassword> resendVerificationEmail(String usernameOrEmail);
     OneTimePasswordVerificationResult verifyEmail(String usernameOrEmail, String otpValue);

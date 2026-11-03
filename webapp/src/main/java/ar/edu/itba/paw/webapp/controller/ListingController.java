@@ -33,6 +33,7 @@ import ar.edu.itba.paw.webapp.auth.CurrentUser;
 import ar.edu.itba.paw.webapp.form.ChooseProductForm;
 import ar.edu.itba.paw.webapp.form.ListingDetailsForm;
 import ar.edu.itba.paw.webapp.form.ListingFilterForm;
+import ar.edu.itba.paw.webapp.form.ProductSearchForm;
 import ar.edu.itba.paw.webapp.form.SelectOption;
 import ar.edu.itba.paw.webapp.form.StringSelectOption;
 import lombok.RequiredArgsConstructor;
@@ -110,6 +111,42 @@ public class ListingController {
                 }
             }
         }
+        return mav;
+    }
+
+    @GetMapping("/by-product")
+    public ModelAndView product(@ModelAttribute("productForm") ProductSearchForm productForm) {
+        LOGGER.debug("Accessing products by brand and model page");
+        final var mav = new ModelAndView("listing/byProduct");
+
+        final var brand = productForm.getBrand();
+        final var model = productForm.getModel();
+
+        if (productForm.getSubcategoryId() != null) {
+            mav.addObject("productSummaries", productService.getListingInfoSummary(
+                brand,
+                model,
+                productForm.getYearMin(),
+                productForm.getYearMax(),
+                productForm.getSubcategoryId()
+            ));
+        } else {
+            mav.addObject("productSummaries", List.of());
+        }
+
+        mav.addObject("categories", productService.getAllCategories());
+        if (productForm.getCategoryId() != null) {
+            mav.addObject("subcategories", productService.getSubcategoriesByCategory(productForm.getCategoryId()));
+        }
+
+        if (productForm.getSubcategoryId() != null) {
+            mav.addObject("brands", productService.getBrandsBySubcategory(productForm.getSubcategoryId()));
+
+            if (brand != null) {
+                mav.addObject("models", productService.getModelsBySubcategoryAndBrand(productForm.getSubcategoryId(), brand));
+            }
+        }
+
         return mav;
     }
 

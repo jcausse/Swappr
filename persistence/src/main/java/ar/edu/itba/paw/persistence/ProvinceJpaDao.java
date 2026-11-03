@@ -20,14 +20,6 @@ public class ProvinceJpaDao implements ProvinceDao {
     }
 
     @Override
-    public Optional<Province> getByName(String name) {
-        return em.createQuery("FROM Province p WHERE p.name = :name", Province.class)
-                .setParameter("name", name)
-                .getResultStream()
-                .findFirst();
-    }
-
-    @Override
     public List<Province> getAll() {
         return em.createQuery("FROM Province p ORDER BY p.id", Province.class).getResultList();
     }

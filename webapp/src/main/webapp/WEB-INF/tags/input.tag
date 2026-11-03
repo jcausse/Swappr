@@ -9,6 +9,7 @@
 <%@ attribute name="disabled" required="false" type="java.lang.Boolean" %>
 <%@ attribute name="showPasswordToggle" required="false" type="java.lang.Boolean" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="spring" uri="http://www.springframework.org/tags" %>
 <%@ taglib prefix="paw" tagdir="/WEB-INF/tags" %>
 
 <c:set var="inputVariant" value="${not empty variant ? variant : 'default'}"/>
@@ -51,12 +52,13 @@
           <c:if test="${isDisabled}">disabled</c:if>
           <c:if test="${isError}">data-error</c:if>
         />
+        <spring:message code="a11y.togglePassword" var="togglePasswordLabel"/>
         <button
           type="button"
           class="absolute right-2.5 top-1/2 -translate-y-1/2 text-black/40 hover:text-black/70 focus:outline-none cursor-pointer flex items-center justify-center p-1"
           onclick="var input = this.previousElementSibling; var icon = this.querySelector('i'); if (input.type === 'password') { input.type = 'text'; icon.className = 'icon-eye-off'; } else { input.type = 'password'; icon.className = 'icon-eye'; } input.focus();"
           tabindex="-1"
-          aria-label="Toggle password visibility"
+          aria-label="<c:out value='${togglePasswordLabel}'/>"
         >
           <paw:icon name="eye" classname="text-base" />
         </button>
