@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.jdbc.JdbcTestUtils;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,7 +32,6 @@ public class FileJpaDaoTest {
     private static final String ALT = "Payment receipt";
     private static final String CONTENT_TYPE = "application/pdf";
     private static final byte[] DATA = { 0x00, 0x01, 0x7F, (byte) 0x80, (byte) 0xFF };
-    private static final long PROOF_OFFER_ID = 5L;
 
     @Autowired
     private FileDao fileDao;
@@ -161,62 +159,5 @@ public class FileJpaDaoTest {
     @Test(expected = javax.persistence.PersistenceException.class)
     public void testCreateWithoutDataFails() {
         fileDao.create(FILENAME, ALT, CONTENT_TYPE, null);
-    }
-
-    /* ---------------------------------------------------------------------------------------------- */
-    /* delete                                                                                          */
-    /* ---------------------------------------------------------------------------------------------- */
-
-    @Test
-    public void testDeleteExisting() {
-        // Arrange
-        insertFile(FILE_ID, CONTENT_TYPE);
-
-        // Act
-        fileDao.delete(FILE_ID);
-
-        // Assert
-        em.flush();
-        Assert.assertEquals(0, JdbcTestUtils.countRowsInTableWhere(jdbcTemplate, TABLE, "file_id = " + FILE_ID));
-    }
-
-    @Test
-    public void testDeleteOnlyRemovesTheGivenFile() {
-        // Arrange
-        insertFile(FILE_ID, CONTENT_TYPE);
-        insertFile(FILE_ID + 1, CONTENT_TYPE);
-
-        // Act
-        fileDao.delete(FILE_ID);
-
-        // Assert
-        em.flush();
-        Assert.assertEquals(1, JdbcTestUtils.countRowsInTable(jdbcTemplate, TABLE));
-        Assert.assertEquals(1, JdbcTestUtils.countRowsInTableWhere(jdbcTemplate, TABLE, "file_id = " + (FILE_ID + 1)));
-    }
-
-    @Test
-    public void testDeleteNonExistingDoesNothing() {
-        // Arrange
-        insertFile(FILE_ID, CONTENT_TYPE);
-
-        // Act
-        fileDao.delete(NON_EXISTING_ID);
-
-        // Assert
-        em.flush();
-        Assert.assertEquals(1, JdbcTestUtils.countRowsInTable(jdbcTemplate, TABLE));
-    }
-
-    @Test
-    @Sql({ "classpath:sql/listing-data.sql", "classpath:sql/offer-data.sql" })
-    public void testDeleteProofOfPaymentClearsOfferReference() {
-        // Act
-        fileDao.delete(FILE_ID);
-
-        // Assert
-        em.flush();
-        Assert.assertEquals(1, JdbcTestUtils.countRowsInTableWhere(jdbcTemplate, "offers",
-            "offer_id = " + PROOF_OFFER_ID + " AND proof_of_payment_id IS NULL"));
     }
 }

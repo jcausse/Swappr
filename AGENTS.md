@@ -39,7 +39,6 @@ While you as an AI agent are allowed to edit this file on your own, you must **a
 - **Never** leak `webapp` form classes into `service-contract` or `persistence-contract`.
 - **Never** leak DTOs from `service-contract` into `persistence-contract` — DAOs take domain models or flat query parameters.
 - **Never** import or throw Spring Security authentication/authorization classes (e.g., `AccessDeniedException`, `Authentication`, `SecurityContextHolder`) in `service` or `service-contract` (`service` only depends on `spring-security-crypto` for `PasswordEncoder`, never `spring-security-core`). Services must throw custom `service-contract` exceptions (such as `ForbiddenException`), while `GlobalExceptionHandler` in `webapp` handles both `ForbiddenException` (from `service`) and `AccessDeniedException` (from `@PreAuthorize` in `webapp`).
-- Schema constants live in `persistence` package `schema/` (e.g., `UserSchema.java`), used for native queries or legacy references. Those will be removed later.
 
 ## JSP Best Practices (Mandatory)
 
@@ -51,6 +50,7 @@ While you as an AI agent are allowed to edit this file on your own, you must **a
 - Inside `<form:form>`, use the `paw:formInput` tag (not `paw:input`) to get automatic Spring binding and error display.
 - Use `paw:input` only for standalone inputs outside of Spring forms (e.g., search bars, filters).
 - **Icons**: The project uses [Lucide Icons](https://lucide.dev/icons/). Render icons using `<paw:icon name="..."/>` (e.g. `<paw:icon name="eye"/>`). Look up icon names on [lucide.dev/icons](https://lucide.dev/icons/) and pass the name to the `name` attribute of `<paw:icon>` (or the `icon` attribute on tags like `<paw:button>` and `<paw:linkButton>`).
+- **Select option labels**: Controllers must not resolve select option labels with `MessageSource`. Instead, pass the message keys as option labels and set `translateLabels="true"` on `paw:formSelect` / `paw:formButtonToggle`, which resolves each label with `<spring:message>`. For plain string options whose label equals their value, pass a `List<String>` and use `plainStrings="true"` on `paw:formSelect` rather than building `StringSelectOption` pairs.
 
 ## Internationalization (i18n) Conventions
 
@@ -102,6 +102,14 @@ While you as an AI agent are allowed to edit this file on your own, you must **a
   - A class shall be marked `@Transactional(readOnly = true)` instead of marking every method. This shall only be done with `readOnly = true`.
   - Write permissions are only given to those methods that explicitly need those permissions. Never give extra permissions in advance. Always give read permissions by default and then elevate those to write permissions if needed.
 - To obtain the logged-in user in a controller handler method, use `@CurrentUser User currentUser` (see **Current User Resolution**). Never receive `Optional<User>` or use `@ModelAttribute("currentUser")` as a controller method parameter.
+- **Safe Redirects (Open Redirect Prevention)**: **Never** pass unvalidated user-controlled input (such as the `Referer` header or a `@RequestParam("redirect")` query/form parameter) directly to `"redirect:" + ...`. Always resolve dynamic redirect targets through the stateless `ar.edu.itba.paw.webapp.controller.RedirectHelper` utility (`RedirectHelper.resolveReferer(...)` for `Referer` headers and `RedirectHelper.resolvePath(...)` for relative redirect parameters, optionally with `RedirectHelper.hasPathPrefix(...)`). `RedirectHelper` returns only normalized context-relative paths (`path[?query]`) without the `"redirect:"` prefix, so controllers explicitly concatenate `"redirect:" + target`.
+
+### Enum Binding
+
+- Form and service DTO fields whose values come from a fixed set must use the corresponding domain enum (e.g. `Condition`, `ListingSort`, `ListingStatus`, `OfferType`, `OfferStatusGroup`, `RatingRole`, `OfferRating`, `Language`), never raw `String`.
+- Global `String -> enum` conversion relies on Spring MVC's built-in default `StringToEnumConverterFactory` (enabled by `@EnableWebMvc`). **Do not register custom enum converters in `WebConfig` or use `@InitBinder` in controllers** for enum parsing. Empty input (`""`) converts to `null` so optional filters and `@NotNull` bean validation work naturally, while invalid values fail conversion (`400 Bad Request` on GET filters / `typeMismatch` field errors on POST forms).
+- **Never change existing enum constant names or stored string values**, as some are persisted in the database.
+- All JSP `<option>` / `<form:option>` / `<form:radiobutton>` values, query parameters, and redirect URLs bound to enum fields **must** use uppercase enum constant names (`name()`). Legacy lowercase enum query/form values are not supported.
 
 ### Product Discovery by Brand/Model
 
@@ -162,6 +170,8 @@ While you as an AI agent are allowed to edit this file on your own, you must **a
 - Use Optional for return values which may not be present, but DO NOT use Optional as method parameters, as it is a code smell.
 - Prefer using `var` for type inference when possible.
 - DAOs (in `persistence` layer): Each DAO should manage one domain aggregate entity. DAOs must never call other DAOs, nor have them injected as dependencies. If DAO A needs entities or data from entity B, it queries it directly via `EntityManager`.
+- **Business rules belong in the model/services, not controllers**: Query logic such as "is this listing sold/canceled", "is this user the creator/buyer/seller", "can this offer be rated/edited" belongs on the domain model (`Listing`, `Offer`, `User`, etc.) as boolean helper methods. Services and controllers must call those helpers instead of re-implementing status or ownership comparisons. Core examples: `Listing.isActive()`, `Listing.isSoldForDisplay()`, `Listing.isCreator(...)`, `Offer.isPending()`, `Offer.isBuyer(...)`, `Offer.canUploadDocuments()`, `Offer.canBeRatedBy(...)`, `User.isSameUser(...)`, `User.matchesUsernameOrEmail(...)`.
+- **DTOs carry raw input; services build domain value objects**: Service DTOs should store raw values coming from the web layer (e.g. `BigDecimal price`) and the service constructs value objects (`new Price(...)`) so that controllers do not perform domain transformations.
 - **Important: never use `Mockito.verify()`**. The usage of `Mockito.verify()` is strictly forbidden by the PAW course rules. Tests should NEVER use it.
 
 ## Mailing and Email Templates

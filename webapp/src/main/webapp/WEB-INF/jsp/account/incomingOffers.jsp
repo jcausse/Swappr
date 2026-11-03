@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
 <%@ taglib prefix="spring" uri="http://www.springframework.org/tags" %>
 <%@ taglib prefix="paw" tagdir="/WEB-INF/tags" %>
@@ -16,7 +17,7 @@
 <account:layout titleKey="account.incomingOffers.title" title="${titleMsg}" subtitle="${subtitleMsg}">
     <form:form modelAttribute="filterForm" action="${filterAction}" method="get" id="filterForm">
         <paw:card classname="p-2! mb-4">
-            <paw:formButtonToggle path="statusGroup" items="${statusGroupOptions}" badgeCounts="${offerCountByStatus}" selectedOption="${filterForm.getStatusGroup()}" />
+            <paw:formButtonToggle path="statusGroup" items="${statusGroupOptions}" badgeCounts="${offerCountByStatus}" selectedOption="${filterForm.getStatusGroup().name()}" translateLabels="true" />
         </paw:card>
     </form:form>
 
@@ -27,8 +28,10 @@
                 <p class="text-black/50 text-lg"><c:out value="${emptyMsg}"/></p>
             </div>
         </c:when>
-        <c:when test="${filterForm.getStatusGroup() == 'pending' || filterForm.getStatusGroup() == 'pending_payment'}">
+        <c:when test="${filterForm.getStatusGroup().name() == 'PENDING' || filterForm.getStatusGroup().name() == 'PENDING_PAYMENT'}">
             <div class="flex flex-col gap-4 mb-8">
+                <%-- statusGroup values (pending, pending_payment) match the OfferStatus names used by the hint keys --%>
+                <account:offerHint role="seller" status="${fn:toUpperCase(filterForm.statusGroup)}"/>
                 <c:forEach var="offer" items="${offers}">
                     <account:offerCard offer="${offer}" user="buyer">
                         <c:url value="/account/incoming-offers/${offer.id}" var="offerUrl"/>
@@ -65,7 +68,7 @@
                 <paw:pagination page="${offerPage}" baseUrl="/account/incoming-offers"/>
             </div>
         </c:when>
-        <c:when test="${filterForm.getStatusGroup() == 'resolved'}">
+        <c:when test="${filterForm.getStatusGroup().name() == 'RESOLVED'}">
             <paw:card>
                 <account:offerTable offers="${offers}" user="buyer" />
                 <paw:pagination page="${offerPage}" baseUrl="/account/incoming-offers"/>

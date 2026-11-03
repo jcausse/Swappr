@@ -2,6 +2,7 @@ package ar.edu.itba.paw.webapp.controller;
 
 import ar.edu.itba.paw.model.Listing;
 import ar.edu.itba.paw.model.ListingStatus;
+import ar.edu.itba.paw.model.OfferType;
 import ar.edu.itba.paw.model.User;
 import ar.edu.itba.paw.service.ListingService;
 import ar.edu.itba.paw.service.OfferService;
@@ -41,8 +42,7 @@ public class CheckoutController {
         LOGGER.debug("User accessing checkout page for listing {}", listingId);
         Listing listing = listingService.getById(listingId);
         form.setListingId(listingId);
-        form.setOfferType("full");
-        form.setListingPrice(listing.getPrice().getAmount());
+        form.setOfferType(OfferType.FULL);
 
         return withUserListings(listing, currentUser);
     }
@@ -53,35 +53,23 @@ public class CheckoutController {
             @Valid @ModelAttribute("checkoutForm") CheckoutForm form,
             BindingResult bindingResult,
             @CurrentUser User currentUser
-            ) {
-        Listing listing = listingService.getById(form.getListingId());
-
+    ) {
         if (bindingResult.hasErrors()) {
+            var listing = listingService.getById(form.getListingId());
             LOGGER.debug("Validation failed for checkout on listing {}", form.getListingId());
             return withUserListings(listing, currentUser);
         }
 
-        Long buyerId = currentUser.getId();
-
-        BigDecimal amount;
-        boolean isFullPrice;
-        Long offeredListingId = null;
-
-        if ("full".equals(form.getOfferType())) {
-            amount = listing.getPrice().getAmount();
-            isFullPrice = true;
-        } else if ("custom".equals(form.getOfferType())) {
-            amount = form.getCustomAmount();
-            isFullPrice = false;
-        } else { // "trade"
-            amount = form.getTradeAmount();
-            isFullPrice = false;
-            offeredListingId = form.getOfferedListingId();
-        }
-
-        OfferCreationDto offerDto = new OfferCreationDto(listing.getId(), buyerId, amount, isFullPrice, form.getMessage(), offeredListingId);
-        offerService.create(offerDto);
-        LOGGER.info("User {} submitted {} offer for listing {}", buyerId, form.getOfferType(), form.getListingId());
+        offerService.create(new OfferCreationDto(
+            form.getListingId(),
+            currentUser.getId(),
+            form.getOfferType(),
+            form.getCustomAmount(),
+            form.getTradeAmount(),
+            form.getMessage(),
+            form.getOfferedListingId()
+        ));
+        LOGGER.info("User {} submitted {} offer for listing {}", currentUser.getId(), form.getOfferType(), form.getListingId());
 
         return new ModelAndView("redirect:/listing/" + form.getListingId());
     }
@@ -90,7 +78,7 @@ public class CheckoutController {
         if (currentUser != null && listing.isAcceptsTrade()) {
             var filter = ListingFilterDto.builder()
                 .creatorId(currentUser.getId())
-                .status(ListingStatus.ACTIVE.name())
+                .status(ListingStatus.ACTIVE)
                 .page(1)
                 .pageSize(100)
                 .build();

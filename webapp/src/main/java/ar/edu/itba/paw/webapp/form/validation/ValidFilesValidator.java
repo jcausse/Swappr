@@ -23,6 +23,9 @@ public class ValidFilesValidator implements ConstraintValidator<ValidFile, List<
             return true;
         }
         for (MultipartFile file : files) {
+            if (file == null || file.isEmpty()) {
+                continue;
+            }
             if (!FileValidation.isValidFile(file, maxSizeBytes, allowedTypes)) {
                 return false;
             }

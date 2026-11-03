@@ -1,5 +1,6 @@
 package ar.edu.itba.paw.webapp.form;
 
+import ar.edu.itba.paw.model.OfferType;
 import ar.edu.itba.paw.webapp.form.validation.ValidCheckout;
 import java.math.BigDecimal;
 import javax.validation.constraints.DecimalMin;
@@ -19,19 +20,17 @@ public class CheckoutForm {
     private Long listingId;
 
     @NotNull
-    private String offerType; // "full", "custom", or "trade"
+    private OfferType offerType;
 
-    @DecimalMin(value = "0.01", message = "{NotNull.checkoutForm.customAmount}")
+    @DecimalMin(value = "0.01", message = "{Min.checkoutForm.customAmount}")
     @Digits(integer = 9, fraction = 2)
     private BigDecimal customAmount;
 
     private Long offeredListingId;
 
-    @DecimalMin(value = "0.0", message = "{NotNull.checkoutForm.tradeAmount}")
+    @DecimalMin(value = "0.0", message = "{Min.checkoutForm.tradeAmount}")
     @Digits(integer = 9, fraction = 2)
     private BigDecimal tradeAmount;
-
-    private BigDecimal listingPrice;
 
     private String message;
 }

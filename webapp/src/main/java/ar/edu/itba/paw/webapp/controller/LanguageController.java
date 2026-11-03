@@ -7,6 +7,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.util.UriComponentsBuilder;
 
 @Controller
 @PreAuthorize("permitAll()")
@@ -21,8 +22,15 @@ public class LanguageController {
      */
     @GetMapping("/language")
     public ModelAndView changeLanguage(HttpServletRequest request) {
-        final var referer = request.getHeader("Referer");
-        final var target = (referer != null && !referer.isEmpty()) ? referer : "/";
+        final var refererPath = RedirectHelper.resolveReferer(
+                request,
+                "/",
+                path -> !"/language".equals(path)
+        );
+        final var target = UriComponentsBuilder.fromUriString(refererPath)
+                .replaceQueryParam("lang")
+                .build(true)
+                .toUriString();
         LOGGER.debug("Changing language, redirecting to {}", target);
         return new ModelAndView("redirect:" + target);
     }

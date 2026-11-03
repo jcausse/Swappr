@@ -57,10 +57,10 @@
                             <spring:message code="listing.status.PENDING_TRANSACTION" var="statusPendingTxText"/>
                             <spring:message code="listing.status.CANCELED" var="statusCanceledText"/>
                             <option value="" ${empty currentStatus ? 'selected' : ''}><c:out value="${allStatusText}"/></option>
-                            <option value="ACTIVE" ${currentStatus eq 'ACTIVE' ? 'selected' : ''}><c:out value="${statusActiveText}"/></option>
-                            <option value="SOLD" ${currentStatus eq 'SOLD' ? 'selected' : ''}><c:out value="${statusSoldText}"/></option>
-                            <option value="PENDING_TRANSACTION" ${currentStatus eq 'PENDING_TRANSACTION' ? 'selected' : ''}><c:out value="${statusPendingTxText}"/></option>
-                            <option value="CANCELED" ${currentStatus eq 'CANCELED' ? 'selected' : ''}><c:out value="${statusCanceledText}"/></option>
+                            <option value="ACTIVE" ${currentStatus.name() eq 'ACTIVE' ? 'selected' : ''}><c:out value="${statusActiveText}"/></option>
+                            <option value="SOLD" ${currentStatus.name() eq 'SOLD' ? 'selected' : ''}><c:out value="${statusSoldText}"/></option>
+                            <option value="PENDING_TRANSACTION" ${currentStatus.name() eq 'PENDING_TRANSACTION' ? 'selected' : ''}><c:out value="${statusPendingTxText}"/></option>
+                            <option value="CANCELED" ${currentStatus.name() eq 'CANCELED' ? 'selected' : ''}><c:out value="${statusCanceledText}"/></option>
                         </select>
                     </div>
                 </div>
@@ -137,7 +137,7 @@
                                                 </a>
                                             </span>
                                             <span class="font-bold text-sm text-black">
-                                                $<c:out value="${listing.price.amount}"/>
+                                                <paw:price amount="${listing.price.amount}"/>
                                             </span>
                                         </div>
                                     </div>

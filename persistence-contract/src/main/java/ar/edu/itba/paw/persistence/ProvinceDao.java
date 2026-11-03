@@ -6,6 +6,5 @@ import java.util.Optional;
 
 public interface ProvinceDao {
     Optional<Province> getById(Long id);
-    Optional<Province> getByName(String name);
     List<Province> getAll();
 }

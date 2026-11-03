@@ -10,12 +10,14 @@ import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+<<<<<<< HEAD
 import javax.persistence.TypedQuery;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
+=======
+>>>>>>> dev
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 @Repository
@@ -27,40 +29,6 @@ public class ProductJpaDao implements ProductDao {
     @Override
     public Optional<Product> getById(Long id) {
         return Optional.ofNullable(em.find(Product.class, id));
-    }
-
-    @Override
-    public List<Product> getByCategory(Long categoryId) {
-        return em.createQuery("FROM Product p WHERE p.subcategory.category.id = :categoryId", Product.class)
-                .setParameter("categoryId", categoryId)
-                .getResultList();
-    }
-
-    @Override
-    public List<Product> getBySubcategory(Long subcategoryId) {
-        return em.createQuery("FROM Product p WHERE p.subcategory.id = :subcategoryId", Product.class)
-                .setParameter("subcategoryId", subcategoryId)
-                .getResultList();
-    }
-
-    @Override
-    public List<Product> getBySubcategoryBrandModel(Long subcategoryId, String brand, String model) {
-        final StringBuilder jpql = new StringBuilder("FROM Product p WHERE p.subcategory.id = :subcategoryId");
-        final Map<String, Object> params = new HashMap<>();
-        params.put("subcategoryId", subcategoryId);
-
-        if (brand != null && !brand.isBlank()) {
-            jpql.append(" AND p.brand = :brand");
-            params.put("brand", brand);
-        }
-        if (model != null && !model.isBlank()) {
-            jpql.append(" AND p.model = :model");
-            params.put("model", model);
-        }
-
-        final TypedQuery<Product> query = em.createQuery(jpql.toString(), Product.class);
-        params.forEach(query::setParameter);
-        return query.getResultList();
     }
 
     @Override

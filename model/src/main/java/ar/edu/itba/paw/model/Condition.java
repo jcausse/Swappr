@@ -17,7 +17,7 @@ public enum Condition {
     @Getter private final String condition;
     public static Optional<Condition> fromString(final String condition) {
         return Arrays.stream(Condition.values())
-            .filter(c -> c.condition.equalsIgnoreCase(condition))
+            .filter(c -> c.condition.equalsIgnoreCase(condition) || c.name().equalsIgnoreCase(condition))
             .findFirst();
     }
 }

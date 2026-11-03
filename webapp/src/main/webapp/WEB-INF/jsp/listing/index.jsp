@@ -9,10 +9,10 @@
 <spring:message code="listing.detail.sold" var="soldMsg"/>
 
 <paw:layout titleKey="listing.detail.title">
-    <c:if test="${isCanceled}">
+    <c:if test="${listing.isCanceled()}">
         <paw:banner text="${canceledMsg}" icon="circle-alert" role="danger" classname="mb-4" />
     </c:if>
-    <c:if test="${isSold}">
+    <c:if test="${listing.isSoldForDisplay()}">
         <paw:banner text="${soldMsg}" icon="info" role="secondary" classname="mb-4" />
     </c:if>
 
@@ -26,7 +26,8 @@
                         <c:if test="${not status.last}">,</c:if>
                     </c:forEach>
                 </c:set>
-                <paw:imageGallery id="listing-gallery" images="${fn:split(imageUrlsList, ',')}" alt="${listing.title}" />
+                <c:set var="galleryImages" value="${empty listing.imageIds ? null : fn:split(imageUrlsList, ',')}"/>
+                <paw:imageGallery id="listing-gallery" images="${galleryImages}" alt="${listing.title}" />
                 <paw:listingHotBadge listing="${listing}" />
             </paw:card>
         </div>
@@ -61,16 +62,16 @@
                         </c:choose>
                     </p>
 
-                    <p class="text-3xl font-bold">$<c:out value="${listing.price.getAmount()}"/></p>
+                    <p class="text-3xl font-bold"><paw:price amount="${listing.price.amount}"/></p>
 
                     <c:choose>
-                        <c:when test="${isCanceled}">
+                        <c:when test="${listing.isCanceled()}">
                             <paw:banner text="${canceledMsg}" icon="circle-alert" role="danger" classname="mb-4" />
                         </c:when>
-                        <c:when test="${isSold}">
+                        <c:when test="${listing.isSoldForDisplay()}">
                             <paw:banner text="${soldMsg}" icon="info" role="secondary" classname="mb-4" />
                         </c:when>
-                        <c:when test="${isCreator}">
+                        <c:when test="${listing.isCreator(currentUser)}">
                             <spring:message code="listing.detail.edit" var="editLabel"/>
                             <c:url value="/listing/${listing.id}/edit" var="editUrl"/>
                             <paw:linkButton href="${editUrl}" size="lg" classname="w-full" variant="outline" text="${editLabel}"/>
@@ -90,7 +91,8 @@
                         </c:when>
                         <c:when test="${userPendingOffer.isPresent()}">
                             <div class="flex flex-col gap-2">
-                                <spring:message code="listing.detail.pendingOffer" arguments="${userPendingOffer.get().amount}" var="pendingOfferMsg"/>
+                                <spring:message code="currency.symbol" var="currencySymbol"/>
+                                <spring:message code="listing.detail.pendingOffer" arguments="${currencySymbol} ${userPendingOffer.get().amount}" var="pendingOfferMsg"/>
                                 <p class="text-black/60 text-sm"><c:out value="${pendingOfferMsg}"/></p>
                                 <form action="<c:url value='/offer/${userPendingOffer.get().id}/withdraw'/>" method="POST">
                                     <spring:message code="account.myOffers.withdraw" var="withdrawLabel"/>

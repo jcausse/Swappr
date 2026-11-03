@@ -29,11 +29,9 @@ public class ProductJpaDaoTest {
 
     private static final long CATEGORY_ID = 1L;             // Electronics
     private static final String CATEGORY_NAME = "Electronics";
-    private static final long PHONES_CATEGORY_ID = 2L;      // Mobile Devices
 
     private static final long SUBCATEGORY_ID = 1L;          // Laptops
     private static final String SUBCATEGORY_NAME = "Laptops";
-    private static final long PHONES_SUBCATEGORY_ID = 2L;   // Phones
     private static final long NON_EXISTING_SUBCATEGORY_ID = 9000L;
 
     private static final long PRODUCT_ID = 1L;              // Apple MacBook Pro 2023
@@ -41,10 +39,6 @@ public class ProductJpaDaoTest {
     private static final String PRODUCT_BRAND = "Apple";
     private static final String PRODUCT_MODEL = "MacBook Pro";
     private static final int PRODUCT_YEAR = 2023;
-
-    // Fixture totals (initial-data product 1 + sql/product-data products 2-8)
-    private static final int LAPTOPS_PRODUCT_COUNT = 7;     // subcat 1
-    private static final int ELECTRONICS_PRODUCT_COUNT = 7; // category 1 == all laptops
 
     @Autowired
     private ProductDao productDao;
@@ -103,95 +97,6 @@ public class ProductJpaDaoTest {
         final Optional<Product> maybeProduct = productDao.getById(-1L);
 
         Assert.assertFalse(maybeProduct.isPresent());
-    }
-
-    /* ---------------------------------------------------------------------------------------------- */
-    /* getByCategory                                                                                   */
-    /* ---------------------------------------------------------------------------------------------- */
-
-    @Test
-    public void testGetByCategoryReturnsAllProductsInCategory() {
-        final List<Product> products = productDao.getByCategory(CATEGORY_ID);
-
-        Assert.assertEquals(ELECTRONICS_PRODUCT_COUNT, products.size());
-    }
-
-    @Test
-    public void testGetByCategoryDoesNotExist() {
-        final List<Product> products = productDao.getByCategory(NON_EXISTING_ID);
-
-        Assert.assertTrue(products.isEmpty());
-    }
-
-    @Test
-    public void testGetByCategoryExcludesOtherCategories() {
-        // Category 2 (Mobile Devices) only has the Samsung phone (product 8)
-        final List<Product> products = productDao.getByCategory(PHONES_CATEGORY_ID);
-
-        Assert.assertEquals(1, products.size());
-        Assert.assertEquals("Samsung", products.getFirst().getBrand());
-    }
-
-    /* ---------------------------------------------------------------------------------------------- */
-    /* getBySubcategory                                                                                */
-    /* ---------------------------------------------------------------------------------------------- */
-
-    @Test
-    public void testGetBySubcategoryReturnsAllProductsInSubcategory() {
-        final List<Product> products = productDao.getBySubcategory(SUBCATEGORY_ID);
-
-        Assert.assertEquals(LAPTOPS_PRODUCT_COUNT, products.size());
-    }
-
-    @Test
-    public void testGetBySubcategoryDoesNotExist() {
-        final List<Product> products = productDao.getBySubcategory(NON_EXISTING_SUBCATEGORY_ID);
-
-        Assert.assertTrue(products.isEmpty());
-    }
-
-    @Test
-    public void testGetBySubcategoryExcludesOtherSubcategories() {
-        final List<Product> products = productDao.getBySubcategory(PHONES_SUBCATEGORY_ID);
-
-        Assert.assertEquals(1, products.size());
-        Assert.assertEquals("Samsung", products.getFirst().getBrand());
-    }
-
-    /* ---------------------------------------------------------------------------------------------- */
-    /* getBySubcategoryBrandModel                                                                      */
-    /* ---------------------------------------------------------------------------------------------- */
-
-    @Test
-    public void testGetBySubcategoryBrandModelMatchesBrandAndModel() {
-        // Apple MacBook Pro exists in 3 years (2021/2023/2024) within subcat 1
-        final List<Product> products = productDao.getBySubcategoryBrandModel(SUBCATEGORY_ID, PRODUCT_BRAND, PRODUCT_MODEL);
-
-        Assert.assertEquals(3, products.size());
-        Assert.assertTrue(products.stream().allMatch(p -> p.getBrand().equals("Apple") && p.getModel().equals("MacBook Pro")));
-    }
-
-    @Test
-    public void testGetBySubcategoryBrandModelEmptyFiltersMatchesAll() {
-        final List<Product> products = productDao.getBySubcategoryBrandModel(SUBCATEGORY_ID, "", "");
-
-        Assert.assertEquals(LAPTOPS_PRODUCT_COUNT, products.size());
-    }
-
-    @Test
-    public void testGetBySubcategoryBrandModelBrandOnlyFilter() {
-        // Only brand given (model empty) -> all Apple products in subcat 1 (3x Pro + 1 Air)
-        final List<Product> products = productDao.getBySubcategoryBrandModel(SUBCATEGORY_ID, "Apple", "");
-
-        Assert.assertEquals(4, products.size());
-        Assert.assertTrue(products.stream().allMatch(p -> p.getBrand().equals("Apple")));
-    }
-
-    @Test
-    public void testGetBySubcategoryBrandModelNoMatch() {
-        final List<Product> products = productDao.getBySubcategoryBrandModel(SUBCATEGORY_ID, "Samsung", PRODUCT_MODEL);
-
-        Assert.assertTrue(products.isEmpty());
     }
 
     /* ---------------------------------------------------------------------------------------------- */

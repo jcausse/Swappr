@@ -44,9 +44,9 @@
                             <spring:message code="admin.offers.statusGroup.pendingPayment" var="pendingPaymentStatusGroupText"/>
                             <spring:message code="admin.offers.statusGroup.resolved" var="resolvedStatusGroupText"/>
                             <option value="" ${empty currentStatusGroup ? 'selected' : ''}><c:out value="${allStatusGroupText}"/></option>
-                            <option value="pending" ${currentStatusGroup eq 'pending' ? 'selected' : ''}><c:out value="${pendingStatusGroupText}"/></option>
-                            <option value="pending_payment" ${currentStatusGroup eq 'pending_payment' ? 'selected' : ''}><c:out value="${pendingPaymentStatusGroupText}"/></option>
-                            <option value="resolved" ${currentStatusGroup eq 'resolved' ? 'selected' : ''}><c:out value="${resolvedStatusGroupText}"/></option>
+                            <option value="PENDING" ${currentStatusGroup.name() eq 'PENDING' ? 'selected' : ''}><c:out value="${pendingStatusGroupText}"/></option>
+                            <option value="PENDING_PAYMENT" ${currentStatusGroup.name() eq 'PENDING_PAYMENT' ? 'selected' : ''}><c:out value="${pendingPaymentStatusGroupText}"/></option>
+                            <option value="RESOLVED" ${currentStatusGroup.name() eq 'RESOLVED' ? 'selected' : ''}><c:out value="${resolvedStatusGroupText}"/></option>
                         </select>
                     </div>
                 </div>
@@ -85,7 +85,7 @@
                             </c:when>
                             <c:when test="${offer.status.name() == 'PENDING_PAYMENT'}">
                                 <c:set var="statusBadgeClass" value="text-blue-700 bg-blue-50 border-blue-200"/>
-                                <spring:message code="offer.status.PENDING_PAYMENT" var="statusBadgeText"/>
+                                <spring:message code="${offer.offeredListing.present ? 'offer.status.PENDING_TRADE' : 'offer.status.PENDING_PAYMENT'}" var="statusBadgeText"/>
                             </c:when>
                             <c:when test="${offer.status.name() == 'ACCEPTED'}">
                                 <c:set var="statusBadgeClass" value="text-green-700 bg-green-50 border-green-200"/>
@@ -134,7 +134,7 @@
                                             </a>
                                         </span>
                                         <span class="font-bold text-sm text-black">
-                                            $<c:out value="${offer.amount}"/>
+                                            <paw:price amount="${offer.amount}"/>
                                         </span>
                                         <c:if test="${offer.offeredListing.present}">
                                             <c:set var="offeredListing" value="${offer.offeredListing.get()}"/>

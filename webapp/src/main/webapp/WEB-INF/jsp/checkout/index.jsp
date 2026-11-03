@@ -15,31 +15,35 @@
                         <form:hidden path="listingId"/>
 
                         <spring:message code="checkout.form.offerType" var="offerTypeLabel"/>
+                        <spring:message code="currency.symbol" var="currencySymbol"/>
                         <div class="flex flex-col gap-3">
                             <div class="flex flex-col gap-2">
                                 <label class="flex items-center gap-2 min-h-8 cursor-pointer">
-                                    <form:radiobutton path="offerType" value="full" class="w-4 h-4 text-lime-600 border-black/20 focus:ring-lime-500"/>
+                                    <form:radiobutton path="offerType" value="FULL" class="w-4 h-4 text-lime-600 border-black/20 focus:ring-lime-500"/>
                                     <spring:message code="checkout.form.fullPrice" var="fullPriceLabel"/>
-                                    <span class="text-sm text-black/90"><c:out value="${fullPriceLabel}"/> - $<c:out value="${listing.price.getAmount()}"/></span>
+                                    <span class="text-sm text-black/90"><c:out value="${fullPriceLabel}"/> - <paw:price amount="${listing.price.amount}"/></span>
                                 </label>
 
                                 <div class="flex flex-row gap-2 items-center justify-between">
                                     <label class="flex items-center gap-2 min-h-8 cursor-pointer">
-                                        <form:radiobutton path="offerType" value="custom" class="w-4 h-4 text-lime-600 border-black/20 focus:ring-lime-500"/>
+                                        <form:radiobutton path="offerType" value="CUSTOM" class="w-4 h-4 text-lime-600 border-black/20 focus:ring-lime-500"/>
                                         <spring:message code="checkout.form.customPrice" var="customPriceLabel"/>
                                         <span class="text-sm text-black/90"><c:out value="${customPriceLabel}"/></span>
                                     </label>
 
                                     <spring:message code="checkout.form.customAmount.placeholder" var="customAmountPlaceholder"/>
                                     <div id="customAmountField" class="hidden w-1/2">
-                                        <paw:formInput path="customAmount" type="number" step="0.01" placeholder="${customAmountPlaceholder}" variant="outline"/>
+                                        <div class="flex items-start gap-2">
+                                            <span class="py-1 border border-transparent text-sm text-black/70"><c:out value="${currencySymbol}"/></span>
+                                            <paw:formInput path="customAmount" type="number" step="0.01" placeholder="${customAmountPlaceholder}" variant="outline" classname="flex-1"/>
+                                        </div>
                                     </div>
                                 </div>
 
                                 <c:if test="${listing.acceptsTrade and not empty userListings}">
                                     <div class="flex flex-col gap-2">
                                         <label class="flex items-center gap-2 min-h-8 cursor-pointer">
-                                            <form:radiobutton path="offerType" value="trade" class="w-4 h-4 text-lime-600 border-black/20 focus:ring-lime-500"/>
+                                            <form:radiobutton path="offerType" value="TRADE" class="w-4 h-4 text-lime-600 border-black/20 focus:ring-lime-500"/>
                                             <spring:message code="checkout.form.tradePrice" var="tradePriceLabel"/>
                                             <span class="text-sm text-black/90"><c:out value="${tradePriceLabel}"/></span>
                                         </label>
@@ -50,8 +54,12 @@
 
                                             <spring:message code="checkout.form.tradeAmount" var="tradeAmountLabel"/>
                                             <spring:message code="checkout.form.tradeAmount.placeholder" var="tradeAmountPlaceholder"/>
-                                            <div class="w-full max-w-md">
-                                                <paw:formInput path="tradeAmount" type="number" step="0.01" min="0" placeholder="${tradeAmountPlaceholder}" label="${tradeAmountLabel}" variant="outline"/>
+                                            <div class="flex flex-col gap-1 w-full max-w-md">
+                                                <label for="tradeAmount" class="text-xs text-black/70 font-medium"><c:out value="${tradeAmountLabel}"/></label>
+                                                <div class="flex items-start gap-2">
+                                                    <span class="py-1 border border-transparent text-sm text-black/70"><c:out value="${currencySymbol}"/></span>
+                                                    <paw:formInput path="tradeAmount" type="number" step="0.01" placeholder="${tradeAmountPlaceholder}" variant="outline" classname="flex-1"/>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -63,6 +71,8 @@
                         <spring:message code="checkout.form.message.placeholder" var="messagePlaceholder"/>
                         <paw:formInput path="message" type="textarea" label="${messageLabel}" placeholder="${messagePlaceholder}" variant="outline" inputClassname="min-h-40 resize-none"/>
 
+                        <spring:message code="checkout.form.hint" var="checkoutHintMsg"/>
+                        <paw:banner text="${checkoutHintMsg}" icon="info" role="secondary"/>
                         <spring:message code="checkout.form.submit" var="submitLabel"/>
                         <paw:button type="submit" size="lg" classname="w-full" text="${submitLabel}"/>
                     </form:form>
@@ -96,7 +106,7 @@
                     <div class="flex flex-col">
                         <spring:message code="checkout.summary.price" var="priceLabel"/>
                         <span class="text-sm text-black/60"><c:out value="${priceLabel}"/></span>
-                        <p class="text-3xl font-bold">$<c:out value="${listing.price.getAmount()}"/></p>
+                        <p class="text-3xl font-bold"><paw:price amount="${listing.price.amount}"/></p>
                     </div>
 
                     <spring:message code="checkout.summary.condition" var="conditionLabel"/>
@@ -113,9 +123,9 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const fullRadio = document.querySelector('input[name="offerType"][value="full"]');
-            const customRadio = document.querySelector('input[name="offerType"][value="custom"]');
-            const tradeRadio = document.querySelector('input[name="offerType"][value="trade"]');
+            const fullRadio = document.querySelector('input[name="offerType"][value="FULL"]');
+            const customRadio = document.querySelector('input[name="offerType"][value="CUSTOM"]');
+            const tradeRadio = document.querySelector('input[name="offerType"][value="TRADE"]');
             const customField = document.getElementById('customAmountField');
             const customInput = document.querySelector('input[name="customAmount"]');
             const tradeFields = document.getElementById('tradeFields');
@@ -125,20 +135,16 @@
             function toggleFields() {
                 if (customRadio.checked) {
                     customField.classList.remove('hidden');
-                    customInput.required = true;
                 } else {
                     customField.classList.add('hidden');
-                    customInput.required = false;
                 }
 
                 if (tradeRadio && tradeRadio.checked) {
                     tradeFields.classList.remove('hidden');
                     if (tradeListingSelect) tradeListingSelect.required = true;
-                    if (tradeAmountInput) tradeAmountInput.required = true;
                 } else {
                     tradeFields.classList.add('hidden');
                     if (tradeListingSelect) tradeListingSelect.required = false;
-                    if (tradeAmountInput) tradeAmountInput.required = false;
                 }
             }
 

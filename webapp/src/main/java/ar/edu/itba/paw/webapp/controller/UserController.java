@@ -20,8 +20,6 @@ import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.MessageSource;
-import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
@@ -35,7 +33,6 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 
 @RequiredArgsConstructor
 @Controller
@@ -48,7 +45,6 @@ public class UserController {
     private final RatingService ratingService;
     private final ProvinceService provinceService;
     private final AuthHelper authHelper;
-    private final MessageSource messageSource;
 
     private static final int PROFILE_LISTINGS_PAGE_SIZE = 5;
     private static final int PROFILE_RATINGS_PAGE_SIZE = 5;
@@ -61,12 +57,12 @@ public class UserController {
                                 @ModelAttribute("ratingFilterForm") RatingFilterForm ratingFilterForm) {
         LOGGER.debug("Accessing profile for user id: {}", id);
         final User user = userService.getById(id).orElseThrow(() -> UserNotFoundException.byId(id));
-        final boolean isSelfRequest = currentUser != null && Objects.equals(id, currentUser.getId());
+        final boolean isSelfRequest = user.isSameUser(currentUser);
 
         final var filter = ListingFilterDto.builder()
-                .sort(ListingSort.RECENT.getKey())  // TODO: SACAR LOS PARSEOS Y HACER QUE EL FORM TOME UN ENUM USANDO CONVERTERS
+                .sort(ListingSort.RECENT)
                 .creatorId(user.getId())
-                .status(ListingStatus.ACTIVE.name())
+                .status(ListingStatus.ACTIVE)
                 .page(1)
                 .pageSize(PROFILE_LISTINGS_PAGE_SIZE)
                 .build();
@@ -74,29 +70,20 @@ public class UserController {
         final var listingPage = listingService.search(filter);
         final var listings = listingPage.getContent();
 
-        // Default role to SELLER if not provided
-        String role = ratingFilterForm.getRole();
-        if (role == null || role.isBlank()) {
-            role = RatingRole.SELLER.getRole();
+        RatingRole role = ratingFilterForm.getRole();
+        if (role == null) {
+            role = RatingRole.SELLER;
             ratingFilterForm.setRole(role);
         }
 
-        // Default type to null (all) if not provided
-        String type = ratingFilterForm.getType();
-        if (type != null && type.isBlank()) {
-            type = null;
-        }
+        OfferRating type = ratingFilterForm.getType();
 
         int page = ratingFilterForm.getPage() != null ? ratingFilterForm.getPage() : 1;
 
-        var ratingFilter = ar.edu.itba.paw.model.RatingFilter.builder()
+        var ratingFilter = RatingFilter.builder()
                 .ratedId(user.getId())
-                .roles(role != null ? java.util.List.of(RatingRole.fromString(role).orElse(RatingRole.SELLER)) : null)
-                .types(type != null
-                        ? java.util.List.of(OfferRating.fromString(type)
-                                    .orElseThrow(() -> new IllegalArgumentException("Illegal rating filter type")))
-                        : null
-                )
+                .roles(List.of(role))
+                .types(type != null ? List.of(type) : null)
                 .page(page)
                 .pageSize(PROFILE_RATINGS_PAGE_SIZE)
                 .build();
@@ -104,17 +91,15 @@ public class UserController {
         final var ratingPage = ratingService.get(ratingFilter);
         final var ratings = ratingPage.getContent();
 
-        // Build filter options for the form
-        final var locale = LocaleContextHolder.getLocale();
         final var roleOptions = Arrays.asList(
-                new StringSelectOption("seller", messageSource.getMessage("profile.ratings.filter.seller", null, locale)),
-                new StringSelectOption("buyer", messageSource.getMessage("profile.ratings.filter.buyer", null, locale))
+                new StringSelectOption(RatingRole.SELLER.name(), "profile.ratings.filter.seller"),
+                new StringSelectOption(RatingRole.BUYER.name(), "profile.ratings.filter.buyer")
         );
         final var typeOptions = Arrays.asList(
-                new StringSelectOption("", messageSource.getMessage("profile.ratings.filter.all", null, locale)),
-                new StringSelectOption("positive", messageSource.getMessage("profile.ratings.filter.positive", null, locale)),
-                new StringSelectOption("neutral", messageSource.getMessage("profile.ratings.filter.neutral", null, locale)),
-                new StringSelectOption("negative", messageSource.getMessage("profile.ratings.filter.negative", null, locale))
+                new StringSelectOption("", "profile.ratings.filter.all"),
+                new StringSelectOption(OfferRating.POSITIVE.name(), "profile.ratings.filter.positive"),
+                new StringSelectOption(OfferRating.NEUTRAL.name(), "profile.ratings.filter.neutral"),
+                new StringSelectOption(OfferRating.NEGATIVE.name(), "profile.ratings.filter.negative")
         );
 
         return new ModelAndView("profile")
@@ -144,10 +129,7 @@ public class UserController {
         form.setDisplayName(currentUser.getDisplayName());
         form.setProvinceId(currentUser.getProvince().map(Province::getId).orElse(null));
         form.setLocationDetail(currentUser.getLocationDetail().orElse(null));
-        final Language currentLanguage = currentUser.getPreferredLanguage() != null
-                ? currentUser.getPreferredLanguage()
-                : Language.getDefault();
-        form.setPreferredLanguage(currentLanguage.getCode());
+        form.setPreferredLanguage(currentUser.getPreferredLanguageOrDefault());
         return profileEditView(currentUser);
     }
 
@@ -159,11 +141,10 @@ public class UserController {
     }
 
     private List<StringSelectOption> buildLanguageOptions() {
-        final var locale = LocaleContextHolder.getLocale();
         return Arrays.stream(Language.values())
                 .map(language -> new StringSelectOption(
-                        language.getCode(),
-                        messageSource.getMessage("language." + language.getCode(), null, locale)
+                        language.name(),
+                        "language." + language.getCode()
                 ))
                 .toList();
     }
@@ -172,7 +153,7 @@ public class UserController {
         return provinceService.getAll().stream()
                 .map(province -> new SelectOption(
                         province.getId(),
-                        messageSource.getMessage("province." + province.getName(), null, LocaleContextHolder.getLocale())
+                        "province." + province.getName()
                 ))
                 .toList();
     }
@@ -203,7 +184,7 @@ public class UserController {
             .updateLocationAndLanguage(true)
             .newProvinceId(form.getProvinceId())
             .newLocationDetail(form.getLocationDetail())
-            .newPreferredLanguage(Language.fromCode(form.getPreferredLanguage()))
+            .newPreferredLanguage(form.getPreferredLanguage())
             .build());
 
         authHelper.update(updatedUser);
@@ -231,7 +212,7 @@ public class UserController {
         LOGGER.info("User registration submitted: {}", form.getUsername());
         LOGGER.debug("Registering new user with username: {}", form.getUsername());
 
-        userService.create(new UserCreationDto(
+        final User created = userService.create(new UserCreationDto(
             form.getUsername(),
             form.getDisplayName(),
             form.getEmail(),
@@ -239,7 +220,7 @@ public class UserController {
             form.getProfilePicture().orElse(null)
         ));
 
-        return new ModelAndView("redirect:/verify?email=" + URLEncoder.encode(form.getEmail().trim().toLowerCase(), StandardCharsets.UTF_8));
+        return new ModelAndView("redirect:/verify?email=" + URLEncoder.encode(created.getEmail(), StandardCharsets.UTF_8));
     }
 
     /* LOGIN */
