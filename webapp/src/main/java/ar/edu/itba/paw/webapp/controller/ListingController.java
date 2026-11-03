@@ -21,6 +21,7 @@ import org.springframework.web.servlet.ModelAndView;
 import ar.edu.itba.paw.model.Condition;
 import ar.edu.itba.paw.model.ListingSort;
 import ar.edu.itba.paw.model.ListingStatus;
+import ar.edu.itba.paw.model.Page;
 import ar.edu.itba.paw.model.User;
 import ar.edu.itba.paw.service.ListingService;
 import ar.edu.itba.paw.service.OfferService;
@@ -46,6 +47,7 @@ public class ListingController {
     private static final Logger LOGGER = LoggerFactory.getLogger(ListingController.class);
 
     private static final int DISCOVERY_PAGE_SIZE = 12;
+    private static final int PRODUCTS_PAGE_SIZE = 10;
 
     private static final String OTHER_VALUE = "__OTHER__";
 
@@ -123,14 +125,19 @@ public class ListingController {
         final var model = productForm.getModel();
 
         if (productForm.getSubcategoryId() != null) {
-            mav.addObject("productSummaries", productService.getListingInfoSummary(
+            final var productPage = productService.getListingInfoSummary(
                 brand,
                 model,
                 productForm.getYearMin(),
                 productForm.getYearMax(),
-                productForm.getSubcategoryId()
-            ));
+                productForm.getSubcategoryId(),
+                productForm.getPage(),
+                PRODUCTS_PAGE_SIZE
+            );
+            mav.addObject("productPage", productPage);
+            mav.addObject("productSummaries", productPage.getContent());
         } else {
+            mav.addObject("productPage", new Page<>(List.of(), 1, PRODUCTS_PAGE_SIZE, 0));
             mav.addObject("productSummaries", List.of());
         }
 

@@ -1,7 +1,12 @@
 package ar.edu.itba.paw.service;
 
 import ar.edu.itba.paw.model.Category;
+import ar.edu.itba.paw.model.Condition;
+import ar.edu.itba.paw.model.Page;
+import ar.edu.itba.paw.model.Price;
 import ar.edu.itba.paw.model.Product;
+import ar.edu.itba.paw.model.ProductListingInfo;
+import ar.edu.itba.paw.model.ProductListingInfoSummary;
 import ar.edu.itba.paw.model.Subcategory;
 import ar.edu.itba.paw.persistence.CategoryDao;
 import ar.edu.itba.paw.persistence.ProductDao;
@@ -14,6 +19,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -140,6 +146,64 @@ public class ProductServiceImplTest {
 
         // Assert
         Assert.assertEquals(List.of(MODEL), result);
+    }
+
+    /* ---------------------------------------------------------------------------------------------- */
+    /* getListingInfoSummary                                                                            */
+    /* ---------------------------------------------------------------------------------------------- */
+
+    @Test
+    public void testGetListingInfoSummaryGroupsByBrandModelAndKeepsPageMetadata() {
+        final ProductListingInfo air = buildListingInfo("Apple", "MacBook Air", Condition.FAIR);
+        final ProductListingInfo proLikeNew = buildListingInfo("Apple", "MacBook Pro", Condition.LIKE_NEW);
+        final ProductListingInfo proGood = buildListingInfo("Apple", "MacBook Pro", Condition.GOOD);
+        final Page<ProductListingInfo> daoPage = new Page<>(List.of(air, proLikeNew, proGood), 2, 10, 25);
+        when(productDao.getListingInfoSummary(BRAND, MODEL, 2020, 2024, SUBCATEGORY_ID, 2, 10))
+            .thenReturn(daoPage);
+
+        final Page<ProductListingInfoSummary> result = productService.getListingInfoSummary(
+            BRAND, MODEL, 2020, 2024, SUBCATEGORY_ID, 2, 10
+        );
+
+        Assert.assertEquals(2, result.getPage());
+        Assert.assertEquals(10, result.getPageSize());
+        Assert.assertEquals(25, result.getTotalCount());
+        Assert.assertEquals(2, result.getContent().size());
+        Assert.assertEquals("MacBook Air", result.getContent().get(0).getModel());
+        Assert.assertEquals("MacBook Pro", result.getContent().get(1).getModel());
+        Assert.assertEquals(
+            List.of(Condition.LIKE_NEW, Condition.GOOD),
+            result.getContent().get(1).getListingInfoByCondition().stream()
+                .map(ProductListingInfo::getCondition)
+                .toList()
+        );
+    }
+
+    @Test
+    public void testGetListingInfoSummaryDefaultsNullPageToOne() {
+        final Page<ProductListingInfo> daoPage = new Page<>(List.of(), 1, 10, 0);
+        when(productDao.getListingInfoSummary(BRAND, MODEL, null, null, SUBCATEGORY_ID, 1, 10))
+            .thenReturn(daoPage);
+
+        final Page<ProductListingInfoSummary> result = productService.getListingInfoSummary(
+            BRAND, MODEL, null, null, SUBCATEGORY_ID, null, 10
+        );
+
+        Assert.assertEquals(1, result.getPage());
+        Assert.assertTrue(result.getContent().isEmpty());
+        Assert.assertEquals(0, result.getTotalCount());
+    }
+
+    private ProductListingInfo buildListingInfo(final String brand, final String model, final Condition condition) {
+        return ProductListingInfo.builder()
+            .brand(brand)
+            .model(model)
+            .condition(condition)
+            .listingCount(1L)
+            .minPrice(new Price(BigDecimal.TEN))
+            .maxPrice(new Price(BigDecimal.TEN))
+            .avgPrice(new Price(BigDecimal.TEN))
+            .build();
     }
 
     /* ---------------------------------------------------------------------------------------------- */
