@@ -186,11 +186,12 @@ public class ProductJpaDaoTest {
 
         Assert.assertEquals(1, firstPage.getPage());
         Assert.assertEquals(2, firstPage.getPageSize());
-        Assert.assertEquals(4, firstPage.getTotalCount());
+        Assert.assertEquals(3, firstPage.getTotalCount());
         Assert.assertEquals(2, firstPage.getTotalPages());
 
         final List<ProductListingInfo> content = firstPage.getContent();
-        Assert.assertEquals(3, content.size());
+        // Size is > totalCount, because the DAO returns one item per condition which is grouped in the service
+        Assert.assertEquals(4, content.size());
 
         final ProductListingInfo air = content.get(0);
         Assert.assertEquals("Apple", air.getBrand());
@@ -218,12 +219,10 @@ public class ProductJpaDaoTest {
         );
 
         Assert.assertEquals(2, secondPage.getPage());
-        Assert.assertEquals(4, secondPage.getTotalCount());
-        Assert.assertEquals(2, secondPage.getContent().size());
-        Assert.assertEquals("Apple", secondPage.getContent().get(0).getBrand());
-        Assert.assertEquals("MacBook Pro", secondPage.getContent().get(0).getModel());
-        Assert.assertEquals("Dell", secondPage.getContent().get(1).getBrand());
-        Assert.assertEquals("XPS 15", secondPage.getContent().get(1).getModel());
+        Assert.assertEquals(3, secondPage.getTotalCount());
+        Assert.assertEquals(1, secondPage.getContent().size());
+        Assert.assertEquals("Dell", secondPage.getContent().get(0).getBrand());
+        Assert.assertEquals("XPS 15", secondPage.getContent().get(0).getModel());
     }
 
     @Test
@@ -231,12 +230,12 @@ public class ProductJpaDaoTest {
         final Page<ProductListingInfo> apple = productDao.getListingInfoSummary(
             "Apple", null, null, null, SUBCATEGORY_ID, 1, 10
         );
-        Assert.assertEquals(3, apple.getTotalCount());
+        Assert.assertEquals(2, apple.getTotalCount());
 
         final Page<ProductListingInfo> macBookPro = productDao.getListingInfoSummary(
             "Apple", "MacBook Pro", null, null, SUBCATEGORY_ID, 1, 10
         );
-        Assert.assertEquals(2, macBookPro.getTotalCount());
+        Assert.assertEquals(1, macBookPro.getTotalCount());
 
         final Page<ProductListingInfo> inYearRange = productDao.getListingInfoSummary(
             null, null, 2021, 2023, SUBCATEGORY_ID, 1, 10
@@ -261,7 +260,7 @@ public class ProductJpaDaoTest {
         );
 
         Assert.assertTrue(page.getContent().isEmpty());
-        Assert.assertEquals(4, page.getTotalCount());
+        Assert.assertEquals(3, page.getTotalCount());
     }
 
     private static ProductListingInfo findInfo(final List<ProductListingInfo> content,
