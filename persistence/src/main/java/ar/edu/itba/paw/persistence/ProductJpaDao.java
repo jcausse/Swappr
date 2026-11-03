@@ -118,10 +118,14 @@ public class ProductJpaDao implements ProductDao {
             productWhere.append(")");
         }
 
+        var yearWhere = new StringBuilder("");
+        if (fromYear != null) yearWhere.append(" AND l.product.year >= :yearFrom");
+        if (toYear != null) yearWhere.append(" AND l.product.year <= :yearTo");
+
         final var query = em.createQuery(
                 "SELECT l.product.brand, l.product.model, COUNT(l.condition) AS listingCount, l.condition AS condition, MIN(l.price) AS minPrice, MAX(l.price) AS maxPrice, AVG(l.price) AS avgPrice"
                 + " FROM Listing l"
-                + " WHERE (" + productWhere + ") AND l.status = :status"
+                + " WHERE (" + productWhere + ") AND l.status = :status" + yearWhere
                 + " GROUP BY l.condition, l.product.brand, l.product.model"
                 + " ORDER BY l.product.brand, l.product.model, l.condition",
                 Object[].class)
@@ -131,6 +135,8 @@ public class ProductJpaDao implements ProductDao {
             query.setParameter("brand" + i, products.get(i).brand());
             query.setParameter("model" + i, products.get(i).model());
         }
+        if (fromYear != null) query.setParameter("yearFrom", fromYear);
+        if (toYear != null) query.setParameter("yearTo", toYear);
 
         final List<ProductListingInfo> content = query.getResultStream()
                 .map((fields) -> ProductListingInfo.builder()
