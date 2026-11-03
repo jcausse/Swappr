@@ -21,6 +21,7 @@
   -- CheckoutController: PR https://bitbucket.org/itba/paw-2026b-08/pull-requests/95
   -- Otros controllers: PR https://bitbucket.org/itba/paw-2026b-08/pull-requests/98
   -- Falta segundo pase para asegurar que no quede nada
+  -- CONSULTAR: checks en GET ok si pasan por una función de model? (AccountController showProofOf*Upload, showRateForm)
 
 [/] Verifican el resultado de una escritura con otro método del mismo DAO en lugar de consultar la tabla. Por ejemplo, OfferJdbcDaoTest.testUpdateProof0fPaymentId usa offerDao.getById. Esto es un error conceptual grave.
   -- Falta mergear: PR https://bitbucket.org/itba/paw-2026b-08/pull-requests/101

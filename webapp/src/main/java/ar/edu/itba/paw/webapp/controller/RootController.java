@@ -66,14 +66,10 @@ public class RootController {
             .build();
         Page<Listing> newItemsPage = listingService.search(newItemsFilter);
 
-        // Categories for the grid
-        List<Category> categories = productService.getAllCategories();
-
         var mav = new ModelAndView("landing");
         mav.addObject("hotItems", hotItemsPage.getContent());
         mav.addObject("trendingItems", trendingItemsPage.getContent());
         mav.addObject("newItems", newItemsPage.getContent());
-        mav.addObject("categories", categories);
         return mav;
     }
 }
