@@ -73,6 +73,7 @@ While you as an AI agent are allowed to edit this file on your own, you must **a
 - Always include the Spring tag library: `<%@ taglib prefix="spring" uri="http://www.springframework.org/tags" %>`.
 - **Direct rendering**: Use `<spring:message code="some.key"/>`.
 - **Dynamic arguments**: Use `<spring:message code="navbar.greeting" arguments="${currentUser}"/>` with `{0}`, `{1}` placeholders in properties files.
+- **Never concatenate translated fragments** in JSPs or controllers. Put the placeholder(s) inside the message value and pass them via `arguments`, so each language controls word order.
 - **Passing to custom tags (`paw:*`)**: Extract the message into a variable using the `var` attribute, then pass the variable into tag attributes:
   ```jsp
   <spring:message code="listing.new.titleLabel" var="titleLabel"/>
@@ -161,6 +162,34 @@ While you as an AI agent are allowed to edit this file on your own, you must **a
 - **Embeddables & Value Objects**:
   - Domain value objects like `Price` are mapped as `@Embeddable` with a protected no-args constructor, `@AllArgsConstructor`, and Lombok `@Builder`.
   - Owning entities embed them with `@Embedded` (and `@AttributeOverride` where needed). In JPQL/HQL queries, navigate embeddable attributes using property dot notation (e.g., `l.price.amount`).
+
+### Pagination (Mandatory)
+
+- **Never paginate a JPQL/HQL entity query with `setFirstResult`/`setMaxResults` when it joins a collection or uses a fetch join.** Hibernate may silently fall back to in-memory pagination (warning `HHH000104`), loading the entire result set before slicing it, causing excessive memory use and severe performance degradation. This is one of the most heavily penalized mistakes in the course.
+- **Use the 1+1 query model for every paginated query:**
+  1. **ID query**: **always use a native query**, select only entity IDs, apply every filter and `ORDER BY`, and apply `setFirstResult`/`setMaxResults`. This query must not join collections, so one row always maps to one entity.
+  2. **Population query**: fetch the entities with `WHERE e.id IN :ids`, without limit or offset, preserving the ID query order (re-apply the same `ORDER BY` or reorder in memory).
+- Apply filters and ordering **only on the ID query**. The population query must not filter or paginate.
+- Run a separate `SELECT COUNT(...)` query with the same filters to compute the total.
+- Always use a deterministic order with a unique tie-breaker (e.g., `id`) when paginating.
+- **Never paginate by traversing an entity collection** (`@OneToMany`/`@ManyToMany`). Collections are unbounded and load fully; query the owning "many" entity directly from its DAO instead.
+
+### Query, Persistence and Mapping Principles
+
+- Model associations as **object references** (e.g., `User creator`), never as raw IDs or collections of IDs.
+- Keep associations **`LAZY`**; do not switch to `EAGER` without strict justification. Never traverse lazy associations after the transaction ends (e.g., during view rendering) — avoid `LazyInitializationException` by fetching what the view needs inside the transaction instead of relying on Open Session In View.
+- Do not map the inverse `@OneToMany` side for potentially unbounded collections unless the relation truly requires it; `mappedBy` must reference the owning field on the "many" side. Never traverse these collections.
+- Avoid N+1 queries and over-fetching: write explicit queries/fetch joins for exactly the data needed.
+- Never return `null` collections; initialize them to empty collections.
+- Use `@Enumerated(EnumType.STRING)`; never store enum ordinals.
+- Choose `cascade`/`orphanRemoval` deliberately; do not enable broad cascading by default.
+- Remember that dirty checking flushes changes automatically at transaction commit, even without an explicit save. Keep write intent explicit in services and avoid accidental hidden writes.
+- Prefer standard JPA annotations/API. Use Hibernate-specific features (e.g., `@Formula`) only when there is no standard equivalent.
+- Do not rely on `hibernate.hbm2ddl.auto=update` to manage the schema (best-effort and non-destructive); schema changes go through Flyway. Keep schema generation disabled or validated outside local development.
+- Never leave SQL/Hibernate query logging enabled in production: it writes to stdout/Catalina logs and can fill the disk.
+- Entities require a no-argument constructor (any visibility) and a nullable ID. Add JPA annotations only when overriding convention.
+- When using inheritance, choose the strategy deliberately (`SINGLE_TABLE`, `JOINED`, `TABLE_PER_CLASS`) based on access patterns. For `SINGLE_TABLE`, subclass-only columns must be nullable and a discriminator column is required. Remember the database can accept rows that are invalid for the Java model.
+- When using sequences, configure generator names explicitly; be aware that Hibernate otherwise uses one global default sequence.
 
 ## Other Conventions
 

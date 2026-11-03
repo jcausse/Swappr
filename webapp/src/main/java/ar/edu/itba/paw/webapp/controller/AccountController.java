@@ -86,16 +86,7 @@ public class AccountController {
             .toList();
 
         final var sortOptions = Arrays.stream(ListingSort.values())
-            .map(s -> {
-                String key;
-                if (s == ListingSort.RECENT) key = "discovery.sort.recent";
-                else if (s == ListingSort.PRICE_ASC) key = "discovery.sort.price_asc"; // TODO: TRADUCCION DUPLICADA
-                else if (s == ListingSort.PRICE_DESC) key = "discovery.sort.price_desc";
-                else if (s == ListingSort.NAME_ASC) key = "account.listings.sort.name_asc";
-                else if (s == ListingSort.NAME_DESC) key = "account.listings.sort.name_desc";
-                else key = s.getKey();
-                return new StringSelectOption(s.name(), key);
-            })
+            .map(s -> new StringSelectOption(s.name(), "listing.sort." + s.getKey()))
             .toList();
 
 		return new ModelAndView("account/listings")
