@@ -168,12 +168,13 @@ public class CategoryJpaDaoTest {
         // Arrange
         final Category created = categoryDao.create(NEW_CATEGORY_NAME);
 
-        // Act
-        final Optional<Category> maybeCategory = categoryDao.getById(created.getId());
-
         // Assert
-        Assert.assertTrue(maybeCategory.isPresent());
-        Assert.assertEquals(NEW_CATEGORY_NAME, maybeCategory.get().getName());
+        final int count = JdbcTestUtils.countRowsInTableWhere(
+            jdbcTemplate,
+            "categories",
+            "category_id = " + created.getId() + " AND name = '" + NEW_CATEGORY_NAME + "'"
+        );
+        Assert.assertEquals(1, count);
     }
 
     @Test

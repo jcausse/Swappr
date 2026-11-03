@@ -219,12 +219,15 @@ public class SubcategoryJpaDaoTest {
         // Arrange
         final Subcategory created = subcategoryDao.create(NEW_SUBCATEGORY_NAME, CATEGORY_ID);
 
-        // Act
-        final Optional<Subcategory> maybeSubcategory = subcategoryDao.getById(created.getId());
-
         // Assert
-        Assert.assertTrue(maybeSubcategory.isPresent());
-        Assert.assertEquals(NEW_SUBCATEGORY_NAME, maybeSubcategory.get().getName());
+        final int count = JdbcTestUtils.countRowsInTableWhere(
+            jdbcTemplate,
+            "subcategories",
+            "subcategory_id = " + created.getId()
+                + " AND name = '" + NEW_SUBCATEGORY_NAME + "'"
+                + " AND category_id = " + CATEGORY_ID
+        );
+        Assert.assertEquals(1, count);
     }
 
     @Test
