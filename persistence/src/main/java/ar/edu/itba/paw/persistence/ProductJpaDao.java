@@ -56,10 +56,13 @@ public class ProductJpaDao implements ProductDao {
     }
 
     @Override
-    public Page<ProductListingInfo> getListingInfoSummary(final String brand, final String model,
-            final Integer fromYear, final Integer toYear, final Long subcategoryId,
-            final int page, final int pageSize) {
-        final StringBuilder where = new StringBuilder(
+    public Page<ProductListingInfo> getListingInfoSummary(
+        final String brand, final String model,
+        final Integer fromYear, final Integer toYear,
+        final Long subcategoryId,
+        final int page, final int pageSize
+    ) {
+        final var where = new StringBuilder(
                 " WHERE p.subcategory_id = ?1"
                 + " AND EXISTS (SELECT 1 FROM listings l WHERE l.product_id = p.product_id AND l.status = ?2)");
         final List<Object> params = new ArrayList<>();
@@ -91,29 +94,43 @@ public class ProductJpaDao implements ProductDao {
             return new Page<>(List.of(), page, pageSize, 0);
         }
 
-        final var idQuery = em.createNativeQuery(
-                "SELECT p.product_id FROM products p" + where + " ORDER BY p.brand, p.model, p.product_id");
+        final var idQuery = em.createNativeQuery("SELECT p.brand, p.model FROM products p" + where + " GROUP BY p.brand, p.model ORDER BY p.brand, p.model");
         bindParams(idQuery, params);
         idQuery.setFirstResult((page - 1) * pageSize);
         idQuery.setMaxResults(pageSize);
 
-        final List<Long> productIds = ((List<?>) idQuery.getResultList()).stream()
-                .map((row) -> ((Number) row).longValue())
+        final var products = ((List<?>) idQuery.getResultList()).stream()
+                .map((row) -> new BrandModel((String)((Object[])row)[0], (String)((Object[])row)[1]))
                 .toList();
 
-        if (productIds.isEmpty()) {
+        if (products.isEmpty()) {
             return new Page<>(List.of(), page, pageSize, totalCount);
+        }
+
+        // This is UGLY!! but it works, and doesn't have any issues performance wise as "products" size is bounded to one page
+        var productWhere = new StringBuilder();
+        for (int i = 0; i < products.size(); i++) {
+            if (i > 0) productWhere.append(" OR ");
+            productWhere.append("(l.product.brand = :brand");
+            productWhere.append(i);
+            productWhere.append(" AND l.product.model = :model");
+            productWhere.append(i);
+            productWhere.append(")");
         }
 
         final var query = em.createQuery(
                 "SELECT l.product.brand, l.product.model, COUNT(l.condition) AS listingCount, l.condition AS condition, MIN(l.price) AS minPrice, MAX(l.price) AS maxPrice, AVG(l.price) AS avgPrice"
                 + " FROM Listing l"
-                + " WHERE l.product.id IN :productIds AND l.status = :status"
+                + " WHERE (" + productWhere + ") AND l.status = :status"
                 + " GROUP BY l.condition, l.product.brand, l.product.model"
                 + " ORDER BY l.product.brand, l.product.model, l.condition",
                 Object[].class)
-                .setParameter("productIds", productIds)
                 .setParameter("status", ListingStatus.ACTIVE);
+
+        for (int i = 0; i < products.size(); i++) {
+            query.setParameter("brand" + i, products.get(i).brand());
+            query.setParameter("model" + i, products.get(i).model());
+        }
 
         final List<ProductListingInfo> content = query.getResultStream()
                 .map((fields) -> ProductListingInfo.builder()
@@ -136,6 +153,8 @@ public class ProductJpaDao implements ProductDao {
             query.setParameter(i + 1, params.get(i));
         }
     }
+
+    private record BrandModel(String brand, String model) {}
 
     @Override
     public Product create(String brand, String model, Integer year, Subcategory subcategory) {
