@@ -156,8 +156,14 @@ While you as an AI agent are allowed to edit this file on your own, you must **a
 - **Domain Optionals**:
   - Nullable domain fields (e.g., `User.image`, `User.emailVerifiedAt`, `User.province`, `File.contentType`) provide `Optional<T>` getters for clean domain and controller consumption.
   - **Never** use `Optional` as an entity field type or as a setter/method parameter.
+- **Boxed vs. Primitive Types**:
+  - For non-nullable columns (`NOT NULL` in SQL, such as boolean flags like `is_read`, counters, or fixed numbers), always use Java primitive types (`boolean`, `long`, `int`). Never use boxed wrappers like `Boolean` for non-nullable columns, as they introduce an artificial third state (`null`) and risk `NullPointerException`s during unboxing.
+  - Boxed wrapper types (`Long`, `Integer`, `Boolean`) are reserved strictly for:
+    1. Nullable database columns (`NULL` in SQL represents absence).
+    2. Auto-generated primary key IDs (`Long id`), which start as `null` before the entity is first persisted via `GenerationType.IDENTITY`.
 - **Relationships & Collections**:
   - Ratings and offers have a 1:1 relationship mapped with `@OneToOne` and backed by a DB unique constraint on `ratings.offer_id` (migrated via `V20`).
+  - In-site notifications (`SiteNotification`) belong to a `User` (`@ManyToOne(fetch = FetchType.LAZY)`), identified by surrogate primary key `notification_id SERIAL` (migrated via `V21`), supporting read status and optional `action_url` / `action_label_key` for dynamic UI actions.
   - Relationships are lazy by default (`fetch = FetchType.LAZY`) unless eager fetching is strictly justified (e.g., user roles, given that a User might have two or three roles at most).
 - **Embeddables & Value Objects**:
   - Domain value objects like `Price` are mapped as `@Embeddable` with a protected no-args constructor, `@AllArgsConstructor`, and Lombok `@Builder`.
