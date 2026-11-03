@@ -244,6 +244,7 @@ public class ListingServiceImpl implements ListingService {
     @Transactional
     public void cancelByAdmin(Long id) {
         LOGGER.info("Canceling listing id={} by Admin", id);
+        getById(id);
         offerService.rejectPendingOffersForListing(id, null);
         listingDao.cancel(id);
         LOGGER.info("Listing canceled by Admin: id={}", id);

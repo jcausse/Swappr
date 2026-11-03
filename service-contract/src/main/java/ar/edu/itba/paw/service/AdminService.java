@@ -6,9 +6,9 @@ import ar.edu.itba.paw.service.exception.SelfSuspendException;
 
 public interface AdminService {
 
-    boolean takeDownListing(Long listingId);
+    void takeDownListing(Long listingId);
 
-    boolean takeDownOffer(Long offerId);
+    void takeDownOffer(Long offerId);
 
     User grantRole(String usernameOrEmail, Role role);
 
