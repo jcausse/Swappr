@@ -16,7 +16,6 @@ import org.springframework.web.servlet.ModelAndView;
 
 import ar.edu.itba.paw.model.Listing;
 import ar.edu.itba.paw.model.ListingStatus;
-import ar.edu.itba.paw.model.OfferType;
 import ar.edu.itba.paw.model.User;
 import ar.edu.itba.paw.service.ListingService;
 import ar.edu.itba.paw.service.OfferService;
@@ -32,7 +31,7 @@ import lombok.RequiredArgsConstructor;
 public class CheckoutController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CheckoutController.class);
-    private static final int TRADE_LISTINGS_PAGE_SIZE = 5;
+    private static final int TRADE_LISTINGS_PAGE_SIZE = 4;
 
     private final ListingService listingService;
     private final OfferService offerService;

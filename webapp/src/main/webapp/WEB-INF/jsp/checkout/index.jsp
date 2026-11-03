@@ -59,7 +59,7 @@
                                             <div id="tradeListingList" class="flex flex-col gap-2">
                                                 <c:forEach var="userListing" items="${userListings}">
                                                     <button type="button"
-                                                            class="trade-listing-option group flex w-full items-center gap-3 rounded-lg border p-2 text-left transition hover:border-lime-600 focus-visible:border-lime-600 focus-visible:outline-2 ${checkoutForm.offeredListingId == userListing.id ? 'border-lime-600 bg-lime-50' : 'border-black/15'}"
+                                                            class="trade-listing-option group flex w-full items-center gap-3 rounded-xl border p-2 text-left transition hover:bg-lime-50 focus-visible:border-lime-600 focus-visible:outline-2 cursor-pointer ${checkoutForm.offeredListingId == userListing.id ? 'border-lime-600 bg-lime-50' : 'border-black/15'}"
                                                             data-listing-id="${userListing.id}"
                                                             aria-pressed="${checkoutForm.offeredListingId == userListing.id}">
                                                         <paw:listingImage listing="${userListing}" size="sm"/>
@@ -78,7 +78,7 @@
                                                 </c:forEach>
                                             </div>
 
-                                            <div id="tradeListingPagination">
+                                            <div id="tradeListingPagination" class="-mt-8 mb-4">
                                                 <c:url value="/checkout" var="checkoutBaseUrl"/>
                                                 <paw:pagination page="${userListingsPage}" baseUrl="${checkoutBaseUrl}"/>
                                             </div>
@@ -213,10 +213,7 @@
                     formFields.forEach(function(field) {
                         if (field.name === 'page' || field.name === 'listingId') return;
                         url.searchParams.delete(field.name);
-                    });
 
-                    formFields.forEach(function(field) {
-                        if (field.name === 'page' || field.name === 'listingId') return;
                         if ((field.type === 'radio' || field.type === 'checkbox') && !field.checked) return;
                         if (field.value === '') return;
                         url.searchParams.set(field.name, field.value);
