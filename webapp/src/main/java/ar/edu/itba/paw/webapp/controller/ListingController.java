@@ -49,7 +49,6 @@ public class ListingController {
     private static final int DISCOVERY_PAGE_SIZE = 12;
     private static final int PRODUCTS_PAGE_SIZE = 10;
 
-    private static final String OTHER_VALUE = "__OTHER__";
 
     private final ListingService listingService;
     private final OfferService offerService;
@@ -251,16 +250,16 @@ public class ListingController {
             var brand = form.getNewProductBrand();
             var model = form.getNewProductModel();
 
-            if (OTHER_VALUE.equals(brand)) {
-                form.setNewProductModel(OTHER_VALUE);
-                model = OTHER_VALUE;
+            if (form.isOtherBrandSelected()) {
+                form.setNewProductModel(ChooseProductForm.OTHER_VALUE);
+                model = ChooseProductForm.OTHER_VALUE;
             }
 
             var otherBrand = form.getOtherBrand();
             var otherModel = form.getOtherModel();
 
-            brand = OTHER_VALUE.equals(brand) ? otherBrand : brand;
-            model = OTHER_VALUE.equals(model) ? otherModel : model;
+            brand = ChooseProductForm.OTHER_VALUE.equals(brand) ? otherBrand : brand;
+            model = ChooseProductForm.OTHER_VALUE.equals(model) ? otherModel : model;
 
             var product = productService.findOrCreateByBrandModelYear(
                     brand,
@@ -299,12 +298,12 @@ public class ListingController {
             mav.addObject("brands", productService.getBrandsBySubcategory(form.getSubcategoryId()));
             List<String> models = List.of();
             // Only fetch models if brand is selected and not "Other"
-            if (form.getNewProductBrand() != null && !form.getNewProductBrand().isBlank() && !OTHER_VALUE.equals(form.getNewProductBrand())) {
+            if (form.getNewProductBrand() != null && !form.getNewProductBrand().isBlank() && !form.isOtherBrandSelected()) {
                 models = productService.getModelsBySubcategoryAndBrand(form.getSubcategoryId(), form.getNewProductBrand());
             }
             // A custom brand has no known models, so the model is necessarily custom too
-            if (OTHER_VALUE.equals(form.getNewProductBrand())) {
-                form.setNewProductModel(OTHER_VALUE);
+            if (form.isOtherBrandSelected()) {
+                form.setNewProductModel(ChooseProductForm.OTHER_VALUE);
             }
             mav.addObject("models", models);
             mav.addObject("modelsEmpty", models.isEmpty());
