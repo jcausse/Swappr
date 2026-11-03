@@ -8,5 +8,5 @@
 <%-- Statuses with no next step have no hint key: the empty default keeps the banner from rendering --%>
 <spring:message code="offer.hint.${role}.${status}" text="" var="hintMsg"/>
 <c:if test="${not empty hintMsg}">
-    <paw:banner text="${hintMsg}" icon="info" role="info" classname="${classname}"/>
+    <paw:banner text="${hintMsg}" icon="info" role="secondary" classname="${classname}"/>
 </c:if>

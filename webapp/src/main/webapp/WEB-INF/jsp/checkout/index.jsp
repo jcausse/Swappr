@@ -71,6 +71,8 @@
                         <spring:message code="checkout.form.message.placeholder" var="messagePlaceholder"/>
                         <paw:formInput path="message" type="textarea" label="${messageLabel}" placeholder="${messagePlaceholder}" variant="outline" inputClassname="min-h-40 resize-none"/>
 
+                        <spring:message code="checkout.form.hint" var="checkoutHintMsg"/>
+                        <paw:banner text="${checkoutHintMsg}" icon="info" role="secondary"/>
                         <spring:message code="checkout.form.submit" var="submitLabel"/>
                         <paw:button type="submit" size="lg" classname="w-full" text="${submitLabel}"/>
                     </form:form>
