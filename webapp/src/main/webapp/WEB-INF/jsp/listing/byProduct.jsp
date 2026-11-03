@@ -197,10 +197,10 @@
                                                                 <span class="ml-auto font-semibold text-black text-base whitespace-nowrap">
                                                                     <c:choose>
                                                                         <c:when test="${info.minPrice.amount == info.maxPrice.amount}">
-                                                                            $<c:out value="${info.minPrice.amount}"/>
+                                                                            <paw:price amount="${info.minPrice.amount}"/>
                                                                         </c:when>
                                                                         <c:otherwise>
-                                                                            $<c:out value="${info.minPrice.amount}"/> - $<c:out value="${info.maxPrice.amount}"/>
+                                                                            <paw:price amount="${info.minPrice.amount}"/> - <c:out value="${info.maxPrice.amount}"/>
                                                                         </c:otherwise>
                                                                     </c:choose>
                                                                 </span>
