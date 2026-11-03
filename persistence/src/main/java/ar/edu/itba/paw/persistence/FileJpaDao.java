@@ -29,12 +29,4 @@ public class FileJpaDao implements FileDao {
         em.persist(file);
         return file;
     }
-
-    @Override
-    public void delete(Long id) {
-        final File file = em.find(File.class, id);
-        if (file != null) {
-            em.remove(file);
-        }
-    }
 }

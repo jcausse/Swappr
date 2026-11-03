@@ -8,7 +8,6 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 @Getter
 @Setter
@@ -118,7 +117,4 @@ public class Listing {
         return user != null && isCreator(user.getId());
     }
 
-    public boolean isCreator(Optional<User> maybeUser) {
-        return maybeUser.map(this::isCreator).orElse(false);
-    }
 }

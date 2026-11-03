@@ -177,14 +177,6 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public User updateEmail(@NonNull User user, @NonNull String email) {
-        LOGGER.info("Updating email for user id={}", user.getId());
-        return userDao.update(user.getId(), null, email.trim().toLowerCase(), null, null)
-                .orElseThrow(() -> new IllegalArgumentException("Non-valid User received"));
-    }
-
-    @Override
-    @Transactional
     public Optional<OneTimePassword> resendVerificationEmail(@NonNull String usernameOrEmail) {
         LOGGER.debug("Resending verification email requested for '{}'", usernameOrEmail);
         final var maybeUser = getByUsernameOrEmail(usernameOrEmail);

@@ -11,7 +11,6 @@ import ar.edu.itba.paw.persistence.RatingDao;
 
 import java.time.Instant;
 import java.util.Objects;
-import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,11 +24,6 @@ public class RatingServiceImpl implements RatingService {
     @Autowired
     public RatingServiceImpl(RatingDao ratingDao) {
         this.ratingDao = ratingDao;
-    }
-
-    @Override
-    public Optional<Rating> getById(Long id) {
-        return ratingDao.getById(id);
     }
 
     @Override

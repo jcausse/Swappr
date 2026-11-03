@@ -213,18 +213,6 @@ public class UserServiceImplTest {
     }
 
     /* ---------------------------------------------------------------------------------------------- */
-    /* updateEmail / markEmailAsVerified                                                               */
-    /* ---------------------------------------------------------------------------------------------- */
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testUpdateEmailNonExistingUserThrows() {
-        final User user = buildFakeUser();
-        when(userDao.update(eq(USER_ID), isNull(), any(), isNull(), isNull())).thenReturn(Optional.empty());
-
-        userService.updateEmail(user, USER_EMAIL);
-    }
-
-    /* ---------------------------------------------------------------------------------------------- */
     /* resendVerificationEmail                                                                         */
     /* ---------------------------------------------------------------------------------------------- */
 

@@ -24,9 +24,4 @@ public class ProvinceServiceImpl implements ProvinceService {
     public Optional<Province> getById(Long id) {
         return provinceDao.getById(id);
     }
-
-    @Override
-    public boolean exists(Long id) {
-        return id != null && provinceDao.getById(id).isPresent();
-    }
 }
