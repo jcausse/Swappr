@@ -18,4 +18,14 @@ public class ProductSearchForm {
     private Integer yearMax;
     @Min(1)
     private Integer page;
+
+    public String getBrand() {
+        if (brand == null || brand.isBlank()) return null;
+        return brand;
+    }
+
+    public String getModel() {
+        if (model == null || model.isBlank()) return null;
+        return model;
+    }
 }

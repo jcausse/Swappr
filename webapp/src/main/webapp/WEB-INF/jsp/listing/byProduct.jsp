@@ -19,14 +19,14 @@
 <spring:message code="byProduct.subcategories.title" var="subcategoriesTitle"/>
 <spring:message code="byProduct.breadcrumb.products" var="productsLabel"/>
 
-<c:forEach var="option" items="${categoryOptions}">
+<c:forEach var="option" items="${categories}">
     <c:if test="${option.id eq productForm.categoryId}">
-        <c:set var="selectedCategoryLabel" value="${option.name}"/>
+        <spring:message var="selectedCategoryLabel" code="category.${option.name}"/>
     </c:if>
 </c:forEach>
-<c:forEach var="option" items="${subcategoryOptions}">
+<c:forEach var="option" items="${subcategories}">
     <c:if test="${option.id eq productForm.subcategoryId}">
-        <c:set var="selectedSubcategoryLabel" value="${option.name}"/>
+        <spring:message var="selectedSubcategoryLabel" code="subcategory.${option.name}"/>
     </c:if>
 </c:forEach>
 
@@ -54,13 +54,14 @@
                 <section>
                     <h2 class="text-xl font-bold mb-4"><c:out value="${categoriesTitle}"/></h2>
                     <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                        <c:forEach var="category" items="${categoryOptions}">
+                        <c:forEach var="category" items="${categories}">
                             <c:url value="/listing/by-product" var="categoryUrl">
                                 <c:param name="categoryId" value="${category.id}"/>
                             </c:url>
+                            <spring:message code="category.${category.name}" var="categoryLabel"/>
                             <paw:linkButton
                                 href="${categoryUrl}"
-                                text="${category.name}"
+                                text="${categoryLabel}"
                                 variant="outline"
                                 size="lg"
                                 classname="w-full justify-center"
@@ -73,14 +74,15 @@
                 <section>
                     <h2 class="text-xl font-bold mb-4"><c:out value="${subcategoriesTitle}"/></h2>
                     <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                        <c:forEach var="subcategory" items="${subcategoryOptions}">
+                        <c:forEach var="subcategory" items="${subcategories}">
                             <c:url value="/listing/by-product" var="subcategoryUrl">
                                 <c:param name="categoryId" value="${productForm.categoryId}"/>
                                 <c:param name="subcategoryId" value="${subcategory.id}"/>
                             </c:url>
+                            <spring:message code="subcategory.${subcategory.name}" var="subcategoryLabel"/>
                             <paw:linkButton
                                 href="${subcategoryUrl}"
-                                text="${subcategory.name}"
+                                text="${subcategoryLabel}"
                                 variant="outline"
                                 size="lg"
                                 classname="w-full justify-center"

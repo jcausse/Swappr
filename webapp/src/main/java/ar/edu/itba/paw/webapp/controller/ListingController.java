@@ -119,8 +119,8 @@ public class ListingController {
         LOGGER.debug("Accessing products by brand and model page");
         final var mav = new ModelAndView("listing/byProduct");
 
-        final var brand = blankToNull(productForm.getBrand());
-        final var model = blankToNull(productForm.getModel());
+        final var brand = productForm.getBrand();
+        final var model = productForm.getModel();
 
         if (productForm.getSubcategoryId() != null) {
             mav.addObject("productSummaries", productService.getListingInfoSummary(
@@ -134,45 +134,20 @@ public class ListingController {
             mav.addObject("productSummaries", List.of());
         }
 
-        mav.addObject(
-            "categoryOptions",
-            productService.getAllCategories().stream()
-                .map((cat) -> new SelectOption(cat.getId(), messageSource.getMessage("category." + cat.getName(), null, LocaleContextHolder.getLocale())))
-                .toList()
-        );
-
+        mav.addObject("categories", productService.getAllCategories());
         if (productForm.getCategoryId() != null) {
-            mav.addObject(
-                "subcategoryOptions",
-                productService.getSubcategoriesByCategory(productForm.getCategoryId()).stream()
-                    .map((sub) -> new SelectOption(sub.getId(), messageSource.getMessage("subcategory." + sub.getName(), null, LocaleContextHolder.getLocale())))
-                    .toList()
-            );
+            mav.addObject("subcategories", productService.getSubcategoriesByCategory(productForm.getCategoryId()));
         }
 
         if (productForm.getSubcategoryId() != null) {
-            mav.addObject(
-                "brandOptions",
-                productService.getBrandsBySubcategory(productForm.getSubcategoryId()).stream()
-                            .map((b) -> new StringSelectOption(b, b))
-                            .toList()
-            );
+            mav.addObject("brands", productService.getBrandsBySubcategory(productForm.getSubcategoryId()));
 
             if (brand != null) {
-                mav.addObject(
-                    "modelOptions",
-                    productService.getModelsBySubcategoryAndBrand(productForm.getSubcategoryId(), brand).stream()
-                        .map((m) -> new StringSelectOption(m, m))
-                        .toList()
-                );
+                mav.addObject("models", productService.getModelsBySubcategoryAndBrand(productForm.getSubcategoryId(), brand));
             }
         }
 
         return mav;
-    }
-
-    private String blankToNull(String value) {
-        return value == null || value.isBlank() ? null : value;
     }
 
     @GetMapping("/{id}")
