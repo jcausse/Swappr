@@ -86,7 +86,7 @@ public class ProductJpaDao implements ProductDao {
             params.add(toYear);
         }
 
-        final var countQuery = em.createNativeQuery("SELECT COUNT(*) FROM products p" + where);
+        final var countQuery = em.createNativeQuery("SELECT COUNT(*) FROM (SELECT p.brand, p.model FROM products p" + where + " GROUP BY p.brand, p.model)");
         bindParams(countQuery, params);
         final long totalCount = ((Number) countQuery.getSingleResult()).longValue();
 
