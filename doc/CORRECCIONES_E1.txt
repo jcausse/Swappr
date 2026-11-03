@@ -1,5 +1,5 @@
 [ ] Sin resolver
-[/] Falta testear
+[/] Falta testear/verificar
 [X] Resuelto y confirmado
 [-] Irrelevante (el código al que refiere no existe más)
 
@@ -35,7 +35,8 @@
 [X] Al publicar el form dice que la imagen es opcional, pero si no la incluyo me da un error que dice "Uploaded files must be valid images under 5MB"
   -- RESUELTO
 
-[/] Los mails tienen links inválidos
+[X] Los mails tienen links inválidos
+  -- RESUELTO (último check 2026-11-03, commit 8f66792cde5a961062eef0a55087caafb6835172)
 
 [X] El link a rating desde la web en el listado de ofertas completas da un 404.
   -- RESUELTO: estaba mal la URL
