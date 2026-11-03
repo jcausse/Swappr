@@ -214,7 +214,7 @@ public class MailingServiceImpl implements MailingService {
         context.setVariable("listing", offer.getListing());
         context.setVariable("offer", offer);
         context.setVariable("baseUrl", baseUrl);
-        context.setVariable("actionUrl", baseUrl + "/account/my-offers?statusGroup=pending_payment");
+        context.setVariable("actionUrl", baseUrl + "/account/my-offers?statusGroup=PENDING_PAYMENT");
         context.setVariable("trackingNumber", offer.getTrackingNumber());
 
         String subject = messageSource.getMessage("email.proofOfShipping.uploaded.subject", null, locale);

@@ -1,5 +1,7 @@
 package ar.edu.itba.paw.webapp.controller;
 
+import ar.edu.itba.paw.model.ListingStatus;
+import ar.edu.itba.paw.model.OfferStatusGroup;
 import ar.edu.itba.paw.model.Role;
 import ar.edu.itba.paw.model.User;
 import ar.edu.itba.paw.service.AdminService;
@@ -8,6 +10,7 @@ import ar.edu.itba.paw.service.OfferService;
 import ar.edu.itba.paw.service.UserService;
 import ar.edu.itba.paw.service.dto.ListingFilterDto;
 import ar.edu.itba.paw.service.dto.OfferFilterDto;
+import ar.edu.itba.paw.service.exception.SelfSuspendException;
 import ar.edu.itba.paw.webapp.auth.CurrentUser;
 import ar.edu.itba.paw.webapp.form.AdminGrantRoleForm;
 import ar.edu.itba.paw.webapp.form.AdminSuspendUserForm;
@@ -65,7 +68,7 @@ public class AdminController {
     public ModelAndView listings(
             @CurrentUser User currentUser,
             @RequestParam(value = "query", required = false) String query,
-            @RequestParam(value = "status", required = false) String status,
+            @RequestParam(value = "status", required = false) ListingStatus status,
             @RequestParam(value = "page", defaultValue = "1") int page,
             @ModelAttribute("takeDownListingForm") AdminTakeDownListingForm takeDownListingForm
     ) {
@@ -137,7 +140,7 @@ public class AdminController {
     @PreAuthorize("hasRole('ADMIN')")
     public ModelAndView offers(
             @CurrentUser User currentUser,
-            @RequestParam(value = "statusGroup", required = false) String statusGroup,
+            @RequestParam(value = "statusGroup", required = false) OfferStatusGroup statusGroup,
             @RequestParam(value = "page", defaultValue = "1") int page,
             @ModelAttribute("takeDownOfferForm") AdminTakeDownOfferForm takeDownOfferForm
     ) {
@@ -221,7 +224,7 @@ public class AdminController {
                 mav.addObject("targetUser", user);
                 List<Role> roles = userService.getRoles(user);
                 mav.addObject("targetUserRoles", roles);
-                mav.addObject("isTargetUserAdmin", roles.contains(Role.ADMIN));
+                mav.addObject("isTargetUserAdmin", user.hasRole(Role.ADMIN));
                 suspendUserForm.setUsername(user.getUsername());
                 grantRoleForm.setUsername(user.getUsername());
             } else {
@@ -239,22 +242,21 @@ public class AdminController {
             BindingResult errors,
             @ModelAttribute("grantRoleForm") AdminGrantRoleForm grantRoleForm
     ) {
-        final var formUsernameOrEmail = form.getUsernameOrEmail().trim().toLowerCase();
+        final var formUsernameOrEmail = form.getUsernameOrEmail();
         LOGGER.info("Admin {} requested user suspension for '{}'", currentUser.getUsername(), formUsernameOrEmail);
 
         if (errors.hasErrors()) {
             return new ModelAndView("admin/users");
         }
 
-        final var cuUsername = currentUser.getUsername();
-        final var cuEmail = currentUser.getEmail();
-        if (cuUsername.equalsIgnoreCase(formUsernameOrEmail) || cuEmail.equalsIgnoreCase(formUsernameOrEmail)) {
+        final User user;
+        try {
+            user = adminService.suspendUser(currentUser, formUsernameOrEmail);
+        } catch (SelfSuspendException e) {
             LOGGER.warn("Admin {} prevented from suspending theirself", currentUser.getUsername());
             errors.rejectValue("username", "admin.users.error.selfSuspend");
             return new ModelAndView("admin/users");
         }
-
-        User user = adminService.suspendUser(formUsernameOrEmail);
 
         LOGGER.info("Admin {} logically suspended user {}", currentUser.getUsername(), user.getUsername());
         return new ModelAndView("redirect:/admin/users?success=user_suspended&username=" + URLEncoder.encode(user.getUsername(), StandardCharsets.UTF_8));
@@ -268,7 +270,7 @@ public class AdminController {
             BindingResult errors,
             @ModelAttribute("grantRoleForm") AdminGrantRoleForm grantRoleForm
     ) {
-        final var formUsernameOrEmail = form.getUsernameOrEmail().trim().toLowerCase();
+        final var formUsernameOrEmail = form.getUsernameOrEmail();
         LOGGER.info("Admin {} requested user unsuspension for '{}'", currentUser.getUsername(), formUsernameOrEmail);
 
         if (errors.hasErrors()) {

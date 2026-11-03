@@ -1,5 +1,6 @@
 package ar.edu.itba.paw.webapp.form;
 
+import ar.edu.itba.paw.model.Language;
 import ar.edu.itba.paw.service.dto.ImageData;
 import ar.edu.itba.paw.webapp.form.validation.EmptyOrSize;
 import ar.edu.itba.paw.webapp.form.validation.FieldMatch;
@@ -12,7 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.Optional;
 
-import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 @NoArgsConstructor
@@ -38,8 +39,8 @@ public class UserEditForm {
     @Size(max = 100)
     private String locationDetail;
 
-    @NotEmpty
-    private String preferredLanguage;
+    @NotNull
+    private Language preferredLanguage;
 
     public Optional<ImageData> getProfilePicture() {
         if (this.profilePicture == null || this.profilePicture.isEmpty()) {

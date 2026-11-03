@@ -4,6 +4,7 @@ import ar.edu.itba.paw.model.Listing;
 import ar.edu.itba.paw.model.Offer;
 import ar.edu.itba.paw.model.OfferFilter;
 import ar.edu.itba.paw.model.OfferStatus;
+import ar.edu.itba.paw.model.OfferStatusGroup;
 import ar.edu.itba.paw.model.Page;
 import ar.edu.itba.paw.model.User;
 import ar.edu.itba.paw.model.OfferRating;
@@ -32,7 +33,7 @@ public interface OfferDao {
 
     int countPendingBySeller(User seller);
 
-    Map<String, Long> countByStatus(User currentUser, Boolean incoming);
+    Map<OfferStatusGroup, Long> countByStatus(User currentUser, Boolean incoming);
 
     boolean updateProofOfPaymentId(Long offerId, Long proofOfPaymentId);
 

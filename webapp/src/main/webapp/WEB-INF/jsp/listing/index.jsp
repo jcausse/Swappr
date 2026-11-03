@@ -9,10 +9,10 @@
 <spring:message code="listing.detail.sold" var="soldMsg"/>
 
 <paw:layout titleKey="listing.detail.title">
-    <c:if test="${isCanceled}">
+    <c:if test="${listing.isCanceled()}">
         <paw:banner text="${canceledMsg}" icon="circle-alert" role="danger" classname="mb-4" />
     </c:if>
-    <c:if test="${isSold}">
+    <c:if test="${listing.isSoldForDisplay()}">
         <paw:banner text="${soldMsg}" icon="info" role="secondary" classname="mb-4" />
     </c:if>
 
@@ -65,13 +65,13 @@
                     <p class="text-3xl font-bold"><paw:price amount="${listing.price.amount}"/></p>
 
                     <c:choose>
-                        <c:when test="${isCanceled}">
+                        <c:when test="${listing.isCanceled()}">
                             <paw:banner text="${canceledMsg}" icon="circle-alert" role="danger" classname="mb-4" />
                         </c:when>
-                        <c:when test="${isSold}">
+                        <c:when test="${listing.isSoldForDisplay()}">
                             <paw:banner text="${soldMsg}" icon="info" role="secondary" classname="mb-4" />
                         </c:when>
-                        <c:when test="${isCreator}">
+                        <c:when test="${listing.isCreator(currentUser)}">
                             <spring:message code="listing.detail.edit" var="editLabel"/>
                             <c:url value="/listing/${listing.id}/edit" var="editUrl"/>
                             <paw:linkButton href="${editUrl}" size="lg" classname="w-full" variant="outline" text="${editLabel}"/>

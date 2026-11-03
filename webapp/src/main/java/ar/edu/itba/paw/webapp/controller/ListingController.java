@@ -21,7 +21,6 @@ import org.springframework.web.servlet.ModelAndView;
 import ar.edu.itba.paw.model.Condition;
 import ar.edu.itba.paw.model.ListingSort;
 import ar.edu.itba.paw.model.ListingStatus;
-import ar.edu.itba.paw.model.Price;
 import ar.edu.itba.paw.model.User;
 import ar.edu.itba.paw.service.ListingService;
 import ar.edu.itba.paw.service.OfferService;
@@ -67,7 +66,7 @@ public class ListingController {
             .acceptsTrade(filterForm.getAcceptsTrade())
             .query(filterForm.getQuery())
             .sort(filterForm.getSort())
-            .status(ListingStatus.ACTIVE.getStatus())
+            .status(ListingStatus.ACTIVE)
             .page(filterForm.getPage())
             .pageSize(DISCOVERY_PAGE_SIZE)
             .provinceId(filterForm.getProvinceId())
@@ -86,7 +85,7 @@ public class ListingController {
 
         mav.addObject("conditionOptions", buildConditionOptions());
         mav.addObject("sortOptions", Arrays.stream(ListingSort.values())
-            .map(s -> new StringSelectOption(s.getKey(), "discovery.sort." + s.getKey()))
+            .map(s -> new StringSelectOption(s.name(), "discovery.sort." + s.getKey()))
             .toList());
 
         var categories = productService.getAllCategories();
@@ -119,20 +118,10 @@ public class ListingController {
     public ModelAndView listing(@PathVariable Long id, @CurrentUser(required = false) User currentUser) {
         LOGGER.debug("Accessing listing {}", id);
         var listing = listingService.getById(id);
-        var isCreator = currentUser != null && currentUser.getId().equals(listing.getCreator().getId());
-        var isCanceled = listing.getStatus() == ListingStatus.CANCELED;
-        // Pending transaction and offered in trade listings count as sold for public viewing purposes
-        var isSold = listing.getStatus() == ListingStatus.SOLD
-                || listing.getStatus() == ListingStatus.PENDING_TRANSACTION
-                || listing.getStatus() == ListingStatus.OFFERED_IN_TRADE;
-
         var userPendingOffer = offerService.getByListingAndBuyer(listing, currentUser);
 
         return new ModelAndView("listing/index")
                 .addObject("listing", listing)
-                .addObject("isCreator", isCreator)
-                .addObject("isSold", isSold)
-                .addObject("isCanceled", isCanceled)
                 .addObject("userPendingOffer", userPendingOffer);
     }
 
@@ -310,9 +299,9 @@ public class ListingController {
             return detailsWithErrors(form);
         }
 
-        var newListing = listingService.create(new ListingCreationDto(
+        listingService.create(new ListingCreationDto(
                 form.getTitle(),
-                new Price(form.getPrice()),
+                form.getPrice(),
                 currentUser.getId(),
                 form.getProductId(),
                 form.getCondition(),
@@ -337,7 +326,7 @@ public class ListingController {
         form.setProductId(listing.getProduct().getId());
         form.setTitle(listing.getTitle());
         form.setPrice(listing.getPrice().getAmount());
-        form.setCondition(listing.getCondition().name());
+        form.setCondition(listing.getCondition());
         form.setAcceptsTrade(listing.isAcceptsTrade());
         form.setDescription(listing.getDescription());
 
@@ -363,10 +352,10 @@ public class ListingController {
             return detailsWithErrors(form);
         }
 
-        var updated = listingService.update(new ListingUpdateDto(
+        listingService.update(new ListingUpdateDto(
             id,
             form.getTitle(),
-            new Price(form.getPrice()),
+            form.getPrice(),
             form.getProductId(),
             form.getCondition(),
             form.isAcceptsTrade(),

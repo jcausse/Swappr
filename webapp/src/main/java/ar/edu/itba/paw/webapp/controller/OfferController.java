@@ -27,7 +27,7 @@ public class OfferController {
         LOGGER.info("User {} accepted offer {}", currentUser.getId(), offerId);
         offerService.accept(offerId, currentUser.getId());
 
-        return new ModelAndView("redirect:/account/incoming-offers?statusGroup=pending_payment");
+        return new ModelAndView("redirect:/account/incoming-offers?statusGroup=PENDING_PAYMENT");
     }
 
     @PostMapping("/{offerId}/reject")
@@ -36,7 +36,7 @@ public class OfferController {
         LOGGER.info("User {} rejected offer {}", currentUser.getId(), offerId);
         offerService.reject(offerId, currentUser.getId());
 
-        return new ModelAndView("redirect:/account/incoming-offers?statusGroup=resolved");
+        return new ModelAndView("redirect:/account/incoming-offers?statusGroup=RESOLVED");
     }
 
     @PostMapping("/{offerId}/withdraw")
@@ -62,6 +62,6 @@ public class OfferController {
         LOGGER.info("User {} confirmed payment for offer {}", currentUser.getId(), offerId);
         offerService.confirmPayment(offerId, currentUser.getId());
 
-        return new ModelAndView("redirect:/account/incoming-offers?statusGroup=resolved");
+        return new ModelAndView("redirect:/account/incoming-offers?statusGroup=RESOLVED");
     }
 }

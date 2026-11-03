@@ -90,13 +90,13 @@
                     <div class="flex flex-col gap-1 grow">
                         <label class="text-xs font-medium text-black/60"><c:out value="${ratingFilterRole}"/></label>
                         <div class="border border-black/10 rounded-xl p-1">
-                            <paw:formButtonToggle path="role" items="${roleOptions}" selectedOption="${ratingFilterForm.role}" translateLabels="true" />
+                            <paw:formButtonToggle path="role" items="${roleOptions}" selectedOption="${ratingFilterForm.role.name()}" translateLabels="true" />
                         </div>
                     </div>
                     <div class="flex flex-col gap-1">
                         <label class="text-xs font-medium text-black/60"><c:out value="${ratingFilterType}"/></label>
                         <div class="border border-black/10 rounded-xl p-1">
-                            <paw:formButtonToggle path="type" items="${typeOptions}" selectedOption="${ratingFilterForm.type}" translateLabels="true" />
+                            <paw:formButtonToggle path="type" items="${typeOptions}" selectedOption="${not empty ratingFilterForm.type ? ratingFilterForm.type.name() : ''}" translateLabels="true" />
                         </div>
                     </div>
                 </div>

@@ -1,12 +1,15 @@
 package ar.edu.itba.paw.service.dto;
-import ar.edu.itba.paw.model.Price;
+import java.math.BigDecimal;
 import java.util.List;
+
+import ar.edu.itba.paw.model.Condition;
+
 public record ListingCreationDto(
     String title,
-    Price price,
+    BigDecimal price,
     Long creatorId,
     Long productId,
-    String condition,
+    Condition condition,
     boolean acceptsTrade,
     boolean acceptsShipping,
     String description,

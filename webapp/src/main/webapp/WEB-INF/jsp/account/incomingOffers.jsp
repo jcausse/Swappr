@@ -17,7 +17,7 @@
 <account:layout titleKey="account.incomingOffers.title" title="${titleMsg}" subtitle="${subtitleMsg}">
     <form:form modelAttribute="filterForm" action="${filterAction}" method="get" id="filterForm">
         <paw:card classname="p-2! mb-4">
-            <paw:formButtonToggle path="statusGroup" items="${statusGroupOptions}" badgeCounts="${offerCountByStatus}" selectedOption="${filterForm.getStatusGroup()}" translateLabels="true" />
+            <paw:formButtonToggle path="statusGroup" items="${statusGroupOptions}" badgeCounts="${offerCountByStatus}" selectedOption="${filterForm.getStatusGroup().name()}" translateLabels="true" />
         </paw:card>
     </form:form>
 
@@ -28,7 +28,7 @@
                 <p class="text-black/50 text-lg"><c:out value="${emptyMsg}"/></p>
             </div>
         </c:when>
-        <c:when test="${filterForm.getStatusGroup() == 'pending' || filterForm.getStatusGroup() == 'pending_payment'}">
+        <c:when test="${filterForm.getStatusGroup().name() == 'PENDING' || filterForm.getStatusGroup().name() == 'PENDING_PAYMENT'}">
             <div class="flex flex-col gap-4 mb-8">
                 <%-- statusGroup values (pending, pending_payment) match the OfferStatus names used by the hint keys --%>
                 <account:offerHint role="seller" status="${fn:toUpperCase(filterForm.statusGroup)}"/>
@@ -68,7 +68,7 @@
                 <paw:pagination page="${offerPage}" baseUrl="/account/incoming-offers"/>
             </div>
         </c:when>
-        <c:when test="${filterForm.getStatusGroup() == 'resolved'}">
+        <c:when test="${filterForm.getStatusGroup().name() == 'RESOLVED'}">
             <paw:card>
                 <account:offerTable offers="${offers}" user="buyer" />
                 <paw:pagination page="${offerPage}" baseUrl="/account/incoming-offers"/>

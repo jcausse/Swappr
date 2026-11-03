@@ -20,6 +20,8 @@ public enum Role {
     }
 
     public static Optional<Role> fromString(final String roleName){
-        return Arrays.stream(Role.values()).filter(r -> r.roleName.equalsIgnoreCase(roleName)).findFirst();
+        return Arrays.stream(Role.values())
+                .filter(r -> r.roleName.equalsIgnoreCase(roleName) || r.name().equalsIgnoreCase(roleName))
+                .findFirst();
     }
 }
