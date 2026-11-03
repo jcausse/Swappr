@@ -13,7 +13,8 @@
             <c:url value='/listing/new/choose-product' var="sellUrl" />
 
             <paw:linkButton href="${homeUrl}" variant="ghost" size="sm">
-                <img src="<c:url value='/static-image/logo.svg'/>" class="min-w-24" alt="Swappr Logo" />
+                <spring:message code="a11y.logo" var="logoAlt"/>
+                <img src="<c:url value='/static-image/logo.svg'/>" class="min-w-24" alt="<c:out value='${logoAlt}'/>" />
             </paw:linkButton>
 
             <spring:message code="navbar.discover" var="linkDiscover"/>

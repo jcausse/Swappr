@@ -3,6 +3,7 @@
 <%@ attribute name="user" required="true" type="ar.edu.itba.paw.model.User" %>
 <%@ attribute name="classname" required="false" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="spring" uri="http://www.springframework.org/tags" %>
 
 <c:set var="avatarSize" value="${not empty size ? size : 'md'}"/>
 <c:set var="avatarClass" value="${not empty classname ? classname : ''}"/>
@@ -19,16 +20,18 @@
 <div class="rounded-full border border-black/10 grid place-items-center overflow-hidden flex-shrink-0 ${sizeClassnames} ${avatarClass}">
     <c:choose>
         <c:when test="${user.getImageId().isPresent()}">
+            <spring:message code="userAvatar.alt" var="avatarAlt"><spring:argument value="${user.displayName}"/></spring:message>
             <img
                 src="<c:url value='/image/${user.getImageId().get()}'/>"
-                alt="<c:out value='${user.displayName}'/> Profile Picture"
+                alt="<c:out value='${avatarAlt}'/>"
                 class="w-full h-full object-cover"
             >
         </c:when>
         <c:otherwise>
+            <spring:message code="userAvatar.defaultAlt" var="avatarAlt"/>
             <img
                 src="<c:url value='/static-image/defaultProfilePicture.svg'/>"
-                alt="Default Profile Picture"
+                alt="<c:out value='${avatarAlt}'/>"
                 class="w-full h-full object-cover"
             >
         </c:otherwise>

@@ -79,12 +79,13 @@
           accept="${inputAccept}"
           cssClass="w-full px-2 py-1 pr-9 rounded-lg text-sm outline-0 transition duration-150 outline-lime-600/30 placeholder:text-black/40 ${variantClassnames} ${bindErrorClasses} ${innerClass}"
         />
+        <spring:message code="a11y.togglePassword" var="togglePasswordLabel"/>
         <button
           type="button"
           class="absolute right-2.5 top-1/2 -translate-y-1/2 text-black/40 hover:text-black/70 focus:outline-none cursor-pointer flex items-center justify-center p-1"
           onclick="var input = this.previousElementSibling; var icon = this.querySelector('i'); if (input.type === 'password') { input.type = 'text'; icon.className = 'icon-eye-off'; } else { input.type = 'password'; icon.className = 'icon-eye'; } input.focus();"
           tabindex="-1"
-          aria-label="Toggle password visibility"
+          aria-label="<c:out value='${togglePasswordLabel}'/>"
         >
           <paw:icon name="eye" classname="text-base" />
         </button>
