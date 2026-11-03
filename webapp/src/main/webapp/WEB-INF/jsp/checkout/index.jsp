@@ -201,31 +201,23 @@
                 });
             }
 
-            if (tradeListingPagination && tradeListingList) {
+            if (tradeListingPagination && tradeFields) {
                 tradeListingPagination.addEventListener('click', function(event) {
                     const link = event.target.closest('a[href]');
                     if (!link || link.getAttribute('aria-disabled') === 'true') return;
                     event.preventDefault();
-                    fetch(link.href, {headers: {'X-Requested-With': 'XMLHttpRequest'}, credentials: 'same-origin'})
-                        .then(function(response) {
-                            if (!response.ok) throw new Error('Failed to load trade listings');
-                            return response.text();
-                        })
-                        .then(function(html) {
-                            const doc = new DOMParser().parseFromString(html, 'text/html');
-                            const newList = doc.getElementById('tradeListingList');
-                            const newPagination = doc.getElementById('tradeListingPagination');
-                            if (!newList || !newPagination) return;
-                            tradeListingList.innerHTML = newList.innerHTML;
-                            tradeListingPagination.innerHTML = newPagination.innerHTML;
-                            const url = new URL(link.href, window.location.origin);
-                            const page = url.searchParams.get('page');
-                            if (pageInput && page) pageInput.value = page;
-                            applyListingSelection();
-                        })
-                        .catch(function() {
-                            window.location.href = link.href;
-                        });
+
+                    const url = new URL(link.href, window.location.origin);
+                    tradeFields.closest('form').querySelectorAll('input[name], select[name], textarea[name]').forEach(function(field) {
+                        if (field.name === 'page' || field.name === 'listingId') return;
+                        if ((field.type === 'radio' || field.type === 'checkbox') && !field.checked) return;
+                        if (field.value === '') return;
+                        url.searchParams.set(field.name, field.value);
+                    });
+
+                    const page = url.searchParams.get('page');
+                    if (pageInput && page) pageInput.value = page;
+                    window.location.href = url.toString();
                 });
             }
 
