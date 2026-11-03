@@ -26,5 +26,5 @@ public interface ListingDao {
 
     Listing update(Long id, String title, Price price, Product product,
                    Condition condition, boolean acceptsTrade, boolean acceptsShipping, String description);
-    void cancel(Long id);
+    boolean cancel(Long id);
 }
