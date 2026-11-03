@@ -1,6 +1,8 @@
 package ar.edu.itba.paw.webapp.controller;
 
 import java.util.Arrays;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
@@ -125,7 +127,7 @@ public class AccountController {
                 .addObject("offerPage", offerPage)
                 .addObject("offers", offerPage.getContent())
                 .addObject("statusGroupOptions", statusGroupOptions)
-                .addObject("offerCountByStatus", offerService.getOfferCountByStatus(currentUser, true))
+                .addObject("offerCountByStatus", getOfferCountByStatus(currentUser, true))
                 .addObject("pendingOffersCount", offerService.getPendingOffersCount(currentUser));
     }
 
@@ -150,8 +152,13 @@ public class AccountController {
                 .addObject("offerPage", offerPage)
                 .addObject("offers", offerPage.getContent())
                 .addObject("statusGroupOptions", statusGroupOptions)
-                .addObject("offerCountByStatus", offerService.getOfferCountByStatus(currentUser, false))
+                .addObject("offerCountByStatus", getOfferCountByStatus(currentUser, false))
                 .addObject("pendingOffersCount", offerService.getPendingOffersCount(currentUser));
+    }
+
+    private Map<String, Long> getOfferCountByStatus(final User user, final boolean incoming) {
+        return offerService.getOfferCountByStatus(user, incoming).entrySet().stream()
+                .collect(Collectors.toMap(e -> e.getKey().name(), Map.Entry::getValue));
     }
 
 	@GetMapping("/incoming-offers/{offerId}")
