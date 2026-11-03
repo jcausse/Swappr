@@ -27,6 +27,10 @@ public class SiteNotification {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "notification_type", nullable = false, length = 50)
+    private NotificationType type;
+
     @Column(name = "title", nullable = false)
     private String title;
 
@@ -47,7 +51,7 @@ public class SiteNotification {
     private Instant createdAt;
 
     // -------------------------------------------------------------------------------------------------
-    // Domain helpers & Optional getters
+    // Domain Optionals & State Mutators
 
     public Optional<String> getActionUrl() {
         return Optional.ofNullable(actionUrl);
@@ -59,13 +63,5 @@ public class SiteNotification {
 
     public void markAsRead() {
         this.read = true;
-    }
-
-    public void markAsUnread() {
-        this.read = false;
-    }
-
-    public boolean hasAction() {
-        return actionUrl != null && !actionUrl.isBlank();
     }
 }

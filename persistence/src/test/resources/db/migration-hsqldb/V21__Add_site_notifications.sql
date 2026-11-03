@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS site_notifications (
     action_url          TEXT,
     action_label_key    VARCHAR(100),
     is_read             BOOLEAN                     DEFAULT FALSE NOT NULL,
+    notification_type   VARCHAR(50)                 NOT NULL,
     created_at          TIMESTAMP WITH TIME ZONE    DEFAULT now() NOT NULL
 );
 
