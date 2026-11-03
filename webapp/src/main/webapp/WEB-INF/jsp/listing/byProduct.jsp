@@ -2,7 +2,6 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
 <%@ taglib prefix="spring" uri="http://www.springframework.org/tags" %>
-<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ taglib prefix="paw" tagdir="/WEB-INF/tags" %>
 
 
@@ -130,7 +129,7 @@
                         <section class="flex-1">
                             <div class="flex items-center justify-between gap-4 mb-4">
                                 <span class="text-sm text-black/60">
-                                    <spring:message code="byProduct.results.count" arguments="${fn:length(productSummaries)}"/>
+                                    <spring:message code="byProduct.results.count" arguments="${productPage.totalCount}"/>
                                 </span>
                             </div>
 
@@ -214,6 +213,8 @@
                                     </div>
                                 </c:otherwise>
                             </c:choose>
+
+                            <paw:pagination page="${productPage}" baseUrl="/listing/by-product"/>
                         </section>
                     </div>
                 </form:form>
