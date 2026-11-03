@@ -208,7 +208,14 @@
                     event.preventDefault();
 
                     const url = new URL(link.href, window.location.origin);
-                    tradeFields.closest('form').querySelectorAll('input[name], select[name], textarea[name]').forEach(function(field) {
+                    const formFields = tradeFields.closest('form').querySelectorAll('input[name], select[name], textarea[name]');
+
+                    formFields.forEach(function(field) {
+                        if (field.name === 'page' || field.name === 'listingId') return;
+                        url.searchParams.delete(field.name);
+                    });
+
+                    formFields.forEach(function(field) {
                         if (field.name === 'page' || field.name === 'listingId') return;
                         if ((field.type === 'radio' || field.type === 'checkbox') && !field.checked) return;
                         if (field.value === '') return;
