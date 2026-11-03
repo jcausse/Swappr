@@ -106,11 +106,11 @@
                             <div class="sticky top-24">
                                 <paw:card title="${filtersTitle}">
                                     <div class="flex flex-col gap-4">
-                                        <c:if test="${not empty brandOptions}">
-                                            <paw:formSelect path="brand" label="${brandLabel}" placeholder="${allLabel}" items="${brandOptions}" itemLabel="label" itemValue="value" />
+                                        <c:if test="${not empty brands}">
+                                            <paw:formSelect path="brand" label="${brandLabel}" placeholder="${allLabel}" items="${brands}" plainStrings="true" />
                                         </c:if>
-                                        <c:if test="${not empty modelOptions}">
-                                            <paw:formSelect path="model" label="${modelLabel}" placeholder="${allLabel}" items="${modelOptions}" itemLabel="label" itemValue="value" />
+                                        <c:if test="${not empty models}">
+                                            <paw:formSelect path="model" label="${modelLabel}" placeholder="${allLabel}" items="${models}" plainStrings="true" />
                                         </c:if>
 
                                         <div class="flex flex-row gap-2">
