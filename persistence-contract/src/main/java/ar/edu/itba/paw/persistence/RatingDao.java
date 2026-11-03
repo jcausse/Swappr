@@ -7,11 +7,8 @@ import ar.edu.itba.paw.model.RatingFilter;
 import ar.edu.itba.paw.model.RatingRole;
 
 import java.time.Instant;
-import java.util.Optional;
 
 public interface RatingDao {
-
-    Optional<Rating> getById(Long id);
 
     Page<Rating> search(RatingFilter filter);
 

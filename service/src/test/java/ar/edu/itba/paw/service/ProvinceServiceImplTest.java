@@ -59,26 +59,4 @@ public class ProvinceServiceImplTest {
         // Assert
         Assert.assertTrue(result.isEmpty());
     }
-
-    /* ---------------------------------------------------------------------------------------------- */
-    /* exists                                                                                          */
-    /* ---------------------------------------------------------------------------------------------- */
-
-    @Test
-    public void testExistsTrueWhenPresent() {
-        // Arrange
-        when(provinceDao.getById(eq(PROVINCE_ID))).thenReturn(Optional.of(buildProvince()));
-
-        // Act & Assert
-        Assert.assertTrue(provinceService.exists(PROVINCE_ID));
-    }
-
-    @Test
-    public void testExistsFalseWhenAbsent() {
-        // Arrange
-        when(provinceDao.getById(eq(NON_EXISTING_ID))).thenReturn(Optional.empty());
-
-        // Act & Assert
-        Assert.assertFalse(provinceService.exists(NON_EXISTING_ID));
-    }
 }

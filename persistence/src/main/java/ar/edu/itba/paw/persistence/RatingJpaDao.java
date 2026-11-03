@@ -16,18 +16,12 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 @Repository
 public class RatingJpaDao implements RatingDao {
 
     @PersistenceContext
     private EntityManager em;
-
-    @Override
-    public Optional<Rating> getById(Long id) {
-        return Optional.ofNullable(em.find(Rating.class, id));
-    }
 
     @Override
     public Page<Rating> search(RatingFilter filter) {
