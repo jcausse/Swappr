@@ -28,4 +28,8 @@ public class ProductSearchForm {
         if (model == null || model.isBlank()) return null;
         return model;
     }
+
+    public Integer getPage() {
+        return page == null || page < 1 ? 1 : page;
+    }
 }

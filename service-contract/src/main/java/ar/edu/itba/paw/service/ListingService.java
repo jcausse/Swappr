@@ -3,6 +3,7 @@ package ar.edu.itba.paw.service;
 import ar.edu.itba.paw.model.Listing;
 import ar.edu.itba.paw.model.ListingStatus;
 import ar.edu.itba.paw.model.Page;
+import ar.edu.itba.paw.service.dto.LandingListingsDto;
 import ar.edu.itba.paw.service.dto.ListingCreationDto;
 import ar.edu.itba.paw.service.dto.ListingFilterDto;
 import ar.edu.itba.paw.service.dto.ListingUpdateDto;
@@ -14,6 +15,8 @@ public interface ListingService {
     Listing create(ListingCreationDto dto);
 
     Page<Listing> search(ListingFilterDto filter);
+
+    LandingListingsDto getForLanding();
 
     Listing purchase(Long id, Long buyerId, String message);
 
