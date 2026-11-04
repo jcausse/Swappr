@@ -1,7 +1,6 @@
 package ar.edu.itba.paw.webapp.controller;
 
 import ar.edu.itba.paw.model.NotificationType;
-import ar.edu.itba.paw.model.SiteNotificationFilter;
 import ar.edu.itba.paw.model.User;
 import ar.edu.itba.paw.service.SiteNotificationService;
 import ar.edu.itba.paw.webapp.auth.CurrentUser;
@@ -30,7 +29,6 @@ import java.util.List;
 public class NotificationController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NotificationController.class);
-    private static final int DEFAULT_PAGE_SIZE = 10;
 
     private final SiteNotificationService siteNotificationService;
 
@@ -43,15 +41,7 @@ public class NotificationController {
         LOGGER.debug("User {} viewing notifications: unreadOnly={}, type={}, page={}",
                 currentUser.getId(), filterForm.isUnreadOnly(), filterForm.getType(), filterForm.getPageOrDefault());
 
-        final var filter = SiteNotificationFilter.builder()
-                .userId(currentUser.getId())
-                .unreadOnly(filterForm.isUnreadOnly())
-                .type(filterForm.getType())
-                .page(filterForm.getPageOrDefault())
-                .pageSize(DEFAULT_PAGE_SIZE)
-                .build();
-
-        final var notificationPage = siteNotificationService.getMatching(filter);
+        final var notificationPage = siteNotificationService.getMatching(filterForm.toFilter(currentUser));
 
         final var readStatusOptions = List.of(
                 new StringSelectOption("false", "notifications.filter.status.all"),
