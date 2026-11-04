@@ -29,7 +29,7 @@
                     <paw:formSelect path="status" label="${statusLabel}" placeholder="${allLabel}" items="${statusOptions}" itemLabel="label" itemValue="value" translateLabels="true" classname="w-auto" />
                 </div>
                 <div class="flex items-center gap-2">
-                    <paw:formSelect path="sort" label="${sortLabel}" placeholder="${defaultLabel}" items="${sortOptions}" itemLabel="label" itemValue="value" translateLabels="true" classname="w-auto" />
+                    <paw:formSelect path="sort" label="${sortLabel}" items="${sortOptions}" itemLabel="label" itemValue="value" translateLabels="true" classname="w-auto" />
                 </div>
             </div>
         </form:form>

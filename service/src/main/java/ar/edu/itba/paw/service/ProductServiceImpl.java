@@ -1,7 +1,8 @@
 package ar.edu.itba.paw.service;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import ar.edu.itba.paw.model.Category;
+import ar.edu.itba.paw.model.Page;
 import ar.edu.itba.paw.model.Product;
 import ar.edu.itba.paw.model.ProductListingInfo;
 import ar.edu.itba.paw.model.ProductListingInfoSummary;
@@ -90,25 +92,29 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    @Transactional
-    public List<ProductListingInfoSummary> getListingInfoSummary(String brand, String model, Integer fromYear, Integer toYear, @NonNull Long subcategoryId) {
-        var info = productDao.getListingInfoSummary(brand, model, fromYear, toYear, subcategoryId);
+    public Page<ProductListingInfoSummary> getListingInfoSummary(String brand, String model, Integer fromYear, Integer toYear, @NonNull Long subcategoryId, Integer page, int pageSize) {
+        final int safePage = page == null || page < 1 ? 1 : page;
+        final var infoPage = productDao.getListingInfoSummary(brand, model, fromYear, toYear, subcategoryId, safePage, pageSize);
 
-        Map<String, List<ProductListingInfo>> infoByBrandModel = new HashMap<>();
-        for (var i : info) {
+        Map<String, List<ProductListingInfo>> infoByBrandModel = new LinkedHashMap<>();
+        for (var i : infoPage.getContent()) {
             var brandAndModel = i.getBrand() + " " + i.getModel();
             infoByBrandModel.putIfAbsent(brandAndModel, new ArrayList<>());
             infoByBrandModel.get(brandAndModel).add(i);
         }
 
-        return infoByBrandModel.entrySet()
+        final var summaries = infoByBrandModel.values()
                 .stream()
-                .map((entry) -> ProductListingInfoSummary.builder()
-                    .brand(entry.getValue().get(0).getBrand())
-                    .model(entry.getValue().get(0).getModel())
-                    .listingInfoByCondition(entry.getValue())
+                .map((values) -> ProductListingInfoSummary.builder()
+                    .brand(values.get(0).getBrand())
+                    .model(values.get(0).getModel())
+                    .listingInfoByCondition(values.stream()
+                        .sorted(Comparator.comparingInt((info) -> info.getCondition().ordinal()))
+                        .toList())
                     .build()
                 )
                 .toList();
+
+        return new Page<>(summaries, infoPage.getPage(), infoPage.getPageSize(), infoPage.getTotalCount());
     }
 }

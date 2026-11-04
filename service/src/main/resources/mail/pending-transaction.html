@@ -14,7 +14,7 @@
                     <tr>
                         <td style="padding: 40px 40px 0; text-align: center;">
                             <a th:href="${baseUrl + '/'}" target="_blank" style="text-decoration: none;">
-                                <img th:src="${baseUrl + '/static-image/logo.png'}" alt="Swappr Logo" height="48" style="display: block; margin: 0 auto; border: 0;" />
+                                <img th:src="${baseUrl + '/static-image/logo.png'}" th:alt="#{email.shared.logoAlt}" height="48" style="display: block; margin: 0 auto; border: 0;" />
                             </a>
                         </td>
                     </tr>
@@ -46,12 +46,12 @@
                             <a th:href="${actionUrl}" target="_blank" style="text-decoration: none;">
                                 <img th:if="${listing.imageIds != null and !listing.imageIds.isEmpty()}"
                                      th:src="${baseUrl + '/image/' + listing.imageIds[0]}"
-                                     alt="Listing image"
+                                     th:alt="#{email.shared.listingImageAlt}"
                                      style="display: block; margin: 0 auto; max-width: 100%; height: auto; border-radius: 8px; border: 1px solid #e5e5e5;"
                                      width="280"/>
                                 <div th:unless="${listing.imageIds != null and !listing.imageIds.isEmpty()}"
                                      style="display: block; margin: 0 auto; width: 280px; height: 200px; background-color: #f5f5f5; border-radius: 8px; border: 1px solid #e5e5e5; display: flex; align-items: center; justify-content: center; color: #a3a3a3; font-size: 14px;">
-                                    No image available
+                                    <span th:text="#{email.shared.noImage}">No image available</span>
                                 </div>
                             </a>
                         </td>
@@ -94,7 +94,7 @@
                                                     <a th:href="${baseUrl + '/listing/' + offeredListing.id}" target="_blank" style="text-decoration: none;">
                                                         <img th:if="${offeredListing.imageIds != null and !offeredListing.imageIds.isEmpty()}"
                                                              th:src="${baseUrl + '/image/' + offeredListing.imageIds[0]}"
-                                                             alt="Offered listing image"
+                                                             th:alt="#{email.shared.offeredListingImageAlt}"
                                                              style="display: block; width: 80px; height: 80px; object-fit: cover; border-radius: 8px; border: 1px solid #e5e5e5;"/>
                                                         <div th:unless="${offeredListing.imageIds != null and !offeredListing.imageIds.isEmpty()}"
                                                              style="display: block; width: 80px; height: 80px; background-color: #f5f5f5; border-radius: 8px; border: 1px solid #e5e5e5;">
@@ -128,7 +128,7 @@
                             <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #f5f5f5; border-radius: 12px; border: 1px solid #e5e5e5;">
                                 <tr>
                                     <td style="padding: 16px 20px;">
-                                        <p style="margin: 0 0 4px; font-size: 12px; color: #a3a3a3;">Buyer contact</p>
+                                        <p style="margin: 0 0 4px; font-size: 12px; color: #a3a3a3;" th:text="#{email.purchase.seller.contactLabel}">Buyer contact</p>
                                         <p style="margin: 0; font-size: 15px; color: #171717;">
                                             <span th:text="${buyer.displayName}">Buyer</span> &middot;
                                             <a th:href="'mailto:' + ${buyer.email}" th:text="${buyer.email}" style="color: #65a30d; text-decoration: none;">buyer@mail.com</a>

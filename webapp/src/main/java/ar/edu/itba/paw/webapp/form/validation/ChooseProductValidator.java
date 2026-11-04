@@ -12,7 +12,6 @@ import java.time.Year;
 @RequiredArgsConstructor
 public class ChooseProductValidator implements ConstraintValidator<ValidChooseProduct, ChooseProductForm> {
 
-    private static final String OTHER_VALUE = "__OTHER__";
 
     private final MessageSource messageSource;
 
@@ -68,7 +67,7 @@ public class ChooseProductValidator implements ConstraintValidator<ValidChoosePr
                         .addPropertyNode("newProductBrand")
                         .addConstraintViolation();
                 valid = false;
-            } else if (OTHER_VALUE.equals(brand)) {
+            } else if (form.isOtherBrandSelected()) {
                 if (otherBrand == null || otherBrand.isBlank()) {
                     context.buildConstraintViolationWithTemplate("{NotNull.chooseProductForm.otherBrand}")
                             .addPropertyNode("otherBrand")
@@ -87,7 +86,7 @@ public class ChooseProductValidator implements ConstraintValidator<ValidChoosePr
                             .addPropertyNode("newProductModel")
                             .addConstraintViolation();
                     valid = false;
-                } else if (OTHER_VALUE.equals(model)) {
+                } else if (form.isOtherModelSelected()) {
                     if (otherModel == null || otherModel.isBlank()) {
                         context.buildConstraintViolationWithTemplate("{NotNull.chooseProductForm.otherModel}")
                                 .addPropertyNode("otherModel")
