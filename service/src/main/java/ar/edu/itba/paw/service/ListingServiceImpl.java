@@ -4,6 +4,7 @@ import ar.edu.itba.paw.model.Condition;
 import ar.edu.itba.paw.model.Image;
 import ar.edu.itba.paw.model.Listing;
 import ar.edu.itba.paw.model.ListingFilter;
+import ar.edu.itba.paw.model.ListingSort;
 import ar.edu.itba.paw.model.Page;
 import ar.edu.itba.paw.model.ListingStatus;
 import ar.edu.itba.paw.model.Price;
@@ -11,6 +12,7 @@ import ar.edu.itba.paw.model.Product;
 import ar.edu.itba.paw.model.User;
 import ar.edu.itba.paw.persistence.ListingDao;
 import ar.edu.itba.paw.service.dto.ImageData;
+import ar.edu.itba.paw.service.dto.LandingListingsDto;
 import ar.edu.itba.paw.service.dto.ListingCreationDto;
 import ar.edu.itba.paw.service.dto.ListingFilterDto;
 import ar.edu.itba.paw.service.dto.ListingUpdateDto;
@@ -33,6 +35,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class ListingServiceImpl implements ListingService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ListingServiceImpl.class);
+    private static final int LANDING_LIST_SIZE = 12;
 
     private final ListingDao listingDao;
 
@@ -78,6 +81,26 @@ public class ListingServiceImpl implements ListingService {
             .build();
 
         return listingDao.search(filter);
+    }
+
+    @Override
+    public LandingListingsDto getForLanding() {
+        return new LandingListingsDto(
+            landingListings(ListingSort.MOST_OFFERS, true),
+            landingListings(ListingSort.RECENT_OFFERS, true),
+            landingListings(ListingSort.RECENT, false)
+        );
+    }
+
+    private List<Listing> landingListings(final ListingSort sort, final boolean hasActiveOffers) {
+        final var filter = ListingFilterDto.builder()
+            .sort(sort)
+            .status(ListingStatus.ACTIVE)
+            .page(1)
+            .pageSize(LANDING_LIST_SIZE)
+            .hasActiveOffers(hasActiveOffers ? Boolean.TRUE : null)
+            .build();
+        return search(filter).getContent();
     }
 
     private static int sanitizePage(final Integer page) {
