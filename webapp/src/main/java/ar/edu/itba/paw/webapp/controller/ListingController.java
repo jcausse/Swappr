@@ -59,9 +59,6 @@ public class ListingController {
     @PreAuthorize("permitAll()")
     public ModelAndView discovery(@ModelAttribute("filterForm") ListingFilterForm filterForm) {
         LOGGER.debug("Accessing discovery page with query '{}', category {}", filterForm.getQuery(), filterForm.getCategoryId());
-        if (filterForm.getSort() == null) {
-            filterForm.setSort(ListingSort.RECENT);
-        }
         final var filter = ListingFilterDto.builder()
             .categoryId(filterForm.getCategoryId())
             .subcategoryId(filterForm.getSubcategoryId())
