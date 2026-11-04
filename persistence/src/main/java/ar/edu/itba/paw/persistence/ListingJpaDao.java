@@ -198,11 +198,13 @@ public class ListingJpaDao implements ListingDao {
     }
 
     @Override
-    public void cancel(Long id) {
+    public boolean cancel(Long id) {
         final Listing listing = em.find(Listing.class, id);
-        if (listing != null) {
-            listing.setStatus(ListingStatus.CANCELED);
+        if (listing == null) {
+            return false;
         }
+        listing.setStatus(ListingStatus.CANCELED);
+        return true;
     }
 
     @Override

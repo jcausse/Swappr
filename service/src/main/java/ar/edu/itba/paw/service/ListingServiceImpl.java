@@ -253,7 +253,9 @@ public class ListingServiceImpl implements ListingService {
             throw new ForbiddenException("Not authorized to cancel this listing");
         }
         offerService.rejectPendingOffersForListing(id, null);
-        listingDao.cancel(id);
+        if (!listingDao.cancel(id)) {
+            throw NotFoundException.createFor("Listing with ID " + id);
+        }
         LOGGER.info("Listing canceled: id={}", id);
     }
 
@@ -262,7 +264,9 @@ public class ListingServiceImpl implements ListingService {
     public void cancelByAdmin(Long id) {
         LOGGER.info("Canceling listing id={} by Admin", id);
         offerService.rejectPendingOffersForListing(id, null);
-        listingDao.cancel(id);
+        if (!listingDao.cancel(id)) {
+            throw NotFoundException.createFor("Listing with ID " + id);
+        }
         LOGGER.info("Listing canceled by Admin: id={}", id);
     }
 
