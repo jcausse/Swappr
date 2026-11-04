@@ -12,12 +12,12 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.Locale;
+import java.math.RoundingMode;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -28,7 +28,6 @@ public class NotificationDispatcherImpl implements NotificationDispatcher {
 
     private final SiteNotificationService siteNotificationService;
     private final EmailNotificationService emailNotificationService;
-    private final MessageSource messageSource;
 
     @Override
     public void notifyWelcome(@NonNull User user) {
@@ -71,15 +70,12 @@ public class NotificationDispatcherImpl implements NotificationDispatcher {
                 NotificationType.PURCHASE_CONFIRMED, listing.getId(), buyer.getId());
 
         if (shouldSendSite(buyer, NotificationType.PURCHASE_CONFIRMED)) {
-            final Locale locale = buyer.getPreferredLocale();
-            final String title = buildMessage("notification.purchaseConfirmed.title", locale);
-            final String body = buildMessage("notification.purchaseConfirmed.body", locale,
-                    seller.getDisplayName(), listing.getTitle());
             sendSiteNotification(
                     buyer,
                     NotificationType.PURCHASE_CONFIRMED,
-                    title,
-                    body,
+                    "notification.purchaseConfirmed.title",
+                    "notification.purchaseConfirmed.body",
+                    List.of(seller.getDisplayName(), listing.getTitle()),
                     "/account/my-offers?statusGroup=RESOLVED",
                     "notification.purchaseConfirmed.cta"
             );
@@ -104,24 +100,41 @@ public class NotificationDispatcherImpl implements NotificationDispatcher {
                 NotificationType.NEW_OFFER, offer.getId(), seller.getId());
 
         if (shouldSendSite(seller, NotificationType.NEW_OFFER)) {
-            final Locale locale = seller.getPreferredLocale();
-            final String title = buildMessage("notification.newOffer.title", locale);
-            final String body = offer.getOfferedListing()
-                    .map(offered -> buildMessage("notification.newOffer.body.trade", locale,
+            final String bodyKey;
+            final List<String> bodyArgs;
+            if (offer.getOfferedListing().isPresent()) {
+                final Listing offered = offer.getOfferedListing().get();
+                if (hasCashSupplement(offer.getAmount())) {
+                    bodyKey = "notification.newOffer.body.tradeWithCash";
+                    bodyArgs = List.of(
                             buyer.getDisplayName(),
                             offered.getTitle(),
-                            formatTradeSupplement(offer.getAmount(), locale),
-                            listing.getTitle()))
-                    .orElseGet(() -> buildMessage("notification.newOffer.body", locale,
+                            formatAmount(offer.getAmount()),
+                            listing.getTitle()
+                    );
+                } else {
+                    bodyKey = "notification.newOffer.body.trade";
+                    bodyArgs = List.of(
                             buyer.getDisplayName(),
-                            formatAmount(offer.getAmount(), locale),
-                            listing.getTitle()));
+                            offered.getTitle(),
+                            listing.getTitle()
+                    );
+                }
+            } else {
+                bodyKey = "notification.newOffer.body";
+                bodyArgs = List.of(
+                        buyer.getDisplayName(),
+                        formatAmount(offer.getAmount()),
+                        listing.getTitle()
+                );
+            }
 
             sendSiteNotification(
                     seller,
                     NotificationType.NEW_OFFER,
-                    title,
-                    body,
+                    "notification.newOffer.title",
+                    bodyKey,
+                    bodyArgs,
                     "/account/incoming-offers/" + offer.getId(),
                     "notification.newOffer.cta"
             );
@@ -141,22 +154,38 @@ public class NotificationDispatcherImpl implements NotificationDispatcher {
                 NotificationType.OFFER_REJECTED, offer.getId(), buyer.getId());
 
         if (shouldSendSite(buyer, NotificationType.OFFER_REJECTED)) {
-            final Locale locale = buyer.getPreferredLocale();
-            final String title = buildMessage("notification.offerRejected.title", locale);
-            final String body = offer.getOfferedListing()
-                    .map(offered -> buildMessage("notification.offerRejected.body.trade", locale,
+            final String bodyKey;
+            final List<String> bodyArgs;
+            if (offer.getOfferedListing().isPresent()) {
+                final Listing offered = offer.getOfferedListing().get();
+                if (hasCashSupplement(offer.getAmount())) {
+                    bodyKey = "notification.offerRejected.body.tradeWithCash";
+                    bodyArgs = List.of(
                             offered.getTitle(),
-                            formatTradeSupplement(offer.getAmount(), locale),
-                            listing.getTitle()))
-                    .orElseGet(() -> buildMessage("notification.offerRejected.body", locale,
-                            formatAmount(offer.getAmount(), locale),
-                            listing.getTitle()));
+                            formatAmount(offer.getAmount()),
+                            listing.getTitle()
+                    );
+                } else {
+                    bodyKey = "notification.offerRejected.body.trade";
+                    bodyArgs = List.of(
+                            offered.getTitle(),
+                            listing.getTitle()
+                    );
+                }
+            } else {
+                bodyKey = "notification.offerRejected.body";
+                bodyArgs = List.of(
+                        formatAmount(offer.getAmount()),
+                        listing.getTitle()
+                );
+            }
 
             sendSiteNotification(
                     buyer,
                     NotificationType.OFFER_REJECTED,
-                    title,
-                    body,
+                    "notification.offerRejected.title",
+                    bodyKey,
+                    bodyArgs,
                     "/listing",
                     "notification.offerRejected.cta"
             );
@@ -177,24 +206,41 @@ public class NotificationDispatcherImpl implements NotificationDispatcher {
                 NotificationType.OFFER_WITHDRAWN, offer.getId(), seller.getId());
 
         if (shouldSendSite(seller, NotificationType.OFFER_WITHDRAWN)) {
-            final Locale locale = seller.getPreferredLocale();
-            final String title = buildMessage("notification.offerWithdrawn.title", locale);
-            final String body = offer.getOfferedListing()
-                    .map(offered -> buildMessage("notification.offerWithdrawn.body.trade", locale,
+            final String bodyKey;
+            final List<String> bodyArgs;
+            if (offer.getOfferedListing().isPresent()) {
+                final Listing offered = offer.getOfferedListing().get();
+                if (hasCashSupplement(offer.getAmount())) {
+                    bodyKey = "notification.offerWithdrawn.body.tradeWithCash";
+                    bodyArgs = List.of(
                             buyer.getDisplayName(),
                             offered.getTitle(),
-                            formatTradeSupplement(offer.getAmount(), locale),
-                            listing.getTitle()))
-                    .orElseGet(() -> buildMessage("notification.offerWithdrawn.body", locale,
+                            formatAmount(offer.getAmount()),
+                            listing.getTitle()
+                    );
+                } else {
+                    bodyKey = "notification.offerWithdrawn.body.trade";
+                    bodyArgs = List.of(
                             buyer.getDisplayName(),
-                            formatAmount(offer.getAmount(), locale),
-                            listing.getTitle()));
+                            offered.getTitle(),
+                            listing.getTitle()
+                    );
+                }
+            } else {
+                bodyKey = "notification.offerWithdrawn.body";
+                bodyArgs = List.of(
+                        buyer.getDisplayName(),
+                        formatAmount(offer.getAmount()),
+                        listing.getTitle()
+                );
+            }
 
             sendSiteNotification(
                     seller,
                     NotificationType.OFFER_WITHDRAWN,
-                    title,
-                    body,
+                    "notification.offerWithdrawn.title",
+                    bodyKey,
+                    bodyArgs,
                     "/listing/" + listing.getId(),
                     "notification.offerWithdrawn.cta"
             );
@@ -215,24 +261,41 @@ public class NotificationDispatcherImpl implements NotificationDispatcher {
                 NotificationType.OFFER_ACCEPTED, offer.getId(), buyer.getId());
 
         if (shouldSendSite(buyer, NotificationType.OFFER_ACCEPTED)) {
-            final Locale locale = buyer.getPreferredLocale();
-            final String title = buildMessage("notification.offerAccepted.title", locale);
-            final String body = offer.getOfferedListing()
-                    .map(offered -> buildMessage("notification.offerAccepted.body.trade", locale,
+            final String bodyKey;
+            final List<String> bodyArgs;
+            if (offer.getOfferedListing().isPresent()) {
+                final Listing offered = offer.getOfferedListing().get();
+                if (hasCashSupplement(offer.getAmount())) {
+                    bodyKey = "notification.offerAccepted.body.tradeWithCash";
+                    bodyArgs = List.of(
                             offered.getTitle(),
-                            formatTradeSupplement(offer.getAmount(), locale),
+                            formatAmount(offer.getAmount()),
                             listing.getTitle(),
-                            seller.getDisplayName()))
-                    .orElseGet(() -> buildMessage("notification.offerAccepted.body", locale,
-                            formatAmount(offer.getAmount(), locale),
+                            seller.getDisplayName()
+                    );
+                } else {
+                    bodyKey = "notification.offerAccepted.body.trade";
+                    bodyArgs = List.of(
+                            offered.getTitle(),
                             listing.getTitle(),
-                            seller.getDisplayName()));
+                            seller.getDisplayName()
+                    );
+                }
+            } else {
+                bodyKey = "notification.offerAccepted.body";
+                bodyArgs = List.of(
+                        formatAmount(offer.getAmount()),
+                        listing.getTitle(),
+                        seller.getDisplayName()
+                );
+            }
 
             sendSiteNotification(
                     buyer,
                     NotificationType.OFFER_ACCEPTED,
-                    title,
-                    body,
+                    "notification.offerAccepted.title",
+                    bodyKey,
+                    bodyArgs,
                     "/account/my-offers/" + offer.getId() + "/payment",
                     "notification.offerAccepted.cta"
             );
@@ -263,16 +326,12 @@ public class NotificationDispatcherImpl implements NotificationDispatcher {
                 NotificationType.PROOF_OF_PAYMENT_UPLOADED, offer.getId(), seller.getId());
 
         if (shouldSendSite(seller, NotificationType.PROOF_OF_PAYMENT_UPLOADED)) {
-            final Locale locale = seller.getPreferredLocale();
-            final String title = buildMessage("notification.proofOfPaymentUploaded.title", locale);
-            final String body = buildMessage("notification.proofOfPaymentUploaded.body", locale,
-                    buyer.getDisplayName(), listing.getTitle());
-
             sendSiteNotification(
                     seller,
                     NotificationType.PROOF_OF_PAYMENT_UPLOADED,
-                    title,
-                    body,
+                    "notification.proofOfPaymentUploaded.title",
+                    "notification.proofOfPaymentUploaded.body",
+                    List.of(buyer.getDisplayName(), listing.getTitle()),
                     "/account/incoming-offers/" + offer.getId(),
                     "notification.proofOfPaymentUploaded.cta"
             );
@@ -293,20 +352,20 @@ public class NotificationDispatcherImpl implements NotificationDispatcher {
                 NotificationType.PROOF_OF_SHIPPING_UPLOADED, offer.getId(), buyer.getId());
 
         if (shouldSendSite(buyer, NotificationType.PROOF_OF_SHIPPING_UPLOADED)) {
-            final Locale locale = buyer.getPreferredLocale();
-            final String title = buildMessage("notification.proofOfShippingUploaded.title", locale);
             final String tracking = offer.getTrackingNumber() != null ? offer.getTrackingNumber().trim() : "";
-            final String body = !tracking.isEmpty()
-                    ? buildMessage("notification.proofOfShippingUploaded.body.tracking", locale,
-                            seller.getDisplayName(), listing.getTitle(), tracking)
-                    : buildMessage("notification.proofOfShippingUploaded.body", locale,
-                            seller.getDisplayName(), listing.getTitle());
+            final String bodyKey = !tracking.isEmpty()
+                    ? "notification.proofOfShippingUploaded.body.tracking"
+                    : "notification.proofOfShippingUploaded.body";
+            final List<String> bodyArgs = !tracking.isEmpty()
+                    ? List.of(seller.getDisplayName(), listing.getTitle(), tracking)
+                    : List.of(seller.getDisplayName(), listing.getTitle());
 
             sendSiteNotification(
                     buyer,
                     NotificationType.PROOF_OF_SHIPPING_UPLOADED,
-                    title,
-                    body,
+                    "notification.proofOfShippingUploaded.title",
+                    bodyKey,
+                    bodyArgs,
                     "/account/my-offers?statusGroup=PENDING_PAYMENT",
                     "notification.proofOfShippingUploaded.cta"
             );
@@ -360,35 +419,28 @@ public class NotificationDispatcherImpl implements NotificationDispatcher {
     private void sendSiteNotification(
             final User recipient,
             final NotificationType type,
-            final String title,
-            final String body,
+            final String titleKey,
+            final String bodyKey,
+            final List<String> bodyArgs,
             final String actionUrl,
             final String actionLabelKey
     ) {
         siteNotificationService.create(SiteNotificationCreationDto.builder()
                 .notificationRecipient(recipient)
                 .notificationType(type)
-                .title(title)
-                .body(body)
+                .titleKey(titleKey)
+                .bodyKey(bodyKey)
+                .bodyArgs(bodyArgs)
                 .actionUrl(actionUrl)
                 .actionLabelKey(actionLabelKey)
                 .build());
     }
 
-    private String formatAmount(final BigDecimal amount, final Locale locale) {
-        final String currencySymbol = buildMessage("currency.symbol", locale);
-        final String numeric = amount != null ? amount.toPlainString() : "0";
-        return currencySymbol + " " + numeric;
+    private static boolean hasCashSupplement(final BigDecimal amount) {
+        return amount != null && amount.signum() > 0;
     }
 
-    private String formatTradeSupplement(final BigDecimal amount, final Locale locale) {
-        if (amount == null || amount.signum() <= 0) {
-            return "";
-        }
-        return buildMessage("notification.shared.tradeAndAmount", locale, formatAmount(amount, locale));
-    }
-
-    private String buildMessage(@NonNull final String key, @NonNull final Locale locale, final Object... params) {
-        return messageSource.getMessage(key, params.length > 0 ? params : null, locale);
+    private static String formatAmount(final BigDecimal amount) {
+        return amount != null ? amount.setScale(2, RoundingMode.HALF_UP).toPlainString() : "0.00";
     }
 }

@@ -91,7 +91,7 @@ public class GlobalExceptionHandler {
     public ModelAndView handleMaxUploadSizeExceeded(MaxUploadSizeExceededException ex) {
         LOGGER.warn("Upload size exceeded: {}", ex.getMessage());
         return new ModelAndView("error/badRequest")
-            .addObject("messageCode", "fileSizeExceeded");
+            .addObject("messageCode", "fileSizeExceeded.message");
     }
 
     @ExceptionHandler(Exception.class)

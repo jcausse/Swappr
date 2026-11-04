@@ -22,6 +22,7 @@ import javax.persistence.PersistenceContext;
 import javax.sql.DataSource;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -31,11 +32,13 @@ import java.util.Map;
 public class SiteNotificationJpaDaoTest {
 
     private static final String TABLE = "site_notifications";
+    private static final String ARGS_TABLE = "site_notification_args";
     private static final long USER_ID = 1L; // fake_user from initial-data.sql
 
     private static final NotificationType TYPE = NotificationType.NEW_OFFER;
-    private static final String TITLE = "New Offer Received";
-    private static final String BODY = "User John made an offer on your listing";
+    private static final String TITLE_KEY = "notification.newOffer.title";
+    private static final String BODY_KEY = "notification.newOffer.body";
+    private static final List<String> BODY_ARGS = List.of("John", "250.00", "Laptop");
     private static final String ACTION_URL = "/offers/10";
     private static final String ACTION_LABEL_KEY = "notification.action.viewOffer";
 
@@ -53,7 +56,7 @@ public class SiteNotificationJpaDaoTest {
     @Before
     public void setUp() {
         jdbcTemplate = new JdbcTemplate(dataSource);
-        JdbcTestUtils.deleteFromTables(jdbcTemplate, TABLE);
+        JdbcTestUtils.deleteFromTables(jdbcTemplate, ARGS_TABLE, TABLE);
     }
 
     private User userRef(Long id) {
@@ -64,26 +67,37 @@ public class SiteNotificationJpaDaoTest {
             final long id,
             final long userId,
             final NotificationType type,
-            final String title,
-            final String body,
+            final String titleKey,
+            final String bodyKey,
+            final List<String> bodyArgs,
             final String actionUrl,
             final String actionLabelKey,
             final boolean isRead,
             final Instant createdAt
     ) {
         jdbcTemplate.update(
-                "INSERT INTO site_notifications (notification_id, user_id, notification_type, title, body, action_url, action_label_key, is_read, created_at) " +
+                "INSERT INTO site_notifications (notification_id, user_id, notification_type, title_key, body_key, action_url, action_label_key, is_read, created_at) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 id,
                 userId,
                 type.name(),
-                title,
-                body,
+                titleKey,
+                bodyKey,
                 actionUrl,
                 actionLabelKey,
                 isRead,
                 Timestamp.from(createdAt)
         );
+        if (bodyArgs != null) {
+            for (int i = 0; i < bodyArgs.size(); i++) {
+                jdbcTemplate.update(
+                        "INSERT INTO site_notification_args (notification_id, arg_index, arg_value) VALUES (?, ?, ?)",
+                        id,
+                        i,
+                        bodyArgs.get(i)
+                );
+            }
+        }
     }
 
     /* ---------------------------------------------------------------------------------------------- */
@@ -98,7 +112,7 @@ public class SiteNotificationJpaDaoTest {
 
         // Act
         final SiteNotification notification = notificationDao.create(
-                user, TYPE, TITLE, BODY, ACTION_URL, ACTION_LABEL_KEY, now
+                user, TYPE, TITLE_KEY, BODY_KEY, BODY_ARGS, ACTION_URL, ACTION_LABEL_KEY, now
         );
 
         // Assert
@@ -106,8 +120,9 @@ public class SiteNotificationJpaDaoTest {
         Assert.assertNotNull(notification.getId());
         Assert.assertEquals(USER_ID, (long) notification.getUser().getId());
         Assert.assertEquals(TYPE, notification.getType());
-        Assert.assertEquals(TITLE, notification.getTitle());
-        Assert.assertEquals(BODY, notification.getBody());
+        Assert.assertEquals(TITLE_KEY, notification.getTitleKey());
+        Assert.assertEquals(BODY_KEY, notification.getBodyKey());
+        Assert.assertEquals(BODY_ARGS, notification.getBodyArgs());
         Assert.assertEquals(ACTION_URL, notification.getActionUrl().orElse(null));
         Assert.assertEquals(ACTION_LABEL_KEY, notification.getActionLabelKey().orElse(null));
         Assert.assertFalse(notification.isRead());
@@ -121,11 +136,11 @@ public class SiteNotificationJpaDaoTest {
 
         // Act
         final SiteNotification notification = notificationDao.create(
-                user, TYPE, TITLE, BODY, ACTION_URL, ACTION_LABEL_KEY, now
+                user, TYPE, TITLE_KEY, BODY_KEY, BODY_ARGS, ACTION_URL, ACTION_LABEL_KEY, now
         );
         em.flush();
 
-        // Assert directly querying the database table (no other DAO methods used)
+        // Assert directly querying the database tables (no other DAO methods used)
         Assert.assertEquals(1, JdbcTestUtils.countRowsInTableWhere(
                 jdbcTemplate, TABLE, "notification_id = " + notification.getId()
         ));
@@ -135,11 +150,18 @@ public class SiteNotificationJpaDaoTest {
         );
         Assert.assertEquals(USER_ID, ((Number) row.get("user_id")).longValue());
         Assert.assertEquals(TYPE.name(), row.get("notification_type"));
-        Assert.assertEquals(TITLE, row.get("title"));
-        Assert.assertEquals(BODY, row.get("body"));
+        Assert.assertEquals(TITLE_KEY, row.get("title_key"));
+        Assert.assertEquals(BODY_KEY, row.get("body_key"));
         Assert.assertEquals(ACTION_URL, row.get("action_url"));
         Assert.assertEquals(ACTION_LABEL_KEY, row.get("action_label_key"));
         Assert.assertEquals(Boolean.FALSE, row.get("is_read"));
+
+        final List<String> persistedArgs = jdbcTemplate.queryForList(
+                "SELECT arg_value FROM site_notification_args WHERE notification_id = ? ORDER BY arg_index ASC",
+                String.class,
+                notification.getId()
+        );
+        Assert.assertEquals(BODY_ARGS, persistedArgs);
     }
 
     /* ---------------------------------------------------------------------------------------------- */
@@ -148,11 +170,11 @@ public class SiteNotificationJpaDaoTest {
 
     @Test
     public void testGetMatchingPaginationAndOrdering() {
-        // Arrange with direct database inserts
+        // Arrange with direct database inserts (including multi-element bodyArgs to verify no duplicate entities)
         final Instant baseTime = Instant.parse("2026-11-01T10:00:00Z");
-        insertNotification(101L, USER_ID, NotificationType.NEW_OFFER, "Title 1", "Body 1", null, null, false, baseTime.plusSeconds(10));
-        insertNotification(102L, USER_ID, NotificationType.OFFER_ACCEPTED, "Title 2", "Body 2", null, null, false, baseTime.plusSeconds(20));
-        insertNotification(103L, USER_ID, NotificationType.OFFER_REJECTED, "Title 3", "Body 3", null, null, false, baseTime.plusSeconds(30));
+        insertNotification(101L, USER_ID, NotificationType.NEW_OFFER, "k.t1", "k.b1", List.of("A1", "A2"), null, null, false, baseTime.plusSeconds(10));
+        insertNotification(102L, USER_ID, NotificationType.OFFER_ACCEPTED, "k.t2", "k.b2", List.of("B1", "B2", "B3"), null, null, false, baseTime.plusSeconds(20));
+        insertNotification(103L, USER_ID, NotificationType.OFFER_REJECTED, "k.t3", "k.b3", List.of("C1", "C2"), null, null, false, baseTime.plusSeconds(30));
 
         // Act - page 1, size 2 (newest first: 103, 102)
         final SiteNotificationFilter filterPage1 = SiteNotificationFilter.builder()
@@ -166,7 +188,9 @@ public class SiteNotificationJpaDaoTest {
         Assert.assertEquals(3, page1.getTotalCount());
         Assert.assertEquals(2, page1.getContent().size());
         Assert.assertEquals(103L, (long) page1.getContent().get(0).getId());
+        Assert.assertEquals(List.of("C1", "C2"), page1.getContent().get(0).getBodyArgs());
         Assert.assertEquals(102L, (long) page1.getContent().get(1).getId());
+        Assert.assertEquals(List.of("B1", "B2", "B3"), page1.getContent().get(1).getBodyArgs());
         Assert.assertTrue(page1.isHasNext());
         Assert.assertFalse(page1.isHasPrevious());
 
@@ -179,6 +203,7 @@ public class SiteNotificationJpaDaoTest {
         final Page<SiteNotification> page2 = notificationDao.getMatching(filterPage2);
         Assert.assertEquals(1, page2.getContent().size());
         Assert.assertEquals(101L, (long) page2.getContent().getFirst().getId());
+        Assert.assertEquals(List.of("A1", "A2"), page2.getContent().getFirst().getBodyArgs());
         Assert.assertFalse(page2.isHasNext());
         Assert.assertTrue(page2.isHasPrevious());
     }
@@ -187,8 +212,8 @@ public class SiteNotificationJpaDaoTest {
     public void testGetMatchingUnreadOnly() {
         // Arrange with direct database inserts
         final Instant now = Instant.now();
-        insertNotification(201L, USER_ID, NotificationType.NEW_OFFER, "Unread", "Body", null, null, false, now.plusSeconds(10));
-        insertNotification(202L, USER_ID, NotificationType.OFFER_ACCEPTED, "Read", "Body", null, null, true, now);
+        insertNotification(201L, USER_ID, NotificationType.NEW_OFFER, "k.unread", "k.body", List.of("X"), null, null, false, now.plusSeconds(10));
+        insertNotification(202L, USER_ID, NotificationType.OFFER_ACCEPTED, "k.read", "k.body", List.of("Y"), null, null, true, now);
 
         // Act
         final SiteNotificationFilter filter = SiteNotificationFilter.builder()
@@ -209,8 +234,8 @@ public class SiteNotificationJpaDaoTest {
     public void testGetMatchingByType() {
         // Arrange with direct database inserts
         final Instant now = Instant.now();
-        insertNotification(301L, USER_ID, NotificationType.OFFER_ACCEPTED, "Accepted", "Body", null, null, false, now.plusSeconds(10));
-        insertNotification(302L, USER_ID, NotificationType.NEW_OFFER, "New Offer", "Body", null, null, false, now);
+        insertNotification(301L, USER_ID, NotificationType.OFFER_ACCEPTED, "k.accepted", "k.body", List.of("150.00", "Item"), null, null, false, now.plusSeconds(10));
+        insertNotification(302L, USER_ID, NotificationType.NEW_OFFER, "k.newOffer", "k.body", List.of("Bob", "150.00", "Item"), null, null, false, now);
 
         // Act - filter by OFFER_ACCEPTED
         final SiteNotificationFilter filter = SiteNotificationFilter.builder()
@@ -236,8 +261,8 @@ public class SiteNotificationJpaDaoTest {
     public void testMarkAllAsReadForUser() {
         // Arrange with direct database inserts
         final Instant now = Instant.now();
-        insertNotification(501L, USER_ID, NotificationType.NEW_OFFER, "T1", "B1", null, null, false, now);
-        insertNotification(502L, USER_ID, NotificationType.NEW_OFFER, "T2", "B2", null, null, false, now.plusSeconds(1));
+        insertNotification(501L, USER_ID, NotificationType.NEW_OFFER, "k.t1", "k.b1", List.of(), null, null, false, now);
+        insertNotification(502L, USER_ID, NotificationType.NEW_OFFER, "k.t2", "k.b2", List.of(), null, null, false, now.plusSeconds(1));
 
         // Act
         notificationDao.markAllAsReadForUser(userRef(USER_ID));
@@ -261,16 +286,19 @@ public class SiteNotificationJpaDaoTest {
     public void testDelete() {
         // Arrange with direct database insert
         final Instant now = Instant.now();
-        insertNotification(601L, USER_ID, TYPE, TITLE, BODY, ACTION_URL, ACTION_LABEL_KEY, false, now);
+        insertNotification(601L, USER_ID, TYPE, TITLE_KEY, BODY_KEY, BODY_ARGS, ACTION_URL, ACTION_LABEL_KEY, false, now);
         final SiteNotification notification = em.find(SiteNotification.class, 601L);
 
         // Act
         notificationDao.delete(notification);
         em.flush();
 
-        // Assert directly querying database table
+        // Assert directly querying database tables
         Assert.assertEquals(0, JdbcTestUtils.countRowsInTableWhere(
                 jdbcTemplate, TABLE, "notification_id = 601"
+        ));
+        Assert.assertEquals(0, JdbcTestUtils.countRowsInTableWhere(
+                jdbcTemplate, ARGS_TABLE, "notification_id = 601"
         ));
     }
 
@@ -282,7 +310,7 @@ public class SiteNotificationJpaDaoTest {
     public void testGetByIdReturnsExistingNotification() {
         // Arrange with direct database insert
         final Instant now = Instant.now();
-        insertNotification(701L, USER_ID, TYPE, TITLE, BODY, ACTION_URL, ACTION_LABEL_KEY, false, now);
+        insertNotification(701L, USER_ID, TYPE, TITLE_KEY, BODY_KEY, BODY_ARGS, ACTION_URL, ACTION_LABEL_KEY, false, now);
 
         // Act
         final var maybeNotification = notificationDao.getById(701L);
@@ -290,7 +318,9 @@ public class SiteNotificationJpaDaoTest {
         // Assert
         Assert.assertTrue(maybeNotification.isPresent());
         Assert.assertEquals(701L, (long) maybeNotification.get().getId());
-        Assert.assertEquals(TITLE, maybeNotification.get().getTitle());
+        Assert.assertEquals(TITLE_KEY, maybeNotification.get().getTitleKey());
+        Assert.assertEquals(BODY_KEY, maybeNotification.get().getBodyKey());
+        Assert.assertEquals(BODY_ARGS, maybeNotification.get().getBodyArgs());
     }
 
     @Test
@@ -310,8 +340,8 @@ public class SiteNotificationJpaDaoTest {
     public void testMarkAsReadMarksOnlyTargetNotification() {
         // Arrange with direct database inserts
         final Instant now = Instant.now();
-        insertNotification(801L, USER_ID, TYPE, "Target", BODY, null, null, false, now);
-        insertNotification(802L, USER_ID, TYPE, "Other", BODY, null, null, false, now.plusSeconds(1));
+        insertNotification(801L, USER_ID, TYPE, "k.target", BODY_KEY, List.of(), null, null, false, now);
+        insertNotification(802L, USER_ID, TYPE, "k.other", BODY_KEY, List.of(), null, null, false, now.plusSeconds(1));
         final SiteNotification target = em.find(SiteNotification.class, 801L);
 
         // Act

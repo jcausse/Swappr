@@ -4,6 +4,9 @@ import lombok.*;
 
 import javax.persistence.*;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 @Getter
@@ -11,7 +14,7 @@ import java.util.Optional;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@ToString(exclude = "user")
+@ToString(exclude = {"user", "bodyArgs"})
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Entity
 @Table(name = "site_notifications")
@@ -31,11 +34,18 @@ public class SiteNotification {
     @Column(name = "notification_type", nullable = false, length = 50)
     private NotificationType type;
 
-    @Column(name = "title", nullable = false)
-    private String title;
+    @Column(name = "title_key", nullable = false, length = 100)
+    private String titleKey;
 
-    @Column(name = "body", nullable = false)
-    private String body;
+    @Column(name = "body_key", nullable = false, length = 100)
+    private String bodyKey;
+
+    @Builder.Default
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(name = "site_notification_args", joinColumns = @JoinColumn(name = "notification_id"))
+    @OrderColumn(name = "arg_index")
+    @Column(name = "arg_value", nullable = false)
+    private List<String> bodyArgs = new ArrayList<>();
 
     @Column(name = "action_url")
     private String actionUrl;
@@ -52,6 +62,10 @@ public class SiteNotification {
 
     // -------------------------------------------------------------------------------------------------
     // Domain Optionals & State Mutators
+
+    public List<String> getBodyArgs() {
+        return bodyArgs != null ? Collections.unmodifiableList(bodyArgs) : Collections.emptyList();
+    }
 
     public Optional<String> getActionUrl() {
         return Optional.ofNullable(actionUrl);

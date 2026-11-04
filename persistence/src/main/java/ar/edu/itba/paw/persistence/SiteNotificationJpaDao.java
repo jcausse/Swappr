@@ -12,10 +12,14 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Repository
 public class SiteNotificationJpaDao implements SiteNotificationDao {
@@ -25,25 +29,33 @@ public class SiteNotificationJpaDao implements SiteNotificationDao {
 
     @Override
     public Optional<SiteNotification> getById(long id) {
-        return Optional.ofNullable(em.find(SiteNotification.class, id));
+        return em.createQuery(
+                        "SELECT DISTINCT n FROM SiteNotification n LEFT JOIN FETCH n.bodyArgs WHERE n.id = :id",
+                        SiteNotification.class)
+                .setParameter("id", id)
+                .getResultStream()
+                .findFirst();
     }
 
     @Override
     public SiteNotification create(
             User user,
             NotificationType type,
-            String title,
-            String body,
+            String titleKey,
+            String bodyKey,
+            List<String> bodyArgs,
             String actionUrl,
             String actionLabelKey,
             Instant createdAt
     ) {
         final User userRef = em.getReference(User.class, user.getId());
+        final List<String> normalizedArgs = bodyArgs != null ? new ArrayList<>(bodyArgs) : new ArrayList<>();
         final SiteNotification notification = SiteNotification.builder()
                 .user(userRef)
                 .type(type)
-                .title(title)
-                .body(body)
+                .titleKey(titleKey)
+                .bodyKey(bodyKey)
+                .bodyArgs(normalizedArgs)
                 .actionUrl(actionUrl)
                 .actionLabelKey(actionLabelKey)
                 .read(false)
@@ -113,12 +125,19 @@ public class SiteNotificationJpaDao implements SiteNotificationDao {
             return new Page<>(List.of(), page, pageSize, totalCount);
         }
 
-        // 3. Population query (1+1 model - Step 2: load entities and preserve order)
-        final List<SiteNotification> entities = em.createQuery(
-                "FROM SiteNotification n WHERE n.id IN :ids ORDER BY n.createdAt DESC, n.id DESC",
-                SiteNotification.class)
+        // 3. Population query (1+1 model - Step 2: load entities with bodyArgs and preserve order)
+        final List<SiteNotification> fetched = em.createQuery(
+                        "SELECT DISTINCT n FROM SiteNotification n LEFT JOIN FETCH n.bodyArgs WHERE n.id IN :ids",
+                        SiteNotification.class)
                 .setParameter("ids", ids)
                 .getResultList();
+
+        final Map<Long, SiteNotification> byId = fetched.stream()
+                .collect(Collectors.toMap(SiteNotification::getId, Function.identity()));
+        final List<SiteNotification> entities = ids.stream()
+                .map(byId::get)
+                .filter(Objects::nonNull)
+                .toList();
 
         return new Page<>(entities, page, pageSize, totalCount);
     }

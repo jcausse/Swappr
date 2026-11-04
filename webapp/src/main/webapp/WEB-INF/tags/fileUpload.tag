@@ -158,7 +158,7 @@
         });
 
         if (hasSizeError) {
-            errorMessage.textContent = sizeErrorMsg || 'File exceeds maximum size of 5MB';
+            errorMessage.textContent = sizeErrorMsg;
             errorBanner.classList.remove('hidden');
             addBtn.classList.remove('hidden');
         } else {

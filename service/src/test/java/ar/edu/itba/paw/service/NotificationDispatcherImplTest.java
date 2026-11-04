@@ -12,11 +12,10 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.springframework.context.support.StaticMessageSource;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.Locale;
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -39,13 +38,12 @@ public class NotificationDispatcherImplTest {
     public void setUp() {
         dispatcher = new NotificationDispatcherImpl(
                 siteNotificationService,
-                emailNotificationService,
-                buildMessageSource()
+                emailNotificationService
         );
     }
 
     @Test
-    public void testNotifyNewOfferCashDispatchesBothSiteAndEmailInRecipientLocale() {
+    public void testNotifyNewOfferCashDispatchesLanguageNeutralKeysAndEmail() {
         // Arrange — seller prefers Spanish, buyer prefers English
         final User seller = buildUser(10L, "Seller Ana", Language.SPANISH);
         final User buyer = buildUser(20L, "Buyer Bob", Language.ENGLISH);
@@ -69,13 +67,14 @@ public class NotificationDispatcherImplTest {
         // Act
         dispatcher.notifyNewOffer(offer);
 
-        // Assert — Site notification uses seller's Spanish locale and context-relative URL
+        // Assert — Site notification stores message keys and language-neutral args
         Assert.assertEquals(1, siteCaptor.getAllValues().size());
         final SiteNotificationCreationDto siteDto = siteCaptor.getValue();
         Assert.assertSame(seller, siteDto.notificationRecipient());
         Assert.assertEquals(NotificationType.NEW_OFFER, siteDto.notificationType());
-        Assert.assertEquals("Nueva oferta recibida", siteDto.title());
-        Assert.assertEquals("Buyer Bob ofreció US$ 250.00 por \"Sony WH-1000XM5\".", siteDto.body());
+        Assert.assertEquals("notification.newOffer.title", siteDto.titleKey());
+        Assert.assertEquals("notification.newOffer.body", siteDto.bodyKey());
+        Assert.assertEquals(List.of("Buyer Bob", "250.00", "Sony WH-1000XM5"), siteDto.bodyArgs());
         Assert.assertEquals("/account/incoming-offers/500", siteDto.actionUrl());
         Assert.assertEquals("notification.newOffer.cta", siteDto.actionLabelKey());
 
@@ -87,18 +86,28 @@ public class NotificationDispatcherImplTest {
     }
 
     @Test
-    public void testNotifyNewOfferTradeWithCashSupplementFormatsTradeBody() {
+    public void testNotifyNewOfferTradeWithAndWithoutCashUsesDistinctBodyKeys() {
         // Arrange
         final User seller = buildUser(10L, "Seller Ana", Language.ENGLISH);
         final User buyer = buildUser(20L, "Buyer Bob", Language.ENGLISH);
         final Listing listing = buildListing(100L, "MacBook Pro 14", seller);
         final Listing offeredListing = buildListing(200L, "iPad Pro M2", buyer);
-        final Offer offer = Offer.builder()
+        final Offer tradeWithCash = Offer.builder()
                 .id(501L)
                 .listing(listing)
                 .offeredListing(offeredListing)
                 .buyer(buyer)
                 .amount(new BigDecimal("300.00"))
+                .isFullPrice(false)
+                .status(OfferStatus.PENDING)
+                .createdAt(Instant.now())
+                .build();
+        final Offer pureTrade = Offer.builder()
+                .id(502L)
+                .listing(listing)
+                .offeredListing(offeredListing)
+                .buyer(buyer)
+                .amount(BigDecimal.ZERO)
                 .isFullPrice(false)
                 .status(OfferStatus.PENDING)
                 .createdAt(Instant.now())
@@ -111,17 +120,29 @@ public class NotificationDispatcherImplTest {
         doNothing().when(emailNotificationService).sendNewOfferEmail(mailCaptor.capture());
 
         // Act
-        dispatcher.notifyNewOffer(offer);
+        dispatcher.notifyNewOffer(tradeWithCash);
+        dispatcher.notifyNewOffer(pureTrade);
 
         // Assert
-        Assert.assertEquals(1, siteCaptor.getAllValues().size());
-        final SiteNotificationCreationDto siteDto = siteCaptor.getValue();
-        Assert.assertEquals("New offer received", siteDto.title());
+        Assert.assertEquals(2, siteCaptor.getAllValues().size());
+
+        final SiteNotificationCreationDto withCashDto = siteCaptor.getAllValues().get(0);
+        Assert.assertEquals("notification.newOffer.title", withCashDto.titleKey());
+        Assert.assertEquals("notification.newOffer.body.tradeWithCash", withCashDto.bodyKey());
         Assert.assertEquals(
-                "Buyer Bob offered \"iPad Pro M2\" and US$ 300.00 for \"MacBook Pro 14\".",
-                siteDto.body()
+                List.of("Buyer Bob", "iPad Pro M2", "300.00", "MacBook Pro 14"),
+                withCashDto.bodyArgs()
         );
-        Assert.assertEquals(1, mailCaptor.getAllValues().size());
+
+        final SiteNotificationCreationDto pureTradeDto = siteCaptor.getAllValues().get(1);
+        Assert.assertEquals("notification.newOffer.title", pureTradeDto.titleKey());
+        Assert.assertEquals("notification.newOffer.body.trade", pureTradeDto.bodyKey());
+        Assert.assertEquals(
+                List.of("Buyer Bob", "iPad Pro M2", "MacBook Pro 14"),
+                pureTradeDto.bodyArgs()
+        );
+
+        Assert.assertEquals(2, mailCaptor.getAllValues().size());
     }
 
     @Test
@@ -154,6 +175,9 @@ public class NotificationDispatcherImplTest {
         final SiteNotificationCreationDto siteDto = siteCaptor.getValue();
         Assert.assertSame(buyer, siteDto.notificationRecipient());
         Assert.assertEquals(NotificationType.OFFER_ACCEPTED, siteDto.notificationType());
+        Assert.assertEquals("notification.offerAccepted.title", siteDto.titleKey());
+        Assert.assertEquals("notification.offerAccepted.body", siteDto.bodyKey());
+        Assert.assertEquals(List.of("280.00", "Nintendo Switch OLED", "Seller Ana"), siteDto.bodyArgs());
         Assert.assertEquals("/account/my-offers/502/payment", siteDto.actionUrl());
         Assert.assertEquals("notification.offerAccepted.cta", siteDto.actionLabelKey());
         Assert.assertEquals(1, mailCaptor.getAllValues().size());
@@ -189,10 +213,9 @@ public class NotificationDispatcherImplTest {
         Assert.assertEquals(1, siteCaptor.getAllValues().size());
         final SiteNotificationCreationDto siteDto = siteCaptor.getValue();
         Assert.assertEquals(NotificationType.PROOF_OF_SHIPPING_UPLOADED, siteDto.notificationType());
-        Assert.assertEquals(
-                "Seller Ana uploaded proof of shipping for \"Camera Lens\" (tracking: AR-998877).",
-                siteDto.body()
-        );
+        Assert.assertEquals("notification.proofOfShippingUploaded.title", siteDto.titleKey());
+        Assert.assertEquals("notification.proofOfShippingUploaded.body.tracking", siteDto.bodyKey());
+        Assert.assertEquals(List.of("Seller Ana", "Camera Lens", "AR-998877"), siteDto.bodyArgs());
         Assert.assertEquals("/account/my-offers?statusGroup=PENDING_PAYMENT", siteDto.actionUrl());
         Assert.assertEquals(1, mailCaptor.getAllValues().size());
     }
@@ -224,6 +247,9 @@ public class NotificationDispatcherImplTest {
         final SiteNotificationCreationDto siteDto = siteCaptor.getValue();
         Assert.assertSame(buyer, siteDto.notificationRecipient());
         Assert.assertEquals(NotificationType.PURCHASE_CONFIRMED, siteDto.notificationType());
+        Assert.assertEquals("notification.purchaseConfirmed.title", siteDto.titleKey());
+        Assert.assertEquals("notification.purchaseConfirmed.body", siteDto.bodyKey());
+        Assert.assertEquals(List.of("Seller Ana", "Mechanical Keyboard"), siteDto.bodyArgs());
         Assert.assertEquals("/account/my-offers?statusGroup=RESOLVED", siteDto.actionUrl());
 
         // Assert — Both email notifications were sent
@@ -265,14 +291,24 @@ public class NotificationDispatcherImplTest {
 
         // Assert
         Assert.assertEquals(3, siteCaptor.getAllValues().size());
-        Assert.assertEquals(NotificationType.OFFER_REJECTED, siteCaptor.getAllValues().get(0).notificationType());
-        Assert.assertEquals("/listing", siteCaptor.getAllValues().get(0).actionUrl());
 
-        Assert.assertEquals(NotificationType.OFFER_WITHDRAWN, siteCaptor.getAllValues().get(1).notificationType());
-        Assert.assertEquals("/listing/100", siteCaptor.getAllValues().get(1).actionUrl());
+        final SiteNotificationCreationDto rejectedDto = siteCaptor.getAllValues().get(0);
+        Assert.assertEquals(NotificationType.OFFER_REJECTED, rejectedDto.notificationType());
+        Assert.assertEquals("notification.offerRejected.body", rejectedDto.bodyKey());
+        Assert.assertEquals(List.of("190.00", "Desk Monitor"), rejectedDto.bodyArgs());
+        Assert.assertEquals("/listing", rejectedDto.actionUrl());
 
-        Assert.assertEquals(NotificationType.PROOF_OF_PAYMENT_UPLOADED, siteCaptor.getAllValues().get(2).notificationType());
-        Assert.assertEquals("/account/incoming-offers/505", siteCaptor.getAllValues().get(2).actionUrl());
+        final SiteNotificationCreationDto withdrawnDto = siteCaptor.getAllValues().get(1);
+        Assert.assertEquals(NotificationType.OFFER_WITHDRAWN, withdrawnDto.notificationType());
+        Assert.assertEquals("notification.offerWithdrawn.body", withdrawnDto.bodyKey());
+        Assert.assertEquals(List.of("Buyer Bob", "190.00", "Desk Monitor"), withdrawnDto.bodyArgs());
+        Assert.assertEquals("/listing/100", withdrawnDto.actionUrl());
+
+        final SiteNotificationCreationDto paymentDto = siteCaptor.getAllValues().get(2);
+        Assert.assertEquals(NotificationType.PROOF_OF_PAYMENT_UPLOADED, paymentDto.notificationType());
+        Assert.assertEquals("notification.proofOfPaymentUploaded.body", paymentDto.bodyKey());
+        Assert.assertEquals(List.of("Buyer Bob", "Desk Monitor"), paymentDto.bodyArgs());
+        Assert.assertEquals("/account/incoming-offers/505", paymentDto.actionUrl());
 
         Assert.assertEquals(1, rejectedCaptor.getAllValues().size());
         Assert.assertEquals(1, withdrawnCaptor.getAllValues().size());
@@ -359,54 +395,5 @@ public class NotificationDispatcherImplTest {
                 .condition(Condition.LIKE_NEW)
                 .status(ListingStatus.ACTIVE)
                 .build();
-    }
-
-    private static StaticMessageSource buildMessageSource() {
-        final StaticMessageSource ms = new StaticMessageSource();
-        final Locale en = Locale.ENGLISH;
-        final Locale es = Locale.of("es");
-
-        ms.addMessage("currency.symbol", en, "US$");
-        ms.addMessage("currency.symbol", es, "US$");
-        ms.addMessage("notification.shared.tradeAndAmount", en, " and {0}");
-        ms.addMessage("notification.shared.tradeAndAmount", es, " y {0}");
-
-        ms.addMessage("notification.newOffer.title", en, "New offer received");
-        ms.addMessage("notification.newOffer.body", en, "{0} offered {1} for \"{2}\".");
-        ms.addMessage("notification.newOffer.body.trade", en, "{0} offered \"{1}\"{2} for \"{3}\".");
-
-        ms.addMessage("notification.newOffer.title", es, "Nueva oferta recibida");
-        ms.addMessage("notification.newOffer.body", es, "{0} ofreció {1} por \"{2}\".");
-        ms.addMessage("notification.newOffer.body.trade", es, "{0} ofreció \"{1}\"{2} por \"{3}\".");
-
-        ms.addMessage("notification.offerAccepted.title", en, "Offer accepted");
-        ms.addMessage("notification.offerAccepted.body", en,
-                "Your offer of {0} for \"{1}\" was accepted. Upload proof of payment or coordinate delivery with {2}.");
-        ms.addMessage("notification.offerAccepted.body.trade", en,
-                "Your trade offer of \"{0}\"{1} for \"{2}\" was accepted. Coordinate payment and delivery with {3}.");
-
-        ms.addMessage("notification.offerRejected.title", en, "Offer not accepted");
-        ms.addMessage("notification.offerRejected.body", en, "Your offer of {0} for \"{1}\" was not accepted.");
-        ms.addMessage("notification.offerRejected.body.trade", en,
-                "Your trade offer of \"{0}\"{1} for \"{2}\" was not accepted.");
-
-        ms.addMessage("notification.offerWithdrawn.title", en, "Offer withdrawn");
-        ms.addMessage("notification.offerWithdrawn.body", en, "{0} withdrew their offer of {1} for \"{2}\".");
-        ms.addMessage("notification.offerWithdrawn.body.trade", en,
-                "{0} withdrew their trade offer of \"{1}\"{2} for \"{3}\".");
-
-        ms.addMessage("notification.proofOfPaymentUploaded.title", en, "Proof of payment uploaded");
-        ms.addMessage("notification.proofOfPaymentUploaded.body", en,
-                "{0} uploaded proof of payment for \"{1}\". Review and confirm payment to complete the sale.");
-
-        ms.addMessage("notification.proofOfShippingUploaded.title", en, "Proof of shipping uploaded");
-        ms.addMessage("notification.proofOfShippingUploaded.body", en, "{0} uploaded proof of shipping for \"{1}\".");
-        ms.addMessage("notification.proofOfShippingUploaded.body.tracking", en,
-                "{0} uploaded proof of shipping for \"{1}\" (tracking: {2}).");
-
-        ms.addMessage("notification.purchaseConfirmed.title", en, "Purchase confirmed");
-        ms.addMessage("notification.purchaseConfirmed.body", en, "{0} confirmed receiving payment for \"{1}\".");
-
-        return ms;
     }
 }

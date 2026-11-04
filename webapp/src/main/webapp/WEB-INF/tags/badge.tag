@@ -5,6 +5,7 @@
 <%@ attribute name="classname" required="false" %>
 <%@ attribute name="color" required="false" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="paw" tagdir="/WEB-INF/tags" %>
 
 
 <c:set var="badgeSize" value="${not empty size ? size : 'md'}"/>

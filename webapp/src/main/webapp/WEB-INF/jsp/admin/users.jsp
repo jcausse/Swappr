@@ -54,12 +54,13 @@
                             <p class="text-xs text-black/50 mt-0.5"><c:out value="${targetUser.email}"/></p>
                             <div class="flex items-center gap-1.5 mt-2">
                                 <c:forEach var="role" items="${targetUserRoles}">
+                                    <spring:message code="admin.users.role.${role.name()}" var="roleBadgeText"/>
                                     <c:choose>
                                         <c:when test="${role.name() eq 'ADMIN'}">
-                                            <paw:badge text="${role.name()}" classname="text-purple-700 bg-purple-100" size="sm"/>
+                                            <paw:badge text="${roleBadgeText}" classname="text-purple-700 bg-purple-100" size="sm"/>
                                         </c:when>
                                         <c:otherwise>
-                                            <paw:badge text="${role.name()}" classname="text-neutral-700 bg-neutral-100" size="sm"/>
+                                            <paw:badge text="${roleBadgeText}" classname="text-neutral-700 bg-neutral-100" size="sm"/>
                                         </c:otherwise>
                                     </c:choose>
                                 </c:forEach>

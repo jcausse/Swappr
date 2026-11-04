@@ -10,7 +10,7 @@
 <spring:message code="account.incomingOffers.title" var="titleMsg"/>
 <spring:message code="account.incomingOffers.subtitle" var="subtitleMsg"/>
 
-+<account:layout titleKey="account.incomingOffers.title" title="${titleMsg}" subtitle="${subtitleMsg}">
+<account:layout titleKey="account.incomingOffers.title" title="${titleMsg}" subtitle="${subtitleMsg}">
     <!-- Back link -->
     <div class="mb-4">
         <spring:message code="offer.detail.back" var="backLabel"/>
@@ -21,22 +21,44 @@
         <div class="text-center">
             <c:set var="offerAmount" value="${offer.amount}"/>
             <spring:message code="currency.symbol" var="currencySymbol"/>
-            <c:set var="tradeAndAmount" value=""/>
-            <c:if test="${offerAmount != null and offerAmount > 0.0}">
-                <spring:message var="tradeAndAmount" code="offer.detail.tradeAndAmount" arguments="${currencySymbol} ${offerAmount}"/>
-            </c:if>
 
             <c:choose>
                 <c:when test="${offer.offeredListing.present}">
                     <c:set var="offeredListing" value="${offer.offeredListing.get()}"/>
-                    <spring:message code="offer.detail.title.trade"
-                                    arguments="${offer.buyer.displayName},${offeredListing.product.brand},${offeredListing.product.model},${offeredListing.product.year},${tradeAndAmount},${offer.listing.product.brand},${offer.listing.product.model},${offer.listing.product.year}"
-                                    var="title"/>
+                    <c:choose>
+                        <c:when test="${offerAmount != null and offerAmount > 0.0}">
+                            <spring:message code="offer.detail.title.tradeWithCash" var="title">
+                                <spring:argument value="${offer.buyer.displayName}"/>
+                                <spring:argument value="${offeredListing.product.brand}"/>
+                                <spring:argument value="${offeredListing.product.model}"/>
+                                <spring:argument value="${offeredListing.product.year}"/>
+                                <spring:argument value="${currencySymbol} ${offerAmount}"/>
+                                <spring:argument value="${offer.listing.product.brand}"/>
+                                <spring:argument value="${offer.listing.product.model}"/>
+                                <spring:argument value="${offer.listing.product.year}"/>
+                            </spring:message>
+                        </c:when>
+                        <c:otherwise>
+                            <spring:message code="offer.detail.title.trade" var="title">
+                                <spring:argument value="${offer.buyer.displayName}"/>
+                                <spring:argument value="${offeredListing.product.brand}"/>
+                                <spring:argument value="${offeredListing.product.model}"/>
+                                <spring:argument value="${offeredListing.product.year}"/>
+                                <spring:argument value="${offer.listing.product.brand}"/>
+                                <spring:argument value="${offer.listing.product.model}"/>
+                                <spring:argument value="${offer.listing.product.year}"/>
+                            </spring:message>
+                        </c:otherwise>
+                    </c:choose>
                 </c:when>
                 <c:otherwise>
-                    <spring:message code="offer.detail.title"
-                                    arguments="${offer.buyer.displayName},${currencySymbol} ${offer.amount},${offer.listing.product.brand},${offer.listing.product.model},${offer.listing.product.year}"
-                                    var="title"/>
+                    <spring:message code="offer.detail.title" var="title">
+                        <spring:argument value="${offer.buyer.displayName}"/>
+                        <spring:argument value="${currencySymbol} ${offer.amount}"/>
+                        <spring:argument value="${offer.listing.product.brand}"/>
+                        <spring:argument value="${offer.listing.product.model}"/>
+                        <spring:argument value="${offer.listing.product.year}"/>
+                    </spring:message>
                 </c:otherwise>
             </c:choose>
             <h1 class="text-xl font-medium text-balance"><c:out value="${title}"/></h1>

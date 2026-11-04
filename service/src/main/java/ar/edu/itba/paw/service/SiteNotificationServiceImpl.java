@@ -61,14 +61,15 @@ public class SiteNotificationServiceImpl implements SiteNotificationService {
     @Override
     @Transactional
     public SiteNotification create(@NonNull SiteNotificationCreationDto creationDto) {
-        LOGGER.debug("Creating site notification of type {} for user id={}, title='{}'",
-                creationDto.notificationType(), creationDto.notificationRecipient().getId(), creationDto.title());
+        LOGGER.debug("Creating site notification of type {} for user id={}, titleKey='{}'",
+                creationDto.notificationType(), creationDto.notificationRecipient().getId(), creationDto.titleKey());
 
         final SiteNotification notification = siteNotificationDao.create(
                 creationDto.notificationRecipient(),
                 creationDto.notificationType(),
-                creationDto.title(),
-                creationDto.body(),
+                creationDto.titleKey(),
+                creationDto.bodyKey(),
+                creationDto.bodyArgs(),
                 creationDto.actionUrl(),
                 creationDto.actionLabelKey(),
                 Instant.now()
