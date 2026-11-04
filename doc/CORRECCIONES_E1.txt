@@ -30,7 +30,8 @@
 
 # Otras correcciones
 
-[ ] Ofrecer un valor con decimales, usando el mismo separador que usan para presentar (ie: 100.00) termina en un Bad Request.
+[X] Ofrecer un valor con decimales, usando el mismo separador que usan para presentar (ie: 100.00) termina en un Bad Request.
+  -- RESUELTO: fixeado y/o no reproducible
 
 [X] My Offers no da indicación de que tabs tienen o no contenido... siempre selecciona el primero y ya. Por ejemplo, si tengo ofertas aprobadas con pago pendiente, no tengo indicador visual.
   -- RESUELTO: PR https://bitbucket.org/itba/paw-2026b-08/pull-requests/86
