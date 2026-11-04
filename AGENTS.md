@@ -59,7 +59,10 @@ While you as an AI agent are allowed to edit this file on your own, you must **a
   - `messages.properties` (Default / English).
   - `messages_es.properties` (Spanish).
 - **Mandatory rule**: Whenever you add, modify, or remove a message key, you **MUST** update **BOTH** `messages.properties` and `messages_es.properties`.
-- Single quotes / apostrophes in properties files **must be doubled** (e.g. `Don''t`) because `MessageFormat` treats `'` as an escape character.
+- **Apostrophes / single quotes depend on whether the message takes arguments** (`MessageSource` is configured with the default `alwaysUseMessageFormat = false`):
+  - Messages **without** `{n}` placeholders are returned verbatim (never passed through `MessageFormat`), so use a **single** `'` (e.g. `You don't have any notifications yet.`). Doubling it would render `''` literally.
+  - Messages **with** `{n}` placeholders go through `MessageFormat`, which treats `'` as an escape character, so the apostrophe **must be doubled** (e.g. `{0} didn''t accept your offer.`). A single `'` there is silently dropped and quotes out the rest of the message, including later placeholders.
+  - When adding or removing placeholders from an existing message, re-check its apostrophes.
 
 ### Key Naming Hierarchy
 - **Bean Validation errors**: `<Constraint>.<formName>.<fieldName>` (e.g., `NotEmpty.userForm.username`, `Size.userForm.username`, `Email.userForm.email`).
