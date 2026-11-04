@@ -8,24 +8,35 @@ import ar.edu.itba.paw.service.dto.mail.UserMailDto;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.context.support.StaticMessageSource;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.when;
+
+@RunWith(MockitoJUnitRunner.class)
 public class NotificationDispatcherImplTest {
 
-    private RecordingSiteNotificationService siteNotificationService;
-    private RecordingEmailNotificationService emailNotificationService;
+    @Mock
+    private SiteNotificationService siteNotificationService;
+
+    @Mock
+    private EmailNotificationService emailNotificationService;
+
     private NotificationDispatcherImpl dispatcher;
 
     @Before
     public void setUp() {
-        siteNotificationService = new RecordingSiteNotificationService();
-        emailNotificationService = new RecordingEmailNotificationService();
         dispatcher = new NotificationDispatcherImpl(
                 siteNotificationService,
                 emailNotificationService,
@@ -49,12 +60,18 @@ public class NotificationDispatcherImplTest {
                 .createdAt(Instant.now())
                 .build();
 
+        final ArgumentCaptor<SiteNotificationCreationDto> siteCaptor =
+                ArgumentCaptor.forClass(SiteNotificationCreationDto.class);
+        final ArgumentCaptor<OfferMailDto> mailCaptor = ArgumentCaptor.forClass(OfferMailDto.class);
+        when(siteNotificationService.create(siteCaptor.capture())).thenReturn(new SiteNotification());
+        doNothing().when(emailNotificationService).sendNewOfferEmail(mailCaptor.capture());
+
         // Act
         dispatcher.notifyNewOffer(offer);
 
         // Assert — Site notification uses seller's Spanish locale and context-relative URL
-        Assert.assertEquals(1, siteNotificationService.created.size());
-        final SiteNotificationCreationDto siteDto = siteNotificationService.created.get(0);
+        Assert.assertEquals(1, siteCaptor.getAllValues().size());
+        final SiteNotificationCreationDto siteDto = siteCaptor.getValue();
         Assert.assertSame(seller, siteDto.notificationRecipient());
         Assert.assertEquals(NotificationType.NEW_OFFER, siteDto.notificationType());
         Assert.assertEquals("Nueva oferta recibida", siteDto.title());
@@ -63,11 +80,10 @@ public class NotificationDispatcherImplTest {
         Assert.assertEquals("notification.newOffer.cta", siteDto.actionLabelKey());
 
         // Assert — Email notification also dispatched with detached OfferMailDto snapshot
-        Assert.assertEquals(1, emailNotificationService.events.size());
-        final EmailEvent emailEvent = emailNotificationService.events.get(0);
-        Assert.assertEquals(NotificationType.NEW_OFFER, emailEvent.type);
-        Assert.assertEquals(Long.valueOf(500L), emailEvent.offer.getId());
-        Assert.assertEquals(seller.getEmail(), emailEvent.offer.getSeller().getEmail());
+        Assert.assertEquals(1, mailCaptor.getAllValues().size());
+        final OfferMailDto mailDto = mailCaptor.getValue();
+        Assert.assertEquals(Long.valueOf(500L), mailDto.getId());
+        Assert.assertEquals(seller.getEmail(), mailDto.getSeller().getEmail());
     }
 
     @Test
@@ -88,19 +104,24 @@ public class NotificationDispatcherImplTest {
                 .createdAt(Instant.now())
                 .build();
 
+        final ArgumentCaptor<SiteNotificationCreationDto> siteCaptor =
+                ArgumentCaptor.forClass(SiteNotificationCreationDto.class);
+        final ArgumentCaptor<OfferMailDto> mailCaptor = ArgumentCaptor.forClass(OfferMailDto.class);
+        when(siteNotificationService.create(siteCaptor.capture())).thenReturn(new SiteNotification());
+        doNothing().when(emailNotificationService).sendNewOfferEmail(mailCaptor.capture());
+
         // Act
         dispatcher.notifyNewOffer(offer);
 
         // Assert
-        Assert.assertEquals(1, siteNotificationService.created.size());
-        final SiteNotificationCreationDto siteDto = siteNotificationService.created.get(0);
+        Assert.assertEquals(1, siteCaptor.getAllValues().size());
+        final SiteNotificationCreationDto siteDto = siteCaptor.getValue();
         Assert.assertEquals("New offer received", siteDto.title());
         Assert.assertEquals(
                 "Buyer Bob offered \"iPad Pro M2\" and US$ 300.00 for \"MacBook Pro 14\".",
                 siteDto.body()
         );
-        Assert.assertEquals(1, emailNotificationService.events.size());
-        Assert.assertEquals(NotificationType.NEW_OFFER, emailNotificationService.events.get(0).type);
+        Assert.assertEquals(1, mailCaptor.getAllValues().size());
     }
 
     @Test
@@ -119,19 +140,23 @@ public class NotificationDispatcherImplTest {
                 .createdAt(Instant.now())
                 .build();
 
+        final ArgumentCaptor<SiteNotificationCreationDto> siteCaptor =
+                ArgumentCaptor.forClass(SiteNotificationCreationDto.class);
+        final ArgumentCaptor<OfferMailDto> mailCaptor = ArgumentCaptor.forClass(OfferMailDto.class);
+        when(siteNotificationService.create(siteCaptor.capture())).thenReturn(new SiteNotification());
+        doNothing().when(emailNotificationService).sendOfferPendingPaymentEmail(mailCaptor.capture());
+
         // Act
         dispatcher.notifyOfferAccepted(offer);
 
         // Assert
-        Assert.assertEquals(1, siteNotificationService.created.size());
-        final SiteNotificationCreationDto siteDto = siteNotificationService.created.get(0);
+        Assert.assertEquals(1, siteCaptor.getAllValues().size());
+        final SiteNotificationCreationDto siteDto = siteCaptor.getValue();
         Assert.assertSame(buyer, siteDto.notificationRecipient());
         Assert.assertEquals(NotificationType.OFFER_ACCEPTED, siteDto.notificationType());
         Assert.assertEquals("/account/my-offers/502/payment", siteDto.actionUrl());
         Assert.assertEquals("notification.offerAccepted.cta", siteDto.actionLabelKey());
-
-        Assert.assertEquals(1, emailNotificationService.events.size());
-        Assert.assertEquals(NotificationType.OFFER_ACCEPTED, emailNotificationService.events.get(0).type);
+        Assert.assertEquals(1, mailCaptor.getAllValues().size());
     }
 
     @Test
@@ -151,20 +176,25 @@ public class NotificationDispatcherImplTest {
                 .createdAt(Instant.now())
                 .build();
 
+        final ArgumentCaptor<SiteNotificationCreationDto> siteCaptor =
+                ArgumentCaptor.forClass(SiteNotificationCreationDto.class);
+        final ArgumentCaptor<OfferMailDto> mailCaptor = ArgumentCaptor.forClass(OfferMailDto.class);
+        when(siteNotificationService.create(siteCaptor.capture())).thenReturn(new SiteNotification());
+        doNothing().when(emailNotificationService).sendProofOfShippingUploadedEmail(mailCaptor.capture());
+
         // Act
         dispatcher.notifyProofOfShippingUploaded(offer);
 
         // Assert
-        Assert.assertEquals(1, siteNotificationService.created.size());
-        final SiteNotificationCreationDto siteDto = siteNotificationService.created.get(0);
+        Assert.assertEquals(1, siteCaptor.getAllValues().size());
+        final SiteNotificationCreationDto siteDto = siteCaptor.getValue();
         Assert.assertEquals(NotificationType.PROOF_OF_SHIPPING_UPLOADED, siteDto.notificationType());
         Assert.assertEquals(
                 "Seller Ana uploaded proof of shipping for \"Camera Lens\" (tracking: AR-998877).",
                 siteDto.body()
         );
         Assert.assertEquals("/account/my-offers?statusGroup=PENDING_PAYMENT", siteDto.actionUrl());
-        Assert.assertEquals(1, emailNotificationService.events.size());
-        Assert.assertEquals(NotificationType.PROOF_OF_SHIPPING_UPLOADED, emailNotificationService.events.get(0).type);
+        Assert.assertEquals(1, mailCaptor.getAllValues().size());
     }
 
     @Test
@@ -174,21 +204,31 @@ public class NotificationDispatcherImplTest {
         final User buyer = buildUser(20L, "Buyer Bob", Language.ENGLISH);
         final Listing listing = buildListing(100L, "Mechanical Keyboard", seller);
 
+        final ArgumentCaptor<SiteNotificationCreationDto> siteCaptor =
+                ArgumentCaptor.forClass(SiteNotificationCreationDto.class);
+        final ArgumentCaptor<ListingMailDto> soldListingCaptor = ArgumentCaptor.forClass(ListingMailDto.class);
+        final ArgumentCaptor<ListingMailDto> buyerListingCaptor = ArgumentCaptor.forClass(ListingMailDto.class);
+
+        when(siteNotificationService.create(siteCaptor.capture())).thenReturn(new SiteNotification());
+        doNothing().when(emailNotificationService)
+                .sendPurchaseSellerEmail(any(), any(), soldListingCaptor.capture(), eq("Thanks!"));
+        doNothing().when(emailNotificationService)
+                .sendPurchaseBuyerEmail(any(), any(), buyerListingCaptor.capture());
+
         // Act
         dispatcher.notifyListingSold(listing, buyer, "Thanks!");
         dispatcher.notifyPurchaseConfirmed(listing, buyer);
 
         // Assert — Only PURCHASE_CONFIRMED produces a site notification; LISTING_SOLD is email-only
-        Assert.assertEquals(1, siteNotificationService.created.size());
-        final SiteNotificationCreationDto siteDto = siteNotificationService.created.get(0);
+        Assert.assertEquals(1, siteCaptor.getAllValues().size());
+        final SiteNotificationCreationDto siteDto = siteCaptor.getValue();
         Assert.assertSame(buyer, siteDto.notificationRecipient());
         Assert.assertEquals(NotificationType.PURCHASE_CONFIRMED, siteDto.notificationType());
         Assert.assertEquals("/account/my-offers?statusGroup=RESOLVED", siteDto.actionUrl());
 
         // Assert — Both email notifications were sent
-        Assert.assertEquals(2, emailNotificationService.events.size());
-        Assert.assertEquals(NotificationType.LISTING_SOLD, emailNotificationService.events.get(0).type);
-        Assert.assertEquals(NotificationType.PURCHASE_CONFIRMED, emailNotificationService.events.get(1).type);
+        Assert.assertEquals(1, soldListingCaptor.getAllValues().size());
+        Assert.assertEquals(1, buyerListingCaptor.getAllValues().size());
     }
 
     @Test
@@ -207,26 +247,36 @@ public class NotificationDispatcherImplTest {
                 .createdAt(Instant.now())
                 .build();
 
+        final ArgumentCaptor<SiteNotificationCreationDto> siteCaptor =
+                ArgumentCaptor.forClass(SiteNotificationCreationDto.class);
+        final ArgumentCaptor<OfferMailDto> rejectedCaptor = ArgumentCaptor.forClass(OfferMailDto.class);
+        final ArgumentCaptor<OfferMailDto> withdrawnCaptor = ArgumentCaptor.forClass(OfferMailDto.class);
+        final ArgumentCaptor<OfferMailDto> paymentCaptor = ArgumentCaptor.forClass(OfferMailDto.class);
+
+        when(siteNotificationService.create(siteCaptor.capture())).thenReturn(new SiteNotification());
+        doNothing().when(emailNotificationService).sendOfferRejectedEmail(rejectedCaptor.capture());
+        doNothing().when(emailNotificationService).sendOfferWithdrawnEmail(withdrawnCaptor.capture());
+        doNothing().when(emailNotificationService).sendProofOfPaymentUploadedEmail(paymentCaptor.capture());
+
         // Act
         dispatcher.notifyOfferRejected(offer);
         dispatcher.notifyOfferWithdrawn(offer);
         dispatcher.notifyProofOfPaymentUploaded(offer);
 
         // Assert
-        Assert.assertEquals(3, siteNotificationService.created.size());
-        Assert.assertEquals(NotificationType.OFFER_REJECTED, siteNotificationService.created.get(0).notificationType());
-        Assert.assertEquals("/listing", siteNotificationService.created.get(0).actionUrl());
+        Assert.assertEquals(3, siteCaptor.getAllValues().size());
+        Assert.assertEquals(NotificationType.OFFER_REJECTED, siteCaptor.getAllValues().get(0).notificationType());
+        Assert.assertEquals("/listing", siteCaptor.getAllValues().get(0).actionUrl());
 
-        Assert.assertEquals(NotificationType.OFFER_WITHDRAWN, siteNotificationService.created.get(1).notificationType());
-        Assert.assertEquals("/listing/100", siteNotificationService.created.get(1).actionUrl());
+        Assert.assertEquals(NotificationType.OFFER_WITHDRAWN, siteCaptor.getAllValues().get(1).notificationType());
+        Assert.assertEquals("/listing/100", siteCaptor.getAllValues().get(1).actionUrl());
 
-        Assert.assertEquals(NotificationType.PROOF_OF_PAYMENT_UPLOADED, siteNotificationService.created.get(2).notificationType());
-        Assert.assertEquals("/account/incoming-offers/505", siteNotificationService.created.get(2).actionUrl());
+        Assert.assertEquals(NotificationType.PROOF_OF_PAYMENT_UPLOADED, siteCaptor.getAllValues().get(2).notificationType());
+        Assert.assertEquals("/account/incoming-offers/505", siteCaptor.getAllValues().get(2).actionUrl());
 
-        Assert.assertEquals(3, emailNotificationService.events.size());
-        Assert.assertEquals(NotificationType.OFFER_REJECTED, emailNotificationService.events.get(0).type);
-        Assert.assertEquals(NotificationType.OFFER_WITHDRAWN, emailNotificationService.events.get(1).type);
-        Assert.assertEquals(NotificationType.PROOF_OF_PAYMENT_UPLOADED, emailNotificationService.events.get(2).type);
+        Assert.assertEquals(1, rejectedCaptor.getAllValues().size());
+        Assert.assertEquals(1, withdrawnCaptor.getAllValues().size());
+        Assert.assertEquals(1, paymentCaptor.getAllValues().size());
     }
 
     @Test
@@ -245,6 +295,25 @@ public class NotificationDispatcherImplTest {
                 .createdAt(Instant.now())
                 .build();
 
+        final ArgumentCaptor<SiteNotificationCreationDto> siteCaptor =
+                ArgumentCaptor.forClass(SiteNotificationCreationDto.class);
+        final ArgumentCaptor<UserMailDto> welcomeCaptor = ArgumentCaptor.forClass(UserMailDto.class);
+        final ArgumentCaptor<ListingMailDto> publishedCaptor = ArgumentCaptor.forClass(ListingMailDto.class);
+        final ArgumentCaptor<OfferMailDto> pendingTxCaptor = ArgumentCaptor.forClass(OfferMailDto.class);
+        final ArgumentCaptor<String> recoveryOtpCaptor = ArgumentCaptor.forClass(String.class);
+        final ArgumentCaptor<String> verificationOtpCaptor = ArgumentCaptor.forClass(String.class);
+        final ArgumentCaptor<UserMailDto> suspendedCaptor = ArgumentCaptor.forClass(UserMailDto.class);
+        final ArgumentCaptor<UserMailDto> unsuspendedCaptor = ArgumentCaptor.forClass(UserMailDto.class);
+
+        lenient().when(siteNotificationService.create(siteCaptor.capture())).thenReturn(new SiteNotification());
+        doNothing().when(emailNotificationService).sendWelcomeEmail(welcomeCaptor.capture());
+        doNothing().when(emailNotificationService).sendListingPublishedEmail(any(), publishedCaptor.capture());
+        doNothing().when(emailNotificationService).sendPendingTransactionEmail(pendingTxCaptor.capture());
+        doNothing().when(emailNotificationService).sendPasswordRecoveryEmail(any(), recoveryOtpCaptor.capture());
+        doNothing().when(emailNotificationService).sendVerificationEmail(any(), verificationOtpCaptor.capture());
+        doNothing().when(emailNotificationService).sendAccountSuspendedEmail(suspendedCaptor.capture());
+        doNothing().when(emailNotificationService).sendAccountUnsuspendedEmail(unsuspendedCaptor.capture());
+
         // Act — invoke all remaining email-only notifications
         dispatcher.notifyWelcome(user);
         dispatcher.notifyListingPublished(listing);
@@ -254,15 +323,19 @@ public class NotificationDispatcherImplTest {
         dispatcher.notifyAccountSuspended(user);
         dispatcher.notifyAccountUnsuspended(user);
 
-        // Assert — zero site notifications created, 7 emails dispatched
-        Assert.assertTrue(siteNotificationService.created.isEmpty());
-        Assert.assertEquals(7, emailNotificationService.events.size());
-        Assert.assertEquals("111222", emailNotificationService.events.get(3).extra);
-        Assert.assertEquals("333444", emailNotificationService.events.get(4).extra);
+        // Assert — zero site notifications created, all 7 emails dispatched
+        Assert.assertTrue(siteCaptor.getAllValues().isEmpty());
+        Assert.assertEquals(1, welcomeCaptor.getAllValues().size());
+        Assert.assertEquals(1, publishedCaptor.getAllValues().size());
+        Assert.assertEquals(1, pendingTxCaptor.getAllValues().size());
+        Assert.assertEquals("111222", recoveryOtpCaptor.getValue());
+        Assert.assertEquals("333444", verificationOtpCaptor.getValue());
+        Assert.assertEquals(1, suspendedCaptor.getAllValues().size());
+        Assert.assertEquals(1, unsuspendedCaptor.getAllValues().size());
     }
 
     /* ---------------------------------------------------------------------------------------------- */
-    /* Fixtures & Stateful Recording Stubs                                                            */
+    /* Fixtures                                                                                       */
     /* ---------------------------------------------------------------------------------------------- */
 
     private static User buildUser(final long id, final String displayName, final Language preferredLanguage) {
@@ -335,145 +408,5 @@ public class NotificationDispatcherImplTest {
         ms.addMessage("notification.purchaseConfirmed.body", en, "{0} confirmed receiving payment for \"{1}\".");
 
         return ms;
-    }
-
-    private static final class RecordingSiteNotificationService implements SiteNotificationService {
-        private final List<SiteNotificationCreationDto> created = new ArrayList<>();
-
-        @Override
-        public SiteNotification create(SiteNotificationCreationDto creationDto) {
-            created.add(creationDto);
-            return SiteNotification.builder()
-                    .id((long) created.size())
-                    .user(creationDto.notificationRecipient())
-                    .type(creationDto.notificationType())
-                    .title(creationDto.title())
-                    .body(creationDto.body())
-                    .actionUrl(creationDto.actionUrl())
-                    .actionLabelKey(creationDto.actionLabelKey())
-                    .createdAt(Instant.now())
-                    .build();
-        }
-
-        @Override
-        public java.util.Optional<SiteNotification> getById(long notificationId) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public Page<SiteNotification> getRecentUnreadForUser(User recipient, int n) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public Page<SiteNotification> getMatching(SiteNotificationFilter filter) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void markAsRead(long notificationId, User actor) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void markAllAsReadForUser(User recipient) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void delete(SiteNotification notification) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void delete(long notificationId, User actor) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public int countUnreadForUser(User user) {
-            throw new UnsupportedOperationException();
-        }
-    }
-
-    private record EmailEvent(NotificationType type, UserMailDto user, ListingMailDto listing, OfferMailDto offer, String extra) {}
-
-    private static final class RecordingEmailNotificationService implements EmailNotificationService {
-        private final List<EmailEvent> events = new ArrayList<>();
-
-        @Override
-        public void sendWelcomeEmail(UserMailDto user) {
-            events.add(new EmailEvent(NotificationType.WELCOME, user, null, null, null));
-        }
-
-        @Override
-        public void sendListingPublishedEmail(UserMailDto seller, ListingMailDto listing) {
-            events.add(new EmailEvent(NotificationType.LISTING_PUBLISHED, seller, listing, null, null));
-        }
-
-        @Override
-        public void sendPurchaseSellerEmail(UserMailDto seller, UserMailDto buyer, ListingMailDto listing, String message) {
-            events.add(new EmailEvent(NotificationType.LISTING_SOLD, seller, listing, null, message));
-        }
-
-        @Override
-        public void sendPurchaseBuyerEmail(UserMailDto buyer, UserMailDto seller, ListingMailDto listing) {
-            events.add(new EmailEvent(NotificationType.PURCHASE_CONFIRMED, buyer, listing, null, null));
-        }
-
-        @Override
-        public void sendNewOfferEmail(OfferMailDto offer) {
-            events.add(new EmailEvent(NotificationType.NEW_OFFER, offer.getSeller(), offer.getListing(), offer, null));
-        }
-
-        @Override
-        public void sendOfferRejectedEmail(OfferMailDto offer) {
-            events.add(new EmailEvent(NotificationType.OFFER_REJECTED, offer.getBuyer(), offer.getListing(), offer, null));
-        }
-
-        @Override
-        public void sendOfferWithdrawnEmail(OfferMailDto offer) {
-            events.add(new EmailEvent(NotificationType.OFFER_WITHDRAWN, offer.getSeller(), offer.getListing(), offer, null));
-        }
-
-        @Override
-        public void sendOfferPendingPaymentEmail(OfferMailDto offer) {
-            events.add(new EmailEvent(NotificationType.OFFER_ACCEPTED, offer.getBuyer(), offer.getListing(), offer, null));
-        }
-
-        @Override
-        public void sendPendingTransactionEmail(OfferMailDto offer) {
-            events.add(new EmailEvent(NotificationType.PENDING_TRANSACTION, offer.getSeller(), offer.getListing(), offer, null));
-        }
-
-        @Override
-        public void sendProofOfPaymentUploadedEmail(OfferMailDto offer) {
-            events.add(new EmailEvent(NotificationType.PROOF_OF_PAYMENT_UPLOADED, offer.getSeller(), offer.getListing(), offer, null));
-        }
-
-        @Override
-        public void sendProofOfShippingUploadedEmail(OfferMailDto offer) {
-            events.add(new EmailEvent(NotificationType.PROOF_OF_SHIPPING_UPLOADED, offer.getBuyer(), offer.getListing(), offer, null));
-        }
-
-        @Override
-        public void sendPasswordRecoveryEmail(UserMailDto user, String otpValue) {
-            events.add(new EmailEvent(NotificationType.PASSWORD_RECOVERY, user, null, null, otpValue));
-        }
-
-        @Override
-        public void sendVerificationEmail(UserMailDto user, String otpValue) {
-            events.add(new EmailEvent(NotificationType.EMAIL_VERIFICATION, user, null, null, otpValue));
-        }
-
-        @Override
-        public void sendAccountSuspendedEmail(UserMailDto user) {
-            events.add(new EmailEvent(NotificationType.ACCOUNT_SUSPENDED, user, null, null, null));
-        }
-
-        @Override
-        public void sendAccountUnsuspendedEmail(UserMailDto user) {
-            events.add(new EmailEvent(NotificationType.ACCOUNT_UNSUSPENDED, user, null, null, null));
-        }
     }
 }
