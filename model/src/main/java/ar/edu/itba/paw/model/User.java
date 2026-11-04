@@ -5,6 +5,7 @@ import lombok.*;
 import javax.persistence.*;
 import java.time.Instant;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
 
@@ -137,6 +138,10 @@ public class User {
 
     public Language getPreferredLanguageOrDefault() {
         return preferredLanguage != null ? preferredLanguage : Language.getDefault();
+    }
+
+    public Locale getPreferredLocale() {
+        return getPreferredLanguageOrDefault().toLocale();
     }
 
     public Optional<Province> getProvince() {

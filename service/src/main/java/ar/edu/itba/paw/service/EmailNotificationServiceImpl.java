@@ -21,9 +21,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 
 @Service
-public class MailingServiceImpl implements MailingService {
+public class EmailNotificationServiceImpl implements EmailNotificationService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(MailingServiceImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(EmailNotificationServiceImpl.class);
 
     private final JavaMailSender mailSender;
     private final SpringTemplateEngine emailTemplateEngine;
@@ -31,7 +31,7 @@ public class MailingServiceImpl implements MailingService {
     private final String mailFrom;
     private final String baseUrl;
 
-    public MailingServiceImpl(
+    public EmailNotificationServiceImpl(
             JavaMailSender mailSender,
             @Qualifier("emailTemplateEngine") SpringTemplateEngine emailTemplateEngine,
             MessageSource messageSource,
@@ -288,7 +288,7 @@ public class MailingServiceImpl implements MailingService {
         final Language language = recipient.getPreferredLanguage() != null
                 ? recipient.getPreferredLanguage()
                 : Language.getDefault();
-        return Locale.of(language.getCode());
+        return language.toLocale();
     }
 
     private void sendEmail(String to, String subject, String templateName, Context context) {

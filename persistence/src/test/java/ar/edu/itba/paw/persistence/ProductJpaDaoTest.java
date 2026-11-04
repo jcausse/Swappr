@@ -1,7 +1,10 @@
 package ar.edu.itba.paw.persistence;
 
 import ar.edu.itba.paw.model.Category;
+import ar.edu.itba.paw.model.Condition;
+import ar.edu.itba.paw.model.Page;
 import ar.edu.itba.paw.model.Product;
+import ar.edu.itba.paw.model.ProductListingInfo;
 import ar.edu.itba.paw.model.Subcategory;
 import org.junit.Assert;
 import org.junit.Before;
@@ -17,12 +20,13 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.test.jdbc.JdbcTestUtils;
 
 import javax.sql.DataSource;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = { TestConfig.class })
-@Sql({ "classpath:sql/product-data.sql" })
+@Sql({ "classpath:sql/product-data.sql", "classpath:sql/product-listing-summary-data.sql" })
 @Transactional
 @Rollback
 public class ProductJpaDaoTest {
@@ -168,6 +172,103 @@ public class ProductJpaDaoTest {
         final List<String> models = productDao.getModelsBySubcategoryAndBrand(SUBCATEGORY_ID, "Toshiba");
 
         Assert.assertTrue(models.isEmpty());
+    }
+
+    /* ---------------------------------------------------------------------------------------------- */
+    /* getListingInfoSummary                                                                           */
+    /* ---------------------------------------------------------------------------------------------- */
+
+    @Test
+    public void testGetListingInfoSummaryPaginatesProductsAndGroupsByCondition() {
+        final Page<ProductListingInfo> firstPage = productDao.getListingInfoSummary(
+            null, null, null, null, SUBCATEGORY_ID, 1, 2
+        );
+
+        Assert.assertEquals(1, firstPage.getPage());
+        Assert.assertEquals(2, firstPage.getPageSize());
+        Assert.assertEquals(3, firstPage.getTotalCount());
+        Assert.assertEquals(2, firstPage.getTotalPages());
+
+        final List<ProductListingInfo> content = firstPage.getContent();
+        // Size is > totalCount, because the DAO returns one item per condition which is grouped in the service
+        Assert.assertEquals(4, content.size());
+
+        final ProductListingInfo air = content.get(0);
+        Assert.assertEquals("Apple", air.getBrand());
+        Assert.assertEquals("MacBook Air", air.getModel());
+        Assert.assertEquals(Condition.FAIR, air.getCondition());
+        Assert.assertEquals(1L, (long) air.getListingCount());
+        Assert.assertEquals(0, new BigDecimal("800.00").compareTo(air.getMinPrice().getAmount()));
+
+        final ProductListingInfo proGood = findInfo(content, "MacBook Pro", Condition.GOOD);
+        Assert.assertNotNull(proGood);
+        Assert.assertEquals(1L, (long) proGood.getListingCount());
+        Assert.assertEquals(0, new BigDecimal("1000.00").compareTo(proGood.getMinPrice().getAmount()));
+        Assert.assertEquals(0, new BigDecimal("1000.00").compareTo(proGood.getMaxPrice().getAmount()));
+
+        final ProductListingInfo proLikeNew = findInfo(content, "MacBook Pro", Condition.LIKE_NEW);
+        Assert.assertNotNull(proLikeNew);
+        Assert.assertEquals(1L, (long) proLikeNew.getListingCount());
+        Assert.assertEquals(0, new BigDecimal("1200.00").compareTo(proLikeNew.getMinPrice().getAmount()));
+    }
+
+    @Test
+    public void testGetListingInfoSummarySecondPageFetchesRemainingProductIds() {
+        final Page<ProductListingInfo> secondPage = productDao.getListingInfoSummary(
+            null, null, null, null, SUBCATEGORY_ID, 2, 2
+        );
+
+        Assert.assertEquals(2, secondPage.getPage());
+        Assert.assertEquals(3, secondPage.getTotalCount());
+        Assert.assertEquals(1, secondPage.getContent().size());
+        Assert.assertEquals("Dell", secondPage.getContent().get(0).getBrand());
+        Assert.assertEquals("XPS 15", secondPage.getContent().get(0).getModel());
+    }
+
+    @Test
+    public void testGetListingInfoSummaryAppliesFiltersToProductIdQuery() {
+        final Page<ProductListingInfo> apple = productDao.getListingInfoSummary(
+            "Apple", null, null, null, SUBCATEGORY_ID, 1, 10
+        );
+        Assert.assertEquals(2, apple.getTotalCount());
+
+        final Page<ProductListingInfo> macBookPro = productDao.getListingInfoSummary(
+            "Apple", "MacBook Pro", null, null, SUBCATEGORY_ID, 1, 10
+        );
+        Assert.assertEquals(1, macBookPro.getTotalCount());
+
+        final Page<ProductListingInfo> inYearRange = productDao.getListingInfoSummary(
+            null, null, 2021, 2023, SUBCATEGORY_ID, 1, 10
+        );
+        Assert.assertEquals(3, inYearRange.getTotalCount());
+    }
+
+    @Test
+    public void testGetListingInfoSummaryEmptyWhenNoActiveListingsMatch() {
+        final Page<ProductListingInfo> page = productDao.getListingInfoSummary(
+            "Lenovo", null, null, null, SUBCATEGORY_ID, 1, 10
+        );
+
+        Assert.assertEquals(0, page.getTotalCount());
+        Assert.assertTrue(page.getContent().isEmpty());
+    }
+
+    @Test
+    public void testGetListingInfoSummaryPageBeyondLastKeepsTotalCount() {
+        final Page<ProductListingInfo> page = productDao.getListingInfoSummary(
+            null, null, null, null, SUBCATEGORY_ID, 3, 2
+        );
+
+        Assert.assertTrue(page.getContent().isEmpty());
+        Assert.assertEquals(3, page.getTotalCount());
+    }
+
+    private static ProductListingInfo findInfo(final List<ProductListingInfo> content,
+            final String model, final Condition condition) {
+        return content.stream()
+            .filter(info -> model.equals(info.getModel()) && info.getCondition() == condition)
+            .findFirst()
+            .orElse(null);
     }
 
     /* ---------------------------------------------------------------------------------------------- */

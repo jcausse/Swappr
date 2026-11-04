@@ -4,7 +4,7 @@ import ar.edu.itba.paw.service.dto.mail.ListingMailDto;
 import ar.edu.itba.paw.service.dto.mail.OfferMailDto;
 import ar.edu.itba.paw.service.dto.mail.UserMailDto;
 
-public interface MailingService {
+public interface EmailNotificationService {
 
     /** Send a welcome email to a newly registered user. */
     void sendWelcomeEmail(UserMailDto user);

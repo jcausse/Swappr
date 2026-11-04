@@ -54,7 +54,7 @@ public class UserServiceImplTest {
     @Mock
     private ProvinceService provinceService;
     @Mock
-    private MailingService mailingService;
+    private NotificationDispatcher notificationDispatcher;
     @Mock
     private OneTimePasswordService otpService;
 
