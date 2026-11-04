@@ -164,19 +164,6 @@ public class SiteNotificationServiceImplTest {
     }
 
     @Test
-    public void testCountUnreadForUserReturnsCount() {
-        // Arrange
-        final User user = buildUser();
-        when(siteNotificationDao.countUnreadForUser(user)).thenReturn(7);
-
-        // Act
-        final int count = notificationService.countUnreadForUser(user);
-
-        // Assert
-        Assert.assertEquals(7, count);
-    }
-
-    @Test
     public void testMarkAsReadByRecipientDelegatesToDao() {
         // Arrange
         final User recipient = buildUser();

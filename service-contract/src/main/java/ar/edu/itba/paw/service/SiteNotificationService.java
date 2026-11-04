@@ -31,12 +31,6 @@ public interface SiteNotificationService {
     /** Mark all unread notifications as read for a {@code recipient}. **/
     void markAllAsReadForUser(@NonNull User recipient);
 
-    /** Delete a notification (note that this is a permanent operation, a physical deletion, not a logical deletion). **/
-    void delete(@NonNull SiteNotification notification);
-
     /** Delete a notification by ID on behalf of {@code actor}. **/
     void delete(long notificationId, @NonNull User actor);
-
-    /** Get the total unread notification count for a {@code recipient}. **/
-    int countUnreadForUser(@NonNull User user);
 }

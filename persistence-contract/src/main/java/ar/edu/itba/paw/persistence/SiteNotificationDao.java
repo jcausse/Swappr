@@ -30,6 +30,4 @@ public interface SiteNotificationDao {
     void markAllAsReadForUser(User user);
 
     void delete(SiteNotification notification);
-
-    int countUnreadForUser(User user);
 }

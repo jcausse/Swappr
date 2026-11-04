@@ -229,25 +229,6 @@ public class SiteNotificationJpaDaoTest {
     }
 
     /* ---------------------------------------------------------------------------------------------- */
-    /* countUnreadForUser                                                                             */
-    /* ---------------------------------------------------------------------------------------------- */
-
-    @Test
-    public void testCountUnreadForUser() {
-        // Arrange with direct database inserts
-        final Instant now = Instant.now();
-        insertNotification(401L, USER_ID, NotificationType.NEW_OFFER, "T1", "B1", null, null, false, now);
-        insertNotification(402L, USER_ID, NotificationType.NEW_OFFER, "T2", "B2", null, null, false, now.plusSeconds(1));
-        insertNotification(403L, USER_ID, NotificationType.NEW_OFFER, "T3", "B3", null, null, true, now.plusSeconds(2));
-
-        // Act
-        final int unreadCount = notificationDao.countUnreadForUser(userRef(USER_ID));
-
-        // Assert
-        Assert.assertEquals(2, unreadCount);
-    }
-
-    /* ---------------------------------------------------------------------------------------------- */
     /* markAllAsReadForUser                                                                           */
     /* ---------------------------------------------------------------------------------------------- */
 

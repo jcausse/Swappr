@@ -99,25 +99,11 @@ public class SiteNotificationServiceImpl implements SiteNotificationService {
 
     @Override
     @Transactional
-    public void delete(@NonNull SiteNotification notification) {
-        LOGGER.debug("Deleting site notification id={}", notification.getId());
-        siteNotificationDao.delete(notification);
-        LOGGER.info("Deleted site notification id={}", notification.getId());
-    }
-
-    @Override
-    @Transactional
     public void delete(long notificationId, @NonNull User actor) {
         LOGGER.debug("Deleting site notification id={} by user id={}", notificationId, actor.getId());
         final SiteNotification notification = getOwnedNotificationOrThrow(notificationId, actor);
         siteNotificationDao.delete(notification);
         LOGGER.info("Deleted site notification id={} by user id={}", notificationId, actor.getId());
-    }
-
-    @Override
-    public int countUnreadForUser(@NonNull User user) {
-        LOGGER.debug("Counting unread notifications for user id={}", user.getId());
-        return siteNotificationDao.countUnreadForUser(user);
     }
 
     private SiteNotification getOwnedNotificationOrThrow(final long notificationId, final User actor) {

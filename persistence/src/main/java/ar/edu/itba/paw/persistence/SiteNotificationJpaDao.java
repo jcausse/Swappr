@@ -124,19 +124,6 @@ public class SiteNotificationJpaDao implements SiteNotificationDao {
     }
 
     @Override
-    public int countUnreadForUser(User user) {
-        if (user == null || user.getId() == null) {
-            return 0;
-        }
-        return em.createQuery(
-                "SELECT COUNT(n) FROM SiteNotification n WHERE n.user.id = :userId AND n.read = false",
-                Long.class
-            ).setParameter("userId", user.getId())
-            .getSingleResult()
-            .intValue();
-    }
-
-    @Override
     public void markAsRead(SiteNotification notification) {
         if (notification != null) {
             final SiteNotification managed = em.contains(notification) ? notification : em.merge(notification);
