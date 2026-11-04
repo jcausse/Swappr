@@ -309,7 +309,7 @@ public class AccountController {
         offerService.rate(offer, currentUser, rateForm.getRating(), rateForm.getReviewText());
 
         return new ModelAndView("redirect:" + (offer.isBuyer(currentUser)
-            ? "/account/incoming-offers?statusGroup=RESOLVED"
-            : "/account/my-offers?statusGroup=RESOLVED"));
+            ? "/account/my-offers?statusGroup=RESOLVED"
+            : "/account/incoming-offers?statusGroup=RESOLVED"));
     }
 }
