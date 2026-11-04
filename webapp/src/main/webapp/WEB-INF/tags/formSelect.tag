@@ -6,7 +6,7 @@
 <%@ attribute name="itemLabel" required="false" type="java.lang.String" %>
 <%@ attribute name="itemValue" required="false" type="java.lang.String" %>
 <%@ attribute name="label" required="false" %>
-<%@ attribute name="placeholder" required="true" %>
+<%@ attribute name="placeholder" required="false" %>
 <%@ attribute name="variant" required="false" %>
 <%@ attribute name="disabled" required="false" type="java.lang.Boolean" %>
 <%@ attribute name="includeOther" required="false" type="java.lang.Boolean" %>
@@ -54,7 +54,9 @@
             disabled="${isDisabled}"
             cssClass="px-2 py-1 rounded-lg text-sm outline-0 transition duration-150 outline-lime-600/30 placeholder:text-black/40 disabled:placeholder:text-black/20 appearance-none w-full peer ${variantClassnames}"
         >
-            <form:option value="" label="${placeholder}" />
+            <c:if test="${not empty placeholder}">
+                <form:option value="" label="${placeholder}" />
+            </c:if>
 
             <c:choose>
                 <c:when test="${isTranslateLabels}">
