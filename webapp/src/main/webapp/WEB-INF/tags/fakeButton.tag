@@ -21,8 +21,8 @@
 <c:set var="isDisabled" value="${disabled ne null ? disabled : false}"/>
 <c:set var="isOn" value="${on ne null ? on : false}"/>
 
-<c:set var="outlineClassnames" value="border border-current/15 hover:bg-current/10 disabled:bg-current/10 active:bg-current/15 disabled:active:bg-current/10 data-[state=on]:bg-current/10 peer-checked/${htmlFor}:bg-current/10" />
-<c:set var="ghostClassnames" value="hover:bg-current/10 disabled:bg-current/10 active:bg-current/15 disabled:active:bg-current/10 data-[state=on]:bg-current/10 peer-checked/${htmlFor}:bg-current/10" />
+<c:set var="outlineClassnames" value="border border-current/15 hover:bg-current/10 disabled:bg-current/10 active:bg-current/15 disabled:active:bg-current/10 data-[state=on]:bg-current/10 peer-checked:bg-current/10" />
+<c:set var="ghostClassnames" value="hover:bg-current/10 disabled:bg-current/10 active:bg-current/15 disabled:active:bg-current/10 data-[state=on]:bg-current/10 peer-checked:bg-current/10" />
 
 <c:set var="variantClassnames" value="${
   btnVariant eq 'outline'

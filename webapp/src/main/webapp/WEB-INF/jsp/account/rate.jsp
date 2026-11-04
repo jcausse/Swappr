@@ -61,14 +61,20 @@
             <div>
                 <label class="block text-sm font-medium text-black/60 mb-2"><c:out value="${ratingLabel}"/></label>
                 <div class="flex flex-row w-full gap-2 relative" id="${path}_base">
-                    <form:radiobutton path="rating" id="rating_POSITIVE" value="POSITIVE" cssClass="sr-only peer/rating_POSITIVE" />
-                    <paw:fakeButton htmlFor="rating_POSITIVE" text="${positiveLabel}" icon="arrow-up" variant="ghost" classname="grow" />
+                    <div class="grow relative">
+                        <form:radiobutton path="rating" id="rating_POSITIVE" value="POSITIVE" cssClass="sr-only peer" />
+                        <paw:fakeButton htmlFor="rating_POSITIVE" text="${positiveLabel}" icon="arrow-up" variant="ghost" classname="w-full" />
+                    </div>
 
-                    <form:radiobutton path="rating" id="rating_NEUTRAL" value="NEUTRAL" cssClass="sr-only peer/rating_NEUTRAL" />
-                    <paw:fakeButton htmlFor="rating_NEUTRAL" text="${neutralLabel}" icon="minus" variant="ghost" role="secondary" classname="grow" />
+                    <div class="grow relative">
+                        <form:radiobutton path="rating" id="rating_NEUTRAL" value="NEUTRAL" cssClass="sr-only peer" />
+                        <paw:fakeButton htmlFor="rating_NEUTRAL" text="${neutralLabel}" icon="minus" variant="ghost" role="secondary" classname="w-full" />
+                    </div>
 
-                    <form:radiobutton path="rating" id="rating_NEGATIVE" value="NEGATIVE" cssClass="sr-only peer/rating_NEGATIVE" />
-                    <paw:fakeButton htmlFor="rating_NEGATIVE" text="${negativeLabel}" icon="arrow-down" variant="ghost" role="danger" classname="grow" />
+                    <div class="grow relative">
+                        <form:radiobutton path="rating" id="rating_NEGATIVE" value="NEGATIVE" cssClass="sr-only peer" />
+                        <paw:fakeButton htmlFor="rating_NEGATIVE" text="${negativeLabel}" icon="arrow-down" variant="ghost" role="danger" classname="w-full" />
+                    </div>
                 </div>
                 <form:errors path="rating" cssClass="text-red-600 text-sm mt-1" element="div"/>
             </div>
