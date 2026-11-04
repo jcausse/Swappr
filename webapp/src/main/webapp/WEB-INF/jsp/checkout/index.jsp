@@ -33,8 +33,8 @@
 
                                     <spring:message code="checkout.form.customAmount.placeholder" var="customAmountPlaceholder"/>
                                     <div id="customAmountField" class="hidden w-1/2">
-                                        <div class="flex items-start gap-2">
-                                            <span class="py-1 border border-transparent text-sm text-black/70"><c:out value="${currencySymbol}"/></span>
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-sm text-black/70"><c:out value="${currencySymbol}"/></span>
                                             <paw:formInput path="customAmount" type="number" step="0.01" placeholder="${customAmountPlaceholder}" variant="outline" classname="flex-1"/>
                                         </div>
                                     </div>
