@@ -7,8 +7,11 @@ import ar.edu.itba.paw.model.SiteNotificationFilter;
 import ar.edu.itba.paw.model.User;
 
 import java.time.Instant;
+import java.util.Optional;
 
 public interface SiteNotificationDao {
+
+    Optional<SiteNotification> getById(long id);
 
     Page<SiteNotification> getMatching(SiteNotificationFilter filter);
 
@@ -21,6 +24,8 @@ public interface SiteNotificationDao {
             String actionLabelKey,
             Instant createdAt
     );
+
+    void markAsRead(SiteNotification notification);
 
     void markAllAsReadForUser(User user);
 

@@ -15,12 +15,18 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Repository
 public class SiteNotificationJpaDao implements SiteNotificationDao {
 
     @PersistenceContext
     private EntityManager em;
+
+    @Override
+    public Optional<SiteNotification> getById(long id) {
+        return Optional.ofNullable(em.find(SiteNotification.class, id));
+    }
 
     @Override
     public SiteNotification create(
@@ -128,6 +134,14 @@ public class SiteNotificationJpaDao implements SiteNotificationDao {
             ).setParameter("userId", user.getId())
             .getSingleResult()
             .intValue();
+    }
+
+    @Override
+    public void markAsRead(SiteNotification notification) {
+        if (notification != null) {
+            final SiteNotification managed = em.contains(notification) ? notification : em.merge(notification);
+            managed.markAsRead();
+        }
     }
 
     @Override

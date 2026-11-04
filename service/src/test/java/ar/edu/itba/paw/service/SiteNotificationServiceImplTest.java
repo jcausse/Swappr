@@ -3,6 +3,8 @@ package ar.edu.itba.paw.service;
 import ar.edu.itba.paw.model.*;
 import ar.edu.itba.paw.persistence.SiteNotificationDao;
 import ar.edu.itba.paw.service.dto.SiteNotificationCreationDto;
+import ar.edu.itba.paw.service.exception.ForbiddenException;
+import ar.edu.itba.paw.service.exception.NotFoundException;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -13,6 +15,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -177,5 +180,61 @@ public class SiteNotificationServiceImplTest {
 
         // Act
         notificationService.delete(notification);
+    }
+
+    @Test
+    public void testMarkAsReadByRecipientExecutesWithoutError() {
+        // Arrange
+        final User recipient = buildUser();
+        final SiteNotification notification = buildNotification(recipient);
+        when(siteNotificationDao.getById(100L)).thenReturn(Optional.of(notification));
+
+        // Act
+        notificationService.markAsRead(100L, recipient);
+    }
+
+    @Test(expected = NotFoundException.class)
+    public void testMarkAsReadNonExistentThrowsNotFound() {
+        // Arrange
+        when(siteNotificationDao.getById(999L)).thenReturn(Optional.empty());
+
+        // Act
+        notificationService.markAsRead(999L, buildUser());
+    }
+
+    @Test(expected = ForbiddenException.class)
+    public void testMarkAsReadByOtherUserThrowsForbidden() {
+        // Arrange
+        final User recipient = buildUser();
+        final User intruder = User.builder()
+                .id(99L)
+                .username("intruder")
+                .displayName("Intruder")
+                .email("intruder@example.com")
+                .password("secret")
+                .joinedAt(Instant.now())
+                .build();
+        when(siteNotificationDao.getById(100L)).thenReturn(Optional.of(buildNotification(recipient)));
+
+        // Act
+        notificationService.markAsRead(100L, intruder);
+    }
+
+    @Test(expected = ForbiddenException.class)
+    public void testDeleteByIdByOtherUserThrowsForbidden() {
+        // Arrange
+        final User recipient = buildUser();
+        final User intruder = User.builder()
+                .id(99L)
+                .username("intruder")
+                .displayName("Intruder")
+                .email("intruder@example.com")
+                .password("secret")
+                .joinedAt(Instant.now())
+                .build();
+        when(siteNotificationDao.getById(100L)).thenReturn(Optional.of(buildNotification(recipient)));
+
+        // Act
+        notificationService.delete(100L, intruder);
     }
 }

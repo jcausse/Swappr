@@ -7,7 +7,12 @@ import ar.edu.itba.paw.model.User;
 import ar.edu.itba.paw.service.dto.SiteNotificationCreationDto;
 import lombok.NonNull;
 
+import java.util.Optional;
+
 public interface SiteNotificationService {
+    /** Find a notification by its unique identifier. **/
+    Optional<SiteNotification> getById(long notificationId);
+
     /**
      * Get the latest {@code n} (capped at 30) unread notifications for a {@code recipient}.
      * This is meant to help populate notification bells and other non-paged UI components.
@@ -20,11 +25,17 @@ public interface SiteNotificationService {
     /** Create a new notification **/
     SiteNotification create(@NonNull SiteNotificationCreationDto creationDto);
 
+    /** Mark a single notification as read on behalf of {@code actor}. **/
+    void markAsRead(long notificationId, @NonNull User actor);
+
     /** Mark all unread notifications as read for a {@code recipient}. **/
     void markAllAsReadForUser(@NonNull User recipient);
 
     /** Delete a notification (note that this is a permanent operation, a physical deletion, not a logical deletion). **/
     void delete(@NonNull SiteNotification notification);
+
+    /** Delete a notification by ID on behalf of {@code actor}. **/
+    void delete(long notificationId, @NonNull User actor);
 
     /** Get the total unread notification count for a {@code recipient}. **/
     int countUnreadForUser(@NonNull User user);

@@ -64,4 +64,12 @@ public class SiteNotification {
     public void markAsRead() {
         this.read = true;
     }
+
+    public boolean isRecipient(Long userId) {
+        return userId != null && user != null && userId.equals(user.getId());
+    }
+
+    public boolean isRecipient(User candidate) {
+        return candidate != null && isRecipient(candidate.getId());
+    }
 }

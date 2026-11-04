@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import ar.edu.itba.paw.model.User;
+import ar.edu.itba.paw.service.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -11,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 public class PermissionServiceImpl implements PermissionService {
     private final ListingService listingService;
     private final OfferService offerService;
+    private final SiteNotificationService siteNotificationService;
 
 	@Override
 	@Transactional
@@ -35,6 +37,14 @@ public class PermissionServiceImpl implements PermissionService {
 	@Transactional
 	public boolean canAccessOffer(User user, long offerId) {
 		return isOfferSeller(user, offerId) || isOfferBuyer(user, offerId);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public boolean canManageNotification(User user, long notificationId) {
+		var notification = siteNotificationService.getById(notificationId)
+				.orElseThrow(() -> NotFoundException.createFor("Notification with ID " + notificationId));
+		return notification.isRecipient(user);
 	}
 
 	@Override

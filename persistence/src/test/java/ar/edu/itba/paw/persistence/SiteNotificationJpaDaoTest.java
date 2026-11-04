@@ -292,4 +292,58 @@ public class SiteNotificationJpaDaoTest {
                 jdbcTemplate, TABLE, "notification_id = 601"
         ));
     }
+
+    /* ---------------------------------------------------------------------------------------------- */
+    /* getById                                                                                         */
+    /* ---------------------------------------------------------------------------------------------- */
+
+    @Test
+    public void testGetByIdReturnsExistingNotification() {
+        // Arrange with direct database insert
+        final Instant now = Instant.now();
+        insertNotification(701L, USER_ID, TYPE, TITLE, BODY, ACTION_URL, ACTION_LABEL_KEY, false, now);
+
+        // Act
+        final var maybeNotification = notificationDao.getById(701L);
+
+        // Assert
+        Assert.assertTrue(maybeNotification.isPresent());
+        Assert.assertEquals(701L, (long) maybeNotification.get().getId());
+        Assert.assertEquals(TITLE, maybeNotification.get().getTitle());
+    }
+
+    @Test
+    public void testGetByIdNonExistentReturnsEmpty() {
+        // Act
+        final var maybeNotification = notificationDao.getById(99999L);
+
+        // Assert
+        Assert.assertTrue(maybeNotification.isEmpty());
+    }
+
+    /* ---------------------------------------------------------------------------------------------- */
+    /* markAsRead                                                                                      */
+    /* ---------------------------------------------------------------------------------------------- */
+
+    @Test
+    public void testMarkAsReadMarksOnlyTargetNotification() {
+        // Arrange with direct database inserts
+        final Instant now = Instant.now();
+        insertNotification(801L, USER_ID, TYPE, "Target", BODY, null, null, false, now);
+        insertNotification(802L, USER_ID, TYPE, "Other", BODY, null, null, false, now.plusSeconds(1));
+        final SiteNotification target = em.find(SiteNotification.class, 801L);
+
+        // Act
+        notificationDao.markAsRead(target);
+        em.flush();
+        em.clear();
+
+        // Assert directly querying database table
+        Assert.assertEquals(1, JdbcTestUtils.countRowsInTableWhere(
+                jdbcTemplate, TABLE, "notification_id = 801 AND is_read = true"
+        ));
+        Assert.assertEquals(1, JdbcTestUtils.countRowsInTableWhere(
+                jdbcTemplate, TABLE, "notification_id = 802 AND is_read = false"
+        ));
+    }
 }

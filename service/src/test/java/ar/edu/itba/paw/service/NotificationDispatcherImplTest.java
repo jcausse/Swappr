@@ -356,6 +356,11 @@ public class NotificationDispatcherImplTest {
         }
 
         @Override
+        public java.util.Optional<SiteNotification> getById(long notificationId) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
         public Page<SiteNotification> getRecentUnreadForUser(User recipient, int n) {
             throw new UnsupportedOperationException();
         }
@@ -366,12 +371,22 @@ public class NotificationDispatcherImplTest {
         }
 
         @Override
+        public void markAsRead(long notificationId, User actor) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
         public void markAllAsReadForUser(User recipient) {
             throw new UnsupportedOperationException();
         }
 
         @Override
         public void delete(SiteNotification notification) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void delete(long notificationId, User actor) {
             throw new UnsupportedOperationException();
         }
 
