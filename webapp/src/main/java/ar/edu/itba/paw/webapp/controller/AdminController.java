@@ -10,6 +10,8 @@ import ar.edu.itba.paw.service.OfferService;
 import ar.edu.itba.paw.service.UserService;
 import ar.edu.itba.paw.service.dto.ListingFilterDto;
 import ar.edu.itba.paw.service.dto.OfferFilterDto;
+import ar.edu.itba.paw.service.exception.BadParameterException;
+import ar.edu.itba.paw.service.exception.NotFoundException;
 import ar.edu.itba.paw.service.exception.SelfSuspendException;
 import ar.edu.itba.paw.webapp.auth.CurrentUser;
 import ar.edu.itba.paw.webapp.form.AdminGrantRoleForm;
@@ -33,7 +35,6 @@ import org.springframework.web.servlet.ModelAndView;
 import javax.validation.Valid;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 
@@ -102,8 +103,9 @@ public class AdminController {
                     .addObject("grantRoleForm", new AdminGrantRoleForm());
         }
 
-        boolean success = adminService.takeDownListing(form.getListingId());
-        if (!success) {
+        try {
+            adminService.takeDownListing(form.getListingId());
+        } catch (NotFoundException e) {
             LOGGER.warn("Listing {} not found for takedown", form.getListingId());
             errors.rejectValue("listingId", "admin.error.listingNotFound");
             return new ModelAndView("admin/dashboard")
@@ -128,10 +130,13 @@ public class AdminController {
             @RequestParam(value = "redirect", required = false) String redirectUrl
     ) {
         LOGGER.info("Admin {} took down listing id={}", currentUser.getUsername(), id);
-        boolean success = adminService.takeDownListing(id);
-        final var fallback = success
-                ? "/admin/listings?success=listing_takedown"
-                : "/admin/listings?error=listingNotFound";
+        String fallback = "/admin/listings?error=listingNotFound";
+        try {
+            adminService.takeDownListing(id);
+            fallback = "/admin/listings?success=listing_takedown";
+        } catch (NotFoundException e) {
+            LOGGER.warn("Listing {} not found for takedown", id);
+        }
         final var target = RedirectHelper.resolvePath(redirectUrl, fallback, ADMIN_PATH_FILTER);
         return new ModelAndView("redirect:" + target);
     }
@@ -172,10 +177,18 @@ public class AdminController {
                     .addObject("grantRoleForm", new AdminGrantRoleForm());
         }
 
-        boolean success = adminService.takeDownOffer(form.getOfferId());
-        if (!success) {
-            LOGGER.warn("Offer {} could not be taken down", form.getOfferId());
+        try {
+            adminService.takeDownOffer(form.getOfferId());
+        } catch (NotFoundException e) {
+            LOGGER.warn("Offer {} not found for takedown", form.getOfferId());
             errors.rejectValue("offerId", "admin.error.offerNotFound");
+            return new ModelAndView("admin/dashboard")
+                    .addObject("takeDownListingForm", new AdminTakeDownListingForm())
+                    .addObject("suspendUserForm", new AdminSuspendUserForm())
+                    .addObject("grantRoleForm", new AdminGrantRoleForm());
+        } catch (BadParameterException e) {
+            LOGGER.warn("Offer {} cannot be taken down: {}", form.getOfferId(), e.getMessage());
+            errors.rejectValue("offerId", "admin.error.offerCannotBeCanceled");
             return new ModelAndView("admin/dashboard")
                     .addObject("takeDownListingForm", new AdminTakeDownListingForm())
                     .addObject("suspendUserForm", new AdminSuspendUserForm())
@@ -198,10 +211,16 @@ public class AdminController {
             @RequestParam(value = "redirect", required = false) String redirectUrl
     ) {
         LOGGER.info("Admin {} took down offer id={}", currentUser.getUsername(), id);
-        boolean success = adminService.takeDownOffer(id);
-        final var fallback = success
-                ? "/admin/offers?success=offer_takedown"
-                : "/admin/offers?error=offerNotFound";
+        String fallback = "/admin/offers?error=offerNotFound";
+        try {
+            adminService.takeDownOffer(id);
+            fallback = "/admin/offers?success=offer_takedown";
+        } catch (NotFoundException e) {
+            LOGGER.warn("Offer {} not found for takedown", id);
+        } catch (BadParameterException e) {
+            LOGGER.warn("Offer {} cannot be taken down: {}", id, e.getMessage());
+            fallback = "/admin/offers?error=offerCannotBeCanceled";
+        }
         final var target = RedirectHelper.resolvePath(redirectUrl, fallback, ADMIN_PATH_FILTER);
         return new ModelAndView("redirect:" + target);
     }
@@ -222,8 +241,7 @@ public class AdminController {
             if (targetUser.isPresent()) {
                 User user = targetUser.get();
                 mav.addObject("targetUser", user);
-                List<Role> roles = userService.getRoles(user);
-                mav.addObject("targetUserRoles", roles);
+                mav.addObject("targetUserRoles", user.getRoles());
                 mav.addObject("isTargetUserAdmin", user.hasRole(Role.ADMIN));
                 suspendUserForm.setUsername(user.getUsername());
                 grantRoleForm.setUsername(user.getUsername());

@@ -10,7 +10,6 @@ import ar.edu.itba.paw.model.Role;
 import ar.edu.itba.paw.model.User;
 import ar.edu.itba.paw.service.dto.ListingFilterDto;
 import ar.edu.itba.paw.service.dto.OfferFilterDto;
-import ar.edu.itba.paw.service.exception.BadParameterException;
 import ar.edu.itba.paw.service.exception.NotFoundException;
 import ar.edu.itba.paw.service.exception.SelfSuspendException;
 import java.util.List;
@@ -34,28 +33,16 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     @Transactional
-    public boolean takeDownListing(@NonNull Long listingId) {
+    public void takeDownListing(@NonNull Long listingId) {
         LOGGER.info("Admin taking down listing id={}", listingId);
-        try {
-            listingService.cancelByAdmin(listingId);
-            return true;
-        } catch (NotFoundException e) {
-            LOGGER.warn("Listing {} not found for takedown", listingId);
-            return false;
-        }
+        listingService.cancelByAdmin(listingId);
     }
 
     @Override
     @Transactional
-    public boolean takeDownOffer(@NonNull Long offerId) {
+    public void takeDownOffer(@NonNull Long offerId) {
         LOGGER.info("Admin taking down offer id={}", offerId);
-        try {
-            offerService.cancelByAdmin(offerId);
-            return true;
-        } catch (NotFoundException | BadParameterException e) {
-            LOGGER.warn("Offer {} cannot be taken down: {}", offerId, e.getMessage());
-            return false;
-        }
+        offerService.cancelByAdmin(offerId);
     }
 
     @Override

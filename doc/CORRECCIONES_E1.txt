@@ -17,14 +17,16 @@
 [X] En el registro, el controller llama a dos services distintos que escriben, cada uno en su propia transacción: UserController.register crea el usuario y después genera el código de verificación. Si la segunda operación falla, la primera ya quedó confirmada. Esto es un error conceptual grave.
   -- RESUELTO: PR https://bitbucket.org/itba/paw-2026b-08/pull-requests/82
 
-[/] Tienen lógica de negocio en los controllers, por ejemplo (pero no únicamente): deciden el monto y el tipo de la oferta, qué estados cuentan como vendido, si una oferta ya fue calificada o si un admin puede suspenderse en CheckoutController.checkoutPost Y ListingController.listing. Esto es un error conceptual grave.
+[X] Tienen lógica de negocio en los controllers, por ejemplo (pero no únicamente): deciden el monto y el tipo de la oferta, qué estados cuentan como vendido, si una oferta ya fue calificada o si un admin puede suspenderse en CheckoutController.checkoutPost Y ListingController.listing. Esto es un error conceptual grave.
   -- CheckoutController: PR https://bitbucket.org/itba/paw-2026b-08/pull-requests/95
   -- Otros controllers: PR https://bitbucket.org/itba/paw-2026b-08/pull-requests/98
   -- Falta segundo pase para asegurar que no quede nada
   -- CONSULTAR: checks en GET ok si pasan por una función de model? (AccountController showProofOf*Upload, showRateForm)
+  -- RESUELTO: checkeado 2026-11-04, pero REVISAR ANTES DE LA ENTREGA!!
 
-[/] Verifican el resultado de una escritura con otro método del mismo DAO en lugar de consultar la tabla. Por ejemplo, OfferJdbcDaoTest.testUpdateProof0fPaymentId usa offerDao.getById. Esto es un error conceptual grave.
-  -- Falta mergear: PR https://bitbucket.org/itba/paw-2026b-08/pull-requests/101
+[X] Verifican el resultado de una escritura con otro método del mismo DAO en lugar de consultar la tabla. Por ejemplo, OfferJdbcDaoTest.testUpdateProof0fPaymentId usa offerDao.getById. Esto es un error conceptual grave.
+  -- RESUELTO: PR https://bitbucket.org/itba/paw-2026b-08/pull-requests/101
+  -- IMPORTANTE revisar antes de la entrega, sobre todo si hay tests nuevos.
 
 # Otras correcciones
 
@@ -67,9 +69,11 @@
 [-] Duplican código que ya divergió: el mapeo de Listing / User está copiado entre OfferJdbcDao ListingJdbcDao (y devuelve objetos incompletos según quién los carga),
   -- IRRELEVANTE con la migración a JPA, lo resuelve el entity manager
 
-[/] la constante "_OTHER_" está en tres lugares
+[X] la constante "_OTHER_" está en tres lugares
   -- RESUELTO: PR https://bitbucket.org/itba/paw-2026b-08/pull-requests/106
 
 [ ] y las migraciones de test son una copia a mano de las de producción.
 
-[ ] Dejan código sin uso en services y DAOs. Por ejemplo, ProductServiceImpl.getByCategory, UserServiceImpl.updateEmail y ListingJdbcDao .DELETE_BY_ID.
+[X] Dejan código sin uso en services y DAOs. Por ejemplo, ProductServiceImpl.getByCategory, UserServiceImpl.updateEmail y ListingJdbcDao .DELETE_BY_ID.
+  -- RESUELTO: PR https://bitbucket.org/itba/paw-2026b-08/pull-requests/100
+  -- Volver a verificar antes de la entrega!
