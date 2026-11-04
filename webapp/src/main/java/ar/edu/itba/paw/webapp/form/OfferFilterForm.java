@@ -19,4 +19,8 @@ public class OfferFilterForm {
     public void setStatusGroup(OfferStatusGroup statusGroup) {
         this.statusGroup = statusGroup == null ? OfferStatusGroup.PENDING : statusGroup;
     }
+
+    public Integer getPage() {
+        return page == null || page < 1 ? 1 : page;
+    }
 }

@@ -13,8 +13,16 @@ import lombok.Setter;
 @Setter
 public class RatingFilterForm {
 
-    private RatingRole role;
+    private RatingRole role = RatingRole.SELLER;
     private OfferRating type;
     @Min(1)
     private Integer page;
+
+    public void setRole(RatingRole role) {
+        this.role = role == null ? RatingRole.SELLER : role;
+    }
+
+    public Integer getPage() {
+        return page == null || page < 1 ? 1 : page;
+    }
 }
