@@ -53,6 +53,61 @@
 
                 <c:choose>
                     <c:when test="${currentUser.isPresent()}">
+                        <c:url value="/notifications" var="allNotificationsUrl"/>
+                        <c:url value="/notifications/read-all" var="markAllReadUrl"/>
+                        <spring:message code="notifications.bell.ariaLabel" var="notificationsBellAria"/>
+                        <spring:message code="notifications.dropdown.title" var="notificationsDropdownTitle"/>
+                        <spring:message code="notifications.dropdown.empty" var="notificationsDropdownEmpty"/>
+                        <spring:message code="notifications.dropdown.showAll" var="notificationsShowAllLabel"/>
+                        <spring:message code="notifications.action.markAllRead" var="markAllReadLabel"/>
+
+                        <paw:button id="notificationsButton" popovertarget="notificationsPopover" variant="ghost" role="secondary" classname="h-10 px-2.5 gap-1.5" type="button" ariaLabel="${notificationsBellAria}">
+                            <paw:icon name="bell" classname="text-lg text-black/80"/>
+                            <c:if test="${recentUnreadNotificationsPage.totalCount > 0}">
+                                <paw:badge text="${recentUnreadNotificationsPage.totalCount}" classname="text-red-600 min-w-5! p-0.25!" size="sm"/>
+                            </c:if>
+                        </paw:button>
+
+                        <div id="notificationsPopover" popover="auto" class="fixed inset-auto m-0 p-0 bg-transparent border-0 z-50">
+                            <div class="w-96 sm:w-[26rem] max-w-[calc(100vw-1.5rem)] bg-white rounded-2xl border border-black/10 shadow-xl p-3 flex flex-col gap-2.5">
+                                <div class="flex flex-row items-center justify-between gap-2 px-1">
+                                    <div class="flex flex-row items-center gap-2">
+                                        <h3 class="text-sm font-semibold text-black"><c:out value="${notificationsDropdownTitle}"/></h3>
+                                        <c:if test="${recentUnreadNotificationsPage.totalCount > 0}">
+                                            <paw:badge text="${recentUnreadNotificationsPage.totalCount}" classname="text-red-600 min-w-5! p-0.25!" size="sm"/>
+                                        </c:if>
+                                    </div>
+                                    <c:if test="${recentUnreadNotificationsPage.totalCount > 0}">
+                                        <form action="${markAllReadUrl}" method="post" class="inline-flex">
+                                            <paw:button type="submit" variant="ghost" size="sm" icon="check-check" text="${markAllReadLabel}"/>
+                                        </form>
+                                    </c:if>
+                                </div>
+
+                                <paw:divider/>
+
+                                <div class="max-h-96 overflow-y-auto flex flex-col gap-2">
+                                    <c:choose>
+                                        <c:when test="${empty recentUnreadNotificationsPage.content}">
+                                            <div class="py-8 px-4 flex flex-col items-center gap-2 text-center">
+                                                <paw:icon name="bell-off" classname="text-2xl text-black/30"/>
+                                                <p class="text-sm text-black/50"><c:out value="${notificationsDropdownEmpty}"/></p>
+                                            </div>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <c:forEach var="notification" items="${recentUnreadNotificationsPage.content}">
+                                                <paw:notificationCard notification="${notification}" compact="${true}"/>
+                                            </c:forEach>
+                                        </c:otherwise>
+                                    </c:choose>
+                                </div>
+
+                                <c:if test="${recentUnreadNotificationsPage.totalCount > 10}">
+                                    <paw:linkButton href="${allNotificationsUrl}" text="${notificationsShowAllLabel}" variant="outline" classname="w-full"/>
+                                </c:if>
+                            </div>
+                        </div>
+
                         <div class="relative" id="userMenu">
                             <paw:button id="userButton" variant="ghost" classname="justify-start text-start gap-3 h-14 min-w-40!" type="button">
                                 <div class="flex flex-row gap-2 items-center text-sm">
@@ -69,6 +124,8 @@
                                 <c:url value="/profile" var="profileUrl"/>
                                 <spring:message code="navbar.account" var="accountLabel" />
                                 <paw:linkButton href="${accountUrl}" text="${accountLabel}" variant="ghost" role="secondary" />
+                                <spring:message code="navbar.notifications" var="navbarNotificationsLabel" />
+                                <paw:linkButton href="${allNotificationsUrl}" text="${navbarNotificationsLabel}" variant="ghost" role="secondary" />
                                 <spring:message code="navbar.profile" var="profileLabel" />
                                 <paw:linkButton href="${profileUrl}" text="${profileLabel}" variant="ghost" role="secondary" />
 
@@ -105,10 +162,62 @@
         const userButton = document.getElementById('userButton');
         const userPanel = document.getElementById('userPanel');
         const userMenu = document.getElementById('userMenu');
+        const notificationsButton = document.getElementById('notificationsButton');
+        const notificationsPopover = document.getElementById('notificationsPopover');
+
+        function positionNotificationsPopover() {
+            if (!notificationsButton || !notificationsPopover) {
+                return;
+            }
+            const rect = notificationsButton.getBoundingClientRect();
+            const margin = 12;
+            const popoverWidth = notificationsPopover.offsetWidth || Math.min(416, window.innerWidth - margin * 2);
+            let left = rect.right - popoverWidth;
+            if (left + popoverWidth > window.innerWidth - margin) {
+                left = window.innerWidth - popoverWidth - margin;
+            }
+            if (left < margin) {
+                left = margin;
+            }
+            notificationsPopover.style.top = (rect.bottom + 8) + 'px';
+            notificationsPopover.style.left = left + 'px';
+        }
+
+        if (notificationsButton && notificationsPopover) {
+            notificationsPopover.addEventListener('beforetoggle', function(e) {
+                if (e.newState === 'open') {
+                    if (userPanel) {
+                        userPanel.classList.add('hidden');
+                    }
+                    positionNotificationsPopover();
+                }
+            });
+
+            notificationsPopover.addEventListener('toggle', function(e) {
+                if (e.newState === 'open') {
+                    positionNotificationsPopover();
+                }
+            });
+
+            window.addEventListener('resize', function() {
+                if (notificationsPopover.matches(':popover-open')) {
+                    positionNotificationsPopover();
+                }
+            });
+
+            window.addEventListener('scroll', function() {
+                if (notificationsPopover.matches(':popover-open')) {
+                    positionNotificationsPopover();
+                }
+            }, { passive: true });
+        }
 
         if (userButton && userPanel) {
             userButton.addEventListener('click', function(e) {
                 e.stopPropagation();
+                if (notificationsPopover && notificationsPopover.matches(':popover-open')) {
+                    notificationsPopover.hidePopover();
+                }
                 userPanel.classList.toggle('hidden');
             });
 

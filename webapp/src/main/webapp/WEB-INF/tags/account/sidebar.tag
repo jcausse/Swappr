@@ -8,15 +8,25 @@
 <c:url value="/account/listings" var="listingsUrl"/>
 <c:url value="/account/incoming-offers" var="offersUrl"/>
 <c:url value="/account/my-offers" var="myOffersUrl"/>
+<c:url value="/notifications" var="notificationsUrl"/>
 
 <spring:message code="account.myListings" var="myListingsTitle"/>
 <spring:message code="account.incomingOffers" var="incomingOffersTitle"/>
 <spring:message code="account.myOffers" var="myOffersTitle"/>
+<spring:message code="account.notifications" var="notificationsTitle"/>
 
 <spring:message code="account.title" var="accountTitle"/>
 <paw:card title="${accountTitle}" classname="sticky top-24">
     <div class="flex flex-col gap-2 mt-4">
         <paw:user user="${user}" variant="detailed" href="/account" classname="-mx-2 w-[calc(100%+1rem)]!" />
+
+        <div class="flex flex-col gap-1">
+            <account:link href="${notificationsUrl}" text="${notificationsTitle}" icon="bell">
+                <c:if test="${recentUnreadNotificationsPage.totalCount > 0}">
+                    <paw:badge text="${recentUnreadNotificationsPage.totalCount}" classname="text-red-600 min-w-5! p-0.25!" size="sm" />
+                </c:if>
+            </account:link>
+        </div>
 
         <paw:divider />
 
