@@ -50,6 +50,7 @@ While you as an AI agent are allowed to edit this file on your own, you must **a
 - Inside `<form:form>`, use the `paw:formInput` tag (not `paw:input`) to get automatic Spring binding and error display.
 - Use `paw:input` only for standalone inputs outside of Spring forms (e.g., search bars, filters).
 - **Icons**: The project uses [Lucide Icons](https://lucide.dev/icons/). Render icons using `<paw:icon name="..."/>` (e.g. `<paw:icon name="eye"/>`). Look up icon names on [lucide.dev/icons](https://lucide.dev/icons/) and pass the name to the `name` attribute of `<paw:icon>` (or the `icon` attribute on tags like `<paw:button>` and `<paw:linkButton>`).
+- **Auth pages** (login, register, email verification, password recovery) must use `<paw:authLayout>` (`authLayout.tag`), which renders the shared banner background, logo, title, card container and "Return to Home" button. Pass page-specific footer links via `linkHref`/`linkTextKey` (and optionally `secondaryLinkHref`/`secondaryLinkTextKey`); put the form inside the tag body.
 - **Select option labels**: Controllers must not resolve select option labels with `MessageSource`. Instead, pass the message keys as option labels and set `translateLabels="true"` on `paw:formSelect` / `paw:formButtonToggle`, which resolves each label with `<spring:message>`. For plain string options whose label equals their value, pass a `List<String>` and use `plainStrings="true"` on `paw:formSelect` rather than building `StringSelectOption` pairs.
 
 ## Internationalization (i18n) Conventions
