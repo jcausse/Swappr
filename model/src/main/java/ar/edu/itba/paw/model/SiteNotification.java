@@ -65,11 +65,8 @@ public class SiteNotification {
         this.read = true;
     }
 
-    public boolean isRecipient(Long userId) {
-        return userId != null && user != null && userId.equals(user.getId());
-    }
-
     public boolean isRecipient(User candidate) {
-        return candidate != null && isRecipient(candidate.getId());
+        // Called on the candidate so the lazy recipient proxy only exposes its ID (no extra fetch)
+        return candidate != null && candidate.isSameUser(user);
     }
 }

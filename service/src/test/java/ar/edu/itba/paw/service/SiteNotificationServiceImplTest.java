@@ -19,6 +19,7 @@ import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -38,6 +39,17 @@ public class SiteNotificationServiceImplTest {
                 .username("test_user")
                 .displayName("Test User")
                 .email("test@example.com")
+                .password("secret")
+                .joinedAt(Instant.now())
+                .build();
+    }
+
+    private User buildIntruder() {
+        return User.builder()
+                .id(99L)
+                .username("intruder")
+                .displayName("Intruder")
+                .email("intruder@example.com")
                 .password("secret")
                 .joinedAt(Instant.now())
                 .build();
@@ -183,14 +195,35 @@ public class SiteNotificationServiceImplTest {
     }
 
     @Test
-    public void testMarkAsReadByRecipientExecutesWithoutError() {
+    public void testMarkAsReadByRecipientDelegatesToDao() {
         // Arrange
         final User recipient = buildUser();
         final SiteNotification notification = buildNotification(recipient);
+        final ArgumentCaptor<SiteNotification> captor = ArgumentCaptor.forClass(SiteNotification.class);
         when(siteNotificationDao.getById(100L)).thenReturn(Optional.of(notification));
+        doNothing().when(siteNotificationDao).markAsRead(captor.capture());
 
         // Act
         notificationService.markAsRead(100L, recipient);
+
+        // Assert
+        Assert.assertSame(notification, captor.getValue());
+    }
+
+    @Test
+    public void testDeleteByIdByRecipientDelegatesToDao() {
+        // Arrange
+        final User recipient = buildUser();
+        final SiteNotification notification = buildNotification(recipient);
+        final ArgumentCaptor<SiteNotification> captor = ArgumentCaptor.forClass(SiteNotification.class);
+        when(siteNotificationDao.getById(100L)).thenReturn(Optional.of(notification));
+        doNothing().when(siteNotificationDao).delete(captor.capture());
+
+        // Act
+        notificationService.delete(100L, recipient);
+
+        // Assert
+        Assert.assertSame(notification, captor.getValue());
     }
 
     @Test(expected = NotFoundException.class)
@@ -206,14 +239,7 @@ public class SiteNotificationServiceImplTest {
     public void testMarkAsReadByOtherUserThrowsForbidden() {
         // Arrange
         final User recipient = buildUser();
-        final User intruder = User.builder()
-                .id(99L)
-                .username("intruder")
-                .displayName("Intruder")
-                .email("intruder@example.com")
-                .password("secret")
-                .joinedAt(Instant.now())
-                .build();
+        final User intruder = buildIntruder();
         when(siteNotificationDao.getById(100L)).thenReturn(Optional.of(buildNotification(recipient)));
 
         // Act
@@ -224,14 +250,7 @@ public class SiteNotificationServiceImplTest {
     public void testDeleteByIdByOtherUserThrowsForbidden() {
         // Arrange
         final User recipient = buildUser();
-        final User intruder = User.builder()
-                .id(99L)
-                .username("intruder")
-                .displayName("Intruder")
-                .email("intruder@example.com")
-                .password("secret")
-                .joinedAt(Instant.now())
-                .build();
+        final User intruder = buildIntruder();
         when(siteNotificationDao.getById(100L)).thenReturn(Optional.of(buildNotification(recipient)));
 
         // Act
