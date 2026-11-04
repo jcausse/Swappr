@@ -1,5 +1,5 @@
 [ ] Sin resolver
-[/] Falta testear
+[/] Falta testear/verificar
 [X] Resuelto y confirmado
 [-] Irrelevante (el código al que refiere no existe más)
 
@@ -21,6 +21,7 @@
   -- CheckoutController: PR https://bitbucket.org/itba/paw-2026b-08/pull-requests/95
   -- Otros controllers: PR https://bitbucket.org/itba/paw-2026b-08/pull-requests/98
   -- Falta segundo pase para asegurar que no quede nada
+  -- CONSULTAR: checks en GET ok si pasan por una función de model? (AccountController showProofOf*Upload, showRateForm)
 
 [/] Verifican el resultado de una escritura con otro método del mismo DAO en lugar de consultar la tabla. Por ejemplo, OfferJdbcDaoTest.testUpdateProof0fPaymentId usa offerDao.getById. Esto es un error conceptual grave.
   -- Falta mergear: PR https://bitbucket.org/itba/paw-2026b-08/pull-requests/101
@@ -35,7 +36,8 @@
 [X] Al publicar el form dice que la imagen es opcional, pero si no la incluyo me da un error que dice "Uploaded files must be valid images under 5MB"
   -- RESUELTO
 
-[/] Los mails tienen links inválidos
+[X] Los mails tienen links inválidos
+  -- RESUELTO (último check 2026-11-03, commit 8f66792cde5a961062eef0a55087caafb6835172)
 
 [X] El link a rating desde la web en el listado de ofertas completas da un 404.
   -- RESUELTO: estaba mal la URL
@@ -65,7 +67,8 @@
 [-] Duplican código que ya divergió: el mapeo de Listing / User está copiado entre OfferJdbcDao ListingJdbcDao (y devuelve objetos incompletos según quién los carga),
   -- IRRELEVANTE con la migración a JPA, lo resuelve el entity manager
 
-[ ] la constante "_OTHER_" está en tres lugares
+[/] la constante "_OTHER_" está en tres lugares
+  -- RESUELTO: PR https://bitbucket.org/itba/paw-2026b-08/pull-requests/106
 
 [ ] y las migraciones de test son una copia a mano de las de producción.
 

@@ -4,6 +4,7 @@ import ar.edu.itba.paw.model.Condition;
 import ar.edu.itba.paw.model.Image;
 import ar.edu.itba.paw.model.Listing;
 import ar.edu.itba.paw.model.ListingFilter;
+import ar.edu.itba.paw.model.ListingSort;
 import ar.edu.itba.paw.model.Page;
 import ar.edu.itba.paw.model.ListingStatus;
 import ar.edu.itba.paw.model.Price;
@@ -11,11 +12,10 @@ import ar.edu.itba.paw.model.Product;
 import ar.edu.itba.paw.model.User;
 import ar.edu.itba.paw.persistence.ListingDao;
 import ar.edu.itba.paw.service.dto.ImageData;
+import ar.edu.itba.paw.service.dto.LandingListingsDto;
 import ar.edu.itba.paw.service.dto.ListingCreationDto;
 import ar.edu.itba.paw.service.dto.ListingFilterDto;
-import ar.edu.itba.paw.service.dto.mail.ListingMailDto;
 import ar.edu.itba.paw.service.dto.ListingUpdateDto;
-import ar.edu.itba.paw.service.dto.mail.UserMailDto;
 import ar.edu.itba.paw.service.exception.BadParameterException;
 import ar.edu.itba.paw.service.exception.ForbiddenException;
 import ar.edu.itba.paw.service.exception.NotFoundException;
@@ -35,13 +35,14 @@ import org.springframework.transaction.annotation.Transactional;
 public class ListingServiceImpl implements ListingService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ListingServiceImpl.class);
+    private static final int LANDING_LIST_SIZE = 12;
 
     private final ListingDao listingDao;
 
     private final UserService userService;
     private final ProductService productService;
     private final ImageService imageService;
-    private final MailingService mailingService;
+    private final NotificationDispatcher notificationDispatcher;
     private final OfferService offerService;
 
     @Override
@@ -80,6 +81,26 @@ public class ListingServiceImpl implements ListingService {
             .build();
 
         return listingDao.search(filter);
+    }
+
+    @Override
+    public LandingListingsDto getForLanding() {
+        return new LandingListingsDto(
+            landingListings(ListingSort.MOST_OFFERS, true),
+            landingListings(ListingSort.RECENT_OFFERS, true),
+            landingListings(ListingSort.RECENT, false)
+        );
+    }
+
+    private List<Listing> landingListings(final ListingSort sort, final boolean hasActiveOffers) {
+        final var filter = ListingFilterDto.builder()
+            .sort(sort)
+            .status(ListingStatus.ACTIVE)
+            .page(1)
+            .pageSize(LANDING_LIST_SIZE)
+            .hasActiveOffers(hasActiveOffers ? Boolean.TRUE : null)
+            .build();
+        return search(filter).getContent();
     }
 
     private static int sanitizePage(final Integer page) {
@@ -138,7 +159,7 @@ public class ListingServiceImpl implements ListingService {
         LOGGER.info("Listing created: id={}, title='{}', creatorId={}, price={}, images={}",
                 listing.getId(), listing.getTitle(), creator.getId(), dto.price(), imageIds.size());
 
-        mailingService.sendListingPublishedEmail(UserMailDto.from(creator), ListingMailDto.from(listing));
+        notificationDispatcher.notifyListingPublished(listing);
 
         return listing;
     }
@@ -162,12 +183,8 @@ public class ListingServiceImpl implements ListingService {
             .orElseThrow(() -> new BadParameterException("Invalid buyerId"));
         final User seller = listing.getCreator();
 
-        final var sellerMail = UserMailDto.from(seller);
-        final var buyerMail = UserMailDto.from(buyer);
-        final var listingMail = ListingMailDto.from(listing);
-
-        mailingService.sendPurchaseSellerEmail(sellerMail, buyerMail, listingMail, message);
-        mailingService.sendPurchaseBuyerEmail(buyerMail, sellerMail, listingMail);
+        notificationDispatcher.notifyListingSold(listing, buyer, message);
+        notificationDispatcher.notifyPurchaseConfirmed(listing, buyer);
 
         LOGGER.info("Listing purchased: id={}, buyerId={}, sellerId={}", id, buyerId, seller.getId());
         return listing;

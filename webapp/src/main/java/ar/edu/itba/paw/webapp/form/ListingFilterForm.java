@@ -22,7 +22,7 @@ public class ListingFilterForm {
     private Condition condition;
     private Boolean acceptsTrade;
     private String query;
-    private ListingSort sort;
+    private ListingSort sort = ListingSort.RECENT;
     private ListingStatus status;
     @Min(1)
     private Integer page;
@@ -32,4 +32,8 @@ public class ListingFilterForm {
     private String model;
     private Integer yearMin;
     private Integer yearMax;
+
+    public Integer getPage() {
+        return page == null || page < 1 ? 1 : page;
+    }
 }

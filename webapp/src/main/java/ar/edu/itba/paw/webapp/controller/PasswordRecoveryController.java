@@ -52,7 +52,7 @@ public class PasswordRecoveryController {
 
         return new ModelAndView("recovery/request")
                 .addObject("codeSent", true)
-                .addObject("usernameOrEmail", form.getUsernameOrEmail().trim().toLowerCase());
+                .addObject("usernameOrEmail", form.getUsernameOrEmail());
     }
 
     @GetMapping("/recovery/verification")

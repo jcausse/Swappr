@@ -20,13 +20,19 @@ public class CheckoutForm {
     private Long listingId;
 
     @NotNull
-    private OfferType offerType;
+    private OfferType offerType = OfferType.FULL;
 
     @DecimalMin(value = "0.01", message = "{Min.checkoutForm.customAmount}")
     @Digits(integer = 9, fraction = 2)
     private BigDecimal customAmount;
 
     private Long offeredListingId;
+
+    private Integer page;
+
+    public Integer getPage() {
+        return page == null || page < 1 ? 1 : page;
+    }
 
     @DecimalMin(value = "0.0", message = "{Min.checkoutForm.tradeAmount}")
     @Digits(integer = 9, fraction = 2)

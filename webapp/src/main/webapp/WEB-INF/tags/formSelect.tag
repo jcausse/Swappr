@@ -6,10 +6,11 @@
 <%@ attribute name="itemLabel" required="false" type="java.lang.String" %>
 <%@ attribute name="itemValue" required="false" type="java.lang.String" %>
 <%@ attribute name="label" required="false" %>
-<%@ attribute name="placeholder" required="true" %>
+<%@ attribute name="placeholder" required="false" %>
 <%@ attribute name="variant" required="false" %>
 <%@ attribute name="disabled" required="false" type="java.lang.Boolean" %>
 <%@ attribute name="includeOther" required="false" type="java.lang.Boolean" %>
+<%-- Value of the "other" option; must be passed whenever includeOther is true --%>
 <%@ attribute name="otherValue" required="false" type="java.lang.String" %>
 <%-- Translated label of the "other" option; must be passed whenever includeOther is true --%>
 <%@ attribute name="otherLabel" required="false" type="java.lang.String" %>
@@ -37,7 +38,6 @@
 <c:set var="isDisabled" value="${disabled ne null ? disabled : false}"/>
 <c:set var="isIncludeOther" value="${includeOther ne null ? includeOther : false}"/>
 <c:set var="isTranslateLabels" value="${translateLabels ne null ? translateLabels : false}"/>
-<c:set var="otherVal" value="${not empty otherValue ? otherValue : '__OTHER__'}"/>
 
 <c:set var="resolvedItemLabel" value="${not empty itemLabel ? itemLabel : 'name'}"/>
 <c:set var="resolvedItemValue" value="${not empty itemValue ? itemValue : 'id'}"/>
@@ -54,7 +54,9 @@
             disabled="${isDisabled}"
             cssClass="px-2 py-1 rounded-lg text-sm outline-0 transition duration-150 outline-lime-600/30 placeholder:text-black/40 disabled:placeholder:text-black/20 appearance-none w-full peer ${variantClassnames}"
         >
-            <form:option value="" label="${placeholder}" />
+            <c:if test="${not empty placeholder}">
+                <form:option value="" label="${placeholder}" />
+            </c:if>
 
             <c:choose>
                 <c:when test="${isTranslateLabels}">
@@ -82,7 +84,7 @@
             </c:choose>
 
             <c:if test="${isIncludeOther}">
-                <form:option value="${otherVal}" label="${otherLabel}" />
+                <form:option value="${otherValue}" label="${otherLabel}" />
             </c:if>
         </form:select>
         <paw:icon name="chevron-down" classname="absolute top-1/2 right-1.5 -translate-y-1/2 pointer-events-none ${isDisabled ? 'text-black/40' : ''}" />

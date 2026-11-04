@@ -2,7 +2,6 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
 <%@ taglib prefix="spring" uri="http://www.springframework.org/tags" %>
-<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ taglib prefix="paw" tagdir="/WEB-INF/tags" %>
 
 
@@ -25,7 +24,7 @@
 <spring:message code="discovery.filter.acceptsShipping" var="acceptsShippingLabel"/>
 <spring:message code="discovery.filter.apply" var="applyLabel"/>
 <spring:message code="discovery.filter.clear" var="clearLabel"/>
-<spring:message code="discovery.sort.label" var="sortLabel"/>
+<spring:message code="listing.sort.label" var="sortLabel"/>
 <spring:message code="discovery.filter.all" var="allLabel"/>
 
 <paw:layout variant="wide" titleKey="discovery.title">
@@ -89,10 +88,10 @@
             <section class="flex-1">
                 <div class="flex items-center justify-between gap-4 mb-4">
                     <span class="text-sm text-black/60">
-                        <spring:message code="discovery.results.count" arguments="${fn:length(listings)}"/>
+                        <spring:message code="discovery.results.count" arguments="${listingPage.totalCount}"/>
                     </span>
                     <div class="flex items-center gap-2">
-                        <paw:formSelect path="sort" label="${sortLabel}" placeholder="${allLabel}" items="${sortOptions}" itemLabel="label" itemValue="value" translateLabels="true" classname="w-auto" />
+                        <paw:formSelect path="sort" label="${sortLabel}" items="${sortOptions}" itemLabel="label" itemValue="value" translateLabels="true" classname="w-auto" />
                     </div>
                 </div>
 

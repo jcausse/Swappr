@@ -30,7 +30,7 @@ public class Rating {
     @JoinColumn(name = "rated_id", nullable = false)
     private User rated;
 
-    @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "offer_id", nullable = false)
     private Offer offer;
 

@@ -86,16 +86,7 @@ public class AccountController {
             .toList();
 
         final var sortOptions = Arrays.stream(ListingSort.values())
-            .map(s -> {
-                String key;
-                if (s == ListingSort.RECENT) key = "discovery.sort.recent";
-                else if (s == ListingSort.PRICE_ASC) key = "discovery.sort.price_asc"; // TODO: TRADUCCION DUPLICADA
-                else if (s == ListingSort.PRICE_DESC) key = "discovery.sort.price_desc";
-                else if (s == ListingSort.NAME_ASC) key = "account.listings.sort.name_asc";
-                else if (s == ListingSort.NAME_DESC) key = "account.listings.sort.name_desc";
-                else key = s.getKey();
-                return new StringSelectOption(s.name(), key);
-            })
+            .map(s -> new StringSelectOption(s.name(), "listing.sort." + s.getKey()))
             .toList();
 
 		return new ModelAndView("account/listings")
@@ -123,12 +114,13 @@ public class AccountController {
             .map(s -> new StringSelectOption(s.name(), "offer.statusGroup." + s.getStatus()))
             .toList();
 
+		var offerCountByStatus = getOfferCountByStatus(currentUser, true);
 		return new ModelAndView("account/incomingOffers")
                 .addObject("offerPage", offerPage)
                 .addObject("offers", offerPage.getContent())
                 .addObject("statusGroupOptions", statusGroupOptions)
-                .addObject("offerCountByStatus", getOfferCountByStatus(currentUser, true))
-                .addObject("pendingOffersCount", offerService.getPendingOffersCount(currentUser));
+                .addObject("offerCountByStatus", offerCountByStatus)
+                .addObject("pendingOffersCount", offerCountByStatus.get(OfferStatusGroup.PENDING.name()));
     }
 
     @GetMapping("/my-offers")
@@ -307,7 +299,7 @@ public class AccountController {
                                         @Valid @ModelAttribute("rateForm") RateForm rateForm,
                                         BindingResult bindingResult) {
         final Offer offer = offerService.getById(offerId)
-                .orElseThrow(() -> NotFoundException.createFor("Offer")); // podria moverse a la primera linea de oferservice.rate
+                .orElseThrow(() -> NotFoundException.createFor("Offer"));
 
         if (bindingResult.hasErrors()) {
             return new ModelAndView("account/rate")
@@ -318,7 +310,7 @@ public class AccountController {
         offerService.rate(offer, currentUser, rateForm.getRating(), rateForm.getReviewText());
 
         return new ModelAndView("redirect:" + (offer.isBuyer(currentUser)
-            ? "/account/incoming-offers?statusGroup=RESOLVED"
-            : "/account/my-offers?statusGroup=RESOLVED"));
+            ? "/account/my-offers?statusGroup=RESOLVED"
+            : "/account/incoming-offers?statusGroup=RESOLVED"));
     }
 }

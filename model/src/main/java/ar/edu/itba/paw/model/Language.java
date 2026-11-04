@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Getter;
 
 import java.util.Arrays;
+import java.util.Locale;
 
 @RequiredArgsConstructor
 public enum Language {
@@ -11,6 +12,10 @@ public enum Language {
     ENGLISH("en");
 
     @Getter private final String code;
+
+    public Locale toLocale() {
+        return Locale.of(code);
+    }
 
     public static Language getDefault() {
         return Language.ENGLISH;

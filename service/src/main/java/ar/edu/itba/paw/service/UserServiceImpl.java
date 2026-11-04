@@ -11,7 +11,6 @@ import ar.edu.itba.paw.persistence.UserRoleDao;
 import ar.edu.itba.paw.service.dto.ImageData;
 import ar.edu.itba.paw.service.dto.UserCreationDto;
 import ar.edu.itba.paw.service.dto.UserEditDto;
-import ar.edu.itba.paw.service.dto.mail.UserMailDto;
 import ar.edu.itba.paw.service.enumeration.OneTimePasswordVerificationResult;
 
 import java.time.Instant;
@@ -40,7 +39,7 @@ public class UserServiceImpl implements UserService {
     private final ProvinceService provinceService;
     private final ImageService imageService;
     private final PasswordEncoder passwordEncoder;
-    private final MailingService mailingService;
+    private final NotificationDispatcher notificationDispatcher;
     private final OneTimePasswordService otpService;
 
 
@@ -95,8 +94,8 @@ public class UserServiceImpl implements UserService {
     private OneTimePassword sendVerificationEmail(@NonNull User user) {
         LOGGER.debug("Sending verification email to user id={}", user.getId());
         final var otp = otpService.create(user);
-        mailingService.sendVerificationEmail(UserMailDto.from(user), otp.getOtpValue());
-        LOGGER.info("Verification email sent to user id={}", user.getId());
+        notificationDispatcher.notifyEmailVerification(user, otp.getOtpValue());
+        LOGGER.info("Verification notification dispatched to user id={}", user.getId());
         return otp;
     }
 
@@ -192,8 +191,8 @@ public class UserServiceImpl implements UserService {
         }
 
         final var otp = otpService.create(user);
-        mailingService.sendVerificationEmail(UserMailDto.from(user), otp.getOtpValue());
-        LOGGER.info("Resent verification email to user id={}", user.getId());
+        notificationDispatcher.notifyEmailVerification(user, otp.getOtpValue());
+        LOGGER.info("Resent verification notification to user id={}", user.getId());
         return Optional.of(otp);
     }
 
@@ -217,8 +216,8 @@ public class UserServiceImpl implements UserService {
         LOGGER.info("Email verification result for user id={}: {}", user.getId(), result);
         if (result == OneTimePasswordVerificationResult.ACCEPTED) {
             markEmailAsVerified(user);
-            mailingService.sendWelcomeEmail(UserMailDto.from(user));
-            LOGGER.info("User id={} email successfully verified and welcome email dispatched", user.getId());
+            notificationDispatcher.notifyWelcome(user);
+            LOGGER.info("User id={} email successfully verified and welcome notification dispatched", user.getId());
         }
 
         return result;
@@ -258,7 +257,7 @@ public class UserServiceImpl implements UserService {
         LOGGER.info("Suspending user id={}", userId);
         final User user = userDao.suspend(userId, Instant.now())
                 .orElseThrow(() -> new IllegalArgumentException("Non-valid User received"));
-        mailingService.sendAccountSuspendedEmail(UserMailDto.from(user));
+        notificationDispatcher.notifyAccountSuspended(user);
         return user;
     }
 
@@ -268,7 +267,7 @@ public class UserServiceImpl implements UserService {
         LOGGER.info("Unsuspending user id={}", userId);
         final User user = userDao.unsuspend(userId)
                 .orElseThrow(() -> new IllegalArgumentException("Non-valid User received"));
-        mailingService.sendAccountUnsuspendedEmail(UserMailDto.from(user));
+        notificationDispatcher.notifyAccountUnsuspended(user);
         return user;
     }
 
