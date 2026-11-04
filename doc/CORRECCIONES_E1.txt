@@ -67,7 +67,8 @@
 [-] Duplican código que ya divergió: el mapeo de Listing / User está copiado entre OfferJdbcDao ListingJdbcDao (y devuelve objetos incompletos según quién los carga),
   -- IRRELEVANTE con la migración a JPA, lo resuelve el entity manager
 
-[ ] la constante "_OTHER_" está en tres lugares
+[/] la constante "_OTHER_" está en tres lugares
+  -- RESUELTO: PR https://bitbucket.org/itba/paw-2026b-08/pull-requests/106
 
 [ ] y las migraciones de test son una copia a mano de las de producción.
 

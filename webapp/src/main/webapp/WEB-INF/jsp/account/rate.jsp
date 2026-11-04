@@ -12,12 +12,11 @@
 <spring:message code="account.rate.title" var="titleMsg"/>
 <spring:message code="account.rate.subtitle" var="subtitleMsg"/>
 
-<c:set var="isBuyer" value="${currentUser.isPresent() and offer.buyer.id == currentUser.get().id}"/>
+<c:set var="isBuyer" value="${currentUser.isPresent() and offer.isBuyer(currentUser.get())}"/>
 <c:set var="ratedUser" value="${isBuyer ? offer.listing.creator : offer.buyer}"/>
 <c:set var="ratingTargetLabel" value="${isBuyer ? 'account.rate.ratingSeller' : 'account.rate.ratingBuyer'}"/>
 
-<c:url value="${isBuyer ? incomingOffersUrl : myOffersUrl}" var="backUrl"/>
-<c:url value="${isBuyer ? incomingOffersUrl : myOffersUrl}?statusGroup=RESOLVED" var="backUrlResolved"/>
+<c:set value="${isBuyer ? myOffersUrl : incomingOffersUrl}?statusGroup=RESOLVED" var="backUrlResolved"/>
 
 <spring:message code="account.rate.ratingLabel" var="ratingLabel"/>
 <spring:message code="account.rate.positive" var="positiveLabel"/>
@@ -29,7 +28,7 @@
 
 <account:layout titleKey="account.rate.title"  title="${titleMsg}" subtitle="${subtitleMsg}">
     <div class="mb-4">
-        <spring:message code="${isBuyer ? 'account.incomingOffers.title' : 'account.myOffers.title'}" var="backLabel"/>
+        <spring:message code="${isBuyer ? 'account.myOffers.title' : 'account.incomingOffers.title'}" var="backLabel"/>
         <paw:linkButton href="${backUrlResolved}" text="${backLabel}" variant="ghost" icon="chevron-left" classname="justify-start" />
     </div>
 

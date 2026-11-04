@@ -17,11 +17,13 @@
     <section class="relative w-full max-h-[80vh] h-144 -mt-21.5 pt-24 pb-8 flex flex-col items-center justify-center overflow-hidden bg-gradient-to-b from-lime-500/20 via-neutral-50 to-neutral-50" id="heroBanner">
         <div class="absolute inset-0 bg-gradient-to-r from-lime-500/10 via-transparent to-lime-500/10"></div>
         <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-from)_0%,_transparent_70%)] from-lime-500/20"></div>
+        <img class="absolute inset-0 w-full h-full object-cover" src="<c:url value='/static-image/banner.png'/>" />
+        <div class="absolute inset-0 bg-black/20"></div>
 
         <div class="relative z-10 max-w-6xl w-full mx-auto px-6 text-center flex flex-col md:flex-row gap-8 md:gap-16 md:justify-center lg:justify-between items-center">
             <div>
                 <div class="mb-8 md:text-start">
-                    <p class="text-3xl sm:text-4xl md:text-5xl font-extrabold text-black leading-tight">
+                    <p class="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white leading-tight">
                         <spring:message code="landing.hero.title.line1"/>
                     </p>
                     <p class="text-3xl sm:text-4xl md:text-5xl font-extrabold text-lime-600 leading-tight">
@@ -32,7 +34,7 @@
                     </p>
                 </div>
 
-                <div class="flex flex-col sm:flex-row items-center justify-center gap-8 text-sm text-black/60">
+                <div class="flex flex-col sm:flex-row items-center justify-center gap-8 text-sm text-white/60">
                     <div class="flex items-center gap-2">
                         <paw:icon name="zap" classname="w-5 h-5 text-lime-600" />
                         <span class="font-medium">
@@ -40,7 +42,7 @@
                             <spring:message code="landing.hero.feature1.line2"/>
                         </span>
                     </div>
-                    <div class="w-px h-6 bg-black/10 hidden sm:block"></div>
+                    <div class="w-px h-6 bg-white/10 hidden sm:block"></div>
                     <div class="flex items-center gap-2">
                         <paw:icon name="map-pin" classname="w-5 h-5 text-lime-600" />
                         <span class="font-medium">
@@ -56,9 +58,13 @@
                     <c:url value="/listing/new/choose-product" var="sellUrl"/>
                     <spring:message code="landing.hero.cta.explore" var="exploreCta"/>
                     <spring:message code="landing.hero.cta.sell" var="sellCta"/>
-                    <paw:linkButton href="javascript:void(0);" variant="default" size="lg" text="${exploreCta}"
-                        onclick="window.scrollTo({behavior: 'smooth', top: document.getElementById('heroBanner').offsetHeight - 100});" />
-                    <paw:linkButton href="${sellUrl}" variant="outline" size="lg" text="${sellCta}" />
+                    <div class="rounded-lg bg-white">
+                        <paw:linkButton href="javascript:void(0);" size="lg" text="${exploreCta}"
+                            onclick="window.scrollTo({behavior: 'smooth', top: document.getElementById('heroBanner').offsetHeight - 100});" />
+                    </div>
+                    <div class="rounded-lg bg-white">
+                        <paw:linkButton href="${sellUrl}" size="lg" text="${sellCta}" />
+                    </div>
                 </div>
             </div>
         </div>

@@ -14,7 +14,7 @@
                     <tr>
                         <td style="padding: 40px 40px 0; text-align: center;">
                             <a th:href="${baseUrl + '/'}" target="_blank" style="text-decoration: none;">
-                                <img th:src="${baseUrl + '/static-image/logo.png'}" alt="Swappr Logo" height="48" style="display: block; margin: 0 auto; border: 0;" />
+                                <img th:src="${baseUrl + '/static-image/logo.png'}" th:alt="#{email.shared.logoAlt}" height="48" style="display: block; margin: 0 auto; border: 0;" />
                             </a>
                         </td>
                     </tr>
@@ -44,7 +44,7 @@
                     <tr>
                         <td style="padding: 24px 40px 0; text-align: center;">
                             <div style="background-color: #fafafa; border-radius: 12px; border: 1px solid #e5e5e5; padding: 24px; display: inline-block;">
-                                <p style="margin: 0 0 8px; font-size: 12px; color: #a3a3a3; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em;">Verification Code</p>
+                                <p style="margin: 0 0 8px; font-size: 12px; color: #a3a3a3; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em;" th:text="#{email.verification.codeLabel}">Verification Code</p>
                                 <p style="margin: 0; font-size: 32px; font-weight: 800; color: #171717; letter-spacing: 0.2em;" th:text="${otpValue}">123456</p>
                             </div>
                         </td>

@@ -181,11 +181,6 @@ public class WebConfig implements WebMvcConfigurer {
         properties.setProperty("hibernate.hbm2ddl.auto", "none");
         properties.setProperty("hibernate.dialect", "org.hibernate.dialect.PostgreSQL92Dialect");
 
-        /* IMPORTANT: REVIEW BEFORE DEPLOY. DO NOT CHANGE THIS COMMENT AS IT IS SEARCHED BY GREP */
-        properties.setProperty("hibernate.show_sql", "true");               // Remove this before deploy
-        /* IMPORTANT: REVIEW BEFORE DEPLOY. DO NOT CHANGE THIS COMMENT AS IT IS SEARCHED BY GREP */
-        properties.setProperty("hibernate.format_sql", "true");             // Remove this before deploy
-
         return properties;
     }
 

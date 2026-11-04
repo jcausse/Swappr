@@ -1,4 +1,5 @@
 <%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" language="java" %>
+<%@ page import="ar.edu.itba.paw.webapp.form.ChooseProductForm" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
 <%@ taglib prefix="paw" tagdir="/WEB-INF/tags" %>
@@ -55,9 +56,9 @@
                     <spring:message code="listing.new.filter.brand" var="filterBrandLabel"/>
                     <spring:message code="listing.new.filter.brand.select" var="brandPlaceholder"/>
                     <spring:message code="listing.new.filter.brand.other" var="brandOther"/>
-                    <paw:formSelect path="newProductBrand" label="${filterBrandLabel}" placeholder="${brandPlaceholder}" items="${brands}" plainStrings="true" includeOther="true" otherValue="__OTHER__" otherLabel="${brandOther}" classname="flex-1 grow" />
+                    <paw:formSelect path="newProductBrand" label="${filterBrandLabel}" placeholder="${brandPlaceholder}" items="${brands}" plainStrings="true" includeOther="true" otherValue="${ChooseProductForm.OTHER_VALUE}" otherLabel="${brandOther}" classname="flex-1 grow" />
 
-                    <c:if test="${chooseProductForm.newProductBrand == '__OTHER__'}">
+                    <c:if test="${chooseProductForm.otherBrandSelected}">
                         <spring:message code="listing.new.filter.brand.otherInput" var="otherBrandLabel"/>
                         <spring:message code="listing.new.filter.brand.otherInput.placeholder" var="otherBrandPlaceholder"/>
                         <paw:formInput path="otherBrand" label="${otherBrandLabel}" placeholder="${otherBrandPlaceholder}" classname="flex-1 grow" />
@@ -68,15 +69,15 @@
                     <spring:message code="listing.new.filter.model" var="filterModelLabel"/>
                     <spring:message code="listing.new.filter.model.select" var="modelPlaceholder"/>
                     <spring:message code="listing.new.filter.model.other" var="modelOther"/>
-                    <paw:formSelect path="newProductModel" label="${filterModelLabel}" placeholder="${modelPlaceholder}" items="${models}" plainStrings="true" disabled="${modelsEmpty}" includeOther="true" otherValue="__OTHER__" otherLabel="${modelOther}" classname="flex-1 grow" />
+                    <paw:formSelect path="newProductModel" label="${filterModelLabel}" placeholder="${modelPlaceholder}" items="${models}" plainStrings="true" disabled="${modelsEmpty}" includeOther="true" otherValue="${ChooseProductForm.OTHER_VALUE}" otherLabel="${modelOther}" classname="flex-1 grow" />
 
                     <c:choose>
-                        <c:when test="${chooseProductForm.newProductModel == '__OTHER__'}">
+                        <c:when test="${chooseProductForm.otherModelSelected}">
                             <spring:message code="listing.new.filter.model.otherInput" var="otherModelLabel"/>
                             <spring:message code="listing.new.filter.model.otherInput.placeholder" var="otherModelPlaceholder"/>
                             <paw:formInput path="otherModel" label="${otherModelLabel}" placeholder="${otherModelPlaceholder}" classname="flex-1 grow" />
                         </c:when>
-                        <c:when test="${chooseProductForm.newProductBrand == '__OTHER__'}">
+                        <c:when test="${chooseProductForm.otherBrandSelected}">
                             <spring:message code="listing.new.filter.model.otherInput" var="otherModelLabel"/>
                             <spring:message code="listing.new.filter.model.otherInput.placeholder" var="otherModelPlaceholder"/>
                             <paw:formInput path="otherModel" label="${otherModelLabel}" placeholder="${otherModelPlaceholder}" classname="flex-1 grow" />
