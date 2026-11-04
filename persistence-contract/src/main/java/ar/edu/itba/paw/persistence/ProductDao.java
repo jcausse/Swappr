@@ -1,5 +1,6 @@
 package ar.edu.itba.paw.persistence;
 
+import ar.edu.itba.paw.model.Page;
 import ar.edu.itba.paw.model.Product;
 import ar.edu.itba.paw.model.ProductListingInfo;
 import ar.edu.itba.paw.model.Subcategory;
@@ -16,5 +17,5 @@ public interface ProductDao {
 
     Product create(String brand, String model, Integer year, Subcategory subcategory);
 
-    List<ProductListingInfo> getListingInfoSummary(String brand, String model, Integer fromYear, Integer toYear, Long subcategoryId);
+    Page<ProductListingInfo> getListingInfoSummary(String brand, String model, Integer fromYear, Integer toYear, Long subcategoryId, int page, int pageSize);
 }

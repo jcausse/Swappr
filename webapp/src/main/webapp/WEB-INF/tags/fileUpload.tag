@@ -5,6 +5,7 @@
 <%@ attribute name="multiple" required="false" type="java.lang.Boolean" %>
 <%@ attribute name="accept" required="false" %>
 <%@ attribute name="maxSizeBytes" required="false" type="java.lang.Long" %>
+<%@ attribute name="classname" required="false" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
 <%@ taglib prefix="paw" tagdir="/WEB-INF/tags" %>
@@ -15,12 +16,13 @@
 <spring:message code="fileUpload.removeLabel" var="removeLabel"/>
 <spring:message code="fileUpload.sizeError" var="sizeErrorMsg"/>
 
+<c:set var="inputClass" value="${not empty classname ? classname : ''}"/>
 <c:set var="inputDisabled" value="${disabled ne null ? disabled : false}"/>
 <c:set var="inputMultiple" value="${multiple ne null ? multiple : false}"/>
 <c:set var="inputAccept" value="${not empty accept ? accept : 'image/*,application/pdf'}"/>
 <c:set var="inputMaxSizeBytes" value="${maxSizeBytes ne null ? maxSizeBytes : 5242880}"/>
 
-<div class="flex flex-col gap-2">
+<div class="flex flex-col gap-2 ${inputClass}">
     <div class="flex flex-row gap-2 items-center min-h-5.5 justify-between">
         <c:if test="${not empty label}">
             <div class="text-xs text-black/70 font-medium">

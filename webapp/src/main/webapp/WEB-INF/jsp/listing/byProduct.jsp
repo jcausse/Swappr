@@ -2,7 +2,6 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
 <%@ taglib prefix="spring" uri="http://www.springframework.org/tags" %>
-<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ taglib prefix="paw" tagdir="/WEB-INF/tags" %>
 
 
@@ -131,7 +130,7 @@
                         <section class="flex-1">
                             <div class="flex items-center justify-between gap-4 mb-4">
                                 <span class="text-sm text-black/60">
-                                    <spring:message code="byProduct.results.count" arguments="${fn:length(productSummaries)}"/>
+                                    <spring:message code="byProduct.results.count" arguments="${productPage.totalCount}"/>
                                 </span>
                             </div>
 
@@ -198,10 +197,10 @@
                                                                 <span class="ml-auto font-semibold text-black text-base whitespace-nowrap">
                                                                     <c:choose>
                                                                         <c:when test="${info.minPrice.amount == info.maxPrice.amount}">
-                                                                            $<c:out value="${info.minPrice.amount}"/>
+                                                                            <paw:price amount="${info.minPrice.amount}"/>
                                                                         </c:when>
                                                                         <c:otherwise>
-                                                                            $<c:out value="${info.minPrice.amount}"/> - $<c:out value="${info.maxPrice.amount}"/>
+                                                                            <paw:price amount="${info.minPrice.amount}"/> - <c:out value="${info.maxPrice.amount}"/>
                                                                         </c:otherwise>
                                                                     </c:choose>
                                                                 </span>
@@ -215,6 +214,8 @@
                                     </div>
                                 </c:otherwise>
                             </c:choose>
+
+                            <paw:pagination page="${productPage}" baseUrl="/listing/by-product"/>
                         </section>
                     </div>
                 </form:form>

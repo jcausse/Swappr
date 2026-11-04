@@ -48,9 +48,40 @@
                                             <span class="text-sm text-black/90"><c:out value="${tradePriceLabel}"/></span>
                                         </label>
 
-                                        <div id="tradeFields" class="hidden">
+                                        <div id="tradeFields" class="hidden flex flex-col gap-3">
                                             <spring:message code="checkout.form.tradeSelectListing" var="tradeSelectListingLabel"/>
-                                            <paw:formSelect path="offeredListingId" label="${tradeSelectListingLabel}" items="${userListings}" itemValue="id" itemLabel="title" placeholder="${tradeSelectListingLabel}" variant="outline" classname="w-full max-w-md" />
+                                            <p class="text-xs text-black/70 font-medium"><c:out value="${tradeSelectListingLabel}"/></p>
+
+                                            <form:hidden path="offeredListingId" id="offeredListingId"/>
+                                            <form:hidden path="page" id="page"/>
+                                            <form:errors path="offeredListingId" element="div" cssClass="text-xs text-red-600"/>
+
+                                            <div id="tradeListingList" class="flex flex-col gap-2">
+                                                <c:forEach var="userListing" items="${userListings}">
+                                                    <button type="button"
+                                                            class="trade-listing-option group flex w-full items-center gap-3 rounded-xl border p-2 text-left transition hover:bg-lime-50 focus-visible:border-lime-600 focus-visible:outline-2 cursor-pointer ${checkoutForm.offeredListingId == userListing.id ? 'border-lime-600 bg-lime-50' : 'border-black/15'}"
+                                                            data-listing-id="${userListing.id}"
+                                                            aria-pressed="${checkoutForm.offeredListingId == userListing.id}">
+                                                        <paw:listingImage listing="${userListing}" size="sm"/>
+                                                        <span class="flex-1 min-w-0">
+                                                            <span class="block truncate text-sm font-medium text-black"><c:out value="${userListing.title}"/></span>
+                                                            <span class="block truncate text-xs text-black/60">
+                                                                <c:out value="${userListing.product.brand}"/>
+                                                                <c:out value="${userListing.product.model}"/>
+                                                                (<c:out value="${userListing.product.year}"/>)
+                                                            </span>
+                                                        </span>
+                                                        <span class="trade-listing-check flex-shrink-0 text-lime-600 ${checkoutForm.offeredListingId == userListing.id ? '' : 'hidden'}">
+                                                            <paw:icon name="check"/>
+                                                        </span>
+                                                    </button>
+                                                </c:forEach>
+                                            </div>
+
+                                            <div id="tradeListingPagination" class="-mt-8 mb-4">
+                                                <c:url value="/checkout" var="checkoutBaseUrl"/>
+                                                <paw:pagination page="${userListingsPage}" baseUrl="${checkoutBaseUrl}"/>
+                                            </div>
 
                                             <spring:message code="checkout.form.tradeAmount" var="tradeAmountLabel"/>
                                             <spring:message code="checkout.form.tradeAmount.placeholder" var="tradeAmountPlaceholder"/>
@@ -127,33 +158,74 @@
             const customRadio = document.querySelector('input[name="offerType"][value="CUSTOM"]');
             const tradeRadio = document.querySelector('input[name="offerType"][value="TRADE"]');
             const customField = document.getElementById('customAmountField');
-            const customInput = document.querySelector('input[name="customAmount"]');
             const tradeFields = document.getElementById('tradeFields');
-            const tradeListingSelect = document.querySelector('select[name="offeredListingId"]');
-            const tradeAmountInput = document.querySelector('input[name="tradeAmount"]');
+            const offeredListingInput = document.getElementById('offeredListingId');
+            const pageInput = document.getElementById('page');
+            const tradeListingList = document.getElementById('tradeListingList');
+            const tradeListingPagination = document.getElementById('tradeListingPagination');
 
             function toggleFields() {
-                if (customRadio.checked) {
-                    customField.classList.remove('hidden');
-                } else {
-                    customField.classList.add('hidden');
+                if (customField) {
+                    customField.classList.toggle('hidden', !customRadio.checked);
                 }
-
-                if (tradeRadio && tradeRadio.checked) {
-                    tradeFields.classList.remove('hidden');
-                    if (tradeListingSelect) tradeListingSelect.required = true;
-                } else {
-                    tradeFields.classList.add('hidden');
-                    if (tradeListingSelect) tradeListingSelect.required = false;
+                if (tradeFields) {
+                    const isTrade = tradeRadio && tradeRadio.checked;
+                    tradeFields.classList.toggle('hidden', !isTrade);
                 }
             }
 
-            fullRadio.addEventListener('change', toggleFields);
-            customRadio.addEventListener('change', toggleFields);
-            if (tradeRadio) {
-                tradeRadio.addEventListener('change', toggleFields);
+            function applyListingSelection() {
+                if (!tradeListingList || !offeredListingInput) return;
+                const selectedId = offeredListingInput.value;
+                tradeListingList.querySelectorAll('.trade-listing-option').forEach(function(option) {
+                    const isSelected = selectedId !== '' && option.dataset.listingId === selectedId;
+                    option.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
+                    option.classList.toggle('border-lime-600', isSelected);
+                    option.classList.toggle('bg-lime-50', isSelected);
+                    option.classList.toggle('border-black/15', !isSelected);
+                    const check = option.querySelector('.trade-listing-check');
+                    if (check) check.classList.toggle('hidden', !isSelected);
+                });
             }
 
+            if (fullRadio) fullRadio.addEventListener('change', toggleFields);
+            if (customRadio) customRadio.addEventListener('change', toggleFields);
+            if (tradeRadio) tradeRadio.addEventListener('change', toggleFields);
+
+            if (tradeListingList && offeredListingInput) {
+                tradeListingList.addEventListener('click', function(event) {
+                    const option = event.target.closest('.trade-listing-option');
+                    if (!option) return;
+                    offeredListingInput.value = option.dataset.listingId;
+                    applyListingSelection();
+                });
+            }
+
+            if (tradeListingPagination && tradeFields) {
+                tradeListingPagination.addEventListener('click', function(event) {
+                    const link = event.target.closest('a[href]');
+                    if (!link || link.getAttribute('aria-disabled') === 'true') return;
+                    event.preventDefault();
+
+                    const url = new URL(link.href, window.location.origin);
+                    const formFields = tradeFields.closest('form').querySelectorAll('input[name], select[name], textarea[name]');
+
+                    formFields.forEach(function(field) {
+                        if (field.name === 'page' || field.name === 'listingId') return;
+                        url.searchParams.delete(field.name);
+
+                        if ((field.type === 'radio' || field.type === 'checkbox') && !field.checked) return;
+                        if (field.value === '') return;
+                        url.searchParams.set(field.name, field.value);
+                    });
+
+                    const page = url.searchParams.get('page');
+                    if (pageInput && page) pageInput.value = page;
+                    window.location.href = url.toString();
+                });
+            }
+
+            applyListingSelection();
             toggleFields();
         });
     </script>
