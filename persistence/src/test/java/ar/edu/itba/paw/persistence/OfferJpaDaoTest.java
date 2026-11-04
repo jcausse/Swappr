@@ -680,10 +680,8 @@ public class OfferJpaDaoTest {
 
         // Assert
         Assert.assertTrue(updated);
-        final Offer offer = offerDao.getById(LOW_OFFER_ID).orElseThrow();
-        final File proofOfPayment = offer.getProofOfPayment().orElseThrow();
-        Assert.assertEquals(PAYMENT_FILE_ID, (long) proofOfPayment.getId());
-        Assert.assertEquals("payment.pdf", proofOfPayment.getFilename());
+        Assert.assertEquals(1, countOffersWhere(
+            "offer_id = " + LOW_OFFER_ID + " AND proof_of_payment_id = " + PAYMENT_FILE_ID));
     }
 
     @Test
@@ -702,11 +700,9 @@ public class OfferJpaDaoTest {
 
         // Assert
         Assert.assertTrue(updated);
-        final Offer offer = offerDao.getById(LOW_OFFER_ID).orElseThrow();
-        final File proofOfShipping = offer.getProofOfShipping().orElseThrow();
-        Assert.assertEquals(SHIPPING_FILE_ID, (long) proofOfShipping.getId());
-        Assert.assertEquals("shipping.jpg", proofOfShipping.getFilename());
-        Assert.assertEquals("TRACK-999", offer.getTrackingNumber());
+        Assert.assertEquals(1, countOffersWhere(
+            "offer_id = " + LOW_OFFER_ID + " AND proof_of_shipping_id = " + SHIPPING_FILE_ID
+                + " AND tracking_number = 'TRACK-999'"));
     }
 
     @Test
@@ -754,8 +750,8 @@ public class OfferJpaDaoTest {
 
         // Assert
         Assert.assertTrue(updated);
-        Assert.assertEquals(Optional.of(OfferRating.NEGATIVE),
-            offerDao.getById(ACCEPTED_OFFER_ID).orElseThrow().getSellerRating());
+        Assert.assertEquals(1, countOffersWhere(
+            "offer_id = " + ACCEPTED_OFFER_ID + " AND seller_rating = 'NEGATIVE'"));
     }
 
     @Test
@@ -775,8 +771,8 @@ public class OfferJpaDaoTest {
 
         // Assert
         Assert.assertTrue(updated);
-        Assert.assertEquals(Optional.of(OfferRating.NEUTRAL),
-            offerDao.getById(RECENT_ACCEPTED_OFFER_ID).orElseThrow().getBuyerRating());
+        Assert.assertEquals(1, countOffersWhere(
+            "offer_id = " + RECENT_ACCEPTED_OFFER_ID + " AND buyer_rating = 'NEUTRAL'"));
     }
 
     @Test

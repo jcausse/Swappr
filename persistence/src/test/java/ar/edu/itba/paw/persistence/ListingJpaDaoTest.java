@@ -527,8 +527,11 @@ public class ListingJpaDaoTest {
         );
 
         // Assert
-        final Listing reloaded = listingDao.getById(created.getId()).orElseThrow();
-        Assert.assertEquals(List.of(UNASSIGNED_IMAGE_2_ID, UNASSIGNED_IMAGE_1_ID), reloaded.getImageIds());
+        em.flush();
+        final List<Long> imageIds = jdbcTemplate.queryForList(
+            "SELECT image_id FROM listing_images WHERE listing_id = ? ORDER BY display_order",
+            Long.class, created.getId());
+        Assert.assertEquals(List.of(UNASSIGNED_IMAGE_2_ID, UNASSIGNED_IMAGE_1_ID), imageIds);
     }
 
     @Test
