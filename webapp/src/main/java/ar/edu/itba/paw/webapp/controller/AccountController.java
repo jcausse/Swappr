@@ -114,12 +114,13 @@ public class AccountController {
             .map(s -> new StringSelectOption(s.name(), "offer.statusGroup." + s.getStatus()))
             .toList();
 
+		var offerCountByStatus = getOfferCountByStatus(currentUser, true);
 		return new ModelAndView("account/incomingOffers")
                 .addObject("offerPage", offerPage)
                 .addObject("offers", offerPage.getContent())
                 .addObject("statusGroupOptions", statusGroupOptions)
-                .addObject("offerCountByStatus", getOfferCountByStatus(currentUser, true))
-                .addObject("pendingOffersCount", offerService.getPendingOffersCount(currentUser));
+                .addObject("offerCountByStatus", offerCountByStatus)
+                .addObject("pendingOffersCount", offerCountByStatus.get(OfferStatusGroup.PENDING.name()));
     }
 
     @GetMapping("/my-offers")
@@ -298,7 +299,7 @@ public class AccountController {
                                         @Valid @ModelAttribute("rateForm") RateForm rateForm,
                                         BindingResult bindingResult) {
         final Offer offer = offerService.getById(offerId)
-                .orElseThrow(() -> NotFoundException.createFor("Offer")); // podria moverse a la primera linea de oferservice.rate
+                .orElseThrow(() -> NotFoundException.createFor("Offer"));
 
         if (bindingResult.hasErrors()) {
             return new ModelAndView("account/rate")

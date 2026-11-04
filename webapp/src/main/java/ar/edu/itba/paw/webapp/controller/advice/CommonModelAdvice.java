@@ -16,6 +16,7 @@ public class CommonModelAdvice {
         this.productService = productService;
     }
 
+    // Fetch categories on all routes, since we show them in the navbar
     @ModelAttribute(value = "categories", binding = false)
     public List<Category> categories() {
         return productService.getAllCategories();

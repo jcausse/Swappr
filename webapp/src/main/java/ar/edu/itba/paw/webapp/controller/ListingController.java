@@ -140,7 +140,6 @@ public class ListingController {
             mav.addObject("productSummaries", List.of());
         }
 
-        mav.addObject("categories", productService.getAllCategories());
         if (productForm.getCategoryId() != null) {
             mav.addObject("subcategories", productService.getSubcategoriesByCategory(productForm.getCategoryId()));
         }
@@ -278,17 +277,13 @@ public class ListingController {
     }
 
     private void populateModel(ModelAndView mav, ChooseProductForm form) {
-        var categories = productService.getAllCategories();
-        mav.addObject("categories", categories);
-
-        mav.addObject("categoryOptions", categories.stream()
+        mav.addObject("categoryOptions", productService.getAllCategories().stream()
             .map(cat -> new SelectOption(cat.getId(), "category." + cat.getName()))
             .toList());
 
         if (form.getCategoryId() != null) {
             var subcategories = productService.getSubcategoriesByCategory(form.getCategoryId());
             mav.addObject("subcategories", subcategories);
-
             mav.addObject("subcategoryOptions", subcategories.stream()
                 .map(sub -> new SelectOption(sub.getId(), "subcategory." + sub.getName()))
                 .toList());

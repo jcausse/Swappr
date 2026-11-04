@@ -20,7 +20,7 @@ public class CheckoutForm {
     private Long listingId;
 
     @NotNull
-    private OfferType offerType;
+    private OfferType offerType = OfferType.FULL;
 
     @DecimalMin(value = "0.01", message = "{Min.checkoutForm.customAmount}")
     @Digits(integer = 9, fraction = 2)
