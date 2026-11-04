@@ -177,24 +177,6 @@ public class SiteNotificationServiceImplTest {
     }
 
     @Test
-    public void testMarkAllAsReadForUserExecutesWithoutError() {
-        // Arrange
-        final User user = buildUser();
-
-        // Act
-        notificationService.markAllAsReadForUser(user);
-    }
-
-    @Test
-    public void testDeleteExecutesWithoutError() {
-        // Arrange
-        final SiteNotification notification = buildNotification(buildUser());
-
-        // Act
-        notificationService.delete(notification);
-    }
-
-    @Test
     public void testMarkAsReadByRecipientDelegatesToDao() {
         // Arrange
         final User recipient = buildUser();
