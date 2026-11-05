@@ -69,7 +69,11 @@
                     <paw:formInput path="title" label="${titleLabel}" />
 
                     <spring:message code="listing.new.price" var="priceLabel"/>
-                    <paw:formInput path="price" label="${priceLabel}" type="number" step="0.01" min="0" />
+                    <div>
+                        <paw:formInput path="price" label="${priceLabel}" type="number" step="0.01" min="0" />
+                        <spring:message code="listing.new.price.freeHint" var="freeHint"/>
+                        <p class="text-sm text-black/60 mt-1"><c:out value="${freeHint}"/></p>
+                    </div>
 
                     <spring:message code="listing.new.conditionLabel" var="conditionLabel"/>
                     <spring:message code="listing.new.condition.select" var="conditionPlaceholder"/>
