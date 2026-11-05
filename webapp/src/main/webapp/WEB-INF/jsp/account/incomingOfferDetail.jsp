@@ -63,7 +63,7 @@
             </c:choose>
             <h1 class="text-xl font-medium text-balance"><c:out value="${title}"/></h1>
 
-            <account:offerHint role="seller" status="${offer.status.name()}" classname="mt-2"/>
+            <account:offerHint role="seller" status="${offer.status.name()}" free="${offer.forFreeListing}" classname="mt-2"/>
         </div>
 
         <c:if test="${offer.hasOtherOffers and offer.status.name() == 'PENDING'}">
