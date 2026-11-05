@@ -20,6 +20,7 @@ import java.time.Instant;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.lenient;
@@ -237,9 +238,9 @@ public class NotificationDispatcherServiceImplTest {
 
         when(siteNotificationService.create(siteCaptor.capture())).thenReturn(new SiteNotification());
         doNothing().when(emailNotificationService)
-                .sendPurchaseSellerEmail(any(), any(), soldListingCaptor.capture(), eq("Thanks!"));
+                .sendPurchaseSellerEmail(any(), any(), soldListingCaptor.capture(), eq("Thanks!"), anyBoolean());
         doNothing().when(emailNotificationService)
-                .sendPurchaseBuyerEmail(any(), any(), buyerListingCaptor.capture());
+                .sendPurchaseBuyerEmail(any(), any(), buyerListingCaptor.capture(), anyBoolean());
 
         // Act
         dispatcher.notifyListingSold(listing, buyer, "Thanks!");

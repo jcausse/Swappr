@@ -35,7 +35,7 @@
                     <!-- Body -->
                     <tr>
                         <td style="padding: 16px 40px 0; text-align: center;">
-                            <p th:text="#{email.purchase.buyer.body(${listing.title})}" style="margin: 0; font-size: 15px; line-height: 1.6; color: #525252;">
+                            <p th:text="${forFreeListing} ? #{email.purchase.buyer.free.body(${listing.title})} : #{email.purchase.buyer.body(${listing.title})}" style="margin: 0; font-size: 15px; line-height: 1.6; color: #525252;">
                                 You purchased an item.
                             </p>
                         </td>
@@ -51,7 +51,8 @@
                                             <span th:text="${listing.brand + ' ' + listing.model + ' (' + #numbers.formatInteger(listing.year, 1, 'NONE') + ')'}">Brand Model (Year)</span>
                                         </p>
                                         <p style="margin: 0; font-size: 14px; font-weight: 700; color: #65a30d;">
-                                            <span th:text="${currencySymbol + ' ' + listing.price.amount}">US$ 100</span>
+                                            <span th:if="${forFreeListing}" th:text="#{listing.price.free}">Free</span>
+                                            <span th:unless="${forFreeListing}" th:text="${currencySymbol + ' ' + listing.price.amount}">US$ 100</span>
                                         </p>
                                     </td>
                                 </tr>
