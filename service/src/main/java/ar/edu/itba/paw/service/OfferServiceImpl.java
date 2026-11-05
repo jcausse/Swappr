@@ -143,6 +143,10 @@ public class OfferServiceImpl implements OfferService {
         final User buyer = userService.getById(dto.buyerId())
                 .orElseThrow(() -> new BadParameterException("Invalid buyerId"));
 
+        if (offerDao.getByListingAndBuyer(listing, buyer).isPresent()) {
+            throw BadParameterException.create("listingId", "You already have an active offer on this listing");
+        }
+
         final boolean isTrade = offeredListingId != null;
 
         if (isTrade) {
@@ -179,6 +183,16 @@ public class OfferServiceImpl implements OfferService {
         notificationDispatcherService.notifyNewOffer(offer);
 
         return offer;
+    }
+
+    @Override
+    @Transactional
+    public Offer createInterest(Long listingId, Long buyerId) {
+        final Listing listing = listingService.getById(listingId);
+        if (!listing.isFree()) {
+            throw BadParameterException.create("listingId", "Interest can only be expressed on free listings");
+        }
+        return create(new OfferCreationDto(listingId, buyerId, OfferType.FULL, null, null, null, null));
     }
 
     @Override

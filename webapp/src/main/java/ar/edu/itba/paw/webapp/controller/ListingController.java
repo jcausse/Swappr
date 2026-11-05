@@ -167,6 +167,13 @@ public class ListingController {
                 .addObject("userPendingOffer", userPendingOffer);
     }
 
+    @PostMapping("/{id}/interest")
+    @PreAuthorize("isAuthenticated()")
+    public ModelAndView interest(@PathVariable Long id, @CurrentUser User currentUser) {
+        offerService.createInterest(id, currentUser.getId());
+        return new ModelAndView("redirect:/listing/" + id);
+    }
+
     @GetMapping("/new/choose-product")
     @PreAuthorize("isAuthenticated()")
     public ModelAndView chooseProduct(@ModelAttribute("chooseProductForm") ChooseProductForm form,
