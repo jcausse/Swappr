@@ -188,6 +188,48 @@ public class NotificationDispatcherServiceImplTest {
     }
 
     @Test
+    public void testNotifyOfferAcceptedForFreeListing_sendsSiteNotificationWithoutAmountNorPaymentLink() {
+        // Arrange
+        final User seller = buildUser(10L, "Seller Ana", Language.ENGLISH);
+        final User buyer = buildUser(20L, "Buyer Bob", Language.ENGLISH);
+        final Listing freeListing = Listing.builder()
+                .id(101L)
+                .title("Free Bookshelf")
+                .creator(seller)
+                .price(new Price(BigDecimal.ZERO))
+                .condition(Condition.LIKE_NEW)
+                .status(ListingStatus.ACTIVE)
+                .build();
+        final Offer offer = Offer.builder()
+                .id(504L)
+                .listing(freeListing)
+                .buyer(buyer)
+                .amount(BigDecimal.ZERO)
+                .isFullPrice(true)
+                .status(OfferStatus.PENDING_PAYMENT)
+                .createdAt(Instant.now())
+                .build();
+
+        final ArgumentCaptor<SiteNotificationCreationDto> siteCaptor =
+                ArgumentCaptor.forClass(SiteNotificationCreationDto.class);
+        when(siteNotificationService.create(siteCaptor.capture())).thenReturn(new SiteNotification());
+
+        // Act
+        dispatcher.notifyOfferAccepted(offer);
+
+        // Assert
+        Assert.assertEquals(1, siteCaptor.getAllValues().size());
+        final SiteNotificationCreationDto siteDto = siteCaptor.getValue();
+        Assert.assertSame(buyer, siteDto.notificationRecipient());
+        Assert.assertEquals(NotificationType.OFFER_ACCEPTED, siteDto.notificationType());
+        Assert.assertEquals("notification.offerAccepted.title", siteDto.titleKey());
+        Assert.assertEquals("notification.offerAccepted.free.body", siteDto.bodyKey());
+        Assert.assertEquals(List.of("Free Bookshelf", "Seller Ana"), siteDto.bodyArgs());
+        Assert.assertEquals("/account/my-offers?statusGroup=PENDING_PAYMENT", siteDto.actionUrl());
+        Assert.assertEquals("notification.offerAccepted.free.cta", siteDto.actionLabelKey());
+    }
+
+    @Test
     public void testNotifyProofOfShippingUploadedIncludesTrackingNumberWhenPresent() {
         // Arrange
         final User seller = buildUser(10L, "Seller Ana", Language.ENGLISH);
