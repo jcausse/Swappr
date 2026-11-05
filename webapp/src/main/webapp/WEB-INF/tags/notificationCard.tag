@@ -35,6 +35,12 @@
 </c:choose>
 
 <spring:message code="notification.type.${notification.type.name()}" var="typeBadgeLabel"/>
+<spring:message code="${notification.titleKey}" var="notificationTitle"/>
+<spring:message code="${notification.bodyKey}" var="notificationBody">
+    <c:forEach var="arg" items="${notification.bodyArgs}">
+        <spring:argument value="${arg}"/>
+    </c:forEach>
+</spring:message>
 <c:set var="cardSpacingClass" value="${isCompact ? 'p-3! gap-1.5!' : ''}"/>
 <c:set var="cardStateClass" value="${not notification.read ? 'border-lime-600/30!' : 'opacity-80'}"/>
 
@@ -52,10 +58,10 @@
     <div class="flex flex-row items-center gap-3 mt-0.5">
         <div class="flex-1 min-w-0 flex flex-col gap-1">
             <h4 class="text-sm font-semibold text-black leading-snug">
-                <c:out value="${notification.title}"/>
+                <c:out value="${notificationTitle}"/>
             </h4>
             <p class="${isCompact ? 'text-xs' : 'text-sm'} text-black/70 leading-relaxed break-words">
-                <c:out value="${notification.body}"/>
+                <c:out value="${notificationBody}"/>
             </p>
 
             <c:if test="${notification.actionUrl.isPresent()}">

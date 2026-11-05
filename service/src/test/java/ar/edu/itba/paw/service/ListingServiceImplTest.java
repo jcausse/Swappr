@@ -64,7 +64,7 @@ public class ListingServiceImplTest {
     @Mock
     private ImageService imageService;
     @Mock
-    private NotificationDispatcher notificationDispatcher;
+    private NotificationDispatcherService notificationDispatcherService;
     @Mock
     private OfferService offerService;
 

@@ -1,10 +1,11 @@
-package ar.edu.itba.paw.service;
+package ar.edu.itba.paw.service.notification;
 
 import ar.edu.itba.paw.model.Page;
 import ar.edu.itba.paw.model.SiteNotification;
 import ar.edu.itba.paw.model.SiteNotificationFilter;
 import ar.edu.itba.paw.model.User;
 import ar.edu.itba.paw.persistence.SiteNotificationDao;
+import ar.edu.itba.paw.service.SiteNotificationService;
 import ar.edu.itba.paw.service.dto.SiteNotificationCreationDto;
 import ar.edu.itba.paw.service.exception.ForbiddenException;
 import ar.edu.itba.paw.service.exception.NotFoundException;
@@ -61,14 +62,15 @@ public class SiteNotificationServiceImpl implements SiteNotificationService {
     @Override
     @Transactional
     public SiteNotification create(@NonNull SiteNotificationCreationDto creationDto) {
-        LOGGER.debug("Creating site notification of type {} for user id={}, title='{}'",
-                creationDto.notificationType(), creationDto.notificationRecipient().getId(), creationDto.title());
+        LOGGER.debug("Creating site notification of type {} for user id={}, titleKey='{}'",
+                creationDto.notificationType(), creationDto.notificationRecipient().getId(), creationDto.titleKey());
 
         final SiteNotification notification = siteNotificationDao.create(
                 creationDto.notificationRecipient(),
                 creationDto.notificationType(),
-                creationDto.title(),
-                creationDto.body(),
+                creationDto.titleKey(),
+                creationDto.bodyKey(),
+                creationDto.bodyArgs(),
                 creationDto.actionUrl(),
                 creationDto.actionLabelKey(),
                 Instant.now()

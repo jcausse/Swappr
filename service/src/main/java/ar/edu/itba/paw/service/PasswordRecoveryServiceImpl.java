@@ -21,7 +21,7 @@ public class PasswordRecoveryServiceImpl implements PasswordRecoveryService {
 
     private final UserService userService;
     private final OneTimePasswordService otpService;
-    private final NotificationDispatcher notificationDispatcher;
+    private final NotificationDispatcherService notificationDispatcherService;
 
     @Override
     @Transactional
@@ -35,7 +35,7 @@ public class PasswordRecoveryServiceImpl implements PasswordRecoveryService {
 
         final var user = maybeUser.get();
         final var otp = otpService.create(user);
-        notificationDispatcher.notifyPasswordRecovery(user, otp.getOtpValue());
+        notificationDispatcherService.notifyPasswordRecovery(user, otp.getOtpValue());
         LOGGER.info("Password recovery notification dispatched for user id={}", user.getId());
         return Optional.of(otp);
     }

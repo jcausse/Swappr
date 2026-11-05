@@ -7,6 +7,7 @@ import ar.edu.itba.paw.model.SiteNotificationFilter;
 import ar.edu.itba.paw.model.User;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 
 public interface SiteNotificationDao {
@@ -18,8 +19,9 @@ public interface SiteNotificationDao {
     SiteNotification create(
             User user,
             NotificationType type,
-            String title,
-            String body,
+            String titleKey,
+            String bodyKey,
+            List<String> bodyArgs,
             String actionUrl,
             String actionLabelKey,
             Instant createdAt

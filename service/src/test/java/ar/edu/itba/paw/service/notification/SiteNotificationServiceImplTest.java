@@ -1,4 +1,4 @@
-package ar.edu.itba.paw.service;
+package ar.edu.itba.paw.service.notification;
 
 import ar.edu.itba.paw.model.*;
 import ar.edu.itba.paw.persistence.SiteNotificationDao;
@@ -60,8 +60,9 @@ public class SiteNotificationServiceImplTest {
                 .id(100L)
                 .user(user)
                 .type(NotificationType.NEW_OFFER)
-                .title("New Offer")
-                .body("You have a new offer")
+                .titleKey("notification.newOffer.title")
+                .bodyKey("notification.newOffer.body")
+                .bodyArgs(List.of("Buyer Bob", "250.00", "Laptop"))
                 .actionUrl("/offers/1")
                 .actionLabelKey("notification.action.viewOffer")
                 .read(false)
@@ -74,11 +75,13 @@ public class SiteNotificationServiceImplTest {
         // Arrange
         final User user = buildUser();
         final SiteNotification expected = buildNotification(user);
+        final List<String> args = List.of("Buyer Bob", "250.00", "Laptop");
         final SiteNotificationCreationDto dto = SiteNotificationCreationDto.builder()
                 .notificationRecipient(user)
                 .notificationType(NotificationType.NEW_OFFER)
-                .title("New Offer")
-                .body("You have a new offer")
+                .titleKey("notification.newOffer.title")
+                .bodyKey("notification.newOffer.body")
+                .bodyArgs(args)
                 .actionUrl("/offers/1")
                 .actionLabelKey("notification.action.viewOffer")
                 .build();
@@ -86,8 +89,9 @@ public class SiteNotificationServiceImplTest {
         when(siteNotificationDao.create(
                 eq(user),
                 eq(NotificationType.NEW_OFFER),
-                eq("New Offer"),
-                eq("You have a new offer"),
+                eq("notification.newOffer.title"),
+                eq("notification.newOffer.body"),
+                eq(args),
                 eq("/offers/1"),
                 eq("notification.action.viewOffer"),
                 any(Instant.class)
@@ -99,7 +103,9 @@ public class SiteNotificationServiceImplTest {
         // Assert
         Assert.assertNotNull(result);
         Assert.assertEquals(expected.getId(), result.getId());
-        Assert.assertEquals(expected.getTitle(), result.getTitle());
+        Assert.assertEquals(expected.getTitleKey(), result.getTitleKey());
+        Assert.assertEquals(expected.getBodyKey(), result.getBodyKey());
+        Assert.assertEquals(args, result.getBodyArgs());
     }
 
     @Test

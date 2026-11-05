@@ -108,7 +108,7 @@
                 <spring:message code="offer.contactInfo.buyerEmail" var="buyerEmailLabel"/>
                 <paw:banner role="secondary" icon="contact-round">
                     <div class="text-sm">
-                        <c:out value="${buyerEmailLabel}:" />
+                        <c:out value="${buyerEmailLabel}" />
                         <c:url value="mailto:${offer.buyer.email}" var="buyerEmailUrl" />
                         <a class="hover:text-lime-600 underline cursor-pointer" href="${buyerEmailUrl}"><c:out value="${offer.buyer.email}" /></a>
                     </div>
@@ -118,7 +118,7 @@
                 <spring:message code="offer.contactInfo.sellerEmail" var="sellerEmailLabel"/>
                 <paw:banner role="secondary" icon="contact-round">
                     <div class="text-sm">
-                        <c:out value="${sellerEmailLabel}:" />
+                        <c:out value="${sellerEmailLabel}" />
                         <c:url value="mailto:${offer.listing.creator.email}" var="sellerEmailUrl" />
                         <a class="hover:text-lime-600 underline cursor-pointer" href="${sellerEmailUrl}"><c:out value="${offer.listing.creator.email}" /></a>
                     </div>

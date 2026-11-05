@@ -31,7 +31,7 @@
         <div class="w-full aspect-square rounded-lg overflow-hidden border border-black/10 mb-1 bg-neutral-200 relative">
           <c:choose>
             <c:when test="${not empty imageUrl}">
-              <img src="${imageUrl}" alt="<c:out value='${imageAlt}'/>" class="w-full h-full object-cover"/>
+              <img src="${imageUrl}" alt="<c:out value='${listing.title}'/>" class="w-full h-full object-cover"/>
             </c:when>
             <c:otherwise>
               <div class="w-full h-full grid place-items-center text-black/30 text-xs px-2 text-center">

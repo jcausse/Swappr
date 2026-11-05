@@ -82,7 +82,7 @@ public class OfferServiceImplTest {
     @Mock
     private ListingService listingService;
     @Mock
-    private NotificationDispatcher notificationDispatcher;
+    private NotificationDispatcherService notificationDispatcherService;
     @Mock
     private RatingService ratingService;
 

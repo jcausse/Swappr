@@ -48,20 +48,20 @@ public class OfferServiceImpl implements OfferService {
     private final UserDao userDao;
     private final UserService userService;
     private final ListingService listingService;
-    private final NotificationDispatcher notificationDispatcher;
+    private final NotificationDispatcherService notificationDispatcherService;
     private final RatingService ratingService;
     private static final Duration RATING_AUTO_ASSIGN_DELAY = Duration.ofDays(14);
 
     @Autowired
     public OfferServiceImpl(OfferDao offerDao, FileDao fileDao, UserDao userDao,
                             UserService userService, @Lazy ListingService listingService,
-                            NotificationDispatcher notificationDispatcher, RatingService ratingService) {
+                            NotificationDispatcherService notificationDispatcherService, RatingService ratingService) {
         this.offerDao = offerDao;
         this.fileDao = fileDao;
         this.userDao = userDao;
         this.userService = userService;
         this.listingService = listingService;
-        this.notificationDispatcher = notificationDispatcher;
+        this.notificationDispatcherService = notificationDispatcherService;
         this.ratingService = ratingService;
     }
 
@@ -176,7 +176,7 @@ public class OfferServiceImpl implements OfferService {
                 offer.getId(), dto.listingId(), dto.buyerId(), amount, isTrade);
 
         // Send email notification to seller about the new offer
-        notificationDispatcher.notifyNewOffer(offer);
+        notificationDispatcherService.notifyNewOffer(offer);
 
         return offer;
     }
@@ -211,9 +211,9 @@ public class OfferServiceImpl implements OfferService {
                 offerId, offer.getListing().getId(), offer.getBuyer().getId(), currentUserId);
 
         // Notify buyer about offer acceptance (pending payment)
-        notificationDispatcher.notifyOfferAccepted(offer);
+        notificationDispatcherService.notifyOfferAccepted(offer);
         // Notify seller about pending transaction
-        notificationDispatcher.notifyPendingTransaction(offer);
+        notificationDispatcherService.notifyPendingTransaction(offer);
 
         // FIXME double query
         return offerDao.getById(offerId).orElseThrow();
@@ -249,7 +249,7 @@ public class OfferServiceImpl implements OfferService {
         LOGGER.info("Offer rejected: offerId={}, listingId={}, by sellerId={}", offerId, offer.getListing().getId(), currentUserId);
 
         // Notify buyer about offer rejection
-        notificationDispatcher.notifyOfferRejected(offer);
+        notificationDispatcherService.notifyOfferRejected(offer);
 
         // FIXME double query
         return offerDao.getById(offerId).orElseThrow();
@@ -282,7 +282,7 @@ public class OfferServiceImpl implements OfferService {
         LOGGER.info("Offer withdrawn: offerId={}, listingId={}, by buyerId={}", offerId, offer.getListing().getId(), currentUserId);
 
         // Notify seller about offer withdrawal
-        notificationDispatcher.notifyOfferWithdrawn(offer);
+        notificationDispatcherService.notifyOfferWithdrawn(offer);
 
         // FIXME double query
         return offerDao.getById(offerId).orElseThrow();
@@ -305,7 +305,7 @@ public class OfferServiceImpl implements OfferService {
         }
 
         for (Offer offer : rejected) {
-            notificationDispatcher.notifyOfferRejected(offer);
+            notificationDispatcherService.notifyOfferRejected(offer);
         }
         return rejected;
     }
@@ -350,7 +350,7 @@ public class OfferServiceImpl implements OfferService {
         LOGGER.info("Proof of payment uploaded: offerId={}, buyerId={}, fileId={}", offerId, buyerId, file.getId());
 
         // Notify seller that proof of payment was uploaded
-        notificationDispatcher.notifyProofOfPaymentUploaded(offer);
+        notificationDispatcherService.notifyProofOfPaymentUploaded(offer);
 
         return offerDao.getById(offerId).orElseThrow();
     }
@@ -405,7 +405,7 @@ public class OfferServiceImpl implements OfferService {
         final Offer updatedOffer = offerDao.getById(offerId).orElseThrow();
 
         // Notify buyer that proof of shipping was uploaded
-        notificationDispatcher.notifyProofOfShippingUploaded(updatedOffer);
+        notificationDispatcherService.notifyProofOfShippingUploaded(updatedOffer);
 
         return updatedOffer;
     }
@@ -579,6 +579,6 @@ public class OfferServiceImpl implements OfferService {
         LOGGER.info("Offer canceled by admin: offerId={}, listingId={}", offerId, offer.getListing().getId());
 
         /* Notify the buyer that the offer has been rejected */
-        notificationDispatcher.notifyOfferRejected(offer);
+        notificationDispatcherService.notifyOfferRejected(offer);
     }
 }
