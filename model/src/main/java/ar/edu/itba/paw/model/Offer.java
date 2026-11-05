@@ -174,6 +174,10 @@ public class Offer {
         return status == OfferStatus.ACCEPTED;
     }
 
+    public boolean isForFreeListing() {
+        return listing != null && listing.isFree();
+    }
+
     public boolean isBuyer(Long userId) {
         return userId != null && userId.equals(buyer.getId());
     }
