@@ -43,11 +43,13 @@
                                 <paw:linkButton href="${offeredListingUrl}" variant="ghost" icon="eye" text="${viewOfferedListingLabel}" classname="w-full justify-start" />
                             </c:if>
                             <c:if test="${offer.status.name() == 'PENDING_PAYMENT'}">
-                                <c:url value="/account/my-offers/${offer.id}/shipping" var="shippingUrl"/>
-                                <spring:message code="offer.proofOfShipping.uploadLabel" var="shippingLabel"/>
-                                <paw:linkButton href="${shippingUrl}" variant="ghost" icon="truck" text="${shippingLabel}" classname="w-full justify-start" />
+                                <c:if test="${not offer.forFreeListing}">
+                                    <c:url value="/account/my-offers/${offer.id}/shipping" var="shippingUrl"/>
+                                    <spring:message code="offer.proofOfShipping.uploadLabel" var="shippingLabel"/>
+                                    <paw:linkButton href="${shippingUrl}" variant="ghost" icon="truck" text="${shippingLabel}" classname="w-full justify-start" />
+                                </c:if>
                                 <form action="<c:url value='/offer/${offer.id}/confirm-payment'/>" method="POST">
-                                    <spring:message code="offer.action.confirmPayment" var="confirmLabel"/>
+                                    <spring:message code="${offer.forFreeListing ? 'offer.action.confirmDelivery' : 'offer.action.confirmPayment'}" var="confirmLabel"/>
                                     <paw:button type="submit" variant="ghost" icon="check" text="${confirmLabel}" classname="w-full justify-start" />
                                 </form>
                             </c:if>

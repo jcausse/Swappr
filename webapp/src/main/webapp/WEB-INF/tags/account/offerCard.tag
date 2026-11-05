@@ -20,7 +20,7 @@
             </c:when>
             <c:when test="${offer.status.name() == 'PENDING_PAYMENT'}">
                 <c:set var="statusClass" value="text-blue-600"/>
-                <spring:message code="${offer.offeredListing.present ? 'offer.status.PENDING_TRADE' : 'offer.status.PENDING_PAYMENT'}" var="statusLabel"/>
+                <spring:message code="${offer.forFreeListing ? 'offer.status.PENDING_DELIVERY' : (offer.offeredListing.present ? 'offer.status.PENDING_TRADE' : 'offer.status.PENDING_PAYMENT')}" var="statusLabel"/>
             </c:when>
         </c:choose>
         <paw:badge text="${statusLabel}" classname="ml-auto ${statusClass}" />

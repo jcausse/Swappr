@@ -331,6 +331,10 @@ public class OfferServiceImpl implements OfferService {
         final Offer offer = offerDao.getById(offerId)
             .orElseThrow(() -> NotFoundException.createFor("Offer with ID " + offerId));
 
+        if (offer.isForFreeListing()) {
+            throw new BadParameterException("Free-listing offers have no payment or shipping step");
+        }
+
         if (!offer.isBuyer(buyerId)) {
             LOGGER.warn("User {} unauthorized to upload proof of payment for offer {}", buyerId, offerId);
             throw new BadParameterException("Only the buyer can upload proof of payment");
@@ -375,6 +379,10 @@ public class OfferServiceImpl implements OfferService {
         LOGGER.debug("Uploading proof of shipping: offerId={}, sellerId={}", offerId, sellerId);
         final Offer offer = offerDao.getById(offerId)
             .orElseThrow(() -> NotFoundException.createFor("Offer with ID " + offerId));
+
+        if (offer.isForFreeListing()) {
+            throw new BadParameterException("Free-listing offers have no payment or shipping step");
+        }
 
         // TODO remove this validation after implementing preatuhorize
         if (!offer.isSeller(sellerId)) {

@@ -38,7 +38,7 @@
                 <c:forEach var="offer" items="${offers}">
                     <account:offerCard offer="${offer}" user="seller">
                         <paw:menu id="my${offer.id}" variant="outline" icon="ellipsis" panelWidth="w-56" panelAlign="right">
-                            <c:if test="${offer.status.name() == 'PENDING_PAYMENT'}">
+                            <c:if test="${offer.status.name() == 'PENDING_PAYMENT' and not offer.forFreeListing}">
                                 <c:url value="/account/my-offers/${offer.id}/payment" var="proofUrl"/>
                                 <spring:message code="offer.proofOfPayment.uploadLabel" var="proofLabel"/>
                                 <paw:linkButton href="${proofUrl}" variant="ghost" icon="upload" text="${proofLabel}" classname="w-full justify-start" />

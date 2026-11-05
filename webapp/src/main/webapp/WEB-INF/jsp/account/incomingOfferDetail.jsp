@@ -180,7 +180,7 @@
                 </div>
             </c:when>
             <c:when test="${offer.status.name() == 'PENDING_PAYMENT'}">
-                <spring:message code="offer.detail.confirmPayment" var="confirmLabel"/>
+                <spring:message code="${offer.forFreeListing ? 'offer.detail.confirmDelivery' : 'offer.detail.confirmPayment'}" var="confirmLabel"/>
                 <form action="<c:url value='/offer/${offer.id}/confirm-payment'/>" method="POST" class="w-full mb-2">
                     <paw:button type="submit" variant="default" size="lg" classname="w-full" text="${confirmLabel}"/>
                 </form>
