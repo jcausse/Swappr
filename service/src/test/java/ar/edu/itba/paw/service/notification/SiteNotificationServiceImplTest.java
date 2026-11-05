@@ -19,6 +19,7 @@ import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
@@ -94,7 +95,8 @@ public class SiteNotificationServiceImplTest {
                 eq(args),
                 eq("/offers/1"),
                 eq("notification.action.viewOffer"),
-                any(Instant.class)
+                any(Instant.class),
+                isNull()
         )).thenReturn(expected);
 
         // Act
@@ -106,6 +108,58 @@ public class SiteNotificationServiceImplTest {
         Assert.assertEquals(expected.getTitleKey(), result.getTitleKey());
         Assert.assertEquals(expected.getBodyKey(), result.getBodyKey());
         Assert.assertEquals(args, result.getBodyArgs());
+    }
+
+    @Test
+    public void testCreateWithOfferDelegatesToDao() {
+        // Arrange
+        final User user = buildUser();
+        final Offer offer = Offer.builder().id(50L).status(OfferStatus.PENDING_PAYMENT).build();
+        final List<String> args = List.of("250.00");
+        final SiteNotification expected = SiteNotification.builder()
+                .id(101L)
+                .user(user)
+                .offer(offer)
+                .type(NotificationType.OFFER_ACCEPTED)
+                .titleKey("notification.offerAccepted.title")
+                .bodyKey("notification.offerAccepted.body")
+                .bodyArgs(args)
+                .actionUrl("/account/my-offers/50/payment")
+                .actionLabelKey("notification.offerAccepted.cta")
+                .read(false)
+                .createdAt(Instant.now())
+                .build();
+        final SiteNotificationCreationDto dto = SiteNotificationCreationDto.builder()
+                .notificationRecipient(user)
+                .notificationType(NotificationType.OFFER_ACCEPTED)
+                .titleKey("notification.offerAccepted.title")
+                .bodyKey("notification.offerAccepted.body")
+                .bodyArgs(args)
+                .actionUrl("/account/my-offers/50/payment")
+                .actionLabelKey("notification.offerAccepted.cta")
+                .offer(offer)
+                .build();
+
+        when(siteNotificationDao.create(
+                eq(user),
+                eq(NotificationType.OFFER_ACCEPTED),
+                eq("notification.offerAccepted.title"),
+                eq("notification.offerAccepted.body"),
+                eq(args),
+                eq("/account/my-offers/50/payment"),
+                eq("notification.offerAccepted.cta"),
+                any(Instant.class),
+                eq(offer)
+        )).thenReturn(expected);
+
+        // Act
+        final SiteNotification result = notificationService.create(dto);
+
+        // Assert
+        Assert.assertNotNull(result);
+        Assert.assertEquals(expected.getId(), result.getId());
+        Assert.assertEquals(offer, result.getOffer().orElse(null));
+        Assert.assertTrue(result.showCallToAction());
     }
 
     @Test

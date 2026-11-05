@@ -1,6 +1,7 @@
 package ar.edu.itba.paw.persistence;
 
 import ar.edu.itba.paw.model.NotificationType;
+import ar.edu.itba.paw.model.Offer;
 import ar.edu.itba.paw.model.Page;
 import ar.edu.itba.paw.model.SiteNotification;
 import ar.edu.itba.paw.model.SiteNotificationFilter;
@@ -24,8 +25,22 @@ public interface SiteNotificationDao {
             List<String> bodyArgs,
             String actionUrl,
             String actionLabelKey,
-            Instant createdAt
+            Instant createdAt,
+            Offer offer
     );
+
+    default SiteNotification create(
+            User user,
+            NotificationType type,
+            String titleKey,
+            String bodyKey,
+            List<String> bodyArgs,
+            String actionUrl,
+            String actionLabelKey,
+            Instant createdAt
+    ) {
+        return create(user, type, titleKey, bodyKey, bodyArgs, actionUrl, actionLabelKey, createdAt, null);
+    }
 
     void markAsRead(SiteNotification notification);
 

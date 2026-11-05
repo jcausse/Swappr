@@ -1,6 +1,8 @@
 package ar.edu.itba.paw.persistence;
 
 import ar.edu.itba.paw.model.NotificationType;
+import ar.edu.itba.paw.model.Offer;
+import org.springframework.test.context.jdbc.Sql;
 import ar.edu.itba.paw.model.Page;
 import ar.edu.itba.paw.model.SiteNotification;
 import ar.edu.itba.paw.model.SiteNotificationFilter;
@@ -27,6 +29,7 @@ import java.util.Map;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = { TestConfig.class })
+@Sql({ "classpath:sql/listing-data.sql", "classpath:sql/offer-data.sql" })
 @Transactional
 @Rollback
 public class SiteNotificationJpaDaoTest {
@@ -73,11 +76,12 @@ public class SiteNotificationJpaDaoTest {
             final String actionUrl,
             final String actionLabelKey,
             final boolean isRead,
-            final Instant createdAt
+            final Instant createdAt,
+            final Long offerId
     ) {
         jdbcTemplate.update(
-                "INSERT INTO site_notifications (notification_id, user_id, notification_type, title_key, body_key, action_url, action_label_key, is_read, created_at) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                "INSERT INTO site_notifications (notification_id, user_id, notification_type, title_key, body_key, action_url, action_label_key, is_read, created_at, offer_id) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 id,
                 userId,
                 type.name(),
@@ -86,7 +90,8 @@ public class SiteNotificationJpaDaoTest {
                 actionUrl,
                 actionLabelKey,
                 isRead,
-                Timestamp.from(createdAt)
+                Timestamp.from(createdAt),
+                offerId
         );
         if (bodyArgs != null) {
             for (int i = 0; i < bodyArgs.size(); i++) {
@@ -98,6 +103,21 @@ public class SiteNotificationJpaDaoTest {
                 );
             }
         }
+    }
+
+    private void insertNotification(
+            final long id,
+            final long userId,
+            final NotificationType type,
+            final String titleKey,
+            final String bodyKey,
+            final List<String> bodyArgs,
+            final String actionUrl,
+            final String actionLabelKey,
+            final boolean isRead,
+            final Instant createdAt
+    ) {
+        insertNotification(id, userId, type, titleKey, bodyKey, bodyArgs, actionUrl, actionLabelKey, isRead, createdAt, null);
     }
 
     /* ---------------------------------------------------------------------------------------------- */
@@ -162,6 +182,27 @@ public class SiteNotificationJpaDaoTest {
                 notification.getId()
         );
         Assert.assertEquals(BODY_ARGS, persistedArgs);
+    }
+
+    @Test
+    public void testCreateWithOfferPersistsOfferId() {
+        // Arrange
+        final User user = userRef(USER_ID);
+        final Offer offer = em.getReference(Offer.class, 6L);
+        final Instant now = Instant.now();
+
+        // Act
+        final SiteNotification notification = notificationDao.create(
+                user, NotificationType.OFFER_ACCEPTED, TITLE_KEY, BODY_KEY, BODY_ARGS, ACTION_URL, ACTION_LABEL_KEY, now, offer
+        );
+        em.flush();
+
+        // Assert directly querying database table (no other DAO methods used)
+        Assert.assertEquals(1, JdbcTestUtils.countRowsInTableWhere(
+                jdbcTemplate, TABLE, "notification_id = " + notification.getId() + " AND offer_id = 6"
+        ));
+        Assert.assertNotNull(notification.getOffer().orElse(null));
+        Assert.assertEquals(Long.valueOf(6L), notification.getOffer().get().getId());
     }
 
     /* ---------------------------------------------------------------------------------------------- */
@@ -251,6 +292,36 @@ public class SiteNotificationJpaDaoTest {
         Assert.assertEquals(1, result.getContent().size());
         Assert.assertEquals(301L, (long) result.getContent().getFirst().getId());
         Assert.assertEquals(NotificationType.OFFER_ACCEPTED, result.getContent().getFirst().getType());
+    }
+
+    @Test
+    public void testGetMatchingEagerlyFetchesOffer() {
+        // Arrange with direct database inserts
+        final Instant now = Instant.now();
+        // Offer 6 in offer-data.sql is PENDING_PAYMENT -> showCallToAction should be true
+        insertNotification(401L, USER_ID, NotificationType.OFFER_ACCEPTED, "k.accepted", "k.body", List.of(), "/payment", "cta", false, now.plusSeconds(10), 6L);
+        // Offer 5 in offer-data.sql is ACCEPTED -> showCallToAction should be false
+        insertNotification(402L, USER_ID, NotificationType.OFFER_ACCEPTED, "k.accepted", "k.body", List.of(), "/payment", "cta", false, now, 5L);
+
+        // Act
+        final SiteNotificationFilter filter = SiteNotificationFilter.builder()
+                .userId(USER_ID)
+                .page(1)
+                .pageSize(10)
+                .build();
+        final Page<SiteNotification> page = notificationDao.getMatching(filter);
+
+        // Assert
+        Assert.assertEquals(2, page.getTotalCount());
+        final SiteNotification pendingNotification = page.getContent().get(0);
+        Assert.assertTrue(pendingNotification.getOffer().isPresent());
+        Assert.assertEquals(Long.valueOf(6L), pendingNotification.getOffer().get().getId());
+        Assert.assertTrue(pendingNotification.showCallToAction());
+
+        final SiteNotification acceptedNotification = page.getContent().get(1);
+        Assert.assertTrue(acceptedNotification.getOffer().isPresent());
+        Assert.assertEquals(Long.valueOf(5L), acceptedNotification.getOffer().get().getId());
+        Assert.assertFalse(acceptedNotification.showCallToAction());
     }
 
     /* ---------------------------------------------------------------------------------------------- */
