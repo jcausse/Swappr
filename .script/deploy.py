@@ -259,6 +259,7 @@ def show_warning():
         "--exclude-dir=.agents",
         "--exclude-dir=doc",
         "--exclude-dir=.idea",
+        "--exclude-dir=.git",
         "--exclude=AGENTS.md",
         "."
     ]

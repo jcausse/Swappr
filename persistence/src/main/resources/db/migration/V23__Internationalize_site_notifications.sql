@@ -5,8 +5,6 @@ CREATE TABLE IF NOT EXISTS site_notification_args (
     PRIMARY KEY (notification_id, arg_index)
 );
 
-DELETE FROM site_notifications;
-
 ALTER TABLE site_notifications ADD COLUMN title_key VARCHAR(100) NOT NULL;
 ALTER TABLE site_notifications ADD COLUMN body_key VARCHAR(100) NOT NULL;
 ALTER TABLE site_notifications DROP COLUMN title;
