@@ -42,7 +42,7 @@ public class ListingServiceImpl implements ListingService {
     private final UserService userService;
     private final ProductService productService;
     private final ImageService imageService;
-    private final NotificationDispatcher notificationDispatcher;
+    private final NotificationDispatcherService notificationDispatcherService;
     private final OfferService offerService;
 
     @Override
@@ -159,7 +159,7 @@ public class ListingServiceImpl implements ListingService {
         LOGGER.info("Listing created: id={}, title='{}', creatorId={}, price={}, images={}",
                 listing.getId(), listing.getTitle(), creator.getId(), dto.price(), imageIds.size());
 
-        notificationDispatcher.notifyListingPublished(listing);
+        notificationDispatcherService.notifyListingPublished(listing);
 
         return listing;
     }
@@ -183,8 +183,8 @@ public class ListingServiceImpl implements ListingService {
             .orElseThrow(() -> new BadParameterException("Invalid buyerId"));
         final User seller = listing.getCreator();
 
-        notificationDispatcher.notifyListingSold(listing, buyer, message);
-        notificationDispatcher.notifyPurchaseConfirmed(listing, buyer);
+        notificationDispatcherService.notifyListingSold(listing, buyer, message);
+        notificationDispatcherService.notifyPurchaseConfirmed(listing, buyer);
 
         LOGGER.info("Listing purchased: id={}, buyerId={}, sellerId={}", id, buyerId, seller.getId());
         return listing;

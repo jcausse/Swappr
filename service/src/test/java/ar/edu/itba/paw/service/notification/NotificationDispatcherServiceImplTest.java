@@ -1,6 +1,8 @@
-package ar.edu.itba.paw.service;
+package ar.edu.itba.paw.service.notification;
 
 import ar.edu.itba.paw.model.*;
+import ar.edu.itba.paw.service.EmailNotificationService;
+import ar.edu.itba.paw.service.SiteNotificationService;
 import ar.edu.itba.paw.service.dto.SiteNotificationCreationDto;
 import ar.edu.itba.paw.service.dto.mail.ListingMailDto;
 import ar.edu.itba.paw.service.dto.mail.OfferMailDto;
@@ -24,7 +26,7 @@ import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class NotificationDispatcherImplTest {
+public class NotificationDispatcherServiceImplTest {
 
     @Mock
     private SiteNotificationService siteNotificationService;
@@ -32,11 +34,11 @@ public class NotificationDispatcherImplTest {
     @Mock
     private EmailNotificationService emailNotificationService;
 
-    private NotificationDispatcherImpl dispatcher;
+    private NotificationDispatcherServiceImpl dispatcher;
 
     @Before
     public void setUp() {
-        dispatcher = new NotificationDispatcherImpl(
+        dispatcher = new NotificationDispatcherServiceImpl(
                 siteNotificationService,
                 emailNotificationService
         );

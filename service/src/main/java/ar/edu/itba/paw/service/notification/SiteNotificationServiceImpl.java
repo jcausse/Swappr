@@ -1,10 +1,11 @@
-package ar.edu.itba.paw.service;
+package ar.edu.itba.paw.service.notification;
 
 import ar.edu.itba.paw.model.Page;
 import ar.edu.itba.paw.model.SiteNotification;
 import ar.edu.itba.paw.model.SiteNotificationFilter;
 import ar.edu.itba.paw.model.User;
 import ar.edu.itba.paw.persistence.SiteNotificationDao;
+import ar.edu.itba.paw.service.SiteNotificationService;
 import ar.edu.itba.paw.service.dto.SiteNotificationCreationDto;
 import ar.edu.itba.paw.service.exception.ForbiddenException;
 import ar.edu.itba.paw.service.exception.NotFoundException;

@@ -14,9 +14,15 @@ import java.math.RoundingMode;
 import java.util.List;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public final class SiteNotificationCreationDtoFactory {
+final class SiteNotificationCreationDtoFactory {
 
-    public static SiteNotificationCreationDto purchaseConfirmed(
+    /**
+     * NOTE:
+     * All methods in this class are package-private on purpose,
+     * as they are only meant to be used in NotificationDispatcherServiceImpl.
+     */
+
+    static SiteNotificationCreationDto purchaseConfirmed(
             @NonNull final Listing listing,
             @NonNull final User buyer
     ) {
@@ -32,7 +38,7 @@ public final class SiteNotificationCreationDtoFactory {
                 .build();
     }
 
-    public static SiteNotificationCreationDto newOffer(@NonNull final Offer offer) {
+    static SiteNotificationCreationDto newOffer(@NonNull final Offer offer) {
         final Listing listing = offer.getListing();
         final User seller = listing.getCreator();
         final User buyer = offer.getBuyer();
@@ -77,7 +83,7 @@ public final class SiteNotificationCreationDtoFactory {
                 .build();
     }
 
-    public static SiteNotificationCreationDto offerRejected(@NonNull final Offer offer) {
+    static SiteNotificationCreationDto offerRejected(@NonNull final Offer offer) {
         final Listing listing = offer.getListing();
         final User buyer = offer.getBuyer();
 
@@ -118,7 +124,7 @@ public final class SiteNotificationCreationDtoFactory {
                 .build();
     }
 
-    public static SiteNotificationCreationDto offerWithdrawn(@NonNull final Offer offer) {
+    static SiteNotificationCreationDto offerWithdrawn(@NonNull final Offer offer) {
         final Listing listing = offer.getListing();
         final User seller = listing.getCreator();
         final User buyer = offer.getBuyer();
@@ -163,7 +169,7 @@ public final class SiteNotificationCreationDtoFactory {
                 .build();
     }
 
-    public static SiteNotificationCreationDto offerAccepted(@NonNull final Offer offer) {
+    static SiteNotificationCreationDto offerAccepted(@NonNull final Offer offer) {
         final Listing listing = offer.getListing();
         final User buyer = offer.getBuyer();
         final User seller = listing.getCreator();
@@ -208,7 +214,7 @@ public final class SiteNotificationCreationDtoFactory {
                 .build();
     }
 
-    public static SiteNotificationCreationDto proofOfPaymentUploaded(@NonNull final Offer offer) {
+    static SiteNotificationCreationDto proofOfPaymentUploaded(@NonNull final Offer offer) {
         final Listing listing = offer.getListing();
         final User seller = listing.getCreator();
         final User buyer = offer.getBuyer();
@@ -224,7 +230,7 @@ public final class SiteNotificationCreationDtoFactory {
                 .build();
     }
 
-    public static SiteNotificationCreationDto proofOfShippingUploaded(@NonNull final Offer offer) {
+    static SiteNotificationCreationDto proofOfShippingUploaded(@NonNull final Offer offer) {
         final Listing listing = offer.getListing();
         final User buyer = offer.getBuyer();
         final User seller = listing.getCreator();

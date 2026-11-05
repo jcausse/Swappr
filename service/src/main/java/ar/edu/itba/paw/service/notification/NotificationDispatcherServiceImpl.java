@@ -1,13 +1,15 @@
-package ar.edu.itba.paw.service;
+package ar.edu.itba.paw.service.notification;
 
 import ar.edu.itba.paw.model.Listing;
 import ar.edu.itba.paw.model.NotificationType;
 import ar.edu.itba.paw.model.Offer;
 import ar.edu.itba.paw.model.User;
+import ar.edu.itba.paw.service.EmailNotificationService;
+import ar.edu.itba.paw.service.NotificationDispatcherService;
+import ar.edu.itba.paw.service.SiteNotificationService;
 import ar.edu.itba.paw.service.dto.mail.ListingMailDto;
 import ar.edu.itba.paw.service.dto.mail.OfferMailDto;
 import ar.edu.itba.paw.service.dto.mail.UserMailDto;
-import ar.edu.itba.paw.service.notification.SiteNotificationCreationDtoFactory;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -18,9 +20,9 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class NotificationDispatcherImpl implements NotificationDispatcher {
+public class NotificationDispatcherServiceImpl implements NotificationDispatcherService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(NotificationDispatcherImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(NotificationDispatcherServiceImpl.class);
 
     private final SiteNotificationService siteNotificationService;
     private final EmailNotificationService emailNotificationService;

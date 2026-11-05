@@ -5,7 +5,7 @@ import ar.edu.itba.paw.model.Offer;
 import ar.edu.itba.paw.model.User;
 import lombok.NonNull;
 
-public interface NotificationDispatcher {
+public interface NotificationDispatcherService {
 
     /** Notify a newly verified user with a welcome notification. */
     void notifyWelcome(@NonNull User user);

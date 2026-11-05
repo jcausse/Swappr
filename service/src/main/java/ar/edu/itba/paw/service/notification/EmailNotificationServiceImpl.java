@@ -1,6 +1,7 @@
-package ar.edu.itba.paw.service;
+package ar.edu.itba.paw.service.notification;
 
 import ar.edu.itba.paw.model.Language;
+import ar.edu.itba.paw.service.EmailNotificationService;
 import ar.edu.itba.paw.service.dto.mail.ListingMailDto;
 import ar.edu.itba.paw.service.dto.mail.OfferMailDto;
 import ar.edu.itba.paw.service.dto.mail.UserMailDto;
