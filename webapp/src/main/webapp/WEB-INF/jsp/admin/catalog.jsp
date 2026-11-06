@@ -88,7 +88,7 @@
                                             </c:choose>
                                         </div>
                                         <c:if test="${brand.hasListings}">
-                                            <p class="text-xs text-black/50 text-right max-w-56">
+                                            <p class="text-xs text-black/50 text-right">
                                                 <c:out value="${deleteBrandBlocked}"/>
                                             </p>
                                         </c:if>
