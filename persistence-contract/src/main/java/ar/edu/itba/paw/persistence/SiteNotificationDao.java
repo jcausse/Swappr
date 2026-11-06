@@ -29,7 +29,7 @@ public interface SiteNotificationDao {
             Offer offer
     );
 
-    default SiteNotification create(
+    SiteNotification create(
             User user,
             NotificationType type,
             String titleKey,
@@ -38,9 +38,7 @@ public interface SiteNotificationDao {
             String actionUrl,
             String actionLabelKey,
             Instant createdAt
-    ) {
-        return create(user, type, titleKey, bodyKey, bodyArgs, actionUrl, actionLabelKey, createdAt, null);
-    }
+    );
 
     void markAsRead(SiteNotification notification);
 
