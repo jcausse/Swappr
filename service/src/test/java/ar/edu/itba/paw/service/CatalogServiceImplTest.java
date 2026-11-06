@@ -174,6 +174,45 @@ public class CatalogServiceImplTest {
     }
 
     @Test
+    public void testGetAllBrandsDelegatesToDao() {
+        final List<Brand> brands = List.of(buildFakeBrand());
+        when(brandDao.getAll()).thenReturn(brands);
+
+        final List<Brand> result = catalogService.getAllBrands();
+
+        Assert.assertSame(brands, result);
+    }
+
+    @Test
+    public void testReplaceBrandDelegates() {
+        when(brandDao.getById(eq(BRAND_ID))).thenReturn(Optional.of(buildFakeBrand()));
+        when(brandDao.getById(eq(2L))).thenReturn(Optional.of(Brand.builder().id(2L).name("Dell").build()));
+        when(modelDao.replaceBrand(eq(BRAND_ID), eq(2L))).thenReturn(2);
+
+        catalogService.replaceBrand(BRAND_ID, 2L);
+    }
+
+    @Test(expected = BadParameterException.class)
+    public void testReplaceBrandWithSameBrandThrows() {
+        catalogService.replaceBrand(BRAND_ID, BRAND_ID);
+    }
+
+    @Test(expected = NotFoundException.class)
+    public void testReplaceMissingBrandThrows() {
+        when(brandDao.getById(eq(NON_EXISTING_MODEL_ID))).thenReturn(Optional.empty());
+
+        catalogService.replaceBrand(NON_EXISTING_MODEL_ID, 2L);
+    }
+
+    @Test(expected = NotFoundException.class)
+    public void testReplaceWithMissingBrandThrows() {
+        when(brandDao.getById(eq(BRAND_ID))).thenReturn(Optional.of(buildFakeBrand()));
+        when(brandDao.getById(eq(NON_EXISTING_MODEL_ID))).thenReturn(Optional.empty());
+
+        catalogService.replaceBrand(BRAND_ID, NON_EXISTING_MODEL_ID);
+    }
+
+    @Test
     public void testCreateBrandTrimsName() {
         final Brand created = Brand.builder().id(10L).name("HP").build();
         when(brandDao.getByName(eq("HP"))).thenReturn(Optional.empty());

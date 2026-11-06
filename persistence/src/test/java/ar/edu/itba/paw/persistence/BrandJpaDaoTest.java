@@ -101,6 +101,14 @@ public class BrandJpaDaoTest {
     }
 
     @Test
+    public void testGetAllIsSortedByName() {
+        final List<Brand> brands = brandDao.getAll();
+
+        Assert.assertEquals(List.of("Apple", "Dell", "Lenovo", "Samsung"),
+                brands.stream().map(Brand::getName).toList());
+    }
+
+    @Test
     public void testGetWithStatsFirstPageSortedByBrand() {
         final Page<BrandInfo> page = brandDao.getWithStats(BrandSort.BRAND_ASC, 1, 2);
 

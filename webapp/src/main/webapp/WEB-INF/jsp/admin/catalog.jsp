@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ taglib prefix="spring" uri="http://www.springframework.org/tags" %>
 <%@ taglib prefix="paw" tagdir="/WEB-INF/tags" %>
 <%@ taglib prefix="admin" tagdir="/WEB-INF/tags/admin" %>
@@ -14,6 +15,13 @@
 <spring:message code="admin.catalog.brands.actions" var="brandActionsLabel"/>
 <spring:message code="admin.catalog.brands.edit" var="editBrandLabel"/>
 <spring:message code="admin.catalog.brands.delete" var="deleteBrandLabel"/>
+<spring:message code="admin.catalog.brands.replace" var="replaceBrandLabel"/>
+<spring:message code="admin.catalog.brands.replace.title" var="replaceBrandTitle"/>
+<spring:message code="admin.catalog.brands.replace.label" var="replaceBrandSelectLabel"/>
+<spring:message code="admin.catalog.brands.replace.placeholder" var="replaceBrandPlaceholder"/>
+<spring:message code="admin.catalog.brands.replace.warning" var="replaceBrandWarning"/>
+<spring:message code="admin.catalog.brands.replace.confirm" var="replaceBrandConfirm"/>
+<spring:message code="admin.catalog.brands.replace.cancel" var="replaceBrandCancel"/>
 <spring:message code="admin.catalog.brands.rename.title" var="renameBrandTitle"/>
 <spring:message code="admin.catalog.brands.rename.confirm" var="renameBrandConfirm"/>
 <spring:message code="admin.catalog.brands.rename.cancel" var="renameBrandCancel"/>
@@ -86,6 +94,18 @@
                                                 onclick="document.getElementById('renameBrandDialog-${brand.id}').showModal()"
                                             />
 
+                                            <c:if test="${fn:length(brandOptions) > 1}">
+                                                <paw:button
+                                                    text="${replaceBrandLabel}"
+                                                    type="button"
+                                                    variant="outline"
+                                                    role="secondary"
+                                                    size="sm"
+                                                    icon="replace"
+                                                    onclick="document.getElementById('replaceBrandDialog-${brand.id}').showModal()"
+                                                />
+                                            </c:if>
+
                                             <c:choose>
                                                 <c:when test="${brand.hasListings}">
                                                     <paw:button
@@ -156,6 +176,7 @@
         <c:forEach var="brand" items="${brands}">
             <c:url value="/admin/catalog/brands/${brand.id}/rename" var="renameBrandUrl"/>
             <c:url value="/admin/catalog/brands/${brand.id}/delete" var="deleteBrandUrl"/>
+            <c:url value="/admin/catalog/brands/${brand.id}/replace" var="replaceBrandUrl"/>
 
             <paw:formDialog
                 id="renameBrandDialog-${brand.id}"
@@ -171,6 +192,33 @@
                     label="${brandNameLabel}"
                     variant="outline"
                 />
+            </paw:formDialog>
+
+            <paw:formDialog
+                id="replaceBrandDialog-${brand.id}"
+                title="${replaceBrandTitle}"
+                confirmText="${replaceBrandConfirm}"
+                cancelText="${replaceBrandCancel}"
+                formAction="${replaceBrandUrl}"
+            >
+                <div class="flex flex-col gap-3">
+                    <label for="replacementBrandId-${brand.id}" class="text-xs text-black/70 font-medium">
+                        <c:out value="${replaceBrandSelectLabel}"/>
+                    </label>
+                    <select
+                        id="replacementBrandId-${brand.id}"
+                        name="replacementBrandId"
+                        class="px-3 py-2 rounded-lg text-sm border border-black/20 focus-visible:border-lime-600 focus-visible:outline-2 bg-white"
+                    >
+                        <option value=""><c:out value="${replaceBrandPlaceholder}"/></option>
+                        <c:forEach var="candidate" items="${brandOptions}">
+                            <c:if test="${candidate.id ne brand.id}">
+                                <option value="${candidate.id}"><c:out value="${candidate.name}"/></option>
+                            </c:if>
+                        </c:forEach>
+                    </select>
+                    <p class="text-xs text-red-600"><c:out value="${replaceBrandWarning}"/></p>
+                </div>
             </paw:formDialog>
 
             <paw:confirmDialog

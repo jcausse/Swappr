@@ -13,4 +13,6 @@ public interface ModelDao {
 
     Page<ModelListingInfo> getListingInfoSummary(Long brandId, Long modelId, Integer fromYear, Integer toYear,
             Long subcategoryId, int page, int pageSize);
+
+    int replaceBrand(Long fromBrandId, Long toBrandId);
 }

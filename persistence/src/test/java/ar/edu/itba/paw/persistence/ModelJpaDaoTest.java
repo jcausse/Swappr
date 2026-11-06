@@ -5,12 +5,15 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.jdbc.JdbcTestUtils;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.sql.DataSource;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,6 +25,7 @@ import java.util.Optional;
 public class ModelJpaDaoTest {
 
     private static final long APPLE_BRAND_ID = 1L;
+    private static final long DELL_BRAND_ID = 2L;
     private static final long SAMSUNG_BRAND_ID = 4L;
 
     private static final long SUBCATEGORY_ID = 1L;
@@ -32,6 +36,16 @@ public class ModelJpaDaoTest {
 
     @Autowired
     private ModelDao modelDao;
+
+    @Autowired
+    private DataSource dataSource;
+
+    private JdbcTemplate jdbcTemplate;
+
+    @org.junit.Before
+    public void setUp() {
+        jdbcTemplate = new JdbcTemplate(dataSource);
+    }
 
     /* ---------------------------------------------------------------------------------------------- */
     /* getById                                                                                         */
@@ -88,5 +102,20 @@ public class ModelJpaDaoTest {
     @Test
     public void testGetBySubcategoryIdAndBrandIdEmptyForWrongSubcategory() {
         Assert.assertTrue(modelDao.getBySubcategoryIdAndBrandId(PHONES_SUBCATEGORY_ID, APPLE_BRAND_ID).isEmpty());
+    }
+
+    /* ---------------------------------------------------------------------------------------------- */
+    /* replaceBrand                                                                                    */
+    /* ---------------------------------------------------------------------------------------------- */
+
+    @Test
+    public void testReplaceBrandMovesModelsAndReturnsCount() {
+        final int updated = modelDao.replaceBrand(DELL_BRAND_ID, APPLE_BRAND_ID);
+
+        Assert.assertEquals(2, updated);
+        Assert.assertEquals(4, JdbcTestUtils.countRowsInTableWhere(
+                jdbcTemplate, "models", "brand_id = " + APPLE_BRAND_ID));
+        Assert.assertEquals(0, JdbcTestUtils.countRowsInTableWhere(
+                jdbcTemplate, "models", "brand_id = " + DELL_BRAND_ID));
     }
 }

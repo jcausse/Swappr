@@ -41,6 +41,12 @@ public class BrandJpaDao implements BrandDao {
     }
 
     @Override
+    public List<Brand> getAll() {
+        return em.createQuery("FROM Brand b ORDER BY b.name, b.id", Brand.class)
+                .getResultList();
+    }
+
+    @Override
     public Page<BrandInfo> getWithStats(BrandSort sort, int page, int pageSize) {
         final long totalCount = em.createQuery("SELECT COUNT(b) FROM Brand b", Long.class)
                 .getSingleResult();

@@ -43,6 +43,24 @@ public class CatalogServiceImpl implements CatalogService {
     }
 
     @Override
+    public List<Brand> getAllBrands() {
+        return brandDao.getAll();
+    }
+
+    @Override
+    @Transactional
+    public void replaceBrand(Long id, Long replacementId) {
+        if (id == null || replacementId == null || id.equals(replacementId)) {
+            throw BadParameterException.create("replacementBrandId", "Replacement brand must be different");
+        }
+        brandDao.getById(id)
+            .orElseThrow(() -> NotFoundException.createFor("Brand with ID " + id));
+        brandDao.getById(replacementId)
+            .orElseThrow(() -> NotFoundException.createFor("Brand with ID " + replacementId));
+        modelDao.replaceBrand(id, replacementId);
+    }
+
+    @Override
     @Transactional
     public Brand createBrand(String name) {
         final String trimmedName = name == null ? "" : name.trim();

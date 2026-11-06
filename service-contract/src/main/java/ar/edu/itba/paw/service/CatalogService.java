@@ -14,7 +14,11 @@ import java.util.List;
 public interface CatalogService {
     Page<BrandInfo> getBrands(BrandSort sort, Integer page, int pageSize);
 
+    List<Brand> getAllBrands();
+
     Brand createBrand(String name);
+
+    void replaceBrand(Long id, Long replacementId);
 
     void renameBrand(Long id, String name);
 

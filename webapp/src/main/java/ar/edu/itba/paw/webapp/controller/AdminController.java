@@ -19,6 +19,7 @@ import ar.edu.itba.paw.webapp.auth.CurrentUser;
 import ar.edu.itba.paw.webapp.form.AdminCreateBrandForm;
 import ar.edu.itba.paw.webapp.form.AdminGrantRoleForm;
 import ar.edu.itba.paw.webapp.form.AdminRenameBrandForm;
+import ar.edu.itba.paw.webapp.form.AdminReplaceBrandForm;
 import ar.edu.itba.paw.webapp.form.AdminSuspendUserForm;
 import ar.edu.itba.paw.webapp.form.AdminTakeDownListingForm;
 import ar.edu.itba.paw.webapp.form.AdminTakeDownOfferForm;
@@ -77,14 +78,16 @@ public class AdminController {
             @RequestParam(value = "page", defaultValue = "1") int page,
             @RequestParam(value = "sort", defaultValue = "BRAND_ASC") BrandSort sort,
             @ModelAttribute("renameBrandForm") AdminRenameBrandForm renameBrandForm,
-            @ModelAttribute("createBrandForm") AdminCreateBrandForm createBrandForm
+            @ModelAttribute("createBrandForm") AdminCreateBrandForm createBrandForm,
+            @ModelAttribute("replaceBrandForm") AdminReplaceBrandForm replaceBrandForm
     ) {
         LOGGER.debug("Admin {} accessed catalog management page: page={}, sort={}", currentUser.getUsername(), page, sort);
         final var brandsPage = catalogService.getBrands(sort, page, BRAND_PAGE_SIZE);
         return new ModelAndView("admin/catalog")
                 .addObject("brands", brandsPage.getContent())
                 .addObject("brandsPage", brandsPage)
-                .addObject("currentSort", sort);
+                .addObject("currentSort", sort)
+                .addObject("brandOptions", catalogService.getAllBrands());
     }
 
     @PostMapping("/catalog/brands")
@@ -107,6 +110,32 @@ public class AdminController {
         }
 
         return new ModelAndView("redirect:/admin/catalog?success=brand_created");
+    }
+
+    @PostMapping("/catalog/brands/{id}/replace")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ModelAndView replaceBrand(
+            @CurrentUser User currentUser,
+            @PathVariable Long id,
+            @Valid @ModelAttribute("replaceBrandForm") AdminReplaceBrandForm form,
+            BindingResult errors
+    ) {
+        LOGGER.info("Admin {} requested replacement of brand {} with {}", currentUser.getUsername(), id, form.getReplacementBrandId());
+        if (errors.hasErrors()) {
+            return new ModelAndView("redirect:/admin/catalog?error=brandInvalidReplacement");
+        }
+
+        try {
+            catalogService.replaceBrand(id, form.getReplacementBrandId());
+        } catch (NotFoundException e) {
+            LOGGER.warn("Brand replacement failed for {} -> {}: {}", id, form.getReplacementBrandId(), e.getMessage());
+            return new ModelAndView("redirect:/admin/catalog?error=brandNotFound");
+        } catch (BadParameterException e) {
+            LOGGER.warn("Brand replacement failed for {} -> {}: {}", id, form.getReplacementBrandId(), e.getMessage());
+            return new ModelAndView("redirect:/admin/catalog?error=brandReplaceSame");
+        }
+
+        return new ModelAndView("redirect:/admin/catalog?success=brand_replaced");
     }
 
     @PostMapping("/catalog/brands/{id}/rename")

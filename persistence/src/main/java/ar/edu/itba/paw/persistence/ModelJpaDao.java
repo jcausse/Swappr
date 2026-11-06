@@ -127,6 +127,16 @@ public class ModelJpaDao implements ModelDao {
         return new Page<>(content, page, pageSize, totalCount);
     }
 
+    @Override
+    public int replaceBrand(Long fromBrandId, Long toBrandId) {
+        final Brand from = em.getReference(Brand.class, fromBrandId);
+        final Brand to = em.getReference(Brand.class, toBrandId);
+        return em.createQuery("UPDATE Model m SET m.brand = :to WHERE m.brand = :from")
+                .setParameter("to", to)
+                .setParameter("from", from)
+                .executeUpdate();
+    }
+
     private static void bindParams(final Query query, final List<Object> params) {
         for (int i = 0; i < params.size(); i++) {
             query.setParameter(i + 1, params.get(i));
