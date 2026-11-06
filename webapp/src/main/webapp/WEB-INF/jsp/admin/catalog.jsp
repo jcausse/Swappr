@@ -182,7 +182,9 @@
                 </table>
             </div>
 
-            <paw:pagination page="${brandsPage}" baseUrl="/admin/catalog"/>
+            <div class="-mt-8 mb-4">
+                <paw:pagination page="${brandsPage}" baseUrl="/admin/catalog"/>
+            </div>
 
             <paw:divider />
 
@@ -307,7 +309,7 @@
                     <c:param name="sort" value="${currentSort.name()}"/>
                     <c:param name="modelSort" value="${currentModelSort.name()}"/>
                 </c:url>
-                <paw:linkButton href="${clearModelFiltersUrl}" text="${modelFilterClearLabel}" variant="ghost" size="sm" role="secondary" classname="w-full sm:w-auto"/>
+                <paw:linkButton href="${clearModelFiltersUrl}" text="${modelFilterClearLabel}" variant="ghost" role="secondary" classname="w-full sm:w-auto"/>
             </form:form>
 
             <div class="overflow-x-auto">
@@ -416,7 +418,9 @@
                 </table>
             </div>
 
-            <paw:pagination page="${modelsPage}" baseUrl="/admin/catalog" pageParam="modelPage"/>
+            <div class="-mt-8 mb-4">
+                <paw:pagination page="${modelsPage}" baseUrl="/admin/catalog" pageParam="modelPage"/>
+            </div>
 
             <paw:divider />
 
