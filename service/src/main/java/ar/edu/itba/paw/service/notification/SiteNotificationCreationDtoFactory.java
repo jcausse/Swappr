@@ -80,6 +80,7 @@ final class SiteNotificationCreationDtoFactory {
                 .bodyArgs(bodyArgs)
                 .actionUrl("/account/incoming-offers/" + offer.getId())
                 .actionLabelKey("notification.newOffer.cta")
+                .offer(offer)
                 .build();
     }
 
@@ -121,6 +122,7 @@ final class SiteNotificationCreationDtoFactory {
                 .bodyArgs(bodyArgs)
                 .actionUrl("/listing")
                 .actionLabelKey("notification.offerRejected.cta")
+                .offer(offer)
                 .build();
     }
 
@@ -166,6 +168,7 @@ final class SiteNotificationCreationDtoFactory {
                 .bodyArgs(bodyArgs)
                 .actionUrl("/listing/" + listing.getId())
                 .actionLabelKey("notification.offerWithdrawn.cta")
+                .offer(offer)
                 .build();
     }
 
@@ -211,6 +214,7 @@ final class SiteNotificationCreationDtoFactory {
                 .bodyArgs(bodyArgs)
                 .actionUrl("/account/my-offers/" + offer.getId() + "/payment")
                 .actionLabelKey("notification.offerAccepted.cta")
+                .offer(offer)
                 .build();
     }
 
@@ -227,6 +231,7 @@ final class SiteNotificationCreationDtoFactory {
                 .bodyArgs(List.of(buyer.getDisplayName(), listing.getTitle()))
                 .actionUrl("/account/incoming-offers/" + offer.getId())
                 .actionLabelKey("notification.proofOfPaymentUploaded.cta")
+                .offer(offer)
                 .build();
     }
 
@@ -251,6 +256,7 @@ final class SiteNotificationCreationDtoFactory {
                 .bodyArgs(bodyArgs)
                 .actionUrl("/account/my-offers?statusGroup=PENDING_PAYMENT")
                 .actionLabelKey("notification.proofOfShippingUploaded.cta")
+                .offer(offer)
                 .build();
     }
 

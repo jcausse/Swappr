@@ -79,6 +79,7 @@ public class NotificationDispatcherServiceImplTest {
         Assert.assertEquals(List.of("Buyer Bob", "250.00", "Sony WH-1000XM5"), siteDto.bodyArgs());
         Assert.assertEquals("/account/incoming-offers/500", siteDto.actionUrl());
         Assert.assertEquals("notification.newOffer.cta", siteDto.actionLabelKey());
+        Assert.assertSame(offer, siteDto.offer());
 
         // Assert — Email notification also dispatched with detached OfferMailDto snapshot
         Assert.assertEquals(1, mailCaptor.getAllValues().size());
@@ -253,6 +254,7 @@ public class NotificationDispatcherServiceImplTest {
         Assert.assertEquals("notification.purchaseConfirmed.body", siteDto.bodyKey());
         Assert.assertEquals(List.of("Seller Ana", "Mechanical Keyboard"), siteDto.bodyArgs());
         Assert.assertEquals("/account/my-offers?statusGroup=RESOLVED", siteDto.actionUrl());
+        Assert.assertNull(siteDto.offer());
 
         // Assert — Both email notifications were sent
         Assert.assertEquals(1, soldListingCaptor.getAllValues().size());
@@ -299,18 +301,21 @@ public class NotificationDispatcherServiceImplTest {
         Assert.assertEquals("notification.offerRejected.body", rejectedDto.bodyKey());
         Assert.assertEquals(List.of("190.00", "Desk Monitor"), rejectedDto.bodyArgs());
         Assert.assertEquals("/listing", rejectedDto.actionUrl());
+        Assert.assertSame(offer, rejectedDto.offer());
 
         final SiteNotificationCreationDto withdrawnDto = siteCaptor.getAllValues().get(1);
         Assert.assertEquals(NotificationType.OFFER_WITHDRAWN, withdrawnDto.notificationType());
         Assert.assertEquals("notification.offerWithdrawn.body", withdrawnDto.bodyKey());
         Assert.assertEquals(List.of("Buyer Bob", "190.00", "Desk Monitor"), withdrawnDto.bodyArgs());
         Assert.assertEquals("/listing/100", withdrawnDto.actionUrl());
+        Assert.assertSame(offer, withdrawnDto.offer());
 
         final SiteNotificationCreationDto paymentDto = siteCaptor.getAllValues().get(2);
         Assert.assertEquals(NotificationType.PROOF_OF_PAYMENT_UPLOADED, paymentDto.notificationType());
         Assert.assertEquals("notification.proofOfPaymentUploaded.body", paymentDto.bodyKey());
         Assert.assertEquals(List.of("Buyer Bob", "Desk Monitor"), paymentDto.bodyArgs());
         Assert.assertEquals("/account/incoming-offers/505", paymentDto.actionUrl());
+        Assert.assertSame(offer, paymentDto.offer());
 
         Assert.assertEquals(1, rejectedCaptor.getAllValues().size());
         Assert.assertEquals(1, withdrawnCaptor.getAllValues().size());

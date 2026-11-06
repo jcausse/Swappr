@@ -73,7 +73,8 @@ public class SiteNotificationServiceImpl implements SiteNotificationService {
                 creationDto.bodyArgs(),
                 creationDto.actionUrl(),
                 creationDto.actionLabelKey(),
-                Instant.now()
+                Instant.now(),
+                creationDto.offer()
         );
 
         LOGGER.info("Created site notification id={} of type {} for user id={}",

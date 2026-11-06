@@ -14,7 +14,7 @@ import java.util.Optional;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@ToString(exclude = {"user", "bodyArgs"})
+@ToString(exclude = {"user", "bodyArgs", "offer"})
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Entity
 @Table(name = "site_notifications")
@@ -29,6 +29,10 @@ public class SiteNotification {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "offer_id")
+    private Offer offer;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "notification_type", nullable = false, length = 50)
@@ -67,6 +71,10 @@ public class SiteNotification {
         return bodyArgs != null ? Collections.unmodifiableList(bodyArgs) : Collections.emptyList();
     }
 
+    public Optional<Offer> getOffer() {
+        return Optional.ofNullable(offer);
+    }
+
     public Optional<String> getActionUrl() {
         return Optional.ofNullable(actionUrl);
     }
@@ -82,5 +90,16 @@ public class SiteNotification {
     public boolean isRecipient(User candidate) {
         // Called on the candidate so the lazy recipient proxy only exposes its ID (no extra fetch)
         return candidate != null && candidate.isSameUser(user);
+    }
+
+    public boolean showCallToAction() {
+        if (type == null) {
+            return true;
+        }
+        return type.shouldShowCallToAction(offer);
+    }
+
+    public boolean isShowCallToAction() {
+        return showCallToAction();
     }
 }

@@ -1,6 +1,7 @@
 package ar.edu.itba.paw.service.dto;
 
 import ar.edu.itba.paw.model.NotificationType;
+import ar.edu.itba.paw.model.Offer;
 import ar.edu.itba.paw.model.User;
 import lombok.Builder;
 import lombok.NonNull;
@@ -15,7 +16,8 @@ public record SiteNotificationCreationDto(
     @NonNull String bodyKey,
     List<String> bodyArgs,
     String actionUrl,
-    String actionLabelKey
+    String actionLabelKey,
+    Offer offer
 ) {
     public SiteNotificationCreationDto {
         bodyArgs = bodyArgs != null ? List.copyOf(bodyArgs) : List.of();
