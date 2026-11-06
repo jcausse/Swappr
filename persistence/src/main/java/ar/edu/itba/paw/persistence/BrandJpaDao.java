@@ -2,6 +2,8 @@ package ar.edu.itba.paw.persistence;
 
 import ar.edu.itba.paw.model.Brand;
 import ar.edu.itba.paw.model.BrandInfo;
+import ar.edu.itba.paw.model.BrandSort;
+import ar.edu.itba.paw.model.Page;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
@@ -39,15 +41,25 @@ public class BrandJpaDao implements BrandDao {
     }
 
     @Override
-    public List<BrandInfo> getAllWithStats() {
-        return em.createQuery(
+    public Page<BrandInfo> getWithStats(BrandSort sort, int page, int pageSize) {
+        final long totalCount = em.createQuery("SELECT COUNT(b) FROM Brand b", Long.class)
+                .getSingleResult();
+
+        if (totalCount == 0) {
+            return new Page<>(List.of(), page, pageSize, 0);
+        }
+
+        final String orderBy = sort == BrandSort.ID ? "b.id" : "b.name, b.id";
+        final List<BrandInfo> content = em.createQuery(
                 "SELECT b.id, b.name, COUNT(DISTINCT m.id), COUNT(DISTINCT l.id)"
                 + " FROM Brand b"
                 + " LEFT JOIN Model m ON m.brand.id = b.id"
                 + " LEFT JOIN Listing l ON l.model.id = m.id"
                 + " GROUP BY b.id, b.name"
-                + " ORDER BY b.name, b.id",
+                + " ORDER BY " + orderBy,
                 Object[].class)
+                .setFirstResult((page - 1) * pageSize)
+                .setMaxResults(pageSize)
                 .getResultStream()
                 .map(row -> BrandInfo.builder()
                         .id((Long) row[0])
@@ -56,6 +68,8 @@ public class BrandJpaDao implements BrandDao {
                         .hasListings(((Number) row[3]).longValue() > 0)
                         .build())
                 .toList();
+
+        return new Page<>(content, page, pageSize, totalCount);
     }
 
     @Override

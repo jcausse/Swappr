@@ -1,5 +1,6 @@
 package ar.edu.itba.paw.webapp.controller;
 
+import ar.edu.itba.paw.model.BrandSort;
 import ar.edu.itba.paw.model.ListingStatus;
 import ar.edu.itba.paw.model.OfferStatusGroup;
 import ar.edu.itba.paw.model.Role;
@@ -21,6 +22,7 @@ import ar.edu.itba.paw.webapp.form.AdminRenameBrandForm;
 import ar.edu.itba.paw.webapp.form.AdminSuspendUserForm;
 import ar.edu.itba.paw.webapp.form.AdminTakeDownListingForm;
 import ar.edu.itba.paw.webapp.form.AdminTakeDownOfferForm;
+import ar.edu.itba.paw.webapp.form.StringSelectOption;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,6 +40,7 @@ import org.springframework.web.servlet.ModelAndView;
 import javax.validation.Valid;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.Predicate;
 
@@ -47,6 +50,7 @@ import java.util.function.Predicate;
 public class AdminController {
     private static final Logger LOGGER = LoggerFactory.getLogger(AdminController.class);
     private static final int DEFAULT_PAGE_SIZE = 10;
+    private static final int BRAND_PAGE_SIZE = 10;
     private static final Predicate<String> ADMIN_PATH_FILTER = RedirectHelper.hasPathPrefix("/admin");
 
     private final AdminService adminService;
@@ -72,12 +76,20 @@ public class AdminController {
     @PreAuthorize("hasRole('ADMIN')")
     public ModelAndView catalog(
             @CurrentUser User currentUser,
+            @RequestParam(value = "page", defaultValue = "1") int page,
+            @RequestParam(value = "sort", defaultValue = "BRAND") BrandSort sort,
             @ModelAttribute("renameBrandForm") AdminRenameBrandForm renameBrandForm,
             @ModelAttribute("createBrandForm") AdminCreateBrandForm createBrandForm
     ) {
-        LOGGER.debug("Admin {} accessed catalog management page", currentUser.getUsername());
+        LOGGER.debug("Admin {} accessed catalog management page: page={}, sort={}", currentUser.getUsername(), page, sort);
+        final var brandsPage = catalogService.getBrands(sort, page, BRAND_PAGE_SIZE);
         return new ModelAndView("admin/catalog")
-                .addObject("brands", catalogService.getAllBrands());
+                .addObject("brands", brandsPage.getContent())
+                .addObject("brandsPage", brandsPage)
+                .addObject("currentSort", sort)
+                .addObject("sortOptions", Arrays.stream(BrandSort.values())
+                        .map(option -> new StringSelectOption(option.name(), "admin.catalog.brands.sort." + option.getKey()))
+                        .toList());
     }
 
     @PostMapping("/catalog/brands")

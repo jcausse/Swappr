@@ -2,6 +2,7 @@ package ar.edu.itba.paw.service;
 
 import ar.edu.itba.paw.model.Brand;
 import ar.edu.itba.paw.model.BrandInfo;
+import ar.edu.itba.paw.model.BrandSort;
 import ar.edu.itba.paw.model.Category;
 import ar.edu.itba.paw.model.Condition;
 import ar.edu.itba.paw.model.Model;
@@ -151,15 +152,25 @@ public class CatalogServiceImplTest {
     /* ---------------------------------------------------------------------------------------------- */
 
     @Test
-    public void testGetAllBrandsDelegatesToDao() {
-        final List<BrandInfo> brands = List.of(
+    public void testGetBrandsDelegatesToDao() {
+        final Page<BrandInfo> brandsPage = new Page<>(List.of(
                 BrandInfo.builder().id(1L).name("Apple").modelCount(2L).hasListings(true).build(),
-                BrandInfo.builder().id(2L).name("Dell").modelCount(0L).hasListings(false).build());
-        when(brandDao.getAllWithStats()).thenReturn(brands);
+                BrandInfo.builder().id(2L).name("Dell").modelCount(0L).hasListings(false).build()), 2, 10, 12);
+        when(brandDao.getWithStats(eq(BrandSort.BRAND), eq(2), eq(10))).thenReturn(brandsPage);
 
-        final List<BrandInfo> result = catalogService.getAllBrands();
+        final Page<BrandInfo> result = catalogService.getBrands(BrandSort.BRAND, 2, 10);
 
-        Assert.assertSame(brands, result);
+        Assert.assertSame(brandsPage, result);
+    }
+
+    @Test
+    public void testGetBrandsDefaultsNullPageAndSort() {
+        final Page<BrandInfo> brandsPage = new Page<>(List.of(), 1, 10, 0);
+        when(brandDao.getWithStats(eq(BrandSort.BRAND), eq(1), eq(10))).thenReturn(brandsPage);
+
+        final Page<BrandInfo> result = catalogService.getBrands(null, null, 10);
+
+        Assert.assertSame(brandsPage, result);
     }
 
     @Test

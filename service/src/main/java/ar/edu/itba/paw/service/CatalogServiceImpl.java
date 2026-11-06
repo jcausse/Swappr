@@ -2,6 +2,7 @@ package ar.edu.itba.paw.service;
 
 import ar.edu.itba.paw.model.Brand;
 import ar.edu.itba.paw.model.BrandInfo;
+import ar.edu.itba.paw.model.BrandSort;
 import ar.edu.itba.paw.model.Category;
 import ar.edu.itba.paw.model.Model;
 import ar.edu.itba.paw.model.ModelListingInfo;
@@ -36,8 +37,9 @@ public class CatalogServiceImpl implements CatalogService {
     private final ModelDao modelDao;
 
     @Override
-    public List<BrandInfo> getAllBrands() {
-        return brandDao.getAllWithStats();
+    public Page<BrandInfo> getBrands(BrandSort sort, Integer page, int pageSize) {
+        final int safePage = page == null || page < 1 ? 1 : page;
+        return brandDao.getWithStats(sort == null ? BrandSort.BRAND : sort, safePage, pageSize);
     }
 
     @Override

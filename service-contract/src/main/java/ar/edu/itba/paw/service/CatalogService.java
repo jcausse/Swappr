@@ -2,6 +2,7 @@ package ar.edu.itba.paw.service;
 
 import ar.edu.itba.paw.model.Brand;
 import ar.edu.itba.paw.model.BrandInfo;
+import ar.edu.itba.paw.model.BrandSort;
 import ar.edu.itba.paw.model.Category;
 import ar.edu.itba.paw.model.Model;
 import ar.edu.itba.paw.model.ModelListingInfoSummary;
@@ -11,7 +12,7 @@ import ar.edu.itba.paw.model.Subcategory;
 import java.util.List;
 
 public interface CatalogService {
-    List<BrandInfo> getAllBrands();
+    Page<BrandInfo> getBrands(BrandSort sort, Integer page, int pageSize);
 
     Brand createBrand(String name);
 

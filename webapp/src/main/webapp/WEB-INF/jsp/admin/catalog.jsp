@@ -25,11 +25,32 @@
 <spring:message code="admin.catalog.brands.create.title" var="createBrandTitle"/>
 <spring:message code="admin.catalog.brands.create.placeholder" var="createBrandPlaceholder"/>
 <spring:message code="admin.catalog.brands.create.submit" var="createBrandSubmit"/>
+<spring:message code="admin.catalog.brands.sort.label" var="brandSortLabel"/>
 
 <admin:layout titleKey="admin.catalog.title" title="${catalogTitle}" subtitle="${catalogSubtitle}">
     <div class="flex flex-col gap-6">
         <paw:card title="${brandsTitle}" subtitle="${brandsSubtitle}">
-            <div class="mt-4 overflow-x-auto">
+            <c:url value="/admin/catalog" var="catalogUrl"/>
+            <form method="get" action="${catalogUrl}" class="mt-2 mb-3 flex items-center justify-end gap-2">
+                <label for="brandSort" class="text-xs text-black/70 font-medium">
+                    <c:out value="${brandSortLabel}"/>
+                </label>
+                <select
+                    id="brandSort"
+                    name="sort"
+                    onchange="this.form.submit()"
+                    class="px-3 py-2 rounded-lg text-sm border border-black/20 focus-visible:border-lime-600 focus-visible:outline-2 bg-white"
+                >
+                    <c:forEach var="option" items="${sortOptions}">
+                        <spring:message code="${option.label}" var="sortOptionLabel"/>
+                        <option value="${option.value}" ${option.value eq currentSort.name() ? 'selected' : ''}>
+                            <c:out value="${sortOptionLabel}"/>
+                        </option>
+                    </c:forEach>
+                </select>
+            </form>
+
+            <div class="overflow-x-auto">
                 <table class="w-full text-sm">
                     <thead>
                         <tr class="border-b border-black/10 text-left text-xs uppercase tracking-wide text-black/50">
@@ -102,6 +123,8 @@
                     </tbody>
                 </table>
             </div>
+
+            <paw:pagination page="${brandsPage}" baseUrl="/admin/catalog"/>
 
             <paw:divider />
 

@@ -2,6 +2,8 @@ package ar.edu.itba.paw.persistence;
 
 import ar.edu.itba.paw.model.Brand;
 import ar.edu.itba.paw.model.BrandInfo;
+import ar.edu.itba.paw.model.BrandSort;
+import ar.edu.itba.paw.model.Page;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -99,19 +101,40 @@ public class BrandJpaDaoTest {
     }
 
     @Test
-    public void testGetAllWithStatsIsSortedAndIncludesCounts() {
-        final List<BrandInfo> brands = brandDao.getAllWithStats();
+    public void testGetWithStatsFirstPageSortedByBrand() {
+        final Page<BrandInfo> page = brandDao.getWithStats(BrandSort.BRAND, 1, 2);
 
-        Assert.assertEquals(List.of("Apple", "Dell", "Lenovo", "Samsung"),
-                brands.stream().map(BrandInfo::getName).toList());
-        Assert.assertEquals(2L, brands.get(0).getModelCount());
-        Assert.assertFalse(brands.get(0).isHasListings());
-        Assert.assertEquals(2L, brands.get(1).getModelCount());
-        Assert.assertTrue(brands.get(1).isHasListings());
-        Assert.assertEquals(1L, brands.get(2).getModelCount());
-        Assert.assertFalse(brands.get(2).isHasListings());
-        Assert.assertEquals(1L, brands.get(3).getModelCount());
-        Assert.assertFalse(brands.get(3).isHasListings());
+        Assert.assertEquals(1, page.getPage());
+        Assert.assertEquals(2, page.getPageSize());
+        Assert.assertEquals(4, page.getTotalCount());
+        Assert.assertEquals(2, page.getTotalPages());
+        Assert.assertEquals(List.of("Apple", "Dell"),
+                page.getContent().stream().map(BrandInfo::getName).toList());
+        Assert.assertEquals(2L, page.getContent().get(0).getModelCount());
+        Assert.assertFalse(page.getContent().get(0).isHasListings());
+        Assert.assertEquals(2L, page.getContent().get(1).getModelCount());
+        Assert.assertTrue(page.getContent().get(1).isHasListings());
+    }
+
+    @Test
+    public void testGetWithStatsSecondPageSortedByBrand() {
+        final Page<BrandInfo> page = brandDao.getWithStats(BrandSort.BRAND, 2, 2);
+
+        Assert.assertEquals(2, page.getPage());
+        Assert.assertEquals(4, page.getTotalCount());
+        Assert.assertEquals(List.of("Lenovo", "Samsung"),
+                page.getContent().stream().map(BrandInfo::getName).toList());
+    }
+
+    @Test
+    public void testGetWithStatsSortedById() {
+        final Page<BrandInfo> firstPage = brandDao.getWithStats(BrandSort.ID, 1, 2);
+        final Page<BrandInfo> secondPage = brandDao.getWithStats(BrandSort.ID, 2, 2);
+
+        Assert.assertEquals(List.of("Apple", "Dell"),
+                firstPage.getContent().stream().map(BrandInfo::getName).toList());
+        Assert.assertEquals(List.of("Lenovo", "Samsung"),
+                secondPage.getContent().stream().map(BrandInfo::getName).toList());
     }
 
     @Test
