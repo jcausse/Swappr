@@ -51,65 +51,39 @@ public class ChooseProductValidator implements ConstraintValidator<ValidChoosePr
                 valid = false;
             }
         } else if (step == 3) {
-            String brand = form.getNewProductBrand();
-            String model = form.getNewProductModel();
-            String otherBrand = form.getOtherBrand();
-            String otherModel = form.getOtherModel();
-            Integer year = form.getNewProductYear();
-
-            boolean hasBrand = brand != null && !brand.isBlank();
-            boolean hasModel = model != null && !model.isBlank();
+            final Long brandId = form.getBrandId();
+            final Long modelId = form.getModelId();
+            final Integer year = form.getYear();
 
             context.disableDefaultConstraintViolation();
 
-            if (!hasBrand) {
-                context.buildConstraintViolationWithTemplate("{NotNull.chooseProductForm.newProductBrand}")
-                        .addPropertyNode("newProductBrand")
+            if (brandId == null) {
+                context.buildConstraintViolationWithTemplate("{NotNull.chooseProductForm.brandId}")
+                        .addPropertyNode("brandId")
                         .addConstraintViolation();
                 valid = false;
-            } else if (form.isOtherBrandSelected()) {
-                if (otherBrand == null || otherBrand.isBlank()) {
-                    context.buildConstraintViolationWithTemplate("{NotNull.chooseProductForm.otherBrand}")
-                            .addPropertyNode("otherBrand")
-                            .addConstraintViolation();
-                    valid = false;
-                }
-                if (otherModel == null || otherModel.isBlank()) {
-                    context.buildConstraintViolationWithTemplate("{NotNull.chooseProductForm.otherModel}")
-                            .addPropertyNode("otherModel")
-                            .addConstraintViolation();
-                    valid = false;
-                }
-            } else {
-                if (!hasModel) {
-                    context.buildConstraintViolationWithTemplate("{NotNull.chooseProductForm.newProductModel}")
-                            .addPropertyNode("newProductModel")
-                            .addConstraintViolation();
-                    valid = false;
-                } else if (form.isOtherModelSelected()) {
-                    if (otherModel == null || otherModel.isBlank()) {
-                        context.buildConstraintViolationWithTemplate("{NotNull.chooseProductForm.otherModel}")
-                                .addPropertyNode("otherModel")
-                                .addConstraintViolation();
-                        valid = false;
-                    }
-                }
+            }
+            if (modelId == null) {
+                context.buildConstraintViolationWithTemplate("{NotNull.chooseProductForm.modelId}")
+                        .addPropertyNode("modelId")
+                        .addConstraintViolation();
+                valid = false;
             }
 
             int currentYear = Year.now().getValue();
             if (year == null) {
-                context.buildConstraintViolationWithTemplate("{NotNull.chooseProductForm.newProductYear}")
-                        .addPropertyNode("newProductYear")
+                context.buildConstraintViolationWithTemplate("{NotNull.chooseProductForm.year}")
+                        .addPropertyNode("year")
                         .addConstraintViolation();
                 valid = false;
             } else if (year < 1900 || year > currentYear) {
                 final String message = messageSource.getMessage(
-                    "Range.chooseProductForm.newProductYear",
+                    "Range.chooseProductForm.year",
                     new Object[]{String.valueOf(1900), String.valueOf(currentYear)},
                     LocaleContextHolder.getLocale()
                 );
                 context.buildConstraintViolationWithTemplate(message)
-                        .addPropertyNode("newProductYear")
+                        .addPropertyNode("year")
                         .addConstraintViolation();
                 valid = false;
             }

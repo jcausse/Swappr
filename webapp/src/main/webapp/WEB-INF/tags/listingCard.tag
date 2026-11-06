@@ -16,8 +16,8 @@
     <c:url value="/image/${listing.imageIds[0]}" var="imageUrl"/>
 </c:if>
 <c:set var="subLabel" value=""/>
-<c:if test="${not empty listing.product and not empty listing.product.subcategory}">
-    <spring:message code="subcategory.${listing.product.subcategory.name}" var="subLabel"/>
+<c:if test="${not empty listing.model and not empty listing.model.subcategory}">
+    <spring:message code="subcategory.${listing.model.subcategory.name}" var="subLabel"/>
 </c:if>
 
 <c:set var="variantClassnames" value="${

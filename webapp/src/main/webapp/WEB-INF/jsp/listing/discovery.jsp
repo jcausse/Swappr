@@ -44,10 +44,10 @@
                                 <paw:formSelect path="subcategoryId" label="${subcategoryLabel}" placeholder="${allLabel}" items="${subcategoryOptions}" translateLabels="true" />
                             </c:if>
                             <c:if test="${not empty brandOptions}">
-                                <paw:formSelect path="brand" label="${brandLabel}" placeholder="${allLabel}" items="${brandOptions}" plainStrings="true" />
+                                <paw:formSelect path="brandId" label="${brandLabel}" placeholder="${allLabel}" items="${brandOptions}" />
                             </c:if>
                             <c:if test="${not empty modelOptions}">
-                                <paw:formSelect path="model" label="${modelLabel}" placeholder="${allLabel}" items="${modelOptions}" plainStrings="true" />
+                                <paw:formSelect path="modelId" label="${modelLabel}" placeholder="${allLabel}" items="${modelOptions}" />
                             </c:if>
 
                             <paw:formSelect path="condition" label="${conditionLabel}" placeholder="${allLabel}" items="${conditionOptions}" itemLabel="label" itemValue="value" translateLabels="true" />
@@ -144,9 +144,9 @@
             }
 
             reloadOnChange('sort', []);
-            reloadOnChange('categoryId', ['subcategoryId', 'brand', 'model']);
-            reloadOnChange('subcategoryId', ['brand', 'model']);
-            reloadOnChange('brand', ['model']);
+            reloadOnChange('categoryId', ['subcategoryId', 'brandId', 'modelId']);
+            reloadOnChange('subcategoryId', ['brandId', 'modelId']);
+            reloadOnChange('brandId', ['modelId']);
         });
     </script>
 </paw:layout>

@@ -36,7 +36,7 @@
             <paw:card classname="sticky top-26">
                 <div class="flex flex-col gap-4">
                     <h1 class="text-2xl font-semibold"><c:out value="${listing.title}"/></h1>
-                    <paw:product product="${listing.product}" />
+                    <paw:product model="${listing.model}" year="${listing.year}" />
 
                     <spring:message code="condition.${listing.condition}" var="conditionLabel"/>
                     <spring:message code="condition.description.${listing.condition}" var="conditionDescription"/>
@@ -151,7 +151,7 @@
 
                     <paw:divider />
 
-                    <c:url value="/listing/new/choose-product?productId=${listing.product.getId()}" var="sellSameProductUrl" />
+                    <c:url value="/listing/new/choose-product?modelId=${listing.model.getId()}&year=${listing.year}" var="sellSameProductUrl" />
                     <spring:message code="listing.detail.sellSameProduct" var="sellSameProductLabel" />
                     <paw:linkButton href="${sellSameProductUrl}" variant="ghost" size="sm" role="secondary" text="${sellSameProductLabel}" />
                 </div>

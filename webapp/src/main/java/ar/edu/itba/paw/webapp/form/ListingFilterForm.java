@@ -28,8 +28,8 @@ public class ListingFilterForm {
     private Integer page;
     private Long provinceId;
     private Boolean acceptsShipping;
-    private String brand;
-    private String model;
+    private Long brandId;
+    private Long modelId;
     private Integer yearMin;
     private Integer yearMax;
 

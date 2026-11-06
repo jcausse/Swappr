@@ -34,7 +34,7 @@
         <paw:listingImage listing="${offer.listing}" />
 
         <div class="flex-1 min-w-0 flex flex-col justify-between">
-            <paw:product product="${offer.listing.product}" size="sm" />
+            <paw:product model="${offer.listing.model}" year="${offer.listing.year}" size="sm" />
 
             <div class="mt-2 flex flex-row gap-4 items-end">
                 <div class="flex-1">
@@ -49,9 +49,9 @@
                                 <div class="flex-1 min-w-0">
                                     <p class="text-sm font-medium text-black truncate"><c:out value="${offeredListing.title}"/></p>
                                     <p class="text-xs text-black/60 font-normal">
-                                        <c:out value="${offeredListing.product.brand}"/>
-                                        <c:out value="${offeredListing.product.model}"/>
-                                        (<c:out value="${offeredListing.product.year}"/>)
+                                        <c:out value="${offeredListing.brand.name}"/>
+                                        <c:out value="${offeredListing.model.name}"/>
+                                        (<c:out value="${offeredListing.year}"/>)
                                     </p>
                                     <p class="text-xs text-black/60 font-normal"><paw:price amount="${offeredListing.price.amount}"/></p>
                                 </div>
