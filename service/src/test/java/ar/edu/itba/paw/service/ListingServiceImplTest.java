@@ -124,6 +124,37 @@ public class ListingServiceImplTest {
         );
     }
 
+    private static ListingCreationDto buildCreationDtoWithPrice(final BigDecimal price) {
+        return new ListingCreationDto(
+            LISTING_TITLE, price, SELLER_ID, MODEL_ID, YEAR, Condition.GOOD, true, false, LISTING_DESCRIPTION, null
+        );
+    }
+
+    private static ListingUpdateDto buildUpdateDtoWithPrice(final BigDecimal price) {
+        return new ListingUpdateDto(
+            LISTING_ID, LISTING_TITLE, price, MODEL_ID, YEAR, Condition.FAIR, true, false, LISTING_DESCRIPTION
+        );
+    }
+
+    private void stubCreateCapturingAcceptsTrade(final ArgumentCaptor<Boolean> acceptsTradeCaptor) {
+        final User seller = buildFakeUser(SELLER_ID, "seller");
+        final Listing listing = buildFakeListing(seller);
+        when(userService.getById(eq(SELLER_ID))).thenReturn(Optional.of(seller));
+        when(catalogService.getModelById(eq(MODEL_ID))).thenReturn(buildFakeModel());
+        when(listingDao.create(
+            any(), any(), any(), any(), anyInt(), any(), acceptsTradeCaptor.capture(), anyBoolean(), any(), any()
+        )).thenReturn(listing);
+    }
+
+    private void stubUpdateCapturingAcceptsTrade(final ArgumentCaptor<Boolean> acceptsTradeCaptor) {
+        final Listing listing = buildFakeListing(buildFakeUser(SELLER_ID, "seller"));
+        when(listingDao.getById(eq(LISTING_ID))).thenReturn(Optional.of(listing));
+        when(catalogService.getModelById(eq(MODEL_ID))).thenReturn(buildFakeModel());
+        when(listingDao.update(
+            any(), any(), any(), any(), anyInt(), any(), acceptsTradeCaptor.capture(), anyBoolean(), any()
+        )).thenReturn(listing);
+    }
+
     private static ListingUpdateDto buildUpdateDto(final long listingId, final Condition condition) {
         return new ListingUpdateDto(
             listingId, LISTING_TITLE, LISTING_PRICE.getAmount(), MODEL_ID, YEAR, condition, true, false, LISTING_DESCRIPTION
@@ -264,6 +295,32 @@ public class ListingServiceImplTest {
     }
 
     @Test
+    public void testCreate_freePriceAcceptsTrade_daoReceivesFalse() {
+        // Arrange
+        final ArgumentCaptor<Boolean> acceptsTradeCaptor = ArgumentCaptor.forClass(Boolean.class);
+        stubCreateCapturingAcceptsTrade(acceptsTradeCaptor);
+
+        // Act
+        listingService.create(buildCreationDtoWithPrice(BigDecimal.ZERO));
+
+        // Assert
+        Assert.assertFalse(acceptsTradeCaptor.getValue());
+    }
+
+    @Test
+    public void testCreate_paidPriceAcceptsTrade_daoReceivesTrue() {
+        // Arrange
+        final ArgumentCaptor<Boolean> acceptsTradeCaptor = ArgumentCaptor.forClass(Boolean.class);
+        stubCreateCapturingAcceptsTrade(acceptsTradeCaptor);
+
+        // Act
+        listingService.create(buildCreationDtoWithPrice(new BigDecimal("10.00")));
+
+        // Assert
+        Assert.assertTrue(acceptsTradeCaptor.getValue());
+    }
+
+    @Test
     public void testCreateStoresOnlyNonEmptyImages() {
         // Arrange
         final User seller = buildFakeUser(SELLER_ID, "seller");
@@ -396,6 +453,32 @@ public class ListingServiceImplTest {
 
         // Assert
         Assert.assertEquals(LISTING_ID, (long) result.getId());
+    }
+
+    @Test
+    public void testUpdate_freePriceAcceptsTrade_daoReceivesFalse() {
+        // Arrange
+        final ArgumentCaptor<Boolean> acceptsTradeCaptor = ArgumentCaptor.forClass(Boolean.class);
+        stubUpdateCapturingAcceptsTrade(acceptsTradeCaptor);
+
+        // Act
+        listingService.update(buildUpdateDtoWithPrice(BigDecimal.ZERO), SELLER_ID);
+
+        // Assert
+        Assert.assertFalse(acceptsTradeCaptor.getValue());
+    }
+
+    @Test
+    public void testUpdate_paidPriceAcceptsTrade_daoReceivesTrue() {
+        // Arrange
+        final ArgumentCaptor<Boolean> acceptsTradeCaptor = ArgumentCaptor.forClass(Boolean.class);
+        stubUpdateCapturingAcceptsTrade(acceptsTradeCaptor);
+
+        // Act
+        listingService.update(buildUpdateDtoWithPrice(new BigDecimal("10.00")), SELLER_ID);
+
+        // Assert
+        Assert.assertTrue(acceptsTradeCaptor.getValue());
     }
 
     @Test(expected = NotFoundException.class)

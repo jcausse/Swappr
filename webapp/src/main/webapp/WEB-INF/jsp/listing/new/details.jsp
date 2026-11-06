@@ -83,7 +83,11 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-4 items-start">
                     <spring:message code="listing.new.acceptsTradeLabel" var="acceptsTradeLabel"/>
-                    <paw:formCheckbox path="acceptsTrade" label="${acceptsTradeLabel}" />
+                    <spring:message code="listing.new.acceptsTrade.freeHint" var="acceptsTradeFreeHint"/>
+                    <div>
+                        <paw:formCheckbox path="acceptsTrade" label="${acceptsTradeLabel}" />
+                        <p id="acceptsTradeFreeHint" class="hidden text-sm text-black/60 mt-1"><c:out value="${acceptsTradeFreeHint}"/></p>
+                    </div>
 
                     <spring:message code="listing.new.acceptsShippingLabel" var="acceptsShippingLabel"/>
                     <paw:formCheckbox path="acceptsShipping" label="${acceptsShippingLabel}" />
@@ -117,4 +121,24 @@
             </form:form>
         </jsp:body>
     </paw:card>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const priceInput = document.getElementById('price');
+            const acceptsTradeCheckbox = document.getElementById('acceptsTrade');
+            const freeHint = document.getElementById('acceptsTradeFreeHint');
+
+            function syncAcceptsTrade() {
+                const isFree = priceInput.value !== '' && parseFloat(priceInput.value) === 0;
+                if (isFree) {
+                    acceptsTradeCheckbox.checked = false;
+                }
+                acceptsTradeCheckbox.disabled = isFree;
+                freeHint.classList.toggle('hidden', !isFree);
+            }
+
+            priceInput.addEventListener('input', syncAcceptsTrade);
+            syncAcceptsTrade();
+        });
+    </script>
 </paw:layout>

@@ -148,14 +148,15 @@ public class ListingServiceImpl implements ListingService {
         }
         final Condition condition = dto.condition();
 
+        final Price price = new Price(dto.price());
         var listing = listingDao.create(
             dto.title(),
-            new Price(dto.price()),
+            price,
             creator,
             model,
             dto.year(),
             condition,
-            dto.acceptsTrade(),
+            acceptsTradeFor(price, dto.acceptsTrade()),
             dto.acceptsShipping(),
             dto.description(),
             imageIds
@@ -167,6 +168,11 @@ public class ListingServiceImpl implements ListingService {
         notificationDispatcherService.notifyListingPublished(listing);
 
         return listing;
+    }
+
+    // A free listing can't be traded: there is no value to exchange against, so the request is silently dropped.
+    private static boolean acceptsTradeFor(final Price price, final boolean requested) {
+        return requested && price.getAmount().signum() > 0;
     }
 
     @Override
@@ -235,14 +241,15 @@ public class ListingServiceImpl implements ListingService {
         }
         final Condition condition = dto.condition();
 
+        final Price price = new Price(dto.price());
         var updated = listingDao.update(
             existing.getId(),
             dto.title(),
-            new Price(dto.price()),
+            price,
             model,
             dto.year(),
             condition,
-            dto.acceptsTrade(),
+            acceptsTradeFor(price, dto.acceptsTrade()),
             dto.acceptsShipping(),
             dto.description()
         );
