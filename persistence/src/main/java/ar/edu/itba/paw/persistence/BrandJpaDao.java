@@ -49,7 +49,10 @@ public class BrandJpaDao implements BrandDao {
             return new Page<>(List.of(), page, pageSize, 0);
         }
 
-        final String orderBy = sort == BrandSort.ID ? "b.id" : "b.name, b.id";
+        final String direction = sort.isAscending() ? "ASC" : "DESC";
+        final String orderBy = sort.getKey().equals("id")
+                ? "b.id " + direction
+                : "b.name " + direction + ", b.id " + direction;
         final List<BrandInfo> content = em.createQuery(
                 "SELECT b.id, b.name, COUNT(DISTINCT m.id), COUNT(DISTINCT l.id)"
                 + " FROM Brand b"

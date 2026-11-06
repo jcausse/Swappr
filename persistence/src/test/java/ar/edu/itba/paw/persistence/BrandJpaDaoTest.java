@@ -102,7 +102,7 @@ public class BrandJpaDaoTest {
 
     @Test
     public void testGetWithStatsFirstPageSortedByBrand() {
-        final Page<BrandInfo> page = brandDao.getWithStats(BrandSort.BRAND, 1, 2);
+        final Page<BrandInfo> page = brandDao.getWithStats(BrandSort.BRAND_ASC, 1, 2);
 
         Assert.assertEquals(1, page.getPage());
         Assert.assertEquals(2, page.getPageSize());
@@ -118,7 +118,7 @@ public class BrandJpaDaoTest {
 
     @Test
     public void testGetWithStatsSecondPageSortedByBrand() {
-        final Page<BrandInfo> page = brandDao.getWithStats(BrandSort.BRAND, 2, 2);
+        final Page<BrandInfo> page = brandDao.getWithStats(BrandSort.BRAND_ASC, 2, 2);
 
         Assert.assertEquals(2, page.getPage());
         Assert.assertEquals(4, page.getTotalCount());
@@ -127,9 +127,17 @@ public class BrandJpaDaoTest {
     }
 
     @Test
+    public void testGetWithStatsSortedByBrandDescending() {
+        final Page<BrandInfo> page = brandDao.getWithStats(BrandSort.BRAND_DESC, 1, 2);
+
+        Assert.assertEquals(List.of("Samsung", "Lenovo"),
+                page.getContent().stream().map(BrandInfo::getName).toList());
+    }
+
+    @Test
     public void testGetWithStatsSortedById() {
-        final Page<BrandInfo> firstPage = brandDao.getWithStats(BrandSort.ID, 1, 2);
-        final Page<BrandInfo> secondPage = brandDao.getWithStats(BrandSort.ID, 2, 2);
+        final Page<BrandInfo> firstPage = brandDao.getWithStats(BrandSort.ID_ASC, 1, 2);
+        final Page<BrandInfo> secondPage = brandDao.getWithStats(BrandSort.ID_ASC, 2, 2);
 
         Assert.assertEquals(List.of("Apple", "Dell"),
                 firstPage.getContent().stream().map(BrandInfo::getName).toList());

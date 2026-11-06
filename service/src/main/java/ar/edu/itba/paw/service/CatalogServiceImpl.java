@@ -39,7 +39,7 @@ public class CatalogServiceImpl implements CatalogService {
     @Override
     public Page<BrandInfo> getBrands(BrandSort sort, Integer page, int pageSize) {
         final int safePage = page == null || page < 1 ? 1 : page;
-        return brandDao.getWithStats(sort == null ? BrandSort.BRAND : sort, safePage, pageSize);
+        return brandDao.getWithStats(sort == null ? BrandSort.BRAND_ASC : sort, safePage, pageSize);
     }
 
     @Override
