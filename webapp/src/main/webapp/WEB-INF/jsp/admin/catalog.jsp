@@ -117,7 +117,7 @@
                                 <td class="py-3 pr-4 font-medium">
                                     <c:out value="${brand.name}"/>
                                 </td>
-                                <td class="py-3 pr-4 text-black/70">
+                                <td class="py-3 pr-4 ${brand.modelCount == 0 ? 'text-red-600 font-bold' : 'text-black/70'}">
                                     <c:out value="${brand.modelCount}"/>
                                 </td>
                                 <td class="py-3">
@@ -539,7 +539,7 @@
                         label="${replaceModelSelectLabel}"
                         placeholder="${replaceModelPlaceholder}"
                         items="${modelReplacementOptions[model.id]}"
-                        itemLabel="name"
+                        itemLabel="label"
                         itemValue="id"
                     />
                     <p class="text-xs text-red-600"><c:out value="${replaceModelWarning}"/></p>

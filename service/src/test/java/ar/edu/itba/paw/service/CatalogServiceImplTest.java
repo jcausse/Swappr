@@ -218,6 +218,33 @@ public class CatalogServiceImplTest {
     }
 
     @Test
+    public void testGetBrandReplacementOptionsExcludeSelf() {
+        final Brand apple = buildFakeBrand();
+        final Brand dell = Brand.builder().id(2L).name("Dell").build();
+        when(brandDao.getAll()).thenReturn(List.of(apple, dell));
+
+        final var options = catalogService.getBrandReplacementOptions();
+
+        Assert.assertEquals(List.of(dell), options.get(BRAND_ID));
+        Assert.assertEquals(List.of(apple), options.get(2L));
+    }
+
+    @Test
+    public void testGetModelReplacementOptionsExcludeSelfAndLabelBrand() {
+        final Model pro = buildFakeModel(MODEL_ID, MODEL_NAME);
+        final Model air = buildFakeModel(AIR_MODEL_ID, "MacBook Air");
+        when(modelDao.getAllWithBrand()).thenReturn(List.of(pro, air));
+
+        final var options = catalogService.getModelReplacementOptions();
+
+        Assert.assertEquals(1, options.get(MODEL_ID).size());
+        Assert.assertEquals(AIR_MODEL_ID, (long) options.get(MODEL_ID).get(0).getId());
+        Assert.assertEquals("Apple — MacBook Air", options.get(MODEL_ID).get(0).getLabel());
+        Assert.assertEquals(1, options.get(AIR_MODEL_ID).size());
+        Assert.assertEquals(MODEL_ID, (long) options.get(AIR_MODEL_ID).get(0).getId());
+    }
+
+    @Test
     public void testCreateBrandTrimsName() {
         final Brand created = Brand.builder().id(10L).name("HP").build();
         when(brandDao.getByName(eq("HP"))).thenReturn(Optional.empty());

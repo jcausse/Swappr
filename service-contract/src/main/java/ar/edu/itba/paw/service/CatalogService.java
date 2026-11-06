@@ -10,13 +10,17 @@ import ar.edu.itba.paw.model.ModelListingInfoSummary;
 import ar.edu.itba.paw.model.ModelSort;
 import ar.edu.itba.paw.model.Page;
 import ar.edu.itba.paw.model.Subcategory;
+import ar.edu.itba.paw.service.dto.ModelOption;
 
 import java.util.List;
+import java.util.Map;
 
 public interface CatalogService {
     Page<BrandInfo> getBrands(BrandSort sort, Integer page, int pageSize);
 
     List<Brand> getAllBrands();
+
+    Map<Long, List<Brand>> getBrandReplacementOptions();
 
     Brand createBrand(String name);
 
@@ -41,6 +45,8 @@ public interface CatalogService {
     Page<ModelInfo> getModels(Long brandId, Long subcategoryId, ModelSort sort, Integer page, int pageSize);
 
     List<Model> getAllModels();
+
+    Map<Long, List<ModelOption>> getModelReplacementOptions();
 
     Model createModel(String name, Long brandId, Long subcategoryId);
 
