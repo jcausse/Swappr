@@ -67,6 +67,7 @@ public class ListingController {
             .maxPrice(filterForm.getMaxPrice())
             .condition(filterForm.getCondition())
             .acceptsTrade(filterForm.getAcceptsTrade())
+            .onlyFree(filterForm.getOnlyFree())
             .query(filterForm.getQuery())
             .sort(filterForm.getSort())
             .status(ListingStatus.ACTIVE)

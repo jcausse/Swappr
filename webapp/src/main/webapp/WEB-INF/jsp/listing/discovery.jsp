@@ -22,6 +22,7 @@
 <spring:message code="discovery.filter.maxPrice" var="maxPriceLabel"/>
 <spring:message code="discovery.filter.acceptsTrade" var="acceptsTradeLabel"/>
 <spring:message code="discovery.filter.acceptsShipping" var="acceptsShippingLabel"/>
+<spring:message code="discovery.filter.onlyFree" var="onlyFreeLabel"/>
 <spring:message code="discovery.filter.apply" var="applyLabel"/>
 <spring:message code="discovery.filter.clear" var="clearLabel"/>
 <spring:message code="listing.sort.label" var="sortLabel"/>
@@ -54,10 +55,12 @@
 
                             <paw:formSelect path="provinceId" label="${provinceLabel}" placeholder="${allLabel}" items="${provinceOptions}" translateLabels="true" />
 
-                            <div class="flex flex-row gap-2">
-                                <paw:formInput path="minPrice" type="number" step="0.01" min="0" label="${minPriceLabel}" classname="min-w-0" />
-                                <paw:formInput path="maxPrice" type="number" step="0.01" min="0" label="${maxPriceLabel}" classname="min-w-0" />
-                            </div>
+                            <c:if test="${not filterForm.onlyFree}">
+                                <div class="flex flex-row gap-2">
+                                    <paw:formInput path="minPrice" type="number" step="0.01" min="0" label="${minPriceLabel}" classname="min-w-0" />
+                                    <paw:formInput path="maxPrice" type="number" step="0.01" min="0" label="${maxPriceLabel}" classname="min-w-0" />
+                                </div>
+                            </c:if>
 
                             <div class="flex flex-row gap-2">
                                 <paw:formInput path="yearMin" type="number" step="1" min="0" label="${yearMinLabel}" classname="min-w-0" />
@@ -67,6 +70,7 @@
                             <div class="flex flex-col gap-1">
                                 <paw:checkbox path="acceptsTrade" id="acceptsTrade" value="true" label="${acceptsTradeLabel}"/>
                                 <paw:checkbox path="acceptsShipping" id="acceptsShipping" value="true" label="${acceptsShippingLabel}"/>
+                                <paw:checkbox path="onlyFree" id="onlyFree" value="true" label="${onlyFreeLabel}"/>
                             </div>
 
                             <div class="flex flex-col gap-2 pt-1">
@@ -80,6 +84,10 @@
             </aside>
 
             <section class="flex-1">
+                <c:if test="${filterForm.onlyFree}">
+                    <spring:message code="discovery.freeListings.heading" var="freeHeading"/>
+                    <h2 class="text-xl font-bold mb-4"><c:out value="${freeHeading}"/></h2>
+                </c:if>
                 <div class="flex items-center justify-between gap-4 mb-4">
                     <span class="text-sm text-black/60">
                         <spring:message code="discovery.results.count" arguments="${listingPage.totalCount}"/>

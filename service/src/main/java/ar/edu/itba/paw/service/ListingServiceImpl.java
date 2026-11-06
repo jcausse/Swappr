@@ -65,6 +65,7 @@ public class ListingServiceImpl implements ListingService {
             .maxPrice(sanitizePrice(dto.maxPrice()))
             .condition(dto.condition())
             .acceptsTrade(Boolean.TRUE.equals(dto.acceptsTrade()) ? Boolean.TRUE : null)
+            .onlyFree(Boolean.TRUE.equals(dto.onlyFree()) ? Boolean.TRUE : null)
             .query(dto.query())
             .sort(dto.sort())
             .page(sanitizePage(dto.page()))

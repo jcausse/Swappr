@@ -116,6 +116,9 @@ public class ListingJpaDao implements ListingDao {
             whereClause.append(" AND l.acceptsTrade = :acceptsTrade");
             params.put("acceptsTrade", filter.getAcceptsTrade());
         }
+        if (Boolean.TRUE.equals(filter.getOnlyFree())) {
+            whereClause.append(" AND l.price.amount = 0");
+        }
         if (filter.getAcceptsShipping() != null) {
             whereClause.append(" AND l.acceptsShipping = :acceptsShipping");
             params.put("acceptsShipping", filter.getAcceptsShipping());

@@ -14,6 +14,7 @@ public final class ListingFilter {
     private final BigDecimal maxPrice;
     private final Condition condition;
     private final Boolean acceptsTrade;
+    private final Boolean onlyFree;
     private final String query;
     private final ListingSort sort;
     private final Long creatorId;

@@ -14,6 +14,7 @@ public record ListingFilterDto(
     BigDecimal maxPrice,
     Condition condition,
     Boolean acceptsTrade,
+    Boolean onlyFree,
     String query,
     ListingSort sort,
     Long creatorId,
