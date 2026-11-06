@@ -27,4 +27,6 @@ public interface ListingDao {
     Listing update(Long id, String title, Price price, Model model, int year,
                    Condition condition, boolean acceptsTrade, boolean acceptsShipping, String description);
     boolean cancel(Long id);
+
+    int replaceModel(Long fromModelId, Long toModelId);
 }

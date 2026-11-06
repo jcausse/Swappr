@@ -3,6 +3,7 @@ package ar.edu.itba.paw.webapp.controller;
 import ar.edu.itba.paw.model.Brand;
 import ar.edu.itba.paw.model.BrandSort;
 import ar.edu.itba.paw.model.ListingStatus;
+import ar.edu.itba.paw.model.ModelSort;
 import ar.edu.itba.paw.model.OfferStatusGroup;
 import ar.edu.itba.paw.model.Role;
 import ar.edu.itba.paw.model.User;
@@ -19,8 +20,12 @@ import ar.edu.itba.paw.service.exception.SelfSuspendException;
 import ar.edu.itba.paw.webapp.auth.CurrentUser;
 import ar.edu.itba.paw.webapp.form.AdminCreateBrandForm;
 import ar.edu.itba.paw.webapp.form.AdminGrantRoleForm;
+import ar.edu.itba.paw.webapp.form.AdminModelFilterForm;
+import ar.edu.itba.paw.webapp.form.AdminModelForm;
 import ar.edu.itba.paw.webapp.form.AdminRenameBrandForm;
 import ar.edu.itba.paw.webapp.form.AdminReplaceBrandForm;
+import ar.edu.itba.paw.webapp.form.AdminReplaceModelForm;
+import ar.edu.itba.paw.webapp.form.SelectOption;
 import ar.edu.itba.paw.webapp.form.AdminSuspendUserForm;
 import ar.edu.itba.paw.webapp.form.AdminTakeDownListingForm;
 import ar.edu.itba.paw.webapp.form.AdminTakeDownOfferForm;
@@ -41,9 +46,7 @@ import org.springframework.web.servlet.ModelAndView;
 import javax.validation.Valid;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.function.Predicate;
 
@@ -54,6 +57,7 @@ public class AdminController {
     private static final Logger LOGGER = LoggerFactory.getLogger(AdminController.class);
     private static final int DEFAULT_PAGE_SIZE = 10;
     private static final int BRAND_PAGE_SIZE = 10;
+    private static final int MODEL_PAGE_SIZE = 10;
     private static final Predicate<String> ADMIN_PATH_FILTER = RedirectHelper.hasPathPrefix("/admin");
 
     private final AdminService adminService;
@@ -81,24 +85,37 @@ public class AdminController {
             @CurrentUser User currentUser,
             @RequestParam(value = "page", defaultValue = "1") int page,
             @RequestParam(value = "sort", defaultValue = "BRAND_ASC") BrandSort sort,
+            @RequestParam(value = "modelPage", defaultValue = "1") int modelPage,
+            @RequestParam(value = "modelSort", defaultValue = "NAME_ASC") ModelSort modelSort,
             @ModelAttribute("renameBrandForm") AdminRenameBrandForm renameBrandForm,
             @ModelAttribute("createBrandForm") AdminCreateBrandForm createBrandForm,
-            @ModelAttribute("replaceBrandForm") AdminReplaceBrandForm replaceBrandForm
+            @ModelAttribute("replaceBrandForm") AdminReplaceBrandForm replaceBrandForm,
+            @ModelAttribute("modelFilterForm") AdminModelFilterForm modelFilterForm,
+            @ModelAttribute("createModelForm") AdminModelForm createModelForm,
+            @ModelAttribute("editModelForm") AdminModelForm editModelForm,
+            @ModelAttribute("replaceModelForm") AdminReplaceModelForm replaceModelForm
     ) {
-        LOGGER.debug("Admin {} accessed catalog management page: page={}, sort={}", currentUser.getUsername(), page, sort);
+        LOGGER.debug("Admin {} accessed catalog management page: brandPage={}, modelPage={}", currentUser.getUsername(), page, modelPage);
         final var brandsPage = catalogService.getBrands(sort, page, BRAND_PAGE_SIZE);
+        final var modelsPage = catalogService.getModels(
+                modelFilterForm.getBrandId(), modelFilterForm.getSubcategoryId(),
+                modelSort, modelPage, MODEL_PAGE_SIZE);
         final List<Brand> allBrands = catalogService.getAllBrands();
-        final Map<Long, List<Brand>> replacementOptions = new HashMap<>();
-        for (final Brand brand : allBrands) {
-            replacementOptions.put(brand.getId(), allBrands.stream()
-                    .filter(candidate -> !candidate.getId().equals(brand.getId()))
-                    .toList());
-        }
         return new ModelAndView("admin/catalog")
                 .addObject("brands", brandsPage.getContent())
                 .addObject("brandsPage", brandsPage)
                 .addObject("currentSort", sort)
-                .addObject("brandReplacementOptions", replacementOptions);
+                .addObject("brandReplacementOptions", catalogService.getBrandReplacementOptions())
+                .addObject("brandOptions", allBrands)
+                .addObject("subcategoryOptions", catalogService.getAllSubcategories().stream()
+                        .map(subcategory -> new SelectOption(
+                                subcategory.getId(),
+                                subcategory.getCategory().getName() + " / " + subcategory.getName()))
+                        .toList())
+                .addObject("models", modelsPage.getContent())
+                .addObject("modelsPage", modelsPage)
+                .addObject("currentModelSort", modelSort)
+                .addObject("modelReplacementOptions", catalogService.getModelReplacementOptions());
     }
 
     @PostMapping("/catalog/brands")
@@ -173,6 +190,96 @@ public class AdminController {
         }
 
         return new ModelAndView("redirect:/admin/catalog?success=brand_renamed");
+    }
+
+    @PostMapping("/catalog/models")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ModelAndView createModel(
+            @CurrentUser User currentUser,
+            @Valid @ModelAttribute("createModelForm") AdminModelForm form,
+            BindingResult errors
+    ) {
+        LOGGER.info("Admin {} requested creation of model '{}'", currentUser.getUsername(), form.getName());
+        if (errors.hasErrors()) {
+            return new ModelAndView("redirect:/admin/catalog?error=modelInvalid");
+        }
+        try {
+            catalogService.createModel(form.getName(), form.getBrandId(), form.getSubcategoryId());
+        } catch (BadParameterException e) {
+            LOGGER.warn("Model '{}' could not be created: {}", form.getName(), e.getMessage());
+            return new ModelAndView("redirect:/admin/catalog?error=modelNameTaken");
+        } catch (NotFoundException e) {
+            LOGGER.warn("Model '{}' references missing catalog data: {}", form.getName(), e.getMessage());
+            return new ModelAndView("redirect:/admin/catalog?error=modelNotFound");
+        }
+        return new ModelAndView("redirect:/admin/catalog?success=model_created");
+    }
+
+    @PostMapping("/catalog/models/{id}/edit")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ModelAndView editModel(
+            @CurrentUser User currentUser,
+            @PathVariable Long id,
+            @Valid @ModelAttribute("editModelForm") AdminModelForm form,
+            BindingResult errors
+    ) {
+        LOGGER.info("Admin {} requested edit of model {}", currentUser.getUsername(), id);
+        if (errors.hasErrors()) {
+            return new ModelAndView("redirect:/admin/catalog?error=modelInvalid");
+        }
+        try {
+            catalogService.updateModel(id, form.getName(), form.getBrandId(), form.getSubcategoryId());
+        } catch (BadParameterException e) {
+            LOGGER.warn("Model {} could not be updated: {}", id, e.getMessage());
+            return new ModelAndView("redirect:/admin/catalog?error=modelNameTaken");
+        } catch (NotFoundException e) {
+            LOGGER.warn("Model {} not found for update", id);
+            return new ModelAndView("redirect:/admin/catalog?error=modelNotFound");
+        }
+        return new ModelAndView("redirect:/admin/catalog?success=model_updated");
+    }
+
+    @PostMapping("/catalog/models/{id}/delete")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ModelAndView deleteModel(
+            @CurrentUser User currentUser,
+            @PathVariable Long id
+    ) {
+        LOGGER.info("Admin {} requested deletion of model {}", currentUser.getUsername(), id);
+        try {
+            catalogService.deleteModel(id);
+        } catch (BadParameterException e) {
+            LOGGER.warn("Model {} could not be deleted: {}", id, e.getMessage());
+            return new ModelAndView("redirect:/admin/catalog?error=modelHasListings");
+        } catch (NotFoundException e) {
+            LOGGER.warn("Model {} not found for deletion", id);
+            return new ModelAndView("redirect:/admin/catalog?error=modelNotFound");
+        }
+        return new ModelAndView("redirect:/admin/catalog?success=model_deleted");
+    }
+
+    @PostMapping("/catalog/models/{id}/replace")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ModelAndView replaceModel(
+            @CurrentUser User currentUser,
+            @PathVariable Long id,
+            @Valid @ModelAttribute("replaceModelForm") AdminReplaceModelForm form,
+            BindingResult errors
+    ) {
+        LOGGER.info("Admin {} requested replacement of model {} with {}", currentUser.getUsername(), id, form.getReplacementModelId());
+        if (errors.hasErrors()) {
+            return new ModelAndView("redirect:/admin/catalog?error=modelInvalidReplacement");
+        }
+        try {
+            catalogService.replaceModel(id, form.getReplacementModelId());
+        } catch (NotFoundException e) {
+            LOGGER.warn("Model replacement failed for {} -> {}: {}", id, form.getReplacementModelId(), e.getMessage());
+            return new ModelAndView("redirect:/admin/catalog?error=modelNotFound");
+        } catch (BadParameterException e) {
+            LOGGER.warn("Model replacement failed for {} -> {}: {}", id, form.getReplacementModelId(), e.getMessage());
+            return new ModelAndView("redirect:/admin/catalog?error=modelReplaceSame");
+        }
+        return new ModelAndView("redirect:/admin/catalog?success=model_replaced");
     }
 
     @PostMapping("/catalog/brands/{id}/delete")

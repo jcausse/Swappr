@@ -708,6 +708,17 @@ public class ListingJpaDaoTest {
     }
 
     @Test
+    public void testReplaceModelMovesListings() {
+        // Act
+        final int updated = listingDao.replaceModel(MODEL_ID, PHONE_MODEL_ID);
+
+        // Assert
+        Assert.assertEquals(3, updated);
+        Assert.assertEquals(0, countListingsWhere("model_id = " + MODEL_ID));
+        Assert.assertEquals(4, countListingsWhere("model_id = " + PHONE_MODEL_ID));
+    }
+
+    @Test
     public void testUpdateStatus() {
         // Act
         listingDao.updateStatus(GALAXY_LISTING_ID, ListingStatus.OFFERED_IN_TRADE);
