@@ -5,7 +5,7 @@
 <%-- Renders the "Free" label for a zero amount, "<symbol> <amount>" (e.g. "US$ 1500.00") otherwise. Renders nothing for a missing amount (trade without cash). --%>
 <c:if test="${not empty amount}">
     <c:choose>
-        <c:when test="${amount == 0}">
+        <c:when test="${amount.signum() == 0}">
             <spring:message code="listing.price.free" var="freeLabel"/>
             <c:out value="${freeLabel}"/>
         </c:when>
