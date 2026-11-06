@@ -1,5 +1,6 @@
 package ar.edu.itba.paw.persistence;
 
+import ar.edu.itba.paw.model.Brand;
 import ar.edu.itba.paw.model.Condition;
 import ar.edu.itba.paw.model.ListingStatus;
 import ar.edu.itba.paw.model.Model;
@@ -13,10 +14,7 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 @Repository
@@ -97,60 +95,34 @@ public class ModelJpaDao implements ModelDao {
             return new Page<>(List.of(), page, pageSize, totalCount);
         }
 
-        final List<Model> models = em.createQuery(
-                "SELECT m FROM Model m JOIN FETCH m.brand WHERE m.id IN :modelIds",
-                Model.class)
-                .setParameter("modelIds", modelIds)
-                .getResultList();
-
-        final Map<Long, Model> modelById = new HashMap<>();
-        for (final Model model : models) {
-            modelById.put(model.getId(), model);
-        }
-
         final var yearWhere = new StringBuilder();
         if (fromYear != null) yearWhere.append(" AND l.year >= :yearFrom");
         if (toYear != null) yearWhere.append(" AND l.year <= :yearTo");
 
         final var query = em.createQuery(
-                "SELECT m.id, l.condition, COUNT(l.condition), MIN(l.price), MAX(l.price), AVG(l.price)"
-                + " FROM Listing l JOIN l.model m"
+                "SELECT b, m, l.condition, COUNT(l.condition), MIN(l.price), MAX(l.price), AVG(l.price)"
+                + " FROM Listing l JOIN l.model m JOIN m.brand b"
                 + " WHERE m.id IN :modelIds AND l.status = :status" + yearWhere
-                + " GROUP BY m.id, l.condition"
-                + " ORDER BY m.id, l.condition",
+                + " GROUP BY b, m, l.condition"
+                + " ORDER BY b.name, m.name, l.condition",
                 Object[].class)
                 .setParameter("modelIds", modelIds)
                 .setParameter("status", ListingStatus.ACTIVE);
         if (fromYear != null) query.setParameter("yearFrom", fromYear);
         if (toYear != null) query.setParameter("yearTo", toYear);
 
-        final Map<Long, List<ModelListingInfo>> infoByModelId = new HashMap<>();
-        for (final Object[] fields : query.getResultList()) {
-            final Long id = (Long) fields[0];
-            final Model model = modelById.get(id);
-            if (model == null) {
-                continue;
-            }
-            infoByModelId.computeIfAbsent(id, key -> new ArrayList<>()).add(ModelListingInfo.builder()
-                .brand(model.getBrand())
-                .model(model)
-                .condition((Condition) fields[1])
-                .listingCount((Long) fields[2])
-                .minPrice((Price) fields[3])
-                .maxPrice((Price) fields[4])
-                .avgPrice(new Price(new BigDecimal((Double) fields[5])))
-                .build());
-        }
-
-        final List<ModelListingInfo> content = new ArrayList<>();
-        for (final Long id : modelIds) {
-            final List<ModelListingInfo> infos = infoByModelId.get(id);
-            if (infos == null) {
-                continue;
-            }
-            infos.sort(Comparator.comparingInt(info -> info.getCondition().ordinal()));
-            content.addAll(infos);
-        }
+        final List<ModelListingInfo> content = query.getResultStream()
+                .map((fields) -> ModelListingInfo.builder()
+                    .brand((Brand) fields[0])
+                    .model((Model) fields[1])
+                    .condition((Condition) fields[2])
+                    .listingCount((Long) fields[3])
+                    .minPrice((Price) fields[4])
+                    .maxPrice((Price) fields[5])
+                    .avgPrice(new Price(new BigDecimal((Double) fields[6])))
+                    .build()
+                )
+                .toList();
 
         return new Page<>(content, page, pageSize, totalCount);
     }
