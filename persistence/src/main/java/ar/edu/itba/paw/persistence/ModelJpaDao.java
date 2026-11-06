@@ -4,9 +4,12 @@ import ar.edu.itba.paw.model.Brand;
 import ar.edu.itba.paw.model.Condition;
 import ar.edu.itba.paw.model.ListingStatus;
 import ar.edu.itba.paw.model.Model;
+import ar.edu.itba.paw.model.ModelInfo;
 import ar.edu.itba.paw.model.ModelListingInfo;
+import ar.edu.itba.paw.model.ModelSort;
 import ar.edu.itba.paw.model.Page;
 import ar.edu.itba.paw.model.Price;
+import ar.edu.itba.paw.model.Subcategory;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
@@ -36,6 +39,132 @@ public class ModelJpaDao implements ModelDao {
                 .setParameter("subcategoryId", subcategoryId)
                 .setParameter("brandId", brandId)
                 .getResultList();
+    }
+
+    @Override
+    public Page<ModelInfo> getWithInfo(Long brandId, Long subcategoryId, ModelSort sort, int page, int pageSize) {
+        final StringBuilder where = new StringBuilder(" WHERE 1=1");
+        if (brandId != null) {
+            where.append(" AND b.id = :brandId");
+        }
+        if (subcategoryId != null) {
+            where.append(" AND s.id = :subcategoryId");
+        }
+
+        final var countQuery = em.createQuery(
+                "SELECT COUNT(m) FROM Model m JOIN m.brand b JOIN m.subcategory s" + where,
+                Long.class);
+        if (brandId != null) countQuery.setParameter("brandId", brandId);
+        if (subcategoryId != null) countQuery.setParameter("subcategoryId", subcategoryId);
+        final long totalCount = countQuery.getSingleResult();
+
+        if (totalCount == 0) {
+            return new Page<>(List.of(), page, pageSize, 0);
+        }
+
+        final String direction = sort.isAscending() ? "ASC" : "DESC";
+        final String orderBy = sort.getKey().equals("id")
+                ? "m.id " + direction
+                : "m.name " + direction + ", m.id " + direction;
+        final var query = em.createQuery(
+                "SELECT m.id, m.name, b.id, b.name, s.id, s.name, COUNT(DISTINCT l.id)"
+                + " FROM Model m JOIN m.brand b JOIN m.subcategory s"
+                + " LEFT JOIN Listing l ON l.model.id = m.id"
+                + where
+                + " GROUP BY m.id, m.name, b.id, b.name, s.id, s.name"
+                + " ORDER BY " + orderBy,
+                Object[].class);
+        if (brandId != null) query.setParameter("brandId", brandId);
+        if (subcategoryId != null) query.setParameter("subcategoryId", subcategoryId);
+        query.setFirstResult((page - 1) * pageSize);
+        query.setMaxResults(pageSize);
+
+        final List<ModelInfo> content = query.getResultStream()
+                .map(row -> ModelInfo.builder()
+                        .id((Long) row[0])
+                        .name((String) row[1])
+                        .brandId((Long) row[2])
+                        .brandName((String) row[3])
+                        .subcategoryId((Long) row[4])
+                        .subcategoryName((String) row[5])
+                        .hasListings(((Number) row[6]).longValue() > 0)
+                        .build())
+                .toList();
+
+        return new Page<>(content, page, pageSize, totalCount);
+    }
+
+    @Override
+    public List<Model> getAllWithBrand() {
+        return em.createQuery(
+                "SELECT m FROM Model m JOIN FETCH m.brand ORDER BY m.brand.name, m.name, m.id",
+                Model.class)
+                .getResultList();
+    }
+
+    @Override
+    public boolean existsByNameAndBrandId(String name, Long brandId) {
+        return em.createQuery(
+                "SELECT COUNT(m) FROM Model m WHERE m.name = :name AND m.brand.id = :brandId",
+                Long.class)
+                .setParameter("name", name)
+                .setParameter("brandId", brandId)
+                .getSingleResult() > 0;
+    }
+
+    @Override
+    public boolean existsByNameAndBrandIdAndIdNot(String name, Long brandId, Long id) {
+        return em.createQuery(
+                "SELECT COUNT(m) FROM Model m WHERE m.name = :name AND m.brand.id = :brandId AND m.id <> :id",
+                Long.class)
+                .setParameter("name", name)
+                .setParameter("brandId", brandId)
+                .setParameter("id", id)
+                .getSingleResult() > 0;
+    }
+
+    @Override
+    public Model create(String name, Brand brand, Subcategory subcategory) {
+        final Model model = Model.builder()
+                .name(name)
+                .brand(em.getReference(Brand.class, brand.getId()))
+                .subcategory(em.getReference(Subcategory.class, subcategory.getId()))
+                .build();
+        em.persist(model);
+        return model;
+    }
+
+    @Override
+    public Optional<Model> update(Long id, String name, Brand brand, Subcategory subcategory) {
+        final Model model = em.find(Model.class, id);
+        if (model == null) {
+            return Optional.empty();
+        }
+        model.setName(name);
+        model.setBrand(em.getReference(Brand.class, brand.getId()));
+        model.setSubcategory(em.getReference(Subcategory.class, subcategory.getId()));
+        return Optional.of(model);
+    }
+
+    @Override
+    public boolean deleteModel(Long id) {
+        final Model model = em.find(Model.class, id);
+        if (model == null) {
+            return false;
+        }
+        em.remove(model);
+        return true;
+    }
+
+    @Override
+    public boolean hasListings(Long modelId) {
+        return !em.createQuery(
+                "SELECT l.id FROM Listing l WHERE l.model.id = :modelId",
+                Long.class)
+                .setParameter("modelId", modelId)
+                .setMaxResults(1)
+                .getResultList()
+                .isEmpty();
     }
 
     @Override

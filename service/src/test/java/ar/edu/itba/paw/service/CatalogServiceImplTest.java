@@ -6,13 +6,16 @@ import ar.edu.itba.paw.model.BrandSort;
 import ar.edu.itba.paw.model.Category;
 import ar.edu.itba.paw.model.Condition;
 import ar.edu.itba.paw.model.Model;
+import ar.edu.itba.paw.model.ModelInfo;
 import ar.edu.itba.paw.model.ModelListingInfo;
 import ar.edu.itba.paw.model.ModelListingInfoSummary;
+import ar.edu.itba.paw.model.ModelSort;
 import ar.edu.itba.paw.model.Page;
 import ar.edu.itba.paw.model.Price;
 import ar.edu.itba.paw.model.Subcategory;
 import ar.edu.itba.paw.persistence.BrandDao;
 import ar.edu.itba.paw.persistence.CategoryDao;
+import ar.edu.itba.paw.persistence.ListingDao;
 import ar.edu.itba.paw.persistence.ModelDao;
 import ar.edu.itba.paw.persistence.SubcategoryDao;
 import ar.edu.itba.paw.service.exception.BadParameterException;
@@ -55,6 +58,8 @@ public class CatalogServiceImplTest {
     private BrandDao brandDao;
     @Mock
     private ModelDao modelDao;
+    @Mock
+    private ListingDao listingDao;
 
     private Subcategory buildFakeSubcategory() {
         return Subcategory.builder()
@@ -293,6 +298,117 @@ public class CatalogServiceImplTest {
         when(brandDao.delete(eq(NON_EXISTING_MODEL_ID))).thenReturn(false);
 
         catalogService.deleteBrand(NON_EXISTING_MODEL_ID);
+    }
+
+    /* ---------------------------------------------------------------------------------------------- */
+    /* model management                                                                                */
+    /* ---------------------------------------------------------------------------------------------- */
+
+    @Test
+    public void testGetModelsDefaultsPageAndSort() {
+        final Page<ModelInfo> modelsPage = new Page<>(List.of(), 1, 10, 0);
+        when(modelDao.getWithInfo(null, null, ModelSort.NAME_ASC, 1, 10)).thenReturn(modelsPage);
+
+        final Page<ModelInfo> result = catalogService.getModels(null, null, null, null, 10);
+
+        Assert.assertSame(modelsPage, result);
+    }
+
+    @Test
+    public void testGetAllModelsDelegates() {
+        final List<Model> models = List.of(buildFakeModel(MODEL_ID, MODEL_NAME));
+        when(modelDao.getAllWithBrand()).thenReturn(models);
+
+        Assert.assertSame(models, catalogService.getAllModels());
+    }
+
+    @Test
+    public void testGetAllSubcategoriesDelegates() {
+        final List<Subcategory> subcategories = List.of(buildFakeSubcategory());
+        when(subcategoryDao.getAll()).thenReturn(subcategories);
+
+        Assert.assertSame(subcategories, catalogService.getAllSubcategories());
+    }
+
+    @Test
+    public void testCreateModelTrimsName() {
+        final Brand brand = buildFakeBrand();
+        final Subcategory subcategory = buildFakeSubcategory();
+        final Model created = buildFakeModel(MODEL_ID, "New Model");
+        when(brandDao.getById(eq(BRAND_ID))).thenReturn(Optional.of(brand));
+        when(subcategoryDao.getById(eq(SUBCATEGORY_ID))).thenReturn(Optional.of(subcategory));
+        when(modelDao.existsByNameAndBrandId(eq("New Model"), eq(BRAND_ID))).thenReturn(false);
+        when(modelDao.create(eq("New Model"), eq(brand), eq(subcategory))).thenReturn(created);
+
+        final Model result = catalogService.createModel("  New Model  ", BRAND_ID, SUBCATEGORY_ID);
+
+        Assert.assertSame(created, result);
+    }
+
+    @Test(expected = BadParameterException.class)
+    public void testCreateModelWithExistingNameThrows() {
+        when(brandDao.getById(eq(BRAND_ID))).thenReturn(Optional.of(buildFakeBrand()));
+        when(subcategoryDao.getById(eq(SUBCATEGORY_ID))).thenReturn(Optional.of(buildFakeSubcategory()));
+        when(modelDao.existsByNameAndBrandId(eq(MODEL_NAME), eq(BRAND_ID))).thenReturn(true);
+
+        catalogService.createModel(MODEL_NAME, BRAND_ID, SUBCATEGORY_ID);
+    }
+
+    @Test(expected = NotFoundException.class)
+    public void testCreateModelWithMissingBrandThrows() {
+        when(brandDao.getById(eq(BRAND_ID))).thenReturn(Optional.empty());
+
+        catalogService.createModel("New Model", BRAND_ID, SUBCATEGORY_ID);
+    }
+
+    @Test
+    public void testUpdateModelChangesFields() {
+        final Brand brand = buildFakeBrand();
+        final Subcategory subcategory = buildFakeSubcategory();
+        final Model updated = buildFakeModel(MODEL_ID, "Updated Model");
+        when(brandDao.getById(eq(BRAND_ID))).thenReturn(Optional.of(brand));
+        when(subcategoryDao.getById(eq(SUBCATEGORY_ID))).thenReturn(Optional.of(subcategory));
+        when(modelDao.existsByNameAndBrandIdAndIdNot(eq("Updated Model"), eq(BRAND_ID), eq(MODEL_ID))).thenReturn(false);
+        when(modelDao.update(eq(MODEL_ID), eq("Updated Model"), eq(brand), eq(subcategory))).thenReturn(Optional.of(updated));
+
+        catalogService.updateModel(MODEL_ID, "Updated Model", BRAND_ID, SUBCATEGORY_ID);
+    }
+
+    @Test(expected = BadParameterException.class)
+    public void testDeleteModelWithListingsThrows() {
+        when(modelDao.hasListings(eq(MODEL_ID))).thenReturn(true);
+
+        catalogService.deleteModel(MODEL_ID);
+    }
+
+    @Test(expected = NotFoundException.class)
+    public void testDeleteMissingModelThrows() {
+        when(modelDao.hasListings(eq(NON_EXISTING_MODEL_ID))).thenReturn(false);
+        when(modelDao.deleteModel(eq(NON_EXISTING_MODEL_ID))).thenReturn(false);
+
+        catalogService.deleteModel(NON_EXISTING_MODEL_ID);
+    }
+
+    @Test
+    public void testDeleteModelDelegates() {
+        when(modelDao.hasListings(eq(MODEL_ID))).thenReturn(false);
+        when(modelDao.deleteModel(eq(MODEL_ID))).thenReturn(true);
+
+        catalogService.deleteModel(MODEL_ID);
+    }
+
+    @Test(expected = BadParameterException.class)
+    public void testReplaceModelWithSameModelThrows() {
+        catalogService.replaceModel(MODEL_ID, MODEL_ID);
+    }
+
+    @Test
+    public void testReplaceModelDelegatesToListingDao() {
+        when(modelDao.getById(eq(MODEL_ID))).thenReturn(Optional.of(buildFakeModel(MODEL_ID, MODEL_NAME)));
+        when(modelDao.getById(eq(AIR_MODEL_ID))).thenReturn(Optional.of(buildFakeModel(AIR_MODEL_ID, "MacBook Air")));
+        when(listingDao.replaceModel(eq(MODEL_ID), eq(AIR_MODEL_ID))).thenReturn(3);
+
+        catalogService.replaceModel(MODEL_ID, AIR_MODEL_ID);
     }
 
     /* ---------------------------------------------------------------------------------------------- */

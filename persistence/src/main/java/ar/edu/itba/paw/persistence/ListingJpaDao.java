@@ -210,6 +210,16 @@ public class ListingJpaDao implements ListingDao {
     }
 
     @Override
+    public int replaceModel(Long fromModelId, Long toModelId) {
+        final Model from = em.getReference(Model.class, fromModelId);
+        final Model to = em.getReference(Model.class, toModelId);
+        return em.createQuery("UPDATE Listing l SET l.model = :to WHERE l.model = :from")
+                .setParameter("to", to)
+                .setParameter("from", from)
+                .executeUpdate();
+    }
+
+    @Override
     public void updateStatus(Long id, ListingStatus status) {
         final Listing listing = em.find(Listing.class, id);
         if (listing != null) {

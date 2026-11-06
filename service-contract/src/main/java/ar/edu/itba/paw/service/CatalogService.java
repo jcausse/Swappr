@@ -5,7 +5,9 @@ import ar.edu.itba.paw.model.BrandInfo;
 import ar.edu.itba.paw.model.BrandSort;
 import ar.edu.itba.paw.model.Category;
 import ar.edu.itba.paw.model.Model;
+import ar.edu.itba.paw.model.ModelInfo;
 import ar.edu.itba.paw.model.ModelListingInfoSummary;
+import ar.edu.itba.paw.model.ModelSort;
 import ar.edu.itba.paw.model.Page;
 import ar.edu.itba.paw.model.Subcategory;
 
@@ -28,11 +30,25 @@ public interface CatalogService {
 
     List<Subcategory> getSubcategoriesByCategory(Long categoryId);
 
+    List<Subcategory> getAllSubcategories();
+
     List<Brand> getBrandsBySubcategory(Long subcategoryId);
 
     List<Model> getModelsBySubcategoryAndBrand(Long subcategoryId, Long brandId);
 
     Model getModelById(Long id);
+
+    Page<ModelInfo> getModels(Long brandId, Long subcategoryId, ModelSort sort, Integer page, int pageSize);
+
+    List<Model> getAllModels();
+
+    Model createModel(String name, Long brandId, Long subcategoryId);
+
+    void updateModel(Long id, String name, Long brandId, Long subcategoryId);
+
+    void deleteModel(Long id);
+
+    void replaceModel(Long id, Long replacementId);
 
     Page<ModelListingInfoSummary> getListingInfoSummary(Long brandId, Long modelId, Integer fromYear, Integer toYear,
             Long subcategoryId, Integer page, int pageSize);

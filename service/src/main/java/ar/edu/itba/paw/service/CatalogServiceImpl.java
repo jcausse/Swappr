@@ -5,12 +5,15 @@ import ar.edu.itba.paw.model.BrandInfo;
 import ar.edu.itba.paw.model.BrandSort;
 import ar.edu.itba.paw.model.Category;
 import ar.edu.itba.paw.model.Model;
+import ar.edu.itba.paw.model.ModelInfo;
 import ar.edu.itba.paw.model.ModelListingInfo;
 import ar.edu.itba.paw.model.ModelListingInfoSummary;
+import ar.edu.itba.paw.model.ModelSort;
 import ar.edu.itba.paw.model.Page;
 import ar.edu.itba.paw.model.Subcategory;
 import ar.edu.itba.paw.persistence.BrandDao;
 import ar.edu.itba.paw.persistence.CategoryDao;
+import ar.edu.itba.paw.persistence.ListingDao;
 import ar.edu.itba.paw.persistence.ModelDao;
 import ar.edu.itba.paw.persistence.SubcategoryDao;
 import ar.edu.itba.paw.service.exception.BadParameterException;
@@ -35,6 +38,7 @@ public class CatalogServiceImpl implements CatalogService {
     private final SubcategoryDao subcategoryDao;
     private final BrandDao brandDao;
     private final ModelDao modelDao;
+    private final ListingDao listingDao;
 
     @Override
     public Page<BrandInfo> getBrands(BrandSort sort, Integer page, int pageSize) {
@@ -109,6 +113,11 @@ public class CatalogServiceImpl implements CatalogService {
     }
 
     @Override
+    public List<Subcategory> getAllSubcategories() {
+        return subcategoryDao.getAll();
+    }
+
+    @Override
     public List<Brand> getBrandsBySubcategory(Long subcategoryId) {
         return brandDao.getBySubcategoryId(subcategoryId);
     }
@@ -123,6 +132,78 @@ public class CatalogServiceImpl implements CatalogService {
         return modelDao
             .getById(id)
             .orElseThrow(() -> NotFoundException.createFor("Model with ID " + id));
+    }
+
+    @Override
+    public Page<ModelInfo> getModels(Long brandId, Long subcategoryId, ModelSort sort, Integer page, int pageSize) {
+        final int safePage = page == null || page < 1 ? 1 : page;
+        return modelDao.getWithInfo(
+            brandId, subcategoryId, sort == null ? ModelSort.NAME_ASC : sort, safePage, pageSize
+        );
+    }
+
+    @Override
+    public List<Model> getAllModels() {
+        return modelDao.getAllWithBrand();
+    }
+
+    @Override
+    @Transactional
+    public Model createModel(String name, Long brandId, Long subcategoryId) {
+        final String trimmedName = name == null ? "" : name.trim();
+        if (trimmedName.isEmpty()) {
+            throw BadParameterException.create("name", "Model name is required");
+        }
+        final Brand brand = brandDao.getById(brandId)
+            .orElseThrow(() -> NotFoundException.createFor("Brand with ID " + brandId));
+        final Subcategory subcategory = subcategoryDao.getById(subcategoryId)
+            .orElseThrow(() -> NotFoundException.createFor("Subcategory with ID " + subcategoryId));
+        if (modelDao.existsByNameAndBrandId(trimmedName, brandId)) {
+            throw BadParameterException.create("name", "Model name already exists for this brand");
+        }
+        return modelDao.create(trimmedName, brand, subcategory);
+    }
+
+    @Override
+    @Transactional
+    public void updateModel(Long id, String name, Long brandId, Long subcategoryId) {
+        final String trimmedName = name == null ? "" : name.trim();
+        if (trimmedName.isEmpty()) {
+            throw BadParameterException.create("name", "Model name is required");
+        }
+        final Brand brand = brandDao.getById(brandId)
+            .orElseThrow(() -> NotFoundException.createFor("Brand with ID " + brandId));
+        final Subcategory subcategory = subcategoryDao.getById(subcategoryId)
+            .orElseThrow(() -> NotFoundException.createFor("Subcategory with ID " + subcategoryId));
+        if (modelDao.existsByNameAndBrandIdAndIdNot(trimmedName, brandId, id)) {
+            throw BadParameterException.create("name", "Model name already exists for this brand");
+        }
+        modelDao.update(id, trimmedName, brand, subcategory)
+            .orElseThrow(() -> NotFoundException.createFor("Model with ID " + id));
+    }
+
+    @Override
+    @Transactional
+    public void deleteModel(Long id) {
+        if (modelDao.hasListings(id)) {
+            throw BadParameterException.create("model", "Model has listings");
+        }
+        if (!modelDao.deleteModel(id)) {
+            throw NotFoundException.createFor("Model with ID " + id);
+        }
+    }
+
+    @Override
+    @Transactional
+    public void replaceModel(Long id, Long replacementId) {
+        if (id == null || replacementId == null || id.equals(replacementId)) {
+            throw BadParameterException.create("replacementModelId", "Replacement model must be different");
+        }
+        modelDao.getById(id)
+            .orElseThrow(() -> NotFoundException.createFor("Model with ID " + id));
+        modelDao.getById(replacementId)
+            .orElseThrow(() -> NotFoundException.createFor("Model with ID " + replacementId));
+        listingDao.replaceModel(id, replacementId);
     }
 
     @Override
