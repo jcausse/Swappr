@@ -88,6 +88,13 @@ public class BrandJpaDao implements BrandDao {
     }
 
     @Override
+    public Brand create(String name) {
+        final Brand brand = Brand.builder().name(name).build();
+        em.persist(brand);
+        return brand;
+    }
+
+    @Override
     public boolean hasListings(Long brandId) {
         return !em.createQuery(
                 "SELECT l.id FROM Listing l WHERE l.model.brand.id = :brandId",

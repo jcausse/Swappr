@@ -135,6 +135,23 @@ public class BrandJpaDaoTest {
     }
 
     @Test
+    public void testCreateReturnsBrandWithId() {
+        final Brand created = brandDao.create("HP");
+
+        Assert.assertNotNull(created.getId());
+        Assert.assertEquals("HP", created.getName());
+    }
+
+    @Test
+    public void testCreatePersistsBrand() {
+        final Brand created = brandDao.create("HP");
+        em.flush();
+
+        Assert.assertEquals(1, JdbcTestUtils.countRowsInTableWhere(
+                jdbcTemplate, "brands", "brand_id = " + created.getId() + " AND brand_name = 'HP'"));
+    }
+
+    @Test
     public void testRenameUpdatesBrand() {
         final Optional<Brand> renamed = brandDao.rename(APPLE_BRAND_ID, "Apple Inc.");
 

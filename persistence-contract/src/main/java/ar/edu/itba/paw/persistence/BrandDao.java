@@ -21,4 +21,6 @@ public interface BrandDao {
     boolean delete(Long id);
 
     boolean hasListings(Long brandId);
+
+    Brand create(String name);
 }

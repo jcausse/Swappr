@@ -22,6 +22,9 @@
 <spring:message code="admin.catalog.brands.delete.confirm" var="deleteBrandConfirm"/>
 <spring:message code="admin.catalog.brands.delete.cancel" var="deleteBrandCancel"/>
 <spring:message code="admin.catalog.brands.delete.blocked" var="deleteBrandBlocked"/>
+<spring:message code="admin.catalog.brands.create.title" var="createBrandTitle"/>
+<spring:message code="admin.catalog.brands.create.placeholder" var="createBrandPlaceholder"/>
+<spring:message code="admin.catalog.brands.create.submit" var="createBrandSubmit"/>
 
 <admin:layout titleKey="admin.catalog.title" title="${catalogTitle}" subtitle="${catalogSubtitle}">
     <div class="flex flex-col gap-6">
@@ -98,6 +101,32 @@
                         </c:forEach>
                     </tbody>
                 </table>
+            </div>
+
+            <paw:divider />
+
+            <div class="mt-4 flex flex-col gap-2">
+                <h3 class="text-sm font-semibold"><c:out value="${createBrandTitle}"/></h3>
+                <c:url value="/admin/catalog/brands" var="createBrandUrl"/>
+                <form action="${createBrandUrl}" method="post" class="flex flex-col sm:flex-row gap-3 items-end">
+                    <div class="flex-1 w-full">
+                        <paw:input
+                            id="newBrandName"
+                            name="name"
+                            label="${brandNameLabel}"
+                            placeholder="${createBrandPlaceholder}"
+                            variant="outline"
+                        />
+                    </div>
+                    <paw:button
+                        text="${createBrandSubmit}"
+                        type="submit"
+                        variant="default"
+                        role="default"
+                        icon="plus"
+                        classname="w-full sm:w-auto"
+                    />
+                </form>
             </div>
         </paw:card>
 

@@ -13,6 +13,8 @@ import java.util.List;
 public interface CatalogService {
     List<BrandInfo> getAllBrands();
 
+    Brand createBrand(String name);
+
     void renameBrand(Long id, String name);
 
     void deleteBrand(Long id);

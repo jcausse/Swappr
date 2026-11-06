@@ -42,6 +42,19 @@ public class CatalogServiceImpl implements CatalogService {
 
     @Override
     @Transactional
+    public Brand createBrand(String name) {
+        final String trimmedName = name == null ? "" : name.trim();
+        if (trimmedName.isEmpty()) {
+            throw BadParameterException.create("name", "Brand name is required");
+        }
+        if (brandDao.getByName(trimmedName).isPresent()) {
+            throw BadParameterException.create("name", "Brand name already exists");
+        }
+        return brandDao.create(trimmedName);
+    }
+
+    @Override
+    @Transactional
     public void renameBrand(Long id, String name) {
         final String trimmedName = name == null ? "" : name.trim();
         if (trimmedName.isEmpty()) {

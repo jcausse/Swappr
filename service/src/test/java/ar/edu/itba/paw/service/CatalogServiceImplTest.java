@@ -163,6 +163,29 @@ public class CatalogServiceImplTest {
     }
 
     @Test
+    public void testCreateBrandTrimsName() {
+        final Brand created = Brand.builder().id(10L).name("HP").build();
+        when(brandDao.getByName(eq("HP"))).thenReturn(Optional.empty());
+        when(brandDao.create(eq("HP"))).thenReturn(created);
+
+        final Brand result = catalogService.createBrand("  HP  ");
+
+        Assert.assertSame(created, result);
+    }
+
+    @Test(expected = BadParameterException.class)
+    public void testCreateBrandWithExistingNameThrows() {
+        when(brandDao.getByName(eq("Apple"))).thenReturn(Optional.of(buildFakeBrand()));
+
+        catalogService.createBrand("Apple");
+    }
+
+    @Test(expected = BadParameterException.class)
+    public void testCreateBrandWithBlankNameThrows() {
+        catalogService.createBrand("   ");
+    }
+
+    @Test
     public void testRenameBrandTrimsName() {
         when(brandDao.existsByNameAndIdNot(eq("Apple Inc."), eq(BRAND_ID))).thenReturn(false);
         when(brandDao.rename(eq(BRAND_ID), eq("Apple Inc.")))

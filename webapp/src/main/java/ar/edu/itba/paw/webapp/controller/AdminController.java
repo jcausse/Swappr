@@ -15,6 +15,7 @@ import ar.edu.itba.paw.service.exception.BadParameterException;
 import ar.edu.itba.paw.service.exception.NotFoundException;
 import ar.edu.itba.paw.service.exception.SelfSuspendException;
 import ar.edu.itba.paw.webapp.auth.CurrentUser;
+import ar.edu.itba.paw.webapp.form.AdminCreateBrandForm;
 import ar.edu.itba.paw.webapp.form.AdminGrantRoleForm;
 import ar.edu.itba.paw.webapp.form.AdminRenameBrandForm;
 import ar.edu.itba.paw.webapp.form.AdminSuspendUserForm;
@@ -71,11 +72,34 @@ public class AdminController {
     @PreAuthorize("hasRole('ADMIN')")
     public ModelAndView catalog(
             @CurrentUser User currentUser,
-            @ModelAttribute("renameBrandForm") AdminRenameBrandForm renameBrandForm
+            @ModelAttribute("renameBrandForm") AdminRenameBrandForm renameBrandForm,
+            @ModelAttribute("createBrandForm") AdminCreateBrandForm createBrandForm
     ) {
         LOGGER.debug("Admin {} accessed catalog management page", currentUser.getUsername());
         return new ModelAndView("admin/catalog")
                 .addObject("brands", catalogService.getAllBrands());
+    }
+
+    @PostMapping("/catalog/brands")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ModelAndView createBrand(
+            @CurrentUser User currentUser,
+            @Valid @ModelAttribute("createBrandForm") AdminCreateBrandForm form,
+            BindingResult errors
+    ) {
+        LOGGER.info("Admin {} requested creation of brand '{}'", currentUser.getUsername(), form.getName());
+        if (errors.hasErrors()) {
+            return new ModelAndView("redirect:/admin/catalog?error=brandInvalidName");
+        }
+
+        try {
+            catalogService.createBrand(form.getName());
+        } catch (BadParameterException e) {
+            LOGGER.warn("Brand '{}' could not be created: {}", form.getName(), e.getMessage());
+            return new ModelAndView("redirect:/admin/catalog?error=brandNameTaken");
+        }
+
+        return new ModelAndView("redirect:/admin/catalog?success=brand_created");
     }
 
     @PostMapping("/catalog/brands/{id}/rename")
