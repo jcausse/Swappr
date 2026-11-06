@@ -21,11 +21,12 @@ import org.springframework.web.servlet.ModelAndView;
 import ar.edu.itba.paw.model.Condition;
 import ar.edu.itba.paw.model.ListingSort;
 import ar.edu.itba.paw.model.ListingStatus;
+import ar.edu.itba.paw.model.Model;
 import ar.edu.itba.paw.model.Page;
 import ar.edu.itba.paw.model.User;
+import ar.edu.itba.paw.service.CatalogService;
 import ar.edu.itba.paw.service.ListingService;
 import ar.edu.itba.paw.service.OfferService;
-import ar.edu.itba.paw.service.ProductService;
 import ar.edu.itba.paw.service.ProvinceService;
 import ar.edu.itba.paw.service.dto.ListingCreationDto;
 import ar.edu.itba.paw.service.dto.ListingFilterDto;
@@ -52,7 +53,7 @@ public class ListingController {
 
     private final ListingService listingService;
     private final OfferService offerService;
-    private final ProductService productService;
+    private final CatalogService catalogService;
     private final ProvinceService provinceService;
 
     @GetMapping
@@ -73,8 +74,8 @@ public class ListingController {
             .pageSize(DISCOVERY_PAGE_SIZE)
             .provinceId(filterForm.getProvinceId())
             .acceptsShipping(filterForm.getAcceptsShipping())
-            .brand(filterForm.getBrand())
-            .model(filterForm.getModel())
+            .brandId(filterForm.getBrandId())
+            .modelId(filterForm.getModelId())
             .yearMin(filterForm.getYearMin())
             .yearMax(filterForm.getYearMax())
             .build();
@@ -90,7 +91,7 @@ public class ListingController {
             .map(s -> new StringSelectOption(s.name(), "listing.sort." + s.getKey()))
             .toList());
 
-        var categories = productService.getAllCategories();
+        var categories = catalogService.getAllCategories();
         mav.addObject("categoryOptions", categories.stream()
             .map(cat -> new SelectOption(cat.getId(), "category." + cat.getName()))
             .toList());
@@ -100,15 +101,16 @@ public class ListingController {
             .toList());
 
         if (filterForm.getCategoryId() != null) {
-            mav.addObject("subcategoryOptions", productService.getSubcategoriesByCategory(filterForm.getCategoryId()).stream()
+            mav.addObject("subcategoryOptions", catalogService.getSubcategoriesByCategory(filterForm.getCategoryId()).stream()
                 .map(sub -> new SelectOption(sub.getId(), "subcategory." + sub.getName()))
                 .toList());
 
             if (filterForm.getSubcategoryId() != null) {
-                mav.addObject("brandOptions", productService.getBrandsBySubcategory(filterForm.getSubcategoryId()));
+                mav.addObject("brandOptions", catalogService.getBrandsBySubcategory(filterForm.getSubcategoryId()));
 
-                if (filterForm.getBrand() != null && !filterForm.getBrand().isBlank()) {
-                    mav.addObject("modelOptions", productService.getModelsBySubcategoryAndBrand(filterForm.getSubcategoryId(), filterForm.getBrand()));
+                if (filterForm.getBrandId() != null) {
+                    mav.addObject("modelOptions", catalogService.getModelsBySubcategoryAndBrand(
+                        filterForm.getSubcategoryId(), filterForm.getBrandId()));
                 }
             }
         }
@@ -120,13 +122,10 @@ public class ListingController {
         LOGGER.debug("Accessing products by brand and model page");
         final var mav = new ModelAndView("listing/byProduct");
 
-        final var brand = productForm.getBrand();
-        final var model = productForm.getModel();
-
         if (productForm.getSubcategoryId() != null) {
-            final var productPage = productService.getListingInfoSummary(
-                brand,
-                model,
+            final var productPage = catalogService.getListingInfoSummary(
+                productForm.getBrandId(),
+                productForm.getModelId(),
                 productForm.getYearMin(),
                 productForm.getYearMax(),
                 productForm.getSubcategoryId(),
@@ -141,14 +140,15 @@ public class ListingController {
         }
 
         if (productForm.getCategoryId() != null) {
-            mav.addObject("subcategories", productService.getSubcategoriesByCategory(productForm.getCategoryId()));
+            mav.addObject("subcategories", catalogService.getSubcategoriesByCategory(productForm.getCategoryId()));
         }
 
         if (productForm.getSubcategoryId() != null) {
-            mav.addObject("brands", productService.getBrandsBySubcategory(productForm.getSubcategoryId()));
+            mav.addObject("brands", catalogService.getBrandsBySubcategory(productForm.getSubcategoryId()));
 
-            if (brand != null) {
-                mav.addObject("models", productService.getModelsBySubcategoryAndBrand(productForm.getSubcategoryId(), brand));
+            if (productForm.getBrandId() != null) {
+                mav.addObject("models", catalogService.getModelsBySubcategoryAndBrand(
+                    productForm.getSubcategoryId(), productForm.getBrandId()));
             }
         }
 
@@ -170,19 +170,20 @@ public class ListingController {
     @GetMapping("/new/choose-product")
     @PreAuthorize("isAuthenticated()")
     public ModelAndView chooseProduct(@ModelAttribute("chooseProductForm") ChooseProductForm form,
-                                      @RequestParam(value = "productId", required = false) Long productId) {
+                                      @RequestParam(value = "modelId", required = false) Long modelId,
+                                      @RequestParam(value = "year", required = false) Integer year) {
         LOGGER.debug("Accessing choose product page");
         var mav = new ModelAndView("listing/new/chooseProduct");
-        // Coming back from step 2: rehydrate the form from the already chosen product
+        // Coming back from step 2: rehydrate the form from the already chosen model
         // so the user sees and can change their selection instead of starting over.
-        if (productId != null) {
-            var product = productService.getById(productId);
-            var subcategory = product.getSubcategory();
+        if (modelId != null) {
+            var model = catalogService.getModelById(modelId);
+            var subcategory = model.getSubcategory();
             form.setCategoryId(subcategory.getCategory().getId());
             form.setSubcategoryId(subcategory.getId());
-            form.setNewProductBrand(product.getBrand());
-            form.setNewProductModel(product.getModel());
-            form.setNewProductYear(product.getYear());
+            form.setBrandId(model.getBrand().getId());
+            form.setModelId(model.getId());
+            form.setYear(year);
             form.setStep(3);
             form.updatePreviousValues();
         } else {
@@ -207,23 +208,23 @@ public class ListingController {
         // Reset downstream fields when user goes back and changes a previous field
         var step = form.getStep();
         if (step != null && step > 1 && form.isCategoryChanged()) {
-            // Category was changed - reset subcategory and product fields
+            // Category was changed - reset subcategory and catalog fields
             form.setSubcategoryId(null);
-            form.setNewProductBrand(null);
-            form.setNewProductModel(null);
-            form.setNewProductYear(null);
+            form.setBrandId(null);
+            form.setModelId(null);
+            form.setYear(null);
             form.setStep(2);
         } else if (step != null && step > 2 && form.isSubcategoryChanged()) {
-            // Subcategory was changed - reset product fields
-            form.setNewProductBrand(null);
-            form.setNewProductModel(null);
-            form.setNewProductYear(null);
+            // Subcategory was changed - reset catalog fields
+            form.setBrandId(null);
+            form.setModelId(null);
+            form.setYear(null);
             form.setStep(3);
         }
 
-        // Reset model if brand is empty (empty string)
-        if (form.getNewProductBrand() == null || form.getNewProductBrand().isBlank()) {
-            form.setNewProductModel(null);
+        // Brand is only used to scope the model options.
+        if (form.getBrandId() == null) {
+            form.setModelId(null);
         }
 
         if (bindingResult.hasErrors()) {
@@ -241,32 +242,14 @@ public class ListingController {
         } else if (form.getStep() != null && form.getStep() == 2) {
             if (form.getSubcategoryId() != null) {
                 form.setStep(3);
-                form.setNewProductBrand(null);
-                form.setNewProductModel(null);
-                form.setNewProductYear(null);
+                form.setBrandId(null);
+                form.setModelId(null);
+                form.setYear(null);
             }
         } else if (form.getStep() != null && form.getStep() == 3 && !isAutoSubmit) {
-            var brand = form.getNewProductBrand();
-            var model = form.getNewProductModel();
-
-            if (form.isOtherBrandSelected()) {
-                form.setNewProductModel(ChooseProductForm.OTHER_VALUE);
-                model = ChooseProductForm.OTHER_VALUE;
-            }
-
-            var otherBrand = form.getOtherBrand();
-            var otherModel = form.getOtherModel();
-
-            brand = ChooseProductForm.OTHER_VALUE.equals(brand) ? otherBrand : brand;
-            model = ChooseProductForm.OTHER_VALUE.equals(model) ? otherModel : model;
-
-            var product = productService.findOrCreateByBrandModelYear(
-                    brand,
-                    model,
-                    form.getNewProductYear(),
-                    form.getSubcategoryId()
+            return new ModelAndView(
+                "redirect:/listing/new/details?modelId=" + form.getModelId() + "&year=" + form.getYear()
             );
-            return new ModelAndView("redirect:/listing/new/details?productId=" + product.getId());
         }
 
         // Update previous values for next request
@@ -277,12 +260,12 @@ public class ListingController {
     }
 
     private void populateModel(ModelAndView mav, ChooseProductForm form) {
-        mav.addObject("categoryOptions", productService.getAllCategories().stream()
+        mav.addObject("categoryOptions", catalogService.getAllCategories().stream()
             .map(cat -> new SelectOption(cat.getId(), "category." + cat.getName()))
             .toList());
 
         if (form.getCategoryId() != null) {
-            var subcategories = productService.getSubcategoriesByCategory(form.getCategoryId());
+            var subcategories = catalogService.getSubcategoriesByCategory(form.getCategoryId());
             mav.addObject("subcategories", subcategories);
             mav.addObject("subcategoryOptions", subcategories.stream()
                 .map(sub -> new SelectOption(sub.getId(), "subcategory." + sub.getName()))
@@ -290,15 +273,10 @@ public class ListingController {
         }
 
         if (form.getSubcategoryId() != null) {
-            mav.addObject("brands", productService.getBrandsBySubcategory(form.getSubcategoryId()));
-            List<String> models = List.of();
-            // Only fetch models if brand is selected and not "Other"
-            if (form.getNewProductBrand() != null && !form.getNewProductBrand().isBlank() && !form.isOtherBrandSelected()) {
-                models = productService.getModelsBySubcategoryAndBrand(form.getSubcategoryId(), form.getNewProductBrand());
-            }
-            // A custom brand has no known models, so the model is necessarily custom too
-            if (form.isOtherBrandSelected()) {
-                form.setNewProductModel(ChooseProductForm.OTHER_VALUE);
+            mav.addObject("brands", catalogService.getBrandsBySubcategory(form.getSubcategoryId()));
+            List<Model> models = List.of();
+            if (form.getBrandId() != null) {
+                models = catalogService.getModelsBySubcategoryAndBrand(form.getSubcategoryId(), form.getBrandId());
             }
             mav.addObject("models", models);
             mav.addObject("modelsEmpty", models.isEmpty());
@@ -308,16 +286,18 @@ public class ListingController {
     @GetMapping("/new/details")
     @PreAuthorize("isAuthenticated()")
     public ModelAndView details(
-        @RequestParam("productId") Long productId,
+        @RequestParam("modelId") Long modelId,
+        @RequestParam("year") Integer year,
         @ModelAttribute("detailsForm") ListingDetailsForm form,
         @CurrentUser User currentUser
     ) {
-        LOGGER.debug("Accessing new listing details page for product {}", productId);
-        var product = productService.getById(productId);
-        form.setProductId(product.getId());
+        LOGGER.debug("Accessing new listing details page for model {}", modelId);
+        var model = catalogService.getModelById(modelId);
+        form.setModelId(model.getId());
+        form.setYear(year);
 
         var mav = new ModelAndView("listing/new/details");
-        mav.addObject("product", product);
+        mav.addObject("model", model);
         mav.addObject("conditionOptions", buildConditionOptions());
         mav.addObject("actionUrl", "/listing/new/details");
         mav.addObject("edit", false);
@@ -331,9 +311,9 @@ public class ListingController {
         BindingResult bindingResult,
         @CurrentUser User currentUser
     ) {
-        LOGGER.info("User {} submitted listing creation for product {}", currentUser.getId(), form.getProductId());
+        LOGGER.info("User {} submitted listing creation for model {}", currentUser.getId(), form.getModelId());
         if (bindingResult.hasErrors()) {
-            LOGGER.debug("Validation failed for listing creation for product {}", form.getProductId());
+            LOGGER.debug("Validation failed for listing creation for model {}", form.getModelId());
             return detailsWithErrors(form);
         }
 
@@ -341,7 +321,8 @@ public class ListingController {
                 form.getTitle(),
                 form.getPrice(),
                 currentUser.getId(),
-                form.getProductId(),
+                form.getModelId(),
+                form.getYear(),
                 form.getCondition(),
                 form.isAcceptsTrade(),
                 form.isAcceptsShipping(),
@@ -361,7 +342,8 @@ public class ListingController {
         LOGGER.debug("Accessing edit listing details page for {}", id);
 
         var listing = listingService.getById(id);
-        form.setProductId(listing.getProduct().getId());
+        form.setModelId(listing.getModel().getId());
+        form.setYear(listing.getYear());
         form.setTitle(listing.getTitle());
         form.setPrice(listing.getPrice().getAmount());
         form.setCondition(listing.getCondition());
@@ -370,7 +352,7 @@ public class ListingController {
 
         var mav = new ModelAndView("listing/new/details");
         mav.addObject("conditionOptions", buildConditionOptions());
-        mav.addObject("product", listing.getProduct());
+        mav.addObject("model", listing.getModel());
         mav.addObject("actionUrl", "/listing/" + id + "/edit");
         mav.addObject("edit", true);
         return mav;
@@ -384,9 +366,9 @@ public class ListingController {
         BindingResult bindingResult,
         @CurrentUser User currentUser
     ) {
-        LOGGER.info("User {} submitted listing edit for product {}", currentUser.getId(), form.getProductId());
+        LOGGER.info("User {} submitted listing edit for model {}", currentUser.getId(), form.getModelId());
         if (bindingResult.hasErrors()) {
-            LOGGER.debug("Validation failed for listing edit for product {}", form.getProductId());
+            LOGGER.debug("Validation failed for listing edit for model {}", form.getModelId());
             return detailsWithErrors(form);
         }
 
@@ -394,7 +376,8 @@ public class ListingController {
             id,
             form.getTitle(),
             form.getPrice(),
-            form.getProductId(),
+            form.getModelId(),
+            form.getYear(),
             form.getCondition(),
             form.isAcceptsTrade(),
             form.isAcceptsShipping(),
@@ -404,9 +387,9 @@ public class ListingController {
     }
 
     private ModelAndView detailsWithErrors(ListingDetailsForm form) {
-        var product = productService.getById(form.getProductId());
+        var model = catalogService.getModelById(form.getModelId());
         return new ModelAndView("listing/new/details")
-                .addObject("product", product)
+                .addObject("model", model)
                 .addObject("conditionOptions", buildConditionOptions());
     }
 
