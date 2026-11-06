@@ -123,6 +123,14 @@ While you as an AI agent are allowed to edit this file on your own, you must **a
 - Category and subcategory are chosen from button grids (mirroring the landing page) with breadcrumbs to step back. Once both are selected, brand/model/year filters appear; brand changes auto-submit and clear the model. The filter clear action keeps category and subcategory intact.
 - Each condition row links to `/listing` with category, subcategory, brand, model, condition, and any year filters applied.
 
+### Catalog Refactor: Brands and Models (in progress)
+
+- The legacy `products` table/entity/DAO were removed. Catalog data now lives in `Brand` and `Model` entities (`models` has `brand_id` and `subcategory_id`; `(model_name, brand_id)` is unique).
+- `Listing` references a `Model` and stores its own `int year`. Listings **must not** store a redundant brand column: use the custom `Listing#getBrand()` getter, which delegates to `model.getBrand()`, and query through `l.model.brand` in JPQL/native SQL.
+- `ListingFilter` brand/model filters use `brandId`/`modelId` (not names). `BrandDao#getBySubcategoryId` and `ModelDao#getBySubcategoryIdAndBrandId` expose the catalog.
+- `ModelDao#getListingInfoSummary` paginates model IDs and then aggregates listings with the 1+1 query model; DTOs are `ModelListingInfo` / `ModelListingInfoSummary`. Its aggregation uses entity grouping (`GROUP BY brand, model, condition`), which relies on PostgreSQL functional dependency and is therefore intentionally **not** covered by the HSQLDB DAO tests.
+- Users will only select existing brands/models when creating listings; admin brand/model management is stage 2. The service and web layers still need to be migrated to this catalog.
+
 ## Spring Security
 
 - Spring Security configuration is at `ar.edu.itba.paw.webapp.config.WebAuthConfig` and that file should remain the only source of truth about security configurations, especially

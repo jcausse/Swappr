@@ -1,17 +1,18 @@
 package ar.edu.itba.paw.persistence;
 
+import ar.edu.itba.paw.model.Brand;
 import ar.edu.itba.paw.model.Category;
 import ar.edu.itba.paw.model.Condition;
 import ar.edu.itba.paw.model.File;
 import ar.edu.itba.paw.model.Listing;
 import ar.edu.itba.paw.model.ListingStatus;
+import ar.edu.itba.paw.model.Model;
 import ar.edu.itba.paw.model.Offer;
 import ar.edu.itba.paw.model.OfferFilter;
 import ar.edu.itba.paw.model.OfferRating;
 import ar.edu.itba.paw.model.OfferStatus;
 import ar.edu.itba.paw.model.Page;
 import ar.edu.itba.paw.model.Price;
-import ar.edu.itba.paw.model.Product;
 import ar.edu.itba.paw.model.Subcategory;
 import ar.edu.itba.paw.model.User;
 import org.junit.Assert;
@@ -105,11 +106,11 @@ public class OfferJpaDaoTest {
     private static Listing buildFakeListing(final long id) {
         final Category category = Category.builder().id(1L).name("Category").build();
         final Subcategory subcategory = Subcategory.builder().id(1L).name("Subcategory").category(category).build();
-        final Product product = Product.builder()
+        final Brand brand = Brand.builder().id(1L).name("Brand").build();
+        final Model model = Model.builder()
             .id(1L)
-            .brand("Brand")
-            .model("Model")
-            .year(2023)
+            .name("Model")
+            .brand(brand)
             .subcategory(subcategory)
             .build();
         return Listing.builder()
@@ -117,7 +118,8 @@ public class OfferJpaDaoTest {
             .title("Listing " + id)
             .creator(buildFakeUser(SELLER_ID))
             .price(new Price(new BigDecimal("100.00")))
-            .product(product)
+            .model(model)
+            .year(2023)
             .status(ListingStatus.ACTIVE)
             .condition(Condition.GOOD)
             .build();
@@ -182,7 +184,7 @@ public class OfferJpaDaoTest {
     }
 
     @Test
-    public void testGetByIdLoadsListingWithCreatorAndProduct() {
+    public void testGetByIdLoadsListingWithCreatorModelAndBrand() {
         // Act
         final Listing listing = offerDao.getById(LOW_OFFER_ID).orElseThrow().getListing();
 
@@ -191,9 +193,11 @@ public class OfferJpaDaoTest {
         Assert.assertEquals("MacBook Pro 2023", listing.getTitle());
         Assert.assertEquals(SELLER_ID, (long) listing.getCreator().getId());
         Assert.assertEquals("fake_user", listing.getCreator().getUsername());
-        Assert.assertEquals("Apple", listing.getProduct().getBrand());
-        Assert.assertEquals("Laptops", listing.getProduct().getSubcategory().getName());
-        Assert.assertEquals("Electronics", listing.getProduct().getSubcategory().getCategory().getName());
+        Assert.assertEquals("MacBook Pro", listing.getModel().getName());
+        Assert.assertEquals("Apple", listing.getBrand().getName());
+        Assert.assertEquals(2023, listing.getYear());
+        Assert.assertEquals("Laptops", listing.getModel().getSubcategory().getName());
+        Assert.assertEquals("Electronics", listing.getModel().getSubcategory().getCategory().getName());
     }
 
     @Test
@@ -278,8 +282,8 @@ public class OfferJpaDaoTest {
         Assert.assertEquals(MACBOOK_LISTING_ID, (long) offered.getId());
         Assert.assertEquals("MacBook Pro 2023", offered.getTitle());
         Assert.assertEquals(SELLER_ID, (long) offered.getCreator().getId());
-        Assert.assertEquals("Apple", offered.getProduct().getBrand());
-        Assert.assertEquals("Electronics", offered.getProduct().getSubcategory().getCategory().getName());
+        Assert.assertEquals("Apple", offered.getBrand().getName());
+        Assert.assertEquals("Electronics", offered.getModel().getSubcategory().getCategory().getName());
         Assert.assertEquals(List.of(FRONT_IMAGE_ID, BACK_IMAGE_ID), offered.getImageIds());
     }
 
