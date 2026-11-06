@@ -62,6 +62,9 @@ public class ModelJpaDao implements ModelDao {
             return new Page<>(List.of(), page, pageSize, 0);
         }
 
+        // This query doesn't use the 1+1 pattern: it's not needed, since it only returns individual
+        // fields and aggregates and not entities and doesn't paginate fetch joins, so there is no
+        // risk of lazy-fetching issues, in-memory pagination, or n+1 queries
         final String direction = sort.isAscending() ? "ASC" : "DESC";
         final String orderBy = sort.getKey().equals("id")
                 ? "m.id " + direction
