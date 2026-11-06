@@ -1,4 +1,4 @@
-package ar.edu.itba.paw.service.dto;
+package ar.edu.itba.paw.model;
 
 import lombok.Builder;
 import lombok.Value;

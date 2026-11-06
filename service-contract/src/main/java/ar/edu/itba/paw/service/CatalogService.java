@@ -1,19 +1,19 @@
 package ar.edu.itba.paw.service;
 
 import ar.edu.itba.paw.model.Brand;
+import ar.edu.itba.paw.model.BrandInfo;
 import ar.edu.itba.paw.model.Category;
 import ar.edu.itba.paw.model.Model;
 import ar.edu.itba.paw.model.ModelListingInfoSummary;
 import ar.edu.itba.paw.model.Page;
 import ar.edu.itba.paw.model.Subcategory;
-import ar.edu.itba.paw.service.dto.BrandInfo;
 
 import java.util.List;
 
 public interface CatalogService {
     List<BrandInfo> getAllBrands();
 
-    Brand renameBrand(Long id, String name);
+    void renameBrand(Long id, String name);
 
     void deleteBrand(Long id);
 

@@ -1,16 +1,13 @@
 package ar.edu.itba.paw.persistence;
 
 import ar.edu.itba.paw.model.Brand;
+import ar.edu.itba.paw.model.BrandInfo;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 
 @Repository
 public class BrandJpaDao implements BrandDao {
@@ -32,9 +29,23 @@ public class BrandJpaDao implements BrandDao {
     }
 
     @Override
-    public List<Brand> getAll() {
-        return em.createQuery("FROM Brand b ORDER BY b.name, b.id", Brand.class)
-                .getResultList();
+    public List<BrandInfo> getAllWithStats() {
+        return em.createQuery(
+                "SELECT b.id, b.name, COUNT(DISTINCT m.id), COUNT(DISTINCT l.id)"
+                + " FROM Brand b"
+                + " LEFT JOIN Model m ON m.brand.id = b.id"
+                + " LEFT JOIN Listing l ON l.model.id = m.id"
+                + " GROUP BY b.id, b.name"
+                + " ORDER BY b.name, b.id",
+                Object[].class)
+                .getResultStream()
+                .map(row -> BrandInfo.builder()
+                        .id((Long) row[0])
+                        .name((String) row[1])
+                        .modelCount(((Number) row[2]).longValue())
+                        .hasListings(((Number) row[3]).longValue() > 0)
+                        .build())
+                .toList();
     }
 
     @Override
@@ -67,21 +78,13 @@ public class BrandJpaDao implements BrandDao {
     }
 
     @Override
-    public Map<Long, Long> getModelCountsByBrand() {
-        final Map<Long, Long> counts = new HashMap<>();
-        final List<Object[]> rows = em.createQuery(
-                "SELECT m.brand.id, COUNT(m.id) FROM Model m GROUP BY m.brand.id",
-                Object[].class).getResultList();
-        for (final Object[] row : rows) {
-            counts.put((Long) row[0], (Long) row[1]);
-        }
-        return counts;
-    }
-
-    @Override
-    public Set<Long> getBrandIdsWithListings() {
-        return new HashSet<>(em.createQuery(
-                "SELECT DISTINCT l.model.brand.id FROM Listing l",
-                Long.class).getResultList());
+    public boolean hasListings(Long brandId) {
+        return !em.createQuery(
+                "SELECT l.id FROM Listing l WHERE l.model.brand.id = :brandId",
+                Long.class)
+                .setParameter("brandId", brandId)
+                .setMaxResults(1)
+                .getResultList()
+                .isEmpty();
     }
 }

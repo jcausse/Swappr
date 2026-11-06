@@ -1,6 +1,7 @@
 package ar.edu.itba.paw.persistence;
 
 import ar.edu.itba.paw.model.Brand;
+import ar.edu.itba.paw.model.BrandInfo;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -18,9 +19,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.sql.DataSource;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = { TestConfig.class })
@@ -85,11 +84,19 @@ public class BrandJpaDaoTest {
     }
 
     @Test
-    public void testGetAllIsSortedByName() {
-        final List<Brand> brands = brandDao.getAll();
+    public void testGetAllWithStatsIsSortedAndIncludesCounts() {
+        final List<BrandInfo> brands = brandDao.getAllWithStats();
 
         Assert.assertEquals(List.of("Apple", "Dell", "Lenovo", "Samsung"),
-                brands.stream().map(Brand::getName).toList());
+                brands.stream().map(BrandInfo::getName).toList());
+        Assert.assertEquals(2L, brands.get(0).getModelCount());
+        Assert.assertFalse(brands.get(0).isHasListings());
+        Assert.assertEquals(2L, brands.get(1).getModelCount());
+        Assert.assertTrue(brands.get(1).isHasListings());
+        Assert.assertEquals(1L, brands.get(2).getModelCount());
+        Assert.assertFalse(brands.get(2).isHasListings());
+        Assert.assertEquals(1L, brands.get(3).getModelCount());
+        Assert.assertFalse(brands.get(3).isHasListings());
     }
 
     @Test
@@ -145,20 +152,17 @@ public class BrandJpaDaoTest {
     }
 
     @Test
-    public void testGetModelCountsByBrand() {
-        final Map<Long, Long> counts = brandDao.getModelCountsByBrand();
-
-        Assert.assertEquals(4, counts.size());
-        Assert.assertEquals(2L, (long) counts.get(APPLE_BRAND_ID));
-        Assert.assertEquals(2L, (long) counts.get(DELL_BRAND_ID));
-        Assert.assertEquals(1L, (long) counts.get(3L)); // Lenovo
-        Assert.assertEquals(1L, (long) counts.get(SAMSUNG_BRAND_ID));
+    public void testHasListingsForBrandWithListings() {
+        Assert.assertTrue(brandDao.hasListings(DELL_BRAND_ID));
     }
 
     @Test
-    public void testGetBrandIdsWithListings() {
-        final Set<Long> brandsWithListings = brandDao.getBrandIdsWithListings();
+    public void testHasListingsForBrandWithoutListings() {
+        Assert.assertFalse(brandDao.hasListings(APPLE_BRAND_ID));
+    }
 
-        Assert.assertEquals(Set.of(DELL_BRAND_ID), brandsWithListings);
+    @Test
+    public void testHasListingsForMissingBrand() {
+        Assert.assertFalse(brandDao.hasListings(NON_EXISTING_ID));
     }
 }

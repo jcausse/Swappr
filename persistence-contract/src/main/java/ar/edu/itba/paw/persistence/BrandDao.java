@@ -1,17 +1,16 @@
 package ar.edu.itba.paw.persistence;
 
 import ar.edu.itba.paw.model.Brand;
+import ar.edu.itba.paw.model.BrandInfo;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 
 public interface BrandDao {
     Optional<Brand> getById(Long id);
 
     Optional<Brand> getByName(String name);
 
-    List<Brand> getAll();
+    List<BrandInfo> getAllWithStats();
 
     List<Brand> getBySubcategoryId(Long subcategoryId);
 
@@ -19,7 +18,5 @@ public interface BrandDao {
 
     boolean delete(Long id);
 
-    Map<Long, Long> getModelCountsByBrand();
-
-    Set<Long> getBrandIdsWithListings();
+    boolean hasListings(Long brandId);
 }
