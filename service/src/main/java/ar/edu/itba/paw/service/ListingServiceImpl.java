@@ -60,14 +60,15 @@ public class ListingServiceImpl implements ListingService {
 
         final boolean onlyFree = Boolean.TRUE.equals(dto.onlyFree());
 
-        // the price range is hidden in the UI while "only free" is active
+        // the price range and the trade filter are hidden in the UI while "only free" is active,
+        // and a free listing never accepts trade, so both are ignored here
         final var filter = ListingFilter.builder()
             .categoryId(dto.categoryId())
             .subcategoryId(dto.subcategoryId())
             .minPrice(onlyFree ? null : sanitizePrice(dto.minPrice()))
             .maxPrice(onlyFree ? null : sanitizePrice(dto.maxPrice()))
             .condition(dto.condition())
-            .acceptsTrade(Boolean.TRUE.equals(dto.acceptsTrade()) ? Boolean.TRUE : null)
+            .acceptsTrade(!onlyFree && Boolean.TRUE.equals(dto.acceptsTrade()) ? Boolean.TRUE : null)
             .onlyFree(onlyFree ? Boolean.TRUE : null)
             .query(dto.query())
             .sort(dto.sort())

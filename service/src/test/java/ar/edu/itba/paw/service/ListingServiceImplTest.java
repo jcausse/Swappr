@@ -264,6 +264,45 @@ public class ListingServiceImplTest {
         Assert.assertNull(sent.getOnlyFree());
     }
 
+    @Test
+    public void testSearch_onlyFreeIgnoresAcceptsTrade() {
+        // Arrange
+        final ArgumentCaptor<ListingFilter> captor = ArgumentCaptor.forClass(ListingFilter.class);
+        when(listingDao.search(captor.capture())).thenReturn(new Page<>(List.of(), 1, PAGE_SIZE, 0));
+        final ListingFilterDto dto = ListingFilterDto.builder()
+            .onlyFree(Boolean.TRUE)
+            .acceptsTrade(Boolean.TRUE)
+            .page(1)
+            .pageSize(PAGE_SIZE)
+            .build();
+
+        // Act
+        listingService.search(dto);
+
+        // Assert
+        final ListingFilter sent = captor.getValue();
+        Assert.assertNull(sent.getAcceptsTrade());
+        Assert.assertEquals(Boolean.TRUE, sent.getOnlyFree());
+    }
+
+    @Test
+    public void testSearch_notOnlyFreeKeepsAcceptsTrade() {
+        // Arrange
+        final ArgumentCaptor<ListingFilter> captor = ArgumentCaptor.forClass(ListingFilter.class);
+        when(listingDao.search(captor.capture())).thenReturn(new Page<>(List.of(), 1, PAGE_SIZE, 0));
+        final ListingFilterDto dto = ListingFilterDto.builder()
+            .acceptsTrade(Boolean.TRUE)
+            .page(1)
+            .pageSize(PAGE_SIZE)
+            .build();
+
+        // Act
+        listingService.search(dto);
+
+        // Assert
+        Assert.assertEquals(Boolean.TRUE, captor.getValue().getAcceptsTrade());
+    }
+
     @Test(expected = NullPointerException.class)
     public void testSearchNullDtoThrows() {
         // Act

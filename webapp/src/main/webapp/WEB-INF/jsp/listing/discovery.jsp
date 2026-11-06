@@ -68,7 +68,9 @@
                             </div>
 
                             <div class="flex flex-col gap-1">
-                                <paw:checkbox path="acceptsTrade" id="acceptsTrade" value="true" label="${acceptsTradeLabel}"/>
+                                <c:if test="${not filterForm.onlyFree}">
+                                    <paw:checkbox path="acceptsTrade" id="acceptsTrade" value="true" label="${acceptsTradeLabel}"/>
+                                </c:if>
                                 <paw:checkbox path="acceptsShipping" id="acceptsShipping" value="true" label="${acceptsShippingLabel}"/>
                                 <paw:checkbox path="onlyFree" id="onlyFree" value="true" label="${onlyFreeLabel}"/>
                             </div>
