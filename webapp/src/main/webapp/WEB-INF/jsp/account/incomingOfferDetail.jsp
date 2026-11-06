@@ -51,6 +51,14 @@
                         </c:otherwise>
                     </c:choose>
                 </c:when>
+                <c:when test="${offer.forFreeListing}">
+                    <spring:message code="offer.detail.title.free" var="title">
+                        <spring:argument value="${offer.buyer.displayName}"/>
+                        <spring:argument value="${offer.listing.brand.name}"/>
+                        <spring:argument value="${offer.listing.model.name}"/>
+                        <spring:argument value="${offer.listing.year}"/>
+                    </spring:message>
+                </c:when>
                 <c:otherwise>
                     <spring:message code="offer.detail.title" var="title">
                         <spring:argument value="${offer.buyer.displayName}"/>
