@@ -12,10 +12,8 @@ import lombok.Setter;
 @Setter
 @Builder
 public class ModelListingInfo {
-    private Long brandId;
-    private String brand;
-    private Long modelId;
-    private String model;
+    private Brand brand;
+    private Model model;
     private Long listingCount;
     private Condition condition;
     private Price minPrice;

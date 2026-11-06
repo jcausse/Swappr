@@ -14,9 +14,7 @@ import lombok.Setter;
 @Setter
 @Builder
 public class ModelListingInfoSummary {
-    private Long brandId;
-    private String brand;
-    private Long modelId;
-    private String model;
+    private Brand brand;
+    private Model model;
     private List<ModelListingInfo> listingInfoByCondition;
 }

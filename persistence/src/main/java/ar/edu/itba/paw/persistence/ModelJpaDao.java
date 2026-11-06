@@ -13,7 +13,10 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Repository
@@ -94,36 +97,60 @@ public class ModelJpaDao implements ModelDao {
             return new Page<>(List.of(), page, pageSize, totalCount);
         }
 
+        final List<Model> models = em.createQuery(
+                "SELECT m FROM Model m JOIN FETCH m.brand WHERE m.id IN :modelIds",
+                Model.class)
+                .setParameter("modelIds", modelIds)
+                .getResultList();
+
+        final Map<Long, Model> modelById = new HashMap<>();
+        for (final Model model : models) {
+            modelById.put(model.getId(), model);
+        }
+
         final var yearWhere = new StringBuilder();
         if (fromYear != null) yearWhere.append(" AND l.year >= :yearFrom");
         if (toYear != null) yearWhere.append(" AND l.year <= :yearTo");
 
         final var query = em.createQuery(
-                "SELECT m.brand.id, m.brand.name, m.id, m.name, COUNT(l.condition), l.condition, MIN(l.price), MAX(l.price), AVG(l.price)"
+                "SELECT m.id, l.condition, COUNT(l.condition), MIN(l.price), MAX(l.price), AVG(l.price)"
                 + " FROM Listing l JOIN l.model m"
                 + " WHERE m.id IN :modelIds AND l.status = :status" + yearWhere
-                + " GROUP BY m.brand.id, m.brand.name, m.id, m.name, l.condition"
-                + " ORDER BY m.brand.name, m.name, l.condition",
+                + " GROUP BY m.id, l.condition"
+                + " ORDER BY m.id, l.condition",
                 Object[].class)
                 .setParameter("modelIds", modelIds)
                 .setParameter("status", ListingStatus.ACTIVE);
         if (fromYear != null) query.setParameter("yearFrom", fromYear);
         if (toYear != null) query.setParameter("yearTo", toYear);
 
-        final List<ModelListingInfo> content = query.getResultStream()
-                .map((fields) -> ModelListingInfo.builder()
-                    .brandId((Long) fields[0])
-                    .brand((String) fields[1])
-                    .modelId((Long) fields[2])
-                    .model((String) fields[3])
-                    .listingCount((Long) fields[4])
-                    .condition((Condition) fields[5])
-                    .minPrice((Price) fields[6])
-                    .maxPrice((Price) fields[7])
-                    .avgPrice(new Price(new BigDecimal((Double) fields[8])))
-                    .build()
-                )
-                .toList();
+        final Map<Long, List<ModelListingInfo>> infoByModelId = new HashMap<>();
+        for (final Object[] fields : query.getResultList()) {
+            final Long id = (Long) fields[0];
+            final Model model = modelById.get(id);
+            if (model == null) {
+                continue;
+            }
+            infoByModelId.computeIfAbsent(id, key -> new ArrayList<>()).add(ModelListingInfo.builder()
+                .brand(model.getBrand())
+                .model(model)
+                .condition((Condition) fields[1])
+                .listingCount((Long) fields[2])
+                .minPrice((Price) fields[3])
+                .maxPrice((Price) fields[4])
+                .avgPrice(new Price(new BigDecimal((Double) fields[5])))
+                .build());
+        }
+
+        final List<ModelListingInfo> content = new ArrayList<>();
+        for (final Long id : modelIds) {
+            final List<ModelListingInfo> infos = infoByModelId.get(id);
+            if (infos == null) {
+                continue;
+            }
+            infos.sort(Comparator.comparingInt(info -> info.getCondition().ordinal()));
+            content.addAll(infos);
+        }
 
         return new Page<>(content, page, pageSize, totalCount);
     }

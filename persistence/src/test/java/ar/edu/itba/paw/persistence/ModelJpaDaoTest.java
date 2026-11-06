@@ -117,17 +117,17 @@ public class ModelJpaDaoTest {
         Assert.assertEquals(4, content.size());
 
         final ModelListingInfo air = content.get(0);
-        Assert.assertEquals(APPLE_BRAND_ID, (long) air.getBrandId());
-        Assert.assertEquals("Apple", air.getBrand());
-        Assert.assertEquals(MACBOOK_AIR_MODEL_ID, (long) air.getModelId());
-        Assert.assertEquals("MacBook Air", air.getModel());
+        Assert.assertEquals(APPLE_BRAND_ID, (long) air.getBrand().getId());
+        Assert.assertEquals("Apple", air.getBrand().getName());
+        Assert.assertEquals(MACBOOK_AIR_MODEL_ID, (long) air.getModel().getId());
+        Assert.assertEquals("MacBook Air", air.getModel().getName());
         Assert.assertEquals(Condition.FAIR, air.getCondition());
         Assert.assertEquals(1L, (long) air.getListingCount());
         Assert.assertEquals(0, new BigDecimal("800.00").compareTo(air.getMinPrice().getAmount()));
 
         final ModelListingInfo proGood = findInfo(content, "MacBook Pro", Condition.GOOD);
         Assert.assertNotNull(proGood);
-        Assert.assertEquals(MACBOOK_PRO_MODEL_ID, (long) proGood.getModelId());
+        Assert.assertEquals(MACBOOK_PRO_MODEL_ID, (long) proGood.getModel().getId());
         Assert.assertEquals(1L, (long) proGood.getListingCount());
         Assert.assertEquals(0, new BigDecimal("1000.00").compareTo(proGood.getMinPrice().getAmount()));
         Assert.assertEquals(0, new BigDecimal("1000.00").compareTo(proGood.getMaxPrice().getAmount()));
@@ -147,8 +147,8 @@ public class ModelJpaDaoTest {
         Assert.assertEquals(2, secondPage.getPage());
         Assert.assertEquals(3, secondPage.getTotalCount());
         Assert.assertEquals(1, secondPage.getContent().size());
-        Assert.assertEquals("Dell", secondPage.getContent().get(0).getBrand());
-        Assert.assertEquals("XPS 15", secondPage.getContent().get(0).getModel());
+        Assert.assertEquals("Dell", secondPage.getContent().get(0).getBrand().getName());
+        Assert.assertEquals("XPS 15", secondPage.getContent().get(0).getModel().getName());
     }
 
     @Test
@@ -202,7 +202,7 @@ public class ModelJpaDaoTest {
     private static ModelListingInfo findInfo(final List<ModelListingInfo> content,
             final String model, final Condition condition) {
         return content.stream()
-            .filter(info -> model.equals(info.getModel()) && info.getCondition() == condition)
+            .filter(info -> model.equals(info.getModel().getName()) && info.getCondition() == condition)
             .findFirst()
             .orElse(null);
     }
