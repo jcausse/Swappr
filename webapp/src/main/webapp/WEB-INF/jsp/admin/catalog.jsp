@@ -1,6 +1,5 @@
 <%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ taglib prefix="spring" uri="http://www.springframework.org/tags" %>
 <%@ taglib prefix="paw" tagdir="/WEB-INF/tags" %>
 <%@ taglib prefix="admin" tagdir="/WEB-INF/tags/admin" %>
@@ -94,7 +93,7 @@
                                                 onclick="document.getElementById('renameBrandDialog-${brand.id}').showModal()"
                                             />
 
-                                            <c:if test="${fn:length(brandOptions) > 1}">
+                                            <c:if test="${not empty brandReplacementOptions[brand.id]}">
                                                 <paw:button
                                                     text="${replaceBrandLabel}"
                                                     type="button"
@@ -200,23 +199,18 @@
                 confirmText="${replaceBrandConfirm}"
                 cancelText="${replaceBrandCancel}"
                 formAction="${replaceBrandUrl}"
+                modelAttribute="replaceBrandForm"
             >
                 <div class="flex flex-col gap-3">
-                    <label for="replacementBrandId-${brand.id}" class="text-xs text-black/70 font-medium">
-                        <c:out value="${replaceBrandSelectLabel}"/>
-                    </label>
-                    <select
+                    <paw:formSelect
                         id="replacementBrandId-${brand.id}"
-                        name="replacementBrandId"
-                        class="px-3 py-2 rounded-lg text-sm border border-black/20 focus-visible:border-lime-600 focus-visible:outline-2 bg-white"
-                    >
-                        <option value=""><c:out value="${replaceBrandPlaceholder}"/></option>
-                        <c:forEach var="candidate" items="${brandOptions}">
-                            <c:if test="${candidate.id ne brand.id}">
-                                <option value="${candidate.id}"><c:out value="${candidate.name}"/></option>
-                            </c:if>
-                        </c:forEach>
-                    </select>
+                        path="replacementBrandId"
+                        label="${replaceBrandSelectLabel}"
+                        placeholder="${replaceBrandPlaceholder}"
+                        items="${brandReplacementOptions[brand.id]}"
+                        itemLabel="name"
+                        itemValue="id"
+                    />
                     <p class="text-xs text-red-600"><c:out value="${replaceBrandWarning}"/></p>
                 </div>
             </paw:formDialog>

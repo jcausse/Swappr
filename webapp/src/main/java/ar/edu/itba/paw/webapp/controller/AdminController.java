@@ -1,5 +1,6 @@
 package ar.edu.itba.paw.webapp.controller;
 
+import ar.edu.itba.paw.model.Brand;
 import ar.edu.itba.paw.model.BrandSort;
 import ar.edu.itba.paw.model.ListingStatus;
 import ar.edu.itba.paw.model.OfferStatusGroup;
@@ -40,6 +41,9 @@ import org.springframework.web.servlet.ModelAndView;
 import javax.validation.Valid;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Predicate;
 
@@ -83,11 +87,18 @@ public class AdminController {
     ) {
         LOGGER.debug("Admin {} accessed catalog management page: page={}, sort={}", currentUser.getUsername(), page, sort);
         final var brandsPage = catalogService.getBrands(sort, page, BRAND_PAGE_SIZE);
+        final List<Brand> allBrands = catalogService.getAllBrands();
+        final Map<Long, List<Brand>> replacementOptions = new HashMap<>();
+        for (final Brand brand : allBrands) {
+            replacementOptions.put(brand.getId(), allBrands.stream()
+                    .filter(candidate -> !candidate.getId().equals(brand.getId()))
+                    .toList());
+        }
         return new ModelAndView("admin/catalog")
                 .addObject("brands", brandsPage.getContent())
                 .addObject("brandsPage", brandsPage)
                 .addObject("currentSort", sort)
-                .addObject("brandOptions", catalogService.getAllBrands());
+                .addObject("brandReplacementOptions", replacementOptions);
     }
 
     @PostMapping("/catalog/brands")

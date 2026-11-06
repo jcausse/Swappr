@@ -5,7 +5,9 @@
 <%@ attribute name="cancelText" required="true" %>
 <%@ attribute name="formAction" required="true" %>
 <%@ attribute name="method" required="false" %>
+<%@ attribute name="modelAttribute" required="false" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
 <%@ taglib prefix="paw" tagdir="/WEB-INF/tags" %>
 
 <c:set var="formMethod" value="${not empty method ? method : 'post'}"/>
@@ -15,14 +17,30 @@
 
     <paw:divider />
 
-    <form action="${formAction}" method="${formMethod}">
-        <div class="text-sm text-black/60 mt-2 mb-6">
-            <jsp:doBody/>
-        </div>
+    <c:choose>
+        <c:when test="${not empty modelAttribute}">
+            <form:form modelAttribute="${modelAttribute}" action="${formAction}" method="${formMethod}">
+                <div class="text-sm text-black/60 mt-2 mb-6">
+                    <jsp:doBody/>
+                </div>
 
-        <div class="flex justify-end gap-2">
-            <paw:button variant="ghost" role="secondary" text="${cancelText}" onclick="document.getElementById('${id}').close()" />
-            <paw:button type="submit" text="${confirmText}" />
-        </div>
-    </form>
+                <div class="flex justify-end gap-2">
+                    <paw:button variant="ghost" role="secondary" text="${cancelText}" onclick="document.getElementById('${id}').close()" />
+                    <paw:button type="submit" text="${confirmText}" />
+                </div>
+            </form:form>
+        </c:when>
+        <c:otherwise>
+            <form action="${formAction}" method="${formMethod}">
+                <div class="text-sm text-black/60 mt-2 mb-6">
+                    <jsp:doBody/>
+                </div>
+
+                <div class="flex justify-end gap-2">
+                    <paw:button variant="ghost" role="secondary" text="${cancelText}" onclick="document.getElementById('${id}').close()" />
+                    <paw:button type="submit" text="${confirmText}" />
+                </div>
+            </form>
+        </c:otherwise>
+    </c:choose>
 </dialog>
