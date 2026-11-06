@@ -16,6 +16,7 @@ import ar.edu.itba.paw.persistence.CategoryDao;
 import ar.edu.itba.paw.persistence.ListingDao;
 import ar.edu.itba.paw.persistence.ModelDao;
 import ar.edu.itba.paw.persistence.SubcategoryDao;
+import ar.edu.itba.paw.service.dto.ModelOption;
 import ar.edu.itba.paw.service.exception.BadParameterException;
 import ar.edu.itba.paw.service.exception.NotFoundException;
 import lombok.NonNull;
@@ -25,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,6 +51,18 @@ public class CatalogServiceImpl implements CatalogService {
     @Override
     public List<Brand> getAllBrands() {
         return brandDao.getAll();
+    }
+
+    @Override
+    public Map<Long, List<Brand>> getBrandReplacementOptions() {
+        final List<Brand> brands = brandDao.getAll();
+        final Map<Long, List<Brand>> options = new HashMap<>();
+        for (final Brand brand : brands) {
+            options.put(brand.getId(), brands.stream()
+                .filter(candidate -> !candidate.getId().equals(brand.getId()))
+                .toList());
+        }
+        return options;
     }
 
     @Override
@@ -145,6 +159,22 @@ public class CatalogServiceImpl implements CatalogService {
     @Override
     public List<Model> getAllModels() {
         return modelDao.getAllWithBrand();
+    }
+
+    @Override
+    public Map<Long, List<ModelOption>> getModelReplacementOptions() {
+        final List<Model> models = modelDao.getAllWithBrand();
+        final Map<Long, List<ModelOption>> options = new HashMap<>();
+        for (final Model model : models) {
+            options.put(model.getId(), models.stream()
+                .filter(candidate -> !candidate.getId().equals(model.getId()))
+                .map(candidate -> ModelOption.builder()
+                    .id(candidate.getId())
+                    .label(candidate.getBrand().getName() + " — " + candidate.getName())
+                    .build())
+                .toList());
+        }
+        return options;
     }
 
     @Override

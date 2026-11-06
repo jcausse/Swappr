@@ -535,7 +535,7 @@
                         label="${replaceModelSelectLabel}"
                         placeholder="${replaceModelPlaceholder}"
                         items="${modelReplacementOptions[model.id]}"
-                        itemLabel="name"
+                        itemLabel="label"
                         itemValue="id"
                     />
                     <p class="text-xs text-red-600"><c:out value="${replaceModelWarning}"/></p>

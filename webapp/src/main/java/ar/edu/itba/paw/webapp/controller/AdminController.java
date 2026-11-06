@@ -3,7 +3,6 @@ package ar.edu.itba.paw.webapp.controller;
 import ar.edu.itba.paw.model.Brand;
 import ar.edu.itba.paw.model.BrandSort;
 import ar.edu.itba.paw.model.ListingStatus;
-import ar.edu.itba.paw.model.Model;
 import ar.edu.itba.paw.model.ModelSort;
 import ar.edu.itba.paw.model.OfferStatusGroup;
 import ar.edu.itba.paw.model.Role;
@@ -47,9 +46,7 @@ import org.springframework.web.servlet.ModelAndView;
 import javax.validation.Valid;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.function.Predicate;
 
@@ -104,27 +101,11 @@ public class AdminController {
                 modelFilterForm.getBrandId(), modelFilterForm.getSubcategoryId(),
                 modelSort, modelPage, MODEL_PAGE_SIZE);
         final List<Brand> allBrands = catalogService.getAllBrands();
-        final List<Model> allModels = catalogService.getAllModels();
-        final Map<Long, List<Brand>> replacementOptions = new HashMap<>();
-        for (final Brand brand : allBrands) {
-            replacementOptions.put(brand.getId(), allBrands.stream()
-                    .filter(candidate -> !candidate.getId().equals(brand.getId()))
-                    .toList());
-        }
-        final Map<Long, List<SelectOption>> modelReplacementOptions = new HashMap<>();
-        for (final Model model : allModels) {
-            modelReplacementOptions.put(model.getId(), allModels.stream()
-                    .filter(candidate -> !candidate.getId().equals(model.getId()))
-                    .map(candidate -> new SelectOption(
-                            candidate.getId(),
-                            candidate.getBrand().getName() + " — " + candidate.getName()))
-                    .toList());
-        }
         return new ModelAndView("admin/catalog")
                 .addObject("brands", brandsPage.getContent())
                 .addObject("brandsPage", brandsPage)
                 .addObject("currentSort", sort)
-                .addObject("brandReplacementOptions", replacementOptions)
+                .addObject("brandReplacementOptions", catalogService.getBrandReplacementOptions())
                 .addObject("brandOptions", allBrands)
                 .addObject("subcategoryOptions", catalogService.getAllSubcategories().stream()
                         .map(subcategory -> new SelectOption(
@@ -134,7 +115,7 @@ public class AdminController {
                 .addObject("models", modelsPage.getContent())
                 .addObject("modelsPage", modelsPage)
                 .addObject("currentModelSort", modelSort)
-                .addObject("modelReplacementOptions", modelReplacementOptions);
+                .addObject("modelReplacementOptions", catalogService.getModelReplacementOptions());
     }
 
     @PostMapping("/catalog/brands")
