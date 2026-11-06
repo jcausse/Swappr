@@ -29,6 +29,16 @@ public class BrandJpaDao implements BrandDao {
     }
 
     @Override
+    public boolean existsByNameAndIdNot(String name, Long id) {
+        return em.createQuery(
+                "SELECT COUNT(b) FROM Brand b WHERE b.name = :name AND b.id <> :id",
+                Long.class)
+                .setParameter("name", name)
+                .setParameter("id", id)
+                .getSingleResult() > 0;
+    }
+
+    @Override
     public List<BrandInfo> getAllWithStats() {
         return em.createQuery(
                 "SELECT b.id, b.name, COUNT(DISTINCT m.id), COUNT(DISTINCT l.id)"

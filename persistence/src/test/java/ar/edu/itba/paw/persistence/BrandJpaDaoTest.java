@@ -84,6 +84,21 @@ public class BrandJpaDaoTest {
     }
 
     @Test
+    public void testExistsByNameAndIdNotDetectsOtherBrand() {
+        Assert.assertTrue(brandDao.existsByNameAndIdNot("Dell", APPLE_BRAND_ID));
+    }
+
+    @Test
+    public void testExistsByNameAndIdNotIgnoresSameBrand() {
+        Assert.assertFalse(brandDao.existsByNameAndIdNot("Apple", APPLE_BRAND_ID));
+    }
+
+    @Test
+    public void testExistsByNameAndIdNotFalseForUnknownName() {
+        Assert.assertFalse(brandDao.existsByNameAndIdNot("Toshiba", APPLE_BRAND_ID));
+    }
+
+    @Test
     public void testGetAllWithStatsIsSortedAndIncludesCounts() {
         final List<BrandInfo> brands = brandDao.getAllWithStats();
 

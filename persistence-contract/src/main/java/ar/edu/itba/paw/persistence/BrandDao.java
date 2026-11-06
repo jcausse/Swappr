@@ -10,6 +10,8 @@ public interface BrandDao {
 
     Optional<Brand> getByName(String name);
 
+    boolean existsByNameAndIdNot(String name, Long id);
+
     List<BrandInfo> getAllWithStats();
 
     List<Brand> getBySubcategoryId(Long subcategoryId);

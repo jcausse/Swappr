@@ -164,37 +164,37 @@ public class CatalogServiceImplTest {
 
     @Test
     public void testRenameBrandTrimsName() {
-        when(brandDao.getById(eq(BRAND_ID))).thenReturn(Optional.of(buildFakeBrand()));
-        when(brandDao.getByName(eq("Apple Inc."))).thenReturn(Optional.empty());
+        when(brandDao.existsByNameAndIdNot(eq("Apple Inc."), eq(BRAND_ID))).thenReturn(false);
+        when(brandDao.rename(eq(BRAND_ID), eq("Apple Inc.")))
+                .thenReturn(Optional.of(Brand.builder().id(BRAND_ID).name("Apple Inc.").build()));
 
         catalogService.renameBrand(BRAND_ID, "  Apple Inc.  ");
     }
 
     @Test
     public void testRenameBrandToSameNameDoesNothing() {
-        when(brandDao.getById(eq(BRAND_ID))).thenReturn(Optional.of(buildFakeBrand()));
+        when(brandDao.existsByNameAndIdNot(eq("Apple"), eq(BRAND_ID))).thenReturn(false);
+        when(brandDao.rename(eq(BRAND_ID), eq("Apple"))).thenReturn(Optional.of(buildFakeBrand()));
 
         catalogService.renameBrand(BRAND_ID, "Apple");
     }
 
     @Test(expected = BadParameterException.class)
     public void testRenameBrandToExistingNameThrows() {
-        when(brandDao.getById(eq(BRAND_ID))).thenReturn(Optional.of(buildFakeBrand()));
-        when(brandDao.getByName(eq("Dell"))).thenReturn(Optional.of(Brand.builder().id(2L).name("Dell").build()));
+        when(brandDao.existsByNameAndIdNot(eq("Dell"), eq(BRAND_ID))).thenReturn(true);
 
         catalogService.renameBrand(BRAND_ID, "Dell");
     }
 
     @Test(expected = BadParameterException.class)
     public void testRenameBrandToBlankNameThrows() {
-        when(brandDao.getById(eq(BRAND_ID))).thenReturn(Optional.of(buildFakeBrand()));
-
         catalogService.renameBrand(BRAND_ID, "   ");
     }
 
     @Test(expected = NotFoundException.class)
     public void testRenameMissingBrandThrows() {
-        when(brandDao.getById(eq(NON_EXISTING_MODEL_ID))).thenReturn(Optional.empty());
+        when(brandDao.existsByNameAndIdNot(eq("New name"), eq(NON_EXISTING_MODEL_ID))).thenReturn(false);
+        when(brandDao.rename(eq(NON_EXISTING_MODEL_ID), eq("New name"))).thenReturn(Optional.empty());
 
         catalogService.renameBrand(NON_EXISTING_MODEL_ID, "New name");
     }

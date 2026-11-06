@@ -43,22 +43,15 @@ public class CatalogServiceImpl implements CatalogService {
     @Override
     @Transactional
     public void renameBrand(Long id, String name) {
-        final Brand brand = brandDao.getById(id)
-            .orElseThrow(() -> NotFoundException.createFor("Brand with ID " + id));
         final String trimmedName = name == null ? "" : name.trim();
         if (trimmedName.isEmpty()) {
             throw BadParameterException.create("name", "Brand name is required");
         }
-        if (trimmedName.equals(brand.getName())) {
-            return;
+        if (brandDao.existsByNameAndIdNot(trimmedName, id)) {
+            throw BadParameterException.create("name", "Brand name already exists");
         }
-
-        brandDao.getByName(trimmedName)
-            .ifPresent(existing -> {
-                throw BadParameterException.create("name", "Brand name already exists");
-            });
-
-        brandDao.rename(id, trimmedName);
+        brandDao.rename(id, trimmedName)
+            .orElseThrow(() -> NotFoundException.createFor("Brand with ID " + id));
     }
 
     @Override
