@@ -64,7 +64,7 @@
                 <c:out value="${notificationBody}"/>
             </p>
 
-            <c:if test="${notification.actionUrl.isPresent()}">
+            <c:if test="${notification.actionUrl.isPresent() and notification.showCallToAction()}">
                 <c:url value="${notification.actionUrl.get()}" var="ctaUrl"/>
                 <c:set var="ctaKey" value="${notification.actionLabelKey.isPresent() ? notification.actionLabelKey.get() : 'notifications.action.open'}"/>
                 <spring:message code="${ctaKey}" var="ctaLabel"/>

@@ -1,6 +1,7 @@
 package ar.edu.itba.paw.persistence;
 
 import ar.edu.itba.paw.model.NotificationType;
+import ar.edu.itba.paw.model.Offer;
 import ar.edu.itba.paw.model.Page;
 import ar.edu.itba.paw.model.SiteNotification;
 import ar.edu.itba.paw.model.SiteNotificationFilter;
@@ -30,7 +31,7 @@ public class SiteNotificationJpaDao implements SiteNotificationDao {
     @Override
     public Optional<SiteNotification> getById(long id) {
         return em.createQuery(
-                        "SELECT DISTINCT n FROM SiteNotification n LEFT JOIN FETCH n.bodyArgs WHERE n.id = :id",
+                        "SELECT DISTINCT n FROM SiteNotification n LEFT JOIN FETCH n.bodyArgs LEFT JOIN FETCH n.offer LEFT JOIN FETCH n.user WHERE n.id = :id",
                         SiteNotification.class)
                 .setParameter("id", id)
                 .getResultStream()
@@ -46,12 +47,17 @@ public class SiteNotificationJpaDao implements SiteNotificationDao {
             List<String> bodyArgs,
             String actionUrl,
             String actionLabelKey,
-            Instant createdAt
+            Instant createdAt,
+            Offer offer
     ) {
         final User userRef = em.getReference(User.class, user.getId());
+        final Offer offerRef = offer != null && offer.getId() != null
+                ? em.getReference(Offer.class, offer.getId())
+                : offer;
         final List<String> normalizedArgs = bodyArgs != null ? new ArrayList<>(bodyArgs) : new ArrayList<>();
         final SiteNotification notification = SiteNotification.builder()
                 .user(userRef)
+                .offer(offerRef)
                 .type(type)
                 .titleKey(titleKey)
                 .bodyKey(bodyKey)
@@ -64,6 +70,20 @@ public class SiteNotificationJpaDao implements SiteNotificationDao {
 
         em.persist(notification);
         return notification;
+    }
+
+    @Override
+    public SiteNotification create(
+            User user,
+            NotificationType type,
+            String titleKey,
+            String bodyKey,
+            List<String> bodyArgs,
+            String actionUrl,
+            String actionLabelKey,
+            Instant createdAt
+    ) {
+        return create(user, type, titleKey, bodyKey, bodyArgs, actionUrl, actionLabelKey, createdAt, null);
     }
 
     @Override
@@ -127,7 +147,7 @@ public class SiteNotificationJpaDao implements SiteNotificationDao {
 
         // 3. Population query (1+1 model - Step 2: load entities with bodyArgs and preserve order)
         final List<SiteNotification> fetched = em.createQuery(
-                        "SELECT DISTINCT n FROM SiteNotification n LEFT JOIN FETCH n.bodyArgs WHERE n.id IN :ids",
+                        "SELECT DISTINCT n FROM SiteNotification n LEFT JOIN FETCH n.bodyArgs LEFT JOIN FETCH n.offer LEFT JOIN FETCH n.user WHERE n.id IN :ids",
                         SiteNotification.class)
                 .setParameter("ids", ids)
                 .getResultList();
