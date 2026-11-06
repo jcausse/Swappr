@@ -23,6 +23,7 @@ import ar.edu.itba.paw.service.exception.NotFoundException;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
@@ -185,6 +186,51 @@ public class ListingServiceImplTest {
 
         // Assert
         Assert.assertSame(page, result);
+    }
+
+    @Test
+    public void testSearch_onlyFreeIgnoresPriceRange() {
+        // Arrange
+        final ArgumentCaptor<ListingFilter> captor = ArgumentCaptor.forClass(ListingFilter.class);
+        when(listingDao.search(captor.capture())).thenReturn(new Page<>(List.of(), 1, PAGE_SIZE, 0));
+        final ListingFilterDto dto = ListingFilterDto.builder()
+            .onlyFree(Boolean.TRUE)
+            .minPrice(new BigDecimal("10"))
+            .maxPrice(new BigDecimal("100"))
+            .page(1)
+            .pageSize(PAGE_SIZE)
+            .build();
+
+        // Act
+        listingService.search(dto);
+
+        // Assert
+        final ListingFilter sent = captor.getValue();
+        Assert.assertNull(sent.getMinPrice());
+        Assert.assertNull(sent.getMaxPrice());
+        Assert.assertEquals(Boolean.TRUE, sent.getOnlyFree());
+    }
+
+    @Test
+    public void testSearch_notOnlyFreeKeepsPriceRange() {
+        // Arrange
+        final ArgumentCaptor<ListingFilter> captor = ArgumentCaptor.forClass(ListingFilter.class);
+        when(listingDao.search(captor.capture())).thenReturn(new Page<>(List.of(), 1, PAGE_SIZE, 0));
+        final ListingFilterDto dto = ListingFilterDto.builder()
+            .minPrice(new BigDecimal("10"))
+            .maxPrice(new BigDecimal("100"))
+            .page(1)
+            .pageSize(PAGE_SIZE)
+            .build();
+
+        // Act
+        listingService.search(dto);
+
+        // Assert
+        final ListingFilter sent = captor.getValue();
+        Assert.assertEquals(new BigDecimal("10"), sent.getMinPrice());
+        Assert.assertEquals(new BigDecimal("100"), sent.getMaxPrice());
+        Assert.assertNull(sent.getOnlyFree());
     }
 
     @Test(expected = NullPointerException.class)
