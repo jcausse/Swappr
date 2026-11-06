@@ -27,11 +27,14 @@ final class SiteNotificationCreationDtoFactory {
             @NonNull final User buyer
     ) {
         final User seller = listing.getCreator();
+        final String bodyKey = listing.isFree()
+                ? "notification.purchaseConfirmed.free.body"
+                : "notification.purchaseConfirmed.body";
         return SiteNotificationCreationDto.builder()
                 .notificationRecipient(buyer)
                 .notificationType(NotificationType.PURCHASE_CONFIRMED)
                 .titleKey("notification.purchaseConfirmed.title")
-                .bodyKey("notification.purchaseConfirmed.body")
+                .bodyKey(bodyKey)
                 .bodyArgs(List.of(seller.getDisplayName(), listing.getTitle()))
                 .actionUrl("/account/my-offers?statusGroup=RESOLVED")
                 .actionLabelKey("notification.purchaseConfirmed.cta")
@@ -45,7 +48,10 @@ final class SiteNotificationCreationDtoFactory {
 
         final String bodyKey;
         final List<String> bodyArgs;
-        if (offer.getOfferedListing().isPresent()) {
+        if (offer.isForFreeListing()) {
+            bodyKey = "notification.newOffer.free.body";
+            bodyArgs = List.of(buyer.getDisplayName(), listing.getTitle());
+        } else if (offer.getOfferedListing().isPresent()) {
             final Listing offered = offer.getOfferedListing().get();
             if (hasCashSupplement(offer.getAmount())) {
                 bodyKey = "notification.newOffer.body.tradeWithCash";
@@ -90,7 +96,10 @@ final class SiteNotificationCreationDtoFactory {
 
         final String bodyKey;
         final List<String> bodyArgs;
-        if (offer.getOfferedListing().isPresent()) {
+        if (offer.isForFreeListing()) {
+            bodyKey = "notification.offerRejected.free.body";
+            bodyArgs = List.of(listing.getTitle());
+        } else if (offer.getOfferedListing().isPresent()) {
             final Listing offered = offer.getOfferedListing().get();
             if (hasCashSupplement(offer.getAmount())) {
                 bodyKey = "notification.offerRejected.body.tradeWithCash";
@@ -133,7 +142,10 @@ final class SiteNotificationCreationDtoFactory {
 
         final String bodyKey;
         final List<String> bodyArgs;
-        if (offer.getOfferedListing().isPresent()) {
+        if (offer.isForFreeListing()) {
+            bodyKey = "notification.offerWithdrawn.free.body";
+            bodyArgs = List.of(buyer.getDisplayName(), listing.getTitle());
+        } else if (offer.getOfferedListing().isPresent()) {
             final Listing offered = offer.getOfferedListing().get();
             if (hasCashSupplement(offer.getAmount())) {
                 bodyKey = "notification.offerWithdrawn.body.tradeWithCash";

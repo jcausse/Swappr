@@ -230,6 +230,101 @@ public class NotificationDispatcherServiceImplTest {
     }
 
     @Test
+    public void testNotifyNewOfferForFreeListing_sendsInterestBodyWithoutAmount() {
+        // Arrange
+        final User seller = buildUser(10L, "Seller Ana", Language.ENGLISH);
+        final User buyer = buildUser(20L, "Buyer Bob", Language.ENGLISH);
+        final Offer offer = buildFreeOffer(510L, buildFreeListing(101L, "Free Bookshelf", seller), buyer,
+                OfferStatus.PENDING);
+
+        final ArgumentCaptor<SiteNotificationCreationDto> siteCaptor =
+                ArgumentCaptor.forClass(SiteNotificationCreationDto.class);
+        when(siteNotificationService.create(siteCaptor.capture())).thenReturn(new SiteNotification());
+
+        // Act
+        dispatcher.notifyNewOffer(offer);
+
+        // Assert
+        final SiteNotificationCreationDto siteDto = siteCaptor.getValue();
+        Assert.assertSame(seller, siteDto.notificationRecipient());
+        Assert.assertEquals("notification.newOffer.free.body", siteDto.bodyKey());
+        Assert.assertEquals(List.of("Buyer Bob", "Free Bookshelf"), siteDto.bodyArgs());
+        Assert.assertEquals("/account/incoming-offers/510", siteDto.actionUrl());
+        Assert.assertEquals("notification.newOffer.cta", siteDto.actionLabelKey());
+    }
+
+    @Test
+    public void testNotifyOfferRejectedForFreeListing_sendsInterestBodyWithoutAmount() {
+        // Arrange
+        final User seller = buildUser(10L, "Seller Ana", Language.ENGLISH);
+        final User buyer = buildUser(20L, "Buyer Bob", Language.ENGLISH);
+        final Offer offer = buildFreeOffer(511L, buildFreeListing(101L, "Free Bookshelf", seller), buyer,
+                OfferStatus.REJECTED);
+
+        final ArgumentCaptor<SiteNotificationCreationDto> siteCaptor =
+                ArgumentCaptor.forClass(SiteNotificationCreationDto.class);
+        when(siteNotificationService.create(siteCaptor.capture())).thenReturn(new SiteNotification());
+
+        // Act
+        dispatcher.notifyOfferRejected(offer);
+
+        // Assert
+        final SiteNotificationCreationDto siteDto = siteCaptor.getValue();
+        Assert.assertSame(buyer, siteDto.notificationRecipient());
+        Assert.assertEquals("notification.offerRejected.free.body", siteDto.bodyKey());
+        Assert.assertEquals(List.of("Free Bookshelf"), siteDto.bodyArgs());
+        Assert.assertEquals("/listing", siteDto.actionUrl());
+        Assert.assertEquals("notification.offerRejected.cta", siteDto.actionLabelKey());
+    }
+
+    @Test
+    public void testNotifyOfferWithdrawnForFreeListing_sendsInterestBodyWithoutAmount() {
+        // Arrange
+        final User seller = buildUser(10L, "Seller Ana", Language.ENGLISH);
+        final User buyer = buildUser(20L, "Buyer Bob", Language.ENGLISH);
+        final Offer offer = buildFreeOffer(512L, buildFreeListing(101L, "Free Bookshelf", seller), buyer,
+                OfferStatus.WITHDRAWN);
+
+        final ArgumentCaptor<SiteNotificationCreationDto> siteCaptor =
+                ArgumentCaptor.forClass(SiteNotificationCreationDto.class);
+        when(siteNotificationService.create(siteCaptor.capture())).thenReturn(new SiteNotification());
+
+        // Act
+        dispatcher.notifyOfferWithdrawn(offer);
+
+        // Assert
+        final SiteNotificationCreationDto siteDto = siteCaptor.getValue();
+        Assert.assertSame(seller, siteDto.notificationRecipient());
+        Assert.assertEquals("notification.offerWithdrawn.free.body", siteDto.bodyKey());
+        Assert.assertEquals(List.of("Buyer Bob", "Free Bookshelf"), siteDto.bodyArgs());
+        Assert.assertEquals("/listing/101", siteDto.actionUrl());
+        Assert.assertEquals("notification.offerWithdrawn.cta", siteDto.actionLabelKey());
+    }
+
+    @Test
+    public void testNotifyPurchaseConfirmedForFreeListing_sendsDeliveryBodyWithoutPayment() {
+        // Arrange
+        final User seller = buildUser(10L, "Seller Ana", Language.ENGLISH);
+        final User buyer = buildUser(20L, "Buyer Bob", Language.ENGLISH);
+        final Listing freeListing = buildFreeListing(101L, "Free Bookshelf", seller);
+
+        final ArgumentCaptor<SiteNotificationCreationDto> siteCaptor =
+                ArgumentCaptor.forClass(SiteNotificationCreationDto.class);
+        when(siteNotificationService.create(siteCaptor.capture())).thenReturn(new SiteNotification());
+
+        // Act
+        dispatcher.notifyPurchaseConfirmed(freeListing, buyer);
+
+        // Assert
+        final SiteNotificationCreationDto siteDto = siteCaptor.getValue();
+        Assert.assertSame(buyer, siteDto.notificationRecipient());
+        Assert.assertEquals("notification.purchaseConfirmed.free.body", siteDto.bodyKey());
+        Assert.assertEquals(List.of("Seller Ana", "Free Bookshelf"), siteDto.bodyArgs());
+        Assert.assertEquals("/account/my-offers?statusGroup=RESOLVED", siteDto.actionUrl());
+        Assert.assertEquals("notification.purchaseConfirmed.cta", siteDto.actionLabelKey());
+    }
+
+    @Test
     public void testNotifyProofOfShippingUploadedIncludesTrackingNumberWhenPresent() {
         // Arrange
         final User seller = buildUser(10L, "Seller Ana", Language.ENGLISH);
@@ -444,6 +539,30 @@ public class NotificationDispatcherServiceImplTest {
                 .price(new Price(new BigDecimal("500.00")))
                 .condition(Condition.LIKE_NEW)
                 .status(ListingStatus.ACTIVE)
+                .build();
+    }
+
+    private static Listing buildFreeListing(final long id, final String title, final User creator) {
+        return Listing.builder()
+                .id(id)
+                .title(title)
+                .creator(creator)
+                .price(new Price(BigDecimal.ZERO))
+                .condition(Condition.LIKE_NEW)
+                .status(ListingStatus.ACTIVE)
+                .build();
+    }
+
+    private static Offer buildFreeOffer(final long id, final Listing listing, final User buyer,
+                                        final OfferStatus status) {
+        return Offer.builder()
+                .id(id)
+                .listing(listing)
+                .buyer(buyer)
+                .amount(BigDecimal.ZERO)
+                .isFullPrice(true)
+                .status(status)
+                .createdAt(Instant.now())
                 .build();
     }
 }
