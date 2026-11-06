@@ -119,9 +119,19 @@ While you as an AI agent are allowed to edit this file on your own, you must **a
 ### Product Discovery by Brand/Model
 
 - `/listing/by-product` (`ListingController#product`) renders `listing/byProduct.jsp` using `ProductSearchForm` as `productForm`.
-- It uses `ProductService#getListingInfoSummary` and displays, per product, the price range for each condition that has active listings. The page is paginated by product (10 per page) following the 1+1 query model: the DAO paginates product IDs first and then aggregates listings for those IDs by condition, brand and model.
-- Category and subcategory are chosen from button grids (mirroring the landing page) with breadcrumbs to step back. Once both are selected, brand/model/year filters appear; brand changes auto-submit and clear the model. The filter clear action keeps category and subcategory intact.
-- Each condition row links to `/listing` with category, subcategory, brand, model, condition, and any year filters applied.
+- It uses `CatalogService#getListingInfoSummary` and displays, per model, the price range for each condition that has active listings. The page is paginated by model (10 per page) following the 1+1 query model: the DAO paginates model IDs first and then aggregates listings for those IDs by condition.
+- Category and subcategory are chosen from button grids (mirroring the landing page) with breadcrumbs to step back. Once both are selected, brand/model/year filters appear (`brandId`/`modelId`); brand changes auto-submit and clear the model. The filter clear action keeps category and subcategory intact.
+- Each condition row links to `/listing` with category, subcategory, `brandId`, `modelId`, condition, and any year filters applied.
+
+### Catalog: Brands and Models
+
+- The legacy `products` table/entity/DAO were removed. Catalog data now lives in `Brand` and `Model` entities (`models` has `brand_id` and `subcategory_id`; `(model_name, brand_id)` is unique).
+- `Listing` references a `Model` and stores its own `int year`. Listings **must not** store a redundant brand column: use the custom `Listing#getBrand()` getter, which delegates to `model.getBrand()`, and query through `l.model.brand` in JPQL/native SQL.
+- `ListingFilter` brand/model filters use `brandId`/`modelId` (not names). `BrandDao#getBySubcategoryId` and `ModelDao#getBySubcategoryIdAndBrandId` expose the catalog.
+- `ModelDao#getListingInfoSummary` paginates model IDs and then aggregates listings with the 1+1 query model; DTOs are `ModelListingInfo` / `ModelListingInfoSummary`. Its aggregation uses entity grouping (`GROUP BY brand, model, condition`), which relies on PostgreSQL functional dependency and is therefore intentionally **not** covered by the HSQLDB DAO tests.
+- A single `CatalogService` (`CatalogServiceImpl`) owns all category/subcategory/brand/model reads and the model listing summary; there are no separate per-entity services. Listing creation/update DTOs carry `modelId` + `year`, and `ListingServiceImpl` resolves the model through `CatalogService` (never find-or-create catalog rows).
+- Users only select existing brands/models when creating listings; admin brand/model management is stage 2. The service and web layers are migrated to this catalog.
+- Listing creation keeps `year` in the choose-product step for UX and passes `modelId` + `year` to the details step via hidden form fields. The choose-product form has no custom/"other" brand or model option; brand and model selects are populated from `CatalogService`, and the details page's "change" link rehydrates category, subcategory, brand, model and year.
 
 ## Spring Security
 
@@ -312,6 +322,7 @@ JOIN categories c ON s.category_id = c.category_id;
   cp webapp/src/main/resources/env/dev/app.properties webapp/target/classes/app.properties
   ```
 - **Deploy**: **NEVER RUN DEPLOYMENTS AS AN AGENT**. Production deployments (`make prod-deploy`, `.script/deploy.py`) are strictly manual and must only be executed by the human developer.
+- **Production DB Clone**: `.script/clone_prod_db.py` (or `make prod-db-clone`) clones the production DB into a fresh local Docker container (`postgres:latest`) on a random port and container name to prevent collisions. Requires `.script/deploy_secrets.properties`.
 - Scripts live in `.script/` directory.
 
 

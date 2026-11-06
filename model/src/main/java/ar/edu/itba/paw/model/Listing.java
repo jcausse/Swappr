@@ -15,7 +15,7 @@ import java.util.Optional;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@ToString(exclude = {"images", "creator", "product"})
+@ToString(exclude = {"images", "creator", "model"})
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Entity
 @Table(name = "listings")
@@ -37,9 +37,12 @@ public class Listing {
     @JoinColumn(name = "creator_id")
     private User creator;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id")
-    private Product product;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "model_id", nullable = false)
+    private Model model;
+
+    @Column(name = "year", nullable = false)
+    private int year;
 
     @Embedded
     @AttributeOverride(name = "amount", column = @Column(name = "price", nullable = false, precision = 100, scale = 2))
@@ -120,5 +123,9 @@ public class Listing {
 
     public boolean isCreator(Optional<User> maybeUser) {
         return maybeUser.map(this::isCreator).orElse(false);
+    }
+
+    public Brand getBrand() {
+        return model != null ? model.getBrand() : null;
     }
 }

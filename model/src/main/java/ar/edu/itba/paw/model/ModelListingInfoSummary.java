@@ -13,8 +13,8 @@ import lombok.Setter;
 @Getter
 @Setter
 @Builder
-public class ProductListingInfoSummary {
-    private String brand;
-    private String model;
-    private List<ProductListingInfo> listingInfoByCondition;
+public class ModelListingInfoSummary {
+    private Brand brand;
+    private Model model;
+    private List<ModelListingInfo> listingInfoByCondition;
 }

@@ -66,9 +66,9 @@
                                                         <span class="flex-1 min-w-0">
                                                             <span class="block truncate text-sm font-medium text-black"><c:out value="${userListing.title}"/></span>
                                                             <span class="block truncate text-xs text-black/60">
-                                                                <c:out value="${userListing.product.brand}"/>
-                                                                <c:out value="${userListing.product.model}"/>
-                                                                (<c:out value="${userListing.product.year}"/>)
+                                                                <c:out value="${userListing.brand.name}"/>
+                                                                <c:out value="${userListing.model.name}"/>
+                                                                (<c:out value="${userListing.year}"/>)
                                                             </span>
                                                         </span>
                                                         <span class="trade-listing-check flex-shrink-0 text-lime-600 ${checkoutForm.offeredListingId == userListing.id ? '' : 'hidden'}">
@@ -119,12 +119,12 @@
                 </c:if>
             </c:forEach>
 
-            <spring:message code="category.${listing.product.subcategory.category.name}" var="productCategory" />
-            <spring:message code="subcategory.${listing.product.subcategory.name}" var="productSubcategory" />
+            <spring:message code="category.${listing.model.subcategory.category.name}" var="productCategory" />
+            <spring:message code="subcategory.${listing.model.subcategory.name}" var="productSubcategory" />
             <spring:message code="card.noImage" var="noImageLabel"/>
             <paw:card showImage="true"
                 title="${listing.title}"
-                subtitle="${listing.product.brand} ${listing.product.model} (${listing.product.year}) — ${productCategory} / ${productSubcategory}"
+                subtitle="${listing.brand.name} ${listing.model.name} (${listing.year}) — ${productCategory} / ${productSubcategory}"
                 imageUrl="${coverImageUrl}"
                 imageAlt="${listing.title}"
                 noImageLabel="${noImageLabel}"

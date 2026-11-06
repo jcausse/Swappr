@@ -30,9 +30,9 @@
             <div class="flex-1 min-w-0 flex flex-col justify-center">
                 <h2 class="text-xl font-semibold truncate"><c:out value="${offer.listing.title}"/></h2>
                 <p class="text-sm text-black/60 mt-1 truncate">
-                    <c:out value="${offer.listing.product.brand}"/>
-                    <c:out value="${offer.listing.product.model}"/>
-                    (<c:out value="${offer.listing.product.year}"/>)
+                    <c:out value="${offer.listing.brand.name}"/>
+                    <c:out value="${offer.listing.model.name}"/>
+                    (<c:out value="${offer.listing.year}"/>)
                 </p>
             </div>
         </div>

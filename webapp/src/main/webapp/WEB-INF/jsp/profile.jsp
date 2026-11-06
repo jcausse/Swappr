@@ -173,7 +173,7 @@
                                     <paw:listingImage listing="${listing}" />
 
                                     <div class="flex-1 min-w-0 flex flex-col justify-between">
-                                        <paw:product product="${listing.product}" size="sm" />
+                                        <paw:product model="${listing.model}" year="${listing.year}" size="sm" />
                                         <div class="text-xl font-bold mt-2 sm:mt-0">
                                             <paw:price amount="${listing.price.amount}"/>
                                         </div>

@@ -7,8 +7,8 @@ import ar.edu.itba.paw.model.ListingFilter;
 import ar.edu.itba.paw.model.ListingSort;
 import ar.edu.itba.paw.model.Page;
 import ar.edu.itba.paw.model.ListingStatus;
+import ar.edu.itba.paw.model.Model;
 import ar.edu.itba.paw.model.Price;
-import ar.edu.itba.paw.model.Product;
 import ar.edu.itba.paw.model.User;
 import ar.edu.itba.paw.persistence.ListingDao;
 import ar.edu.itba.paw.service.dto.ImageData;
@@ -40,7 +40,7 @@ public class ListingServiceImpl implements ListingService {
     private final ListingDao listingDao;
 
     private final UserService userService;
-    private final ProductService productService;
+    private final CatalogService catalogService;
     private final ImageService imageService;
     private final NotificationDispatcherService notificationDispatcherService;
     private final OfferService offerService;
@@ -74,8 +74,8 @@ public class ListingServiceImpl implements ListingService {
             .hasActiveOffers(dto.hasActiveOffers())
             .provinceId(dto.provinceId())
             .acceptsShipping(Boolean.TRUE.equals(dto.acceptsShipping()) ? Boolean.TRUE : null)
-            .brand(dto.brand())
-            .model(dto.model())
+            .brandId(dto.brandId())
+            .modelId(dto.modelId())
             .yearMin(dto.yearMin())
             .yearMax(dto.yearMax())
             .build();
@@ -115,16 +115,16 @@ public class ListingServiceImpl implements ListingService {
     @Transactional
     public Listing create(ListingCreationDto dto) {
         Objects.requireNonNull(dto, "ListingCreationDto cannot be null");
-        LOGGER.debug("Creating listing: title='{}', creatorId={}, productId={}", dto.title(), dto.creatorId(), dto.productId());
+        LOGGER.debug("Creating listing: title='{}', creatorId={}, modelId={}, year={}", dto.title(), dto.creatorId(), dto.modelId(), dto.year());
 
         User creator = userService.getById(dto.creatorId())
                 .orElseThrow(() -> new BadParameterException("Invalid creatorId"));
 
-        Product product;
+        Model model;
         try {
-            product = productService.getById(dto.productId());
+            model = catalogService.getModelById(dto.modelId());
         } catch (NotFoundException e) {
-            throw BadParameterException.create("productId", e.getMessage());
+            throw BadParameterException.create("modelId", e.getMessage());
         }
 
         List<Long> imageIds = new ArrayList<>();
@@ -148,7 +148,8 @@ public class ListingServiceImpl implements ListingService {
             dto.title(),
             new Price(dto.price()),
             creator,
-            product,
+            model,
+            dto.year(),
             condition,
             dto.acceptsTrade(),
             dto.acceptsShipping(),
@@ -218,11 +219,11 @@ public class ListingServiceImpl implements ListingService {
             throw new ForbiddenException("Cannot edit a canceled listing");
         }
 
-        Product product;
+        Model model;
         try {
-            product = productService.getById(dto.productId());
+            model = catalogService.getModelById(dto.modelId());
         } catch (NotFoundException e) {
-            throw BadParameterException.create("productId", e.getMessage());
+            throw BadParameterException.create("modelId", e.getMessage());
         }
 
         if (dto.condition() == null) {
@@ -234,7 +235,8 @@ public class ListingServiceImpl implements ListingService {
             existing.getId(),
             dto.title(),
             new Price(dto.price()),
-            product,
+            model,
+            dto.year(),
             condition,
             dto.acceptsTrade(),
             dto.acceptsShipping(),

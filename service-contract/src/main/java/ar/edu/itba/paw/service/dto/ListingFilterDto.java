@@ -23,8 +23,8 @@ public record ListingFilterDto(
     Boolean hasActiveOffers,
     Long provinceId,
     Boolean acceptsShipping,
-    String brand,
-    String model,
+    Long brandId,
+    Long modelId,
     Integer yearMin,
     Integer yearMax
 ) {}

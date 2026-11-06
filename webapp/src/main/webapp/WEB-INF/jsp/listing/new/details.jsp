@@ -5,7 +5,10 @@
 <%@ taglib prefix="spring" uri="http://www.springframework.org/tags" %>
 
 
-<c:url value="/listing/new/choose-product" var="backUrl"> <c:param name="productId" value="${detailsForm.productId}"/> </c:url>
+<c:url value="/listing/new/choose-product" var="backUrl">
+    <c:param name="modelId" value="${detailsForm.modelId}"/>
+    <c:param name="year" value="${detailsForm.year}"/>
+</c:url>
 <c:url value="${actionUrl}" var="detailsUrl"/>
 <spring:message code="listing.new.back" var="backLabel"/>
 <spring:message code="listing.new.changeProduct" var="changeProductLabel"/>
@@ -46,15 +49,18 @@
             <paw:divider />
 
             <form:form id="detailsForm" modelAttribute="detailsForm" action="${detailsUrl}" method="post" class="flex flex-col gap-6 mt-4" enctype="multipart/form-data">
-                <form:hidden path="productId"/>
+                <form:hidden path="modelId"/>
+                <form:hidden path="year"/>
 
                 <div class="flex flex-col">
                     <div class="text-xs text-black/70 font-medium">
                         <spring:message code="listing.new.product"/>
                     </div>
                     <div class="flex flex-row items-center justify-between">
-                        <paw:product product="${product}" />
-                        <paw:linkButton href="${backUrl}" text="${changeProductLabel}" variant="outline" />
+                        <paw:product model="${model}" year="${detailsForm.year}" />
+                        <c:if test="${not edit}">
+                            <paw:linkButton href="${backUrl}" text="${changeProductLabel}" variant="outline" />
+                        </c:if>
                     </div>
                 </div>
 
@@ -88,7 +94,8 @@
                 <div class="mt-2 flex justify-center gap-4">
                     <c:if test="${not edit}">
                         <c:url value="/listing/new/choose-product" var="backUrl">
-                            <c:param name="productId" value="${detailsForm.productId}"/>
+                            <c:param name="modelId" value="${detailsForm.modelId}"/>
+                            <c:param name="year" value="${detailsForm.year}"/>
                         </c:url>
                         <spring:message code="listing.new.back" var="backLabel"/>
                         <paw:linkButton href="${backUrl}" text="${backLabel}" size="lg" variant="outline" classname="w-40" />

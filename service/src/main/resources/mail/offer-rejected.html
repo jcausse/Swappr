@@ -36,12 +36,12 @@
                     <tr>
                         <td style="padding: 16px 40px 0; text-align: center;">
                             <th:block th:if="${offer.offeredListing.present}" th:with="offeredListing=${offer.offeredListing.get()}">
-                                <p th:text="#{email.offer.rejected.body.trade(${offeredListing.product.brand}, ${offeredListing.product.model}, ${offeredListing.product.year}, ${offer.amount != null and offer.amount > 0 ? #messages.msg('email.shared.tradeAndAmount', currencySymbol + ' ' + offer.amount) : ''}, ${listing.product.brand}, ${listing.product.model}, ${listing.product.year})}" style="margin: 0; font-size: 15px; line-height: 1.6; color: #525252;">
+                                <p th:text="#{email.offer.rejected.body.trade(${offeredListing.brand}, ${offeredListing.model}, ${offeredListing.year}, ${offer.amount != null and offer.amount > 0 ? #messages.msg('email.shared.tradeAndAmount', currencySymbol + ' ' + offer.amount) : ''}, ${listing.brand}, ${listing.model}, ${listing.year})}" style="margin: 0; font-size: 15px; line-height: 1.6; color: #525252;">
                                     Your offer was not accepted.
                                 </p>
                             </th:block>
                             <th:block th:unless="${offer.offeredListing.present}">
-                                <p th:text="#{email.offer.rejected.body(${currencySymbol + ' ' + offer.amount}, ${listing.product.brand}, ${listing.product.model}, ${listing.product.year})}" style="margin: 0; font-size: 15px; line-height: 1.6; color: #525252;">
+                                <p th:text="#{email.offer.rejected.body(${currencySymbol + ' ' + offer.amount}, ${listing.brand}, ${listing.model}, ${listing.year})}" style="margin: 0; font-size: 15px; line-height: 1.6; color: #525252;">
                                     Your offer was not accepted.
                                 </p>
                             </th:block>
@@ -69,7 +69,7 @@
                                     <td style="padding: 16px 20px;">
                                         <p style="margin: 0 0 8px; font-size: 14px; font-weight: 600; color: #171717;" th:text="${listing.title}">Listing Title</p>
                                         <p style="margin: 0 0 8px; font-size: 13px; color: #737373;">
-                                            <span th:text="${listing.product.brand + ' ' + listing.product.model + ' (' + #numbers.formatInteger(listing.product.year, 1, 'NONE') + ')'}">Brand Model (Year)</span>
+                                            <span th:text="${listing.brand + ' ' + listing.model + ' (' + #numbers.formatInteger(listing.year, 1, 'NONE') + ')'}">Brand Model (Year)</span>
                                         </p>
                                         <p style="margin: 0; font-size: 14px; font-weight: 700; color: #dc2626;">
                                             <span th:text="${currencySymbol + ' ' + offer.amount}">US$ 100</span>
@@ -106,7 +106,7 @@
                                                 <td style="vertical-align: top;">
                                                     <p style="margin: 0 0 4px; font-size: 14px; font-weight: 600; color: #171717;" th:text="${offeredListing.title}">Offered Listing Title</p>
                                                     <p style="margin: 0 0 4px; font-size: 13px; color: #737373;">
-                                                        <span th:text="${offeredListing.product.brand + ' ' + offeredListing.product.model + ' (' + #numbers.formatInteger(offeredListing.product.year, 1, 'NONE') + ')'}">Brand Model (Year)</span>
+                                                        <span th:text="${offeredListing.brand + ' ' + offeredListing.model + ' (' + #numbers.formatInteger(offeredListing.year, 1, 'NONE') + ')'}">Brand Model (Year)</span>
                                                     </p>
                                                     <p style="margin: 0; font-size: 14px; font-weight: 700; color: #65a30d;">
                                                         <span th:text="${currencySymbol + ' ' + offeredListing.price.amount}">US$ 100</span>

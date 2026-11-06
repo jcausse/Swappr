@@ -23,8 +23,8 @@ public final class ListingFilter {
     private final Boolean hasActiveOffers;
     private final Long provinceId;
     private final Boolean acceptsShipping;
-    private final String brand;
-    private final String model;
+    private final Long brandId;
+    private final Long modelId;
     private final Integer yearMin;
     private final Integer yearMax;
 }

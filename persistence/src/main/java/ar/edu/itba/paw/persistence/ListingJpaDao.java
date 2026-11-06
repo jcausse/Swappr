@@ -6,10 +6,10 @@ import ar.edu.itba.paw.model.Listing;
 import ar.edu.itba.paw.model.ListingFilter;
 import ar.edu.itba.paw.model.ListingSort;
 import ar.edu.itba.paw.model.ListingStatus;
+import ar.edu.itba.paw.model.Model;
 import ar.edu.itba.paw.model.OfferStatus;
 import ar.edu.itba.paw.model.Page;
 import ar.edu.itba.paw.model.Price;
-import ar.edu.itba.paw.model.Product;
 import ar.edu.itba.paw.model.User;
 import org.springframework.stereotype.Repository;
 
@@ -40,7 +40,8 @@ public class ListingJpaDao implements ListingDao {
         String title,
         Price price,
         User creator,
-        Product product,
+        Model model,
+        int year,
         Condition condition,
         boolean acceptsTrade,
         boolean acceptsShipping,
@@ -48,7 +49,7 @@ public class ListingJpaDao implements ListingDao {
         List<Long> imageIds
     ) {
         final User creatorRef = em.getReference(User.class, creator.getId());
-        final Product productRef = em.getReference(Product.class, product.getId());
+        final Model modelRef = em.getReference(Model.class, model.getId());
         final List<Image> images = imageIds != null
                 ? imageIds.stream().map(id -> em.getReference(Image.class, id)).collect(Collectors.toCollection(ArrayList::new))
                 : new ArrayList<>();
@@ -57,7 +58,8 @@ public class ListingJpaDao implements ListingDao {
                 .title(title)
                 .price(price)
                 .creator(creatorRef)
-                .product(productRef)
+                .model(modelRef)
+                .year(year)
                 .condition(condition)
                 .acceptsTrade(acceptsTrade)
                 .acceptsShipping(acceptsShipping)
@@ -75,27 +77,27 @@ public class ListingJpaDao implements ListingDao {
         final Map<String, Object> params = new HashMap<>();
 
         if (filter.getCategoryId() != null) {
-            whereClause.append(" AND l.product.subcategory.category.id = :categoryId");
+            whereClause.append(" AND l.model.subcategory.category.id = :categoryId");
             params.put("categoryId", filter.getCategoryId());
         }
         if (filter.getSubcategoryId() != null) {
-            whereClause.append(" AND l.product.subcategory.id = :subcategoryId");
+            whereClause.append(" AND l.model.subcategory.id = :subcategoryId");
             params.put("subcategoryId", filter.getSubcategoryId());
         }
-        if (filter.getBrand() != null && !filter.getBrand().isBlank()) {
-            whereClause.append(" AND l.product.brand = :brand");
-            params.put("brand", filter.getBrand());
+        if (filter.getBrandId() != null) {
+            whereClause.append(" AND l.model.brand.id = :brandId");
+            params.put("brandId", filter.getBrandId());
         }
-        if (filter.getModel() != null && !filter.getModel().isBlank()) {
-            whereClause.append(" AND l.product.model = :model");
-            params.put("model", filter.getModel());
+        if (filter.getModelId() != null) {
+            whereClause.append(" AND l.model.id = :modelId");
+            params.put("modelId", filter.getModelId());
         }
         if (filter.getYearMin() != null) {
-            whereClause.append(" AND l.product.year >= :yearMin");
+            whereClause.append(" AND l.year >= :yearMin");
             params.put("yearMin", filter.getYearMin());
         }
         if (filter.getYearMax() != null) {
-            whereClause.append(" AND l.product.year <= :yearMax");
+            whereClause.append(" AND l.year <= :yearMax");
             params.put("yearMax", filter.getYearMax());
         }
         if (filter.getMinPrice() != null) {
@@ -231,7 +233,8 @@ public class ListingJpaDao implements ListingDao {
         Long id,
         String title,
         Price price,
-        Product product,
+        Model model,
+        int year,
         Condition condition,
         boolean acceptsTrade,
         boolean acceptsShipping,
@@ -243,7 +246,8 @@ public class ListingJpaDao implements ListingDao {
         }
         listing.setTitle(title);
         listing.setPrice(price);
-        listing.setProduct(em.getReference(Product.class, product.getId()));
+        listing.setModel(em.getReference(Model.class, model.getId()));
+        listing.setYear(year);
         listing.setCondition(condition);
         listing.setAcceptsTrade(acceptsTrade);
         listing.setAcceptsShipping(acceptsShipping);

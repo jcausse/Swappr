@@ -11,9 +11,9 @@ import lombok.Setter;
 @Getter
 @Setter
 @Builder
-public class ProductListingInfo {
-    private String brand;
-    private String model;
+public class ModelListingInfo {
+    private Brand brand;
+    private Model model;
     private Long listingCount;
     private Condition condition;
     private Price minPrice;

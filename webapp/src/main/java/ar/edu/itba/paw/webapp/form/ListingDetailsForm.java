@@ -24,7 +24,10 @@ import org.springframework.web.multipart.MultipartFile;
 public class ListingDetailsForm {
 
     @NotNull
-    private Long productId;
+    private Long modelId;
+
+    @NotNull
+    private Integer year;
 
     @NotBlank
     @Size(min = 3, max = 100)

@@ -29,24 +29,24 @@
                         <c:when test="${offerAmount != null and offerAmount > 0.0}">
                             <spring:message code="offer.detail.title.tradeWithCash" var="title">
                                 <spring:argument value="${offer.buyer.displayName}"/>
-                                <spring:argument value="${offeredListing.product.brand}"/>
-                                <spring:argument value="${offeredListing.product.model}"/>
-                                <spring:argument value="${offeredListing.product.year}"/>
+                                <spring:argument value="${offeredListing.brand.name}"/>
+                                <spring:argument value="${offeredListing.model.name}"/>
+                                <spring:argument value="${offeredListing.year}"/>
                                 <spring:argument value="${currencySymbol} ${offerAmount}"/>
-                                <spring:argument value="${offer.listing.product.brand}"/>
-                                <spring:argument value="${offer.listing.product.model}"/>
-                                <spring:argument value="${offer.listing.product.year}"/>
+                                <spring:argument value="${offer.listing.brand.name}"/>
+                                <spring:argument value="${offer.listing.model.name}"/>
+                                <spring:argument value="${offer.listing.year}"/>
                             </spring:message>
                         </c:when>
                         <c:otherwise>
                             <spring:message code="offer.detail.title.trade" var="title">
                                 <spring:argument value="${offer.buyer.displayName}"/>
-                                <spring:argument value="${offeredListing.product.brand}"/>
-                                <spring:argument value="${offeredListing.product.model}"/>
-                                <spring:argument value="${offeredListing.product.year}"/>
-                                <spring:argument value="${offer.listing.product.brand}"/>
-                                <spring:argument value="${offer.listing.product.model}"/>
-                                <spring:argument value="${offer.listing.product.year}"/>
+                                <spring:argument value="${offeredListing.brand.name}"/>
+                                <spring:argument value="${offeredListing.model.name}"/>
+                                <spring:argument value="${offeredListing.year}"/>
+                                <spring:argument value="${offer.listing.brand.name}"/>
+                                <spring:argument value="${offer.listing.model.name}"/>
+                                <spring:argument value="${offer.listing.year}"/>
                             </spring:message>
                         </c:otherwise>
                     </c:choose>
@@ -55,9 +55,9 @@
                     <spring:message code="offer.detail.title" var="title">
                         <spring:argument value="${offer.buyer.displayName}"/>
                         <spring:argument value="${currencySymbol} ${offer.amount}"/>
-                        <spring:argument value="${offer.listing.product.brand}"/>
-                        <spring:argument value="${offer.listing.product.model}"/>
-                        <spring:argument value="${offer.listing.product.year}"/>
+                        <spring:argument value="${offer.listing.brand.name}"/>
+                        <spring:argument value="${offer.listing.model.name}"/>
+                        <spring:argument value="${offer.listing.year}"/>
                     </spring:message>
                 </c:otherwise>
             </c:choose>
@@ -83,9 +83,9 @@
             <div class="flex-1 min-w-0 flex flex-col justify-center">
                 <h2 class="text-xl font-semibold"><c:out value="${offer.listing.title}"/></h2>
                 <p class="text-sm text-black/60 mt-1">
-                    <c:out value="${offer.listing.product.brand}"/>
-                    <c:out value="${offer.listing.product.model}"/>
-                    (<c:out value="${offer.listing.product.year}"/>)
+                    <c:out value="${offer.listing.brand.name}"/>
+                    <c:out value="${offer.listing.model.name}"/>
+                    (<c:out value="${offer.listing.year}"/>)
                 </p>
             </div>
         </div>
@@ -107,9 +107,9 @@
                             <c:out value="${offeredListing.title}"/>
                         </a>
                         <p class="text-sm text-black/60 mt-1">
-                            <c:out value="${offeredListing.product.brand}"/>
-                            <c:out value="${offeredListing.product.model}"/>
-                            (<c:out value="${offeredListing.product.year}"/>)
+                            <c:out value="${offeredListing.brand.name}"/>
+                            <c:out value="${offeredListing.model.name}"/>
+                            (<c:out value="${offeredListing.year}"/>)
                         </p>
                         <p class="text-sm text-black/60 mt-1">
                             <paw:price amount="${offeredListing.price.amount}"/>
