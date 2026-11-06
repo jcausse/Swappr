@@ -113,6 +113,10 @@ public class OfferServiceImpl implements OfferService {
         final var listing = listingService.getById(dto.listingId());
         final var listingPrice = listing.getPrice().getAmount();
 
+        if (listing.isFree() && dto.offerType() != OfferType.FULL) {
+            throw BadParameterException.create("offerType", "Free listings only accept interest offers");
+        }
+
         final BigDecimal amount = switch (dto.offerType()) {
             case FULL -> listingPrice;
             case CUSTOM -> dto.customAmount();

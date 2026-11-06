@@ -209,7 +209,7 @@ public class Offer {
     }
 
     public boolean canUploadDocuments() {
-        return isPendingPayment();
+        return isPendingPayment() && !isForFreeListing();
     }
 
     public boolean canBeRatedBy(RatingRole userRole) {
