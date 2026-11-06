@@ -119,7 +119,7 @@ While you as an AI agent are allowed to edit this file on your own, you must **a
 ### Product Discovery by Brand/Model
 
 - `/listing/by-product` (`ListingController#product`) renders `listing/byProduct.jsp` using `ProductSearchForm` as `productForm`.
-- It uses `ProductService#getListingInfoSummary` and displays, per product, the price range for each condition that has active listings. The page is paginated by product (10 per page) following the 1+1 query model: the DAO paginates product IDs first and then aggregates listings for those IDs by condition, brand and model.
+- It uses `CatalogService#getListingInfoSummary` and displays, per model, the price range for each condition that has active listings. The page is paginated by model (10 per page) following the 1+1 query model: the DAO paginates model IDs first and then aggregates listings for those IDs by condition.
 - Category and subcategory are chosen from button grids (mirroring the landing page) with breadcrumbs to step back. Once both are selected, brand/model/year filters appear; brand changes auto-submit and clear the model. The filter clear action keeps category and subcategory intact.
 - Each condition row links to `/listing` with category, subcategory, brand, model, condition, and any year filters applied.
 
@@ -129,7 +129,8 @@ While you as an AI agent are allowed to edit this file on your own, you must **a
 - `Listing` references a `Model` and stores its own `int year`. Listings **must not** store a redundant brand column: use the custom `Listing#getBrand()` getter, which delegates to `model.getBrand()`, and query through `l.model.brand` in JPQL/native SQL.
 - `ListingFilter` brand/model filters use `brandId`/`modelId` (not names). `BrandDao#getBySubcategoryId` and `ModelDao#getBySubcategoryIdAndBrandId` expose the catalog.
 - `ModelDao#getListingInfoSummary` paginates model IDs and then aggregates listings with the 1+1 query model; DTOs are `ModelListingInfo` / `ModelListingInfoSummary`. Its aggregation uses entity grouping (`GROUP BY brand, model, condition`), which relies on PostgreSQL functional dependency and is therefore intentionally **not** covered by the HSQLDB DAO tests.
-- Users will only select existing brands/models when creating listings; admin brand/model management is stage 2. The service and web layers still need to be migrated to this catalog.
+- A single `CatalogService` (`CatalogServiceImpl`) owns all category/subcategory/brand/model reads and the model listing summary; there are no separate per-entity services. Listing creation/update DTOs carry `modelId` + `year`, and `ListingServiceImpl` resolves the model through `CatalogService` (never find-or-create catalog rows).
+- Users will only select existing brands/models when creating listings; admin brand/model management is stage 2. The service layer is migrated; the web layer still needs to be migrated to this catalog.
 
 ## Spring Security
 

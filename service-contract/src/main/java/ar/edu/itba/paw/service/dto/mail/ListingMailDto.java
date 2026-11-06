@@ -15,13 +15,14 @@ public class ListingMailDto {
     Long id;
     String title;
     Price price;
-    ProductMailDto product;
+    String brand;
+    String model;
+    int year;
     List<Long> imageIds;
 
     public static ListingMailDto from(final @NonNull Listing listing) {
-        final var product = listing.getProduct() != null
-                ? ProductMailDto.from(listing.getProduct())
-                : null;
+        final var brand = listing.getBrand();
+        final var model = listing.getModel();
         final List<Long> imageIds = listing.getImageIds() != null
                 ? List.copyOf(listing.getImageIds())
                 : List.of();
@@ -29,7 +30,9 @@ public class ListingMailDto {
                 .id(listing.getId())
                 .title(listing.getTitle())
                 .price(listing.getPrice())
-                .product(product)
+                .brand(brand != null ? brand.getName() : null)
+                .model(model != null ? model.getName() : null)
+                .year(listing.getYear())
                 .imageIds(imageIds)
                 .build();
     }
