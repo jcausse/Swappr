@@ -11,6 +11,7 @@
 <c:url value="/admin/listings" var="listingsUrl"/>
 <c:url value="/admin/offers" var="offersUrl"/>
 <c:url value="/admin/users" var="usersUrl"/>
+<c:url value="/admin/catalog" var="catalogUrl"/>
 <c:url value="/admin/listings/takedown" var="takedownListingUrl"/>
 <c:url value="/admin/offers/takedown" var="takedownOfferUrl"/>
 <c:url value="/admin/users/suspend" var="suspendUserUrl"/>
@@ -19,7 +20,7 @@
 <admin:layout titleKey="admin.dashboard.title" title="${dashboardTitle}" subtitle="${dashboardSubtitle}">
     <div class="flex flex-col gap-6">
         <%-- Quick Navigation Cards --%>
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <paw:card classname="p-5 flex flex-col justify-between hover:border-black/20 transition">
                 <div class="flex items-center gap-3 mb-2">
                     <span class="p-2 rounded-lg bg-lime-100 text-lime-700">
@@ -61,6 +62,20 @@
                 <spring:message code="admin.dashboard.manageUsers" var="manageUsersText"/>
                 <paw:linkButton href="${usersUrl}" text="${manageUsersText}" variant="outline" size="sm" icon="arrow-right"/>
             </paw:card>
+            <paw:card classname="p-5 flex flex-col justify-between hover:border-black/20 transition">
+                <div class="flex items-center gap-3 mb-2">
+                    <span class="p-2 rounded-lg bg-orange-100 text-orange-700">
+                        <paw:icon name="tags"/>
+                    </span>
+                    <spring:message code="admin.sidebar.catalog" var="catalogCardTitle"/>
+                    <h2 class="font-semibold text-base"><c:out value="${catalogCardTitle}"/></h2>
+                </div>
+                <spring:message code="admin.dashboard.catalogDesc" var="catalogCardDesc"/>
+                <p class="text-xs text-black/60 mb-4"><c:out value="${catalogCardDesc}"/></p>
+                <spring:message code="admin.dashboard.manageCatalog" var="manageCatalogText"/>
+                <paw:linkButton href="${catalogUrl}" text="${manageCatalogText}" variant="outline" size="sm" icon="arrow-right"/>
+            </paw:card>
+
         </div>
 
         <%-- Quick Actions Section --%>

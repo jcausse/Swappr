@@ -13,6 +13,8 @@ import ar.edu.itba.paw.persistence.BrandDao;
 import ar.edu.itba.paw.persistence.CategoryDao;
 import ar.edu.itba.paw.persistence.ModelDao;
 import ar.edu.itba.paw.persistence.SubcategoryDao;
+import ar.edu.itba.paw.service.dto.BrandInfo;
+import ar.edu.itba.paw.service.exception.BadParameterException;
 import ar.edu.itba.paw.service.exception.NotFoundException;
 import org.junit.Assert;
 import org.junit.Test;
@@ -23,7 +25,9 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.when;
@@ -142,6 +146,98 @@ public class CatalogServiceImplTest {
         final List<Model> result = catalogService.getModelsBySubcategoryAndBrand(SUBCATEGORY_ID, BRAND_ID);
 
         Assert.assertEquals(models, result);
+    }
+
+    /* ---------------------------------------------------------------------------------------------- */
+    /* brand management                                                                                */
+    /* ---------------------------------------------------------------------------------------------- */
+
+    @Test
+    public void testGetAllBrandsIncludesModelCountsAndListingFlag() {
+        final Brand apple = buildFakeBrand();
+        final Brand dell = Brand.builder().id(2L).name("Dell").build();
+        when(brandDao.getAll()).thenReturn(List.of(apple, dell));
+        when(brandDao.getModelCountsByBrand()).thenReturn(Map.of(1L, 2L, 2L, 0L));
+        when(brandDao.getBrandIdsWithListings()).thenReturn(Set.of(1L));
+
+        final List<BrandInfo> brands = catalogService.getAllBrands();
+
+        Assert.assertEquals(2, brands.size());
+        Assert.assertEquals("Apple", brands.get(0).getName());
+        Assert.assertEquals(2L, brands.get(0).getModelCount());
+        Assert.assertTrue(brands.get(0).isHasListings());
+        Assert.assertEquals("Dell", brands.get(1).getName());
+        Assert.assertEquals(0L, brands.get(1).getModelCount());
+        Assert.assertFalse(brands.get(1).isHasListings());
+    }
+
+    @Test
+    public void testRenameBrandUpdatesName() {
+        final Brand apple = buildFakeBrand();
+        final Brand renamed = Brand.builder().id(BRAND_ID).name("Apple Inc.").build();
+        when(brandDao.getById(eq(BRAND_ID))).thenReturn(Optional.of(apple));
+        when(brandDao.getByName(eq("Apple Inc."))).thenReturn(Optional.empty());
+        when(brandDao.rename(eq(BRAND_ID), eq("Apple Inc."))).thenReturn(Optional.of(renamed));
+
+        final Brand result = catalogService.renameBrand(BRAND_ID, "  Apple Inc.  ");
+
+        Assert.assertEquals("Apple Inc.", result.getName());
+    }
+
+    @Test
+    public void testRenameBrandToSameNameReturnsExistingBrand() {
+        final Brand apple = buildFakeBrand();
+        when(brandDao.getById(eq(BRAND_ID))).thenReturn(Optional.of(apple));
+
+        final Brand result = catalogService.renameBrand(BRAND_ID, "Apple");
+
+        Assert.assertSame(apple, result);
+    }
+
+    @Test(expected = BadParameterException.class)
+    public void testRenameBrandToExistingNameThrows() {
+        when(brandDao.getById(eq(BRAND_ID))).thenReturn(Optional.of(buildFakeBrand()));
+        when(brandDao.getByName(eq("Dell"))).thenReturn(Optional.of(Brand.builder().id(2L).name("Dell").build()));
+
+        catalogService.renameBrand(BRAND_ID, "Dell");
+    }
+
+    @Test(expected = BadParameterException.class)
+    public void testRenameBrandToBlankNameThrows() {
+        when(brandDao.getById(eq(BRAND_ID))).thenReturn(Optional.of(buildFakeBrand()));
+
+        catalogService.renameBrand(BRAND_ID, "   ");
+    }
+
+    @Test(expected = NotFoundException.class)
+    public void testRenameMissingBrandThrows() {
+        when(brandDao.getById(eq(NON_EXISTING_MODEL_ID))).thenReturn(Optional.empty());
+
+        catalogService.renameBrand(NON_EXISTING_MODEL_ID, "New name");
+    }
+
+    @Test
+    public void testDeleteBrandDelegates() {
+        when(brandDao.getById(eq(BRAND_ID))).thenReturn(Optional.of(buildFakeBrand()));
+        when(brandDao.getBrandIdsWithListings()).thenReturn(Set.of(2L));
+        when(brandDao.delete(eq(BRAND_ID))).thenReturn(true);
+
+        catalogService.deleteBrand(BRAND_ID);
+    }
+
+    @Test(expected = BadParameterException.class)
+    public void testDeleteBrandWithListingsThrows() {
+        when(brandDao.getById(eq(BRAND_ID))).thenReturn(Optional.of(buildFakeBrand()));
+        when(brandDao.getBrandIdsWithListings()).thenReturn(Set.of(BRAND_ID));
+
+        catalogService.deleteBrand(BRAND_ID);
+    }
+
+    @Test(expected = NotFoundException.class)
+    public void testDeleteMissingBrandThrows() {
+        when(brandDao.getById(eq(NON_EXISTING_MODEL_ID))).thenReturn(Optional.empty());
+
+        catalogService.deleteBrand(NON_EXISTING_MODEL_ID);
     }
 
     /* ---------------------------------------------------------------------------------------------- */

@@ -5,6 +5,7 @@ import ar.edu.itba.paw.model.OfferStatusGroup;
 import ar.edu.itba.paw.model.Role;
 import ar.edu.itba.paw.model.User;
 import ar.edu.itba.paw.service.AdminService;
+import ar.edu.itba.paw.service.CatalogService;
 import ar.edu.itba.paw.service.ListingService;
 import ar.edu.itba.paw.service.OfferService;
 import ar.edu.itba.paw.service.UserService;
@@ -15,6 +16,7 @@ import ar.edu.itba.paw.service.exception.NotFoundException;
 import ar.edu.itba.paw.service.exception.SelfSuspendException;
 import ar.edu.itba.paw.webapp.auth.CurrentUser;
 import ar.edu.itba.paw.webapp.form.AdminGrantRoleForm;
+import ar.edu.itba.paw.webapp.form.AdminRenameBrandForm;
 import ar.edu.itba.paw.webapp.form.AdminSuspendUserForm;
 import ar.edu.itba.paw.webapp.form.AdminTakeDownListingForm;
 import ar.edu.itba.paw.webapp.form.AdminTakeDownOfferForm;
@@ -47,6 +49,7 @@ public class AdminController {
     private static final Predicate<String> ADMIN_PATH_FILTER = RedirectHelper.hasPathPrefix("/admin");
 
     private final AdminService adminService;
+    private final CatalogService catalogService;
     private final ListingService listingService;
     private final OfferService offerService;
     private final UserService userService;
@@ -62,6 +65,63 @@ public class AdminController {
     ) {
         LOGGER.info("Admin {} accessed dashboard", currentUser.getUsername());
         return new ModelAndView("admin/dashboard");
+    }
+
+    @GetMapping("/catalog")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ModelAndView catalog(
+            @CurrentUser User currentUser,
+            @ModelAttribute("renameBrandForm") AdminRenameBrandForm renameBrandForm
+    ) {
+        LOGGER.debug("Admin {} accessed catalog management page", currentUser.getUsername());
+        return new ModelAndView("admin/catalog")
+                .addObject("brands", catalogService.getAllBrands());
+    }
+
+    @PostMapping("/catalog/brands/{id}/rename")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ModelAndView renameBrand(
+            @CurrentUser User currentUser,
+            @PathVariable Long id,
+            @Valid @ModelAttribute("renameBrandForm") AdminRenameBrandForm form,
+            BindingResult errors
+    ) {
+        LOGGER.info("Admin {} requested rename for brand {}", currentUser.getUsername(), id);
+        if (errors.hasErrors()) {
+            return new ModelAndView("redirect:/admin/catalog?error=brandInvalidName");
+        }
+
+        try {
+            catalogService.renameBrand(id, form.getName());
+        } catch (NotFoundException e) {
+            LOGGER.warn("Brand {} not found for rename", id);
+            return new ModelAndView("redirect:/admin/catalog?error=brandNotFound");
+        } catch (BadParameterException e) {
+            LOGGER.warn("Brand {} could not be renamed: {}", id, e.getMessage());
+            return new ModelAndView("redirect:/admin/catalog?error=brandNameTaken");
+        }
+
+        return new ModelAndView("redirect:/admin/catalog?success=brand_renamed");
+    }
+
+    @PostMapping("/catalog/brands/{id}/delete")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ModelAndView deleteBrand(
+            @CurrentUser User currentUser,
+            @PathVariable Long id
+    ) {
+        LOGGER.info("Admin {} requested deletion of brand {}", currentUser.getUsername(), id);
+        try {
+            catalogService.deleteBrand(id);
+        } catch (NotFoundException e) {
+            LOGGER.warn("Brand {} not found for deletion", id);
+            return new ModelAndView("redirect:/admin/catalog?error=brandNotFound");
+        } catch (BadParameterException e) {
+            LOGGER.warn("Brand {} could not be deleted: {}", id, e.getMessage());
+            return new ModelAndView("redirect:/admin/catalog?error=brandHasListings");
+        }
+
+        return new ModelAndView("redirect:/admin/catalog?success=brand_deleted");
     }
 
     @GetMapping("/listings")

@@ -11,6 +11,8 @@ import ar.edu.itba.paw.persistence.BrandDao;
 import ar.edu.itba.paw.persistence.CategoryDao;
 import ar.edu.itba.paw.persistence.ModelDao;
 import ar.edu.itba.paw.persistence.SubcategoryDao;
+import ar.edu.itba.paw.service.dto.BrandInfo;
+import ar.edu.itba.paw.service.exception.BadParameterException;
 import ar.edu.itba.paw.service.exception.NotFoundException;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +24,7 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @RequiredArgsConstructor
 @Service
@@ -32,6 +35,57 @@ public class CatalogServiceImpl implements CatalogService {
     private final SubcategoryDao subcategoryDao;
     private final BrandDao brandDao;
     private final ModelDao modelDao;
+
+    @Override
+    public List<BrandInfo> getAllBrands() {
+        final Map<Long, Long> modelCounts = brandDao.getModelCountsByBrand();
+        final Set<Long> brandsWithListings = brandDao.getBrandIdsWithListings();
+        return brandDao.getAll().stream()
+            .map(brand -> BrandInfo.builder()
+                .id(brand.getId())
+                .name(brand.getName())
+                .modelCount(modelCounts.getOrDefault(brand.getId(), 0L))
+                .hasListings(brandsWithListings.contains(brand.getId()))
+                .build())
+            .toList();
+    }
+
+    @Override
+    @Transactional
+    public Brand renameBrand(Long id, String name) {
+        final Brand brand = brandDao.getById(id)
+            .orElseThrow(() -> NotFoundException.createFor("Brand with ID " + id));
+        final String trimmedName = name == null ? "" : name.trim();
+        if (trimmedName.isEmpty()) {
+            throw BadParameterException.create("name", "Brand name is required");
+        }
+        if (trimmedName.equals(brand.getName())) {
+            return brand;
+        }
+
+        brandDao.getByName(trimmedName)
+            .filter(existing -> !existing.getId().equals(id))
+            .ifPresent(existing -> {
+                throw BadParameterException.create("name", "Brand name already exists");
+            });
+
+        return brandDao.rename(id, trimmedName)
+            .orElseThrow(() -> NotFoundException.createFor("Brand with ID " + id));
+    }
+
+    @Override
+    @Transactional
+    public void deleteBrand(Long id) {
+        brandDao.getById(id)
+            .orElseThrow(() -> NotFoundException.createFor("Brand with ID " + id));
+
+        if (brandDao.getBrandIdsWithListings().contains(id)) {
+            throw BadParameterException.create("brand", "Brand has listings");
+        }
+        if (!brandDao.delete(id)) {
+            throw NotFoundException.createFor("Brand with ID " + id);
+        }
+    }
 
     @Override
     public List<Category> getAllCategories() {

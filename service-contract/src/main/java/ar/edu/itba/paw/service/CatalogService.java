@@ -6,10 +6,17 @@ import ar.edu.itba.paw.model.Model;
 import ar.edu.itba.paw.model.ModelListingInfoSummary;
 import ar.edu.itba.paw.model.Page;
 import ar.edu.itba.paw.model.Subcategory;
+import ar.edu.itba.paw.service.dto.BrandInfo;
 
 import java.util.List;
 
 public interface CatalogService {
+    List<BrandInfo> getAllBrands();
+
+    Brand renameBrand(Long id, String name);
+
+    void deleteBrand(Long id);
+
     List<Category> getAllCategories();
 
     List<Subcategory> getSubcategoriesByCategory(Long categoryId);
