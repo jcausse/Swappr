@@ -311,6 +311,7 @@ JOIN categories c ON s.category_id = c.category_id;
   cp webapp/src/main/resources/env/dev/app.properties webapp/target/classes/app.properties
   ```
 - **Deploy**: **NEVER RUN DEPLOYMENTS AS AN AGENT**. Production deployments (`make prod-deploy`, `.script/deploy.py`) are strictly manual and must only be executed by the human developer.
+- **Production DB Clone**: `.script/clone_prod_db.py` (or `make prod-db-clone`) clones the production DB into a fresh local Docker container (`postgres:latest`) on a random port and container name to prevent collisions. Requires `.script/deploy_secrets.properties`.
 - Scripts live in `.script/` directory.
 
 
