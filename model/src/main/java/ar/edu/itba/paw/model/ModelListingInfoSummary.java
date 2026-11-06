@@ -1,5 +1,7 @@
 package ar.edu.itba.paw.model;
 
+import java.util.List;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -11,12 +13,10 @@ import lombok.Setter;
 @Getter
 @Setter
 @Builder
-public class ProductListingInfo {
+public class ModelListingInfoSummary {
+    private Long brandId;
     private String brand;
+    private Long modelId;
     private String model;
-    private Long listingCount;
-    private Condition condition;
-    private Price minPrice;
-    private Price maxPrice;
-    private Price avgPrice;
+    private List<ModelListingInfo> listingInfoByCondition;
 }

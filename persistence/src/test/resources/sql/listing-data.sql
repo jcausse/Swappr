@@ -1,8 +1,11 @@
 INSERT INTO users (user_id, username, display_name, email, password)
 VALUES (2, 'buyer_user', 'Buyer User', 'buyer@example.com', 'fake_password');
 
-INSERT INTO products (product_id, brand, model, year, subcategory_id)
-VALUES (2, 'Samsung', 'Galaxy S23', 2023, 2);
+INSERT INTO brands (brand_id, brand_name)
+VALUES (2, 'Samsung');
+
+INSERT INTO models (model_id, model_name, brand_id, subcategory_id)
+VALUES (2, 'Galaxy S23', 2, 2);
 
 INSERT INTO images (image_id, filename, alt, content_type, data)
 VALUES (1, 'front.jpg', 'Front view', 'image/jpeg', X'01'),
@@ -10,11 +13,11 @@ VALUES (1, 'front.jpg', 'Front view', 'image/jpeg', X'01'),
        (3, 'extra1.jpg', 'Extra view 1', 'image/jpeg', X'03'),
        (4, 'extra2.jpg', 'Extra view 2', 'image/jpeg', X'04');
 
-INSERT INTO listings (listing_id, title, description, creator_id, product_id, price, status, condition, accepts_trade)
-VALUES (1, 'MacBook Pro 2023', 'Barely used laptop', 1, 1, 1500.00, 'ACTIVE', 'GOOD', TRUE),
-       (2, 'Galaxy S23', 'Phone in great shape', 1, 2, 800.00, 'ACTIVE', 'LIKE_NEW', FALSE),
-       (3, 'Old MacBook', 'Only good for parts', 2, 1, 300.00, 'SOLD', 'FOR_PARTS', FALSE),
-       (4, 'Gaming laptop', 'Fast machine', 2, 1, 2000.00, 'ACTIVE', 'EXCELLENT', TRUE);
+INSERT INTO listings (listing_id, title, description, creator_id, model_id, year, price, status, condition, accepts_trade)
+VALUES (1, 'MacBook Pro 2023', 'Barely used laptop', 1, 1, 2023, 1500.00, 'ACTIVE', 'GOOD', TRUE),
+       (2, 'Galaxy S23', 'Phone in great shape', 1, 2, 2023, 800.00, 'ACTIVE', 'LIKE_NEW', FALSE),
+       (3, 'Old MacBook', 'Only good for parts', 2, 1, 2015, 300.00, 'SOLD', 'FOR_PARTS', FALSE),
+       (4, 'Gaming laptop', 'Fast machine', 2, 1, 2024, 2000.00, 'ACTIVE', 'EXCELLENT', TRUE);
 
 INSERT INTO listing_images (listing_id, image_id, display_order)
 VALUES (1, 2, 1),

@@ -1,14 +1,15 @@
 package ar.edu.itba.paw.persistence;
 
+import ar.edu.itba.paw.model.Brand;
 import ar.edu.itba.paw.model.Category;
 import ar.edu.itba.paw.model.Condition;
 import ar.edu.itba.paw.model.Listing;
 import ar.edu.itba.paw.model.ListingFilter;
 import ar.edu.itba.paw.model.ListingSort;
 import ar.edu.itba.paw.model.ListingStatus;
+import ar.edu.itba.paw.model.Model;
 import ar.edu.itba.paw.model.Page;
 import ar.edu.itba.paw.model.Price;
-import ar.edu.itba.paw.model.Product;
 import ar.edu.itba.paw.model.Subcategory;
 import ar.edu.itba.paw.model.User;
 import org.junit.Assert;
@@ -53,8 +54,10 @@ public class ListingJpaDaoTest {
     private static final long PHONES_CATEGORY_ID = 2L;
     private static final long SUBCATEGORY_ID = 1L;
     private static final long PHONES_SUBCATEGORY_ID = 2L;
-    private static final long PRODUCT_ID = 1L;
-    private static final long PHONE_PRODUCT_ID = 2L;
+    private static final long BRAND_ID = 1L;
+    private static final long SAMSUNG_BRAND_ID = 2L;
+    private static final long MODEL_ID = 1L;
+    private static final long PHONE_MODEL_ID = 2L;
     private static final long FRONT_IMAGE_ID = 1L;
     private static final long BACK_IMAGE_ID = 2L;
     private static final long UNASSIGNED_IMAGE_1_ID = 3L;
@@ -98,18 +101,22 @@ public class ListingJpaDaoTest {
             .build();
     }
 
-    private static Product buildFakeProduct(final long productId, final long subcategoryId, final long categoryId) {
+    private static Model buildFakeModel(final long modelId, final long brandId, final long subcategoryId,
+            final long categoryId) {
         final Category category = Category.builder().id(categoryId).name("Category " + categoryId).build();
         final Subcategory subcategory = Subcategory.builder()
             .id(subcategoryId)
             .name("Subcategory " + subcategoryId)
             .category(category)
             .build();
-        return Product.builder()
-            .id(productId)
-            .brand("Brand")
-            .model("Model")
-            .year(2023)
+        final Brand brand = Brand.builder()
+            .id(brandId)
+            .name("Brand " + brandId)
+            .build();
+        return Model.builder()
+            .id(modelId)
+            .name("Model " + modelId)
+            .brand(brand)
             .subcategory(subcategory)
             .build();
     }
@@ -154,16 +161,19 @@ public class ListingJpaDaoTest {
     }
 
     @Test
-    public void testGetByIdLoadsProductWithCategory() {
+    public void testGetByIdLoadsModelWithBrandAndCategory() {
         // Act
         final Listing listing = listingDao.getById(MACBOOK_LISTING_ID).orElseThrow();
 
         // Assert
-        Assert.assertEquals(PRODUCT_ID, (long) listing.getProduct().getId());
-        Assert.assertEquals("Apple", listing.getProduct().getBrand());
-        Assert.assertEquals(SUBCATEGORY_ID, (long) listing.getProduct().getSubcategory().getId());
-        Assert.assertEquals(CATEGORY_ID, (long) listing.getProduct().getSubcategory().getCategory().getId());
-        Assert.assertEquals("Electronics", listing.getProduct().getSubcategory().getCategory().getName());
+        Assert.assertEquals(MODEL_ID, (long) listing.getModel().getId());
+        Assert.assertEquals("MacBook Pro", listing.getModel().getName());
+        Assert.assertEquals(BRAND_ID, (long) listing.getBrand().getId());
+        Assert.assertEquals("Apple", listing.getBrand().getName());
+        Assert.assertEquals(2023, listing.getYear());
+        Assert.assertEquals(SUBCATEGORY_ID, (long) listing.getModel().getSubcategory().getId());
+        Assert.assertEquals(CATEGORY_ID, (long) listing.getModel().getSubcategory().getCategory().getId());
+        Assert.assertEquals("Electronics", listing.getModel().getSubcategory().getCategory().getName());
     }
 
     @Test
@@ -262,6 +272,51 @@ public class ListingJpaDaoTest {
 
         // Assert
         Assert.assertEquals(List.of(GAMING_LISTING_ID, OLD_MACBOOK_LISTING_ID, MACBOOK_LISTING_ID), idsOf(page));
+    }
+
+    @Test
+    public void testSearchByBrand() {
+        // Act
+        final Page<Listing> page = listingDao.search(baseFilter().brandId(BRAND_ID).build());
+
+        // Assert
+        Assert.assertEquals(List.of(GAMING_LISTING_ID, OLD_MACBOOK_LISTING_ID, MACBOOK_LISTING_ID), idsOf(page));
+    }
+
+    @Test
+    public void testSearchByModel() {
+        // Act
+        final Page<Listing> page = listingDao.search(baseFilter().modelId(PHONE_MODEL_ID).build());
+
+        // Assert
+        Assert.assertEquals(List.of(GALAXY_LISTING_ID), idsOf(page));
+    }
+
+    @Test
+    public void testSearchByYearRangeIsInclusive() {
+        // Act
+        final Page<Listing> page = listingDao.search(baseFilter().yearMin(2023).yearMax(2023).build());
+
+        // Assert
+        Assert.assertEquals(List.of(GALAXY_LISTING_ID, MACBOOK_LISTING_ID), idsOf(page));
+    }
+
+    @Test
+    public void testSearchByYearMin() {
+        // Act
+        final Page<Listing> page = listingDao.search(baseFilter().yearMin(2024).build());
+
+        // Assert
+        Assert.assertEquals(List.of(GAMING_LISTING_ID), idsOf(page));
+    }
+
+    @Test
+    public void testSearchByYearMax() {
+        // Act
+        final Page<Listing> page = listingDao.search(baseFilter().yearMax(2015).build());
+
+        // Assert
+        Assert.assertEquals(List.of(OLD_MACBOOK_LISTING_ID), idsOf(page));
     }
 
     @Test
@@ -491,7 +546,7 @@ public class ListingJpaDaoTest {
         // Act
         final Listing created = listingDao.create(
             "Brand new listing", new Price(new BigDecimal("999.99")), buildFakeUser(SELLER_ID),
-            buildFakeProduct(PRODUCT_ID, SUBCATEGORY_ID, CATEGORY_ID), Condition.UNUSED, true, false, "Still sealed", List.of()
+            buildFakeModel(MODEL_ID, BRAND_ID, SUBCATEGORY_ID, CATEGORY_ID), 2023, Condition.UNUSED, true, false, "Still sealed", List.of()
         );
 
         // Assert
@@ -507,12 +562,13 @@ public class ListingJpaDaoTest {
         // Act
         listingDao.create(
             "Brand new listing", new Price(new BigDecimal("999.99")), buildFakeUser(SELLER_ID),
-            buildFakeProduct(PRODUCT_ID, SUBCATEGORY_ID, CATEGORY_ID), Condition.UNUSED, true, false, "Still sealed", List.of()
+            buildFakeModel(MODEL_ID, BRAND_ID, SUBCATEGORY_ID, CATEGORY_ID), 2023, Condition.UNUSED, true, false, "Still sealed", List.of()
         );
 
         // Assert
         final int count = countListingsWhere(
             "title = 'Brand new listing' AND status = 'ACTIVE' AND creator_id = " + SELLER_ID
+                + " AND model_id = " + MODEL_ID + " AND year = 2023"
         );
         Assert.assertEquals(1, count);
     }
@@ -522,7 +578,7 @@ public class ListingJpaDaoTest {
         // Act
         final Listing created = listingDao.create(
             "Brand new listing", new Price(new BigDecimal("999.99")), buildFakeUser(SELLER_ID),
-            buildFakeProduct(PRODUCT_ID, SUBCATEGORY_ID, CATEGORY_ID), Condition.UNUSED, true, false, "Still sealed",
+            buildFakeModel(MODEL_ID, BRAND_ID, SUBCATEGORY_ID, CATEGORY_ID), 2023, Condition.UNUSED, true, false, "Still sealed",
             List.of(UNASSIGNED_IMAGE_2_ID, UNASSIGNED_IMAGE_1_ID)
         );
 
@@ -539,7 +595,7 @@ public class ListingJpaDaoTest {
         // Act
         final Listing created = listingDao.create(
             "Brand new listing", new Price(new BigDecimal("999.99")), buildFakeUser(SELLER_ID),
-            buildFakeProduct(PRODUCT_ID, SUBCATEGORY_ID, CATEGORY_ID), Condition.UNUSED, true, false, "Still sealed", null
+            buildFakeModel(MODEL_ID, BRAND_ID, SUBCATEGORY_ID, CATEGORY_ID), 2023, Condition.UNUSED, true, false, "Still sealed", null
         );
 
         // Assert
@@ -560,7 +616,7 @@ public class ListingJpaDaoTest {
         // Act
         final Listing updated = listingDao.update(
             MACBOOK_LISTING_ID, "MacBook Pro M3", new Price(new BigDecimal("1400.00")),
-            buildFakeProduct(PHONE_PRODUCT_ID, PHONES_SUBCATEGORY_ID, PHONES_CATEGORY_ID),
+            buildFakeModel(PHONE_MODEL_ID, SAMSUNG_BRAND_ID, PHONES_SUBCATEGORY_ID, PHONES_CATEGORY_ID), 2023,
             Condition.FAIR, false, false, "Some scratches"
         );
 
@@ -568,7 +624,7 @@ public class ListingJpaDaoTest {
         Assert.assertEquals("MacBook Pro M3", updated.getTitle());
         Assert.assertEquals("Some scratches", updated.getDescription());
         Assert.assertEquals(0, new BigDecimal("1400.00").compareTo(updated.getPrice().getAmount()));
-        Assert.assertEquals(PHONE_PRODUCT_ID, (long) updated.getProduct().getId());
+        Assert.assertEquals(PHONE_MODEL_ID, (long) updated.getModel().getId());
         Assert.assertEquals(Condition.FAIR, updated.getCondition());
         Assert.assertFalse(updated.isAcceptsTrade());
     }
@@ -578,7 +634,7 @@ public class ListingJpaDaoTest {
         // Act
         final Listing updated = listingDao.update(
             MACBOOK_LISTING_ID, "MacBook Pro M3", new Price(new BigDecimal("1400.00")),
-            buildFakeProduct(PRODUCT_ID, SUBCATEGORY_ID, CATEGORY_ID), Condition.FAIR, false, false, "Some scratches"
+            buildFakeModel(MODEL_ID, BRAND_ID, SUBCATEGORY_ID, CATEGORY_ID), 2023, Condition.FAIR, false, false, "Some scratches"
         );
 
         // Assert
@@ -590,12 +646,13 @@ public class ListingJpaDaoTest {
         // Act
         listingDao.update(
             MACBOOK_LISTING_ID, "MacBook Pro M3", new Price(new BigDecimal("1400.00")),
-            buildFakeProduct(PRODUCT_ID, SUBCATEGORY_ID, CATEGORY_ID), Condition.FAIR, false, false, "Some scratches"
+            buildFakeModel(MODEL_ID, BRAND_ID, SUBCATEGORY_ID, CATEGORY_ID), 2023, Condition.FAIR, false, false, "Some scratches"
         );
 
         // Assert
         final int count = countListingsWhere(
             "listing_id = " + MACBOOK_LISTING_ID + " AND title = 'MacBook Pro M3' AND accepts_trade = FALSE"
+                + " AND model_id = " + MODEL_ID + " AND year = 2023"
         );
         Assert.assertEquals(1, count);
     }
