@@ -58,7 +58,9 @@
                     </div>
                     <div class="flex flex-row items-center justify-between">
                         <paw:product model="${model}" year="${detailsForm.year}" />
-                        <paw:linkButton href="${backUrl}" text="${changeProductLabel}" variant="outline" />
+                        <c:if test="${not edit}">
+                            <paw:linkButton href="${backUrl}" text="${changeProductLabel}" variant="outline" />
+                        </c:if>
                     </div>
                 </div>
 
