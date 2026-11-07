@@ -72,7 +72,14 @@
 
                     <div class="flex flex-col gap-4">
                         <spring:message code="listing.new.price" var="priceLabel"/>
-                        <paw:formInput path="price" label="${priceLabel}" type="number" step="0.01" min="0" />
+                        <spring:message code="currency.symbol" var="currencySymbol"/>
+                        <div class="flex flex-col gap-1">
+                            <label for="price" class="text-xs text-black/70 font-medium"><c:out value="${priceLabel}"/></label>
+                            <div class="flex items-start gap-2">
+                                <span class="py-1 border border-transparent text-sm text-black/70"><c:out value="${currencySymbol}"/></span>
+                                <paw:formInput path="price" type="number" step="0.01" min="0" classname="flex-1"/>
+                            </div>
+                        </div>
 
                         <c:choose>
                             <c:when test="${empty priceSummary}">
