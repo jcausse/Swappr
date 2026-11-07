@@ -65,14 +65,8 @@
                             </div>
 
                             <div class="flex flex-col gap-1">
-                                <label class="flex items-center gap-2 text-sm">
-                                    <form:checkbox path="acceptsTrade" value="true" class="w-4 h-4 text-lime-600 border-black/20 outline-0 outline-offset-0 outline-lime-600/30 focus-visible:outline-2 accent-lime-600"/>
-                                    <c:out value="${acceptsTradeLabel}"/>
-                                </label>
-                                <label class="flex items-center gap-2 text-sm">
-                                    <form:checkbox path="acceptsShipping" value="true" class="w-4 h-4 text-lime-600 border-black/20 outline-0 outline-offset-0 outline-lime-600/30 focus-visible:outline-2 accent-lime-600"/>
-                                    <c:out value="${acceptsShippingLabel}"/>
-                                </label>
+                                <paw:checkbox path="acceptsTrade" id="acceptsTrade" value="true" label="${acceptsTradeLabel}"/>
+                                <paw:checkbox path="acceptsShipping" id="acceptsShipping" value="true" label="${acceptsShippingLabel}"/>
                             </div>
 
                             <div class="flex flex-col gap-2 pt-1">
