@@ -65,31 +65,33 @@
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-4 items-start">
-                    <spring:message code="listing.new.titleLabel" var="titleLabel"/>
-                    <paw:formInput path="title" label="${titleLabel}" />
+                    <div class="md:col-span-2">
+                        <spring:message code="listing.new.titleLabel" var="titleLabel"/>
+                        <paw:formInput path="title" label="${titleLabel}" />
+                    </div>
 
                     <spring:message code="listing.new.price" var="priceLabel"/>
                     <paw:formInput path="price" label="${priceLabel}" type="number" step="0.01" min="0" />
 
-                    <spring:message code="listing.new.conditionLabel" var="conditionLabel"/>
-                    <spring:message code="listing.new.condition.select" var="conditionPlaceholder"/>
-                    <paw:formSelect path="condition" label="${conditionLabel}" placeholder="${conditionPlaceholder}"
-                                    items="${conditionOptions}" itemLabel="label" itemValue="value" translateLabels="true" />
+                    <div class="flex flex-col gap-4">
+                        <spring:message code="listing.new.conditionLabel" var="conditionLabel"/>
+                        <spring:message code="listing.new.condition.select" var="conditionPlaceholder"/>
+                        <paw:formSelect path="condition" label="${conditionLabel}" placeholder="${conditionPlaceholder}"
+                                        items="${conditionOptions}" itemLabel="label" itemValue="value" translateLabels="true" />
+
+                        <spring:message code="listing.new.acceptsTradeLabel" var="acceptsTradeLabel"/>
+                        <paw:formCheckbox path="acceptsTrade" label="${acceptsTradeLabel}" />
+
+                        <spring:message code="listing.new.acceptsShippingLabel" var="acceptsShippingLabel"/>
+                        <paw:formCheckbox path="acceptsShipping" label="${acceptsShippingLabel}" />
+                    </div>
                 </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-4 items-start">
-                    <spring:message code="listing.new.acceptsTradeLabel" var="acceptsTradeLabel"/>
-                    <paw:formCheckbox path="acceptsTrade" label="${acceptsTradeLabel}" />
-
-                    <spring:message code="listing.new.acceptsShippingLabel" var="acceptsShippingLabel"/>
-                    <paw:formCheckbox path="acceptsShipping" label="${acceptsShippingLabel}" />
-                </div>
-
-                <spring:message code="listing.new.descriptionLabel" var="descriptionLabel"/>
-                <paw:formInput type="textarea" path="description" label="${descriptionLabel}" inputClassname="min-h-40 resize-none" />
 
                 <spring:message code="listing.new.imagesLabel" var="imagesLabel"/>
                 <paw:fileUpload path="images" label="${imagesLabel}" multiple="true" accept="image/*" />
+
+                <spring:message code="listing.new.descriptionLabel" var="descriptionLabel"/>
+                <paw:formInput type="textarea" path="description" label="${descriptionLabel}" inputClassname="min-h-40 resize-none" />
 
                 <div class="mt-2 flex justify-center gap-4">
                     <c:if test="${not edit}">
