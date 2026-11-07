@@ -5,21 +5,12 @@
 <%@ attribute name="classname" required="false" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
+<%@ taglib prefix="paw" tagdir="/WEB-INF/tags" %>
 
 <c:set var="inputClass" value="${not empty classname ? classname : ''}"/>
 <c:set var="isDisabled" value="${disabled ne null ? disabled : false}"/>
 
 <div class="flex flex-col gap-1 ${inputClass}">
-  <label for="${path}" class="flex items-center gap-2 text-sm text-black/80 cursor-pointer">
-    <form:checkbox
-      path="${path}"
-      id="${path}"
-      disabled="${isDisabled}"
-      cssClass="w-4 h-4 rounded border-black/20 accent-sky-600 outline-sky-600/30"
-    />
-    <c:if test="${not empty label}">
-      <span><c:out value="${label}"/></span>
-    </c:if>
-  </label>
+  <paw:checkbox path="${path}" id="${path}" label="${label}" disabled="${isDisabled}"/>
   <form:errors path="${path}" element="div" cssClass="text-xs text-red-600"/>
 </div>
