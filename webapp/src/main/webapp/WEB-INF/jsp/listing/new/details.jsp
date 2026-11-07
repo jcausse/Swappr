@@ -70,8 +70,43 @@
                         <paw:formInput path="title" label="${titleLabel}" />
                     </div>
 
-                    <spring:message code="listing.new.price" var="priceLabel"/>
-                    <paw:formInput path="price" label="${priceLabel}" type="number" step="0.01" min="0" />
+                    <div class="flex flex-col gap-4">
+                        <spring:message code="listing.new.price" var="priceLabel"/>
+                        <paw:formInput path="price" label="${priceLabel}" type="number" step="0.01" min="0" />
+
+                        <c:choose>
+                            <c:when test="${empty priceSummary}">
+                                <spring:message code="listing.new.priceSummary.empty" var="priceSummaryEmpty"/>
+                                <paw:banner text="${priceSummaryEmpty}" icon="info" role="secondary"/>
+                            </c:when>
+                            <c:otherwise>
+                                <spring:message code="listing.new.priceSummary.title" var="priceSummaryTitle"/>
+                                <paw:card title="${priceSummaryTitle}">
+                                    <div class="flex flex-col gap-2">
+                                        <c:forEach var="info" items="${priceSummary.listingInfoByCondition}">
+                                            <spring:message code="condition.${info.condition}" var="infoConditionLabel"/>
+                                            <div class="flex w-full items-center gap-2 text-sm">
+                                                <span class="text-black font-medium">
+                                                    <c:out value="${infoConditionLabel}"/>
+                                                    <span class="text-black/40 font-normal">(<c:out value="${info.listingCount}"/>)</span>
+                                                </span>
+                                                <span class="ml-auto font-semibold text-black text-base whitespace-nowrap">
+                                                    <c:choose>
+                                                        <c:when test="${info.minPrice.amount == info.maxPrice.amount}">
+                                                            <paw:price amount="${info.minPrice.amount}"/>
+                                                        </c:when>
+                                                        <c:otherwise>
+                                                            <paw:price amount="${info.minPrice.amount}"/> - <c:out value="${info.maxPrice.amount}"/>
+                                                        </c:otherwise>
+                                                    </c:choose>
+                                                </span>
+                                            </div>
+                                        </c:forEach>
+                                    </div>
+                                </paw:card>
+                            </c:otherwise>
+                        </c:choose>
+                    </div>
 
                     <div class="flex flex-col gap-4">
                         <spring:message code="listing.new.conditionLabel" var="conditionLabel"/>

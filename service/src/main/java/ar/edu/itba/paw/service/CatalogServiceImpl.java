@@ -22,6 +22,7 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
@@ -88,5 +89,17 @@ public class CatalogServiceImpl implements CatalogService {
             .toList();
 
         return new Page<>(summaries, infoPage.getPage(), infoPage.getPageSize(), infoPage.getTotalCount());
+    }
+
+    @Override
+    public Optional<ModelListingInfoSummary> getListingInfoSummaryForModel(final Long modelId) {
+        return modelDao.getListingInfoSummaryForModel(modelId)
+            .map(summary -> ModelListingInfoSummary.builder()
+                .brand(summary.getBrand())
+                .model(summary.getModel())
+                .listingInfoByCondition(summary.getListingInfoByCondition().stream()
+                    .sorted(Comparator.comparingInt(info -> info.getCondition().ordinal()))
+                    .toList())
+                .build());
     }
 }

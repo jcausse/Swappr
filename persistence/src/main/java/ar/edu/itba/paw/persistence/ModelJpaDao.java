@@ -5,6 +5,7 @@ import ar.edu.itba.paw.model.Condition;
 import ar.edu.itba.paw.model.ListingStatus;
 import ar.edu.itba.paw.model.Model;
 import ar.edu.itba.paw.model.ModelListingInfo;
+import ar.edu.itba.paw.model.ModelListingInfoSummary;
 import ar.edu.itba.paw.model.Page;
 import ar.edu.itba.paw.model.Price;
 import org.springframework.stereotype.Repository;
@@ -125,6 +126,46 @@ public class ModelJpaDao implements ModelDao {
                 .toList();
 
         return new Page<>(content, page, pageSize, totalCount);
+    }
+
+    @Override
+    public Optional<ModelListingInfoSummary> getListingInfoSummaryForModel(final Long modelId) {
+        final Model model = em.find(Model.class, modelId);
+        if (model == null) {
+            return Optional.empty();
+        }
+
+        final List<ModelListingInfo> infos = em.createQuery(
+                "SELECT l.condition, COUNT(l), MIN(l.price.amount), MAX(l.price.amount), AVG(l.price.amount)"
+                + " FROM Listing l"
+                + " WHERE l.model.id = :modelId AND l.status = :status"
+                + " GROUP BY l.condition",
+                Object[].class)
+                .setParameter("modelId", modelId)
+                .setParameter("status", ListingStatus.ACTIVE)
+                .getResultList()
+                .stream()
+                .map((fields) -> ModelListingInfo.builder()
+                    .brand(model.getBrand())
+                    .model(model)
+                    .condition((Condition) fields[0])
+                    .listingCount((Long) fields[1])
+                    .minPrice(new Price((BigDecimal) fields[2]))
+                    .maxPrice(new Price((BigDecimal) fields[3]))
+                    .avgPrice(new Price(BigDecimal.valueOf((Double) fields[4])))
+                    .build()
+                )
+                .toList();
+
+        if (infos.isEmpty()) {
+            return Optional.empty();
+        }
+
+        return Optional.of(ModelListingInfoSummary.builder()
+            .brand(model.getBrand())
+            .model(model)
+            .listingInfoByCondition(infos)
+            .build());
     }
 
     private static void bindParams(final Query query, final List<Object> params) {
