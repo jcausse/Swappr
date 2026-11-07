@@ -81,8 +81,9 @@
                             </c:when>
                             <c:otherwise>
                                 <spring:message code="listing.new.priceSummary.title" var="priceSummaryTitle"/>
-                                <paw:card title="${priceSummaryTitle}">
-                                    <div class="flex flex-col gap-2">
+                                <div class="flex flex-col gap-2">
+                                    <span class="text-sm text-black/70 font-medium"><c:out value="${priceSummaryTitle}"/></span>
+                                    <div class="flex flex-col gap-1">
                                         <c:forEach var="info" items="${priceSummary.listingInfoByCondition}">
                                             <spring:message code="condition.${info.condition}" var="infoConditionLabel"/>
                                             <div class="flex w-full items-center gap-2 text-sm">
@@ -90,7 +91,7 @@
                                                     <c:out value="${infoConditionLabel}"/>
                                                     <span class="text-black/40 font-normal">(<c:out value="${info.listingCount}"/>)</span>
                                                 </span>
-                                                <span class="ml-auto font-semibold text-black text-base whitespace-nowrap">
+                                                <span class="ml-auto font-semibold text-black text-sm whitespace-nowrap">
                                                     <c:choose>
                                                         <c:when test="${info.minPrice.amount == info.maxPrice.amount}">
                                                             <paw:price amount="${info.minPrice.amount}"/>
@@ -103,7 +104,7 @@
                                             </div>
                                         </c:forEach>
                                     </div>
-                                </paw:card>
+                                </div>
                             </c:otherwise>
                         </c:choose>
                     </div>
