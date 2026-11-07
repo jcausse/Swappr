@@ -87,7 +87,10 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
         context.setVariable("baseUrl", baseUrl);
         context.setVariable("actionUrl", "mailto:" + buyer.getEmail());
 
-        String subject = messageSource.getMessage("email.purchase.seller.subject", null, locale);
+        final String subjectKey = forFreeListing
+                ? "email.purchase.seller.free.subject"
+                : "email.purchase.seller.subject";
+        String subject = messageSource.getMessage(subjectKey, null, locale);
         sendEmail(seller.getEmail(), subject, "purchase-seller", context);
     }
 
@@ -104,7 +107,10 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
         context.setVariable("forFreeListing", forFreeListing);
         context.setVariable("actionUrl", "mailto:" + seller.getEmail());
 
-        String subject = messageSource.getMessage("email.purchase.buyer.subject", null, locale);
+        final String subjectKey = forFreeListing
+                ? "email.purchase.buyer.free.subject"
+                : "email.purchase.buyer.subject";
+        String subject = messageSource.getMessage(subjectKey, null, locale);
         sendEmail(buyer.getEmail(), subject, "purchase-buyer", context);
     }
 
