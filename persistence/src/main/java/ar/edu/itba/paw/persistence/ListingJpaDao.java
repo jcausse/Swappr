@@ -220,6 +220,30 @@ public class ListingJpaDao implements ListingDao {
     }
 
     @Override
+    public int replaceSameNameModelsForBrands(Long fromBrandId, Long toBrandId) {
+        return em.createNativeQuery(
+                "UPDATE listings SET model_id = ("
+                + "SELECT new_model.model_id"
+                + " FROM models old_model"
+                + " INNER JOIN models new_model"
+                + "   ON new_model.brand_id = ?2"
+                + "  AND new_model.model_name = old_model.model_name"
+                + " WHERE old_model.model_id = listings.model_id"
+                + "   AND old_model.brand_id = ?1"
+                + ") WHERE model_id IN ("
+                + "SELECT old_model.model_id"
+                + " FROM models old_model"
+                + " INNER JOIN models new_model"
+                + "   ON new_model.brand_id = ?2"
+                + "  AND new_model.model_name = old_model.model_name"
+                + " WHERE old_model.brand_id = ?1"
+                + ")")
+                .setParameter(1, fromBrandId)
+                .setParameter(2, toBrandId)
+                .executeUpdate();
+    }
+
+    @Override
     public void updateStatus(Long id, ListingStatus status) {
         final Listing listing = em.find(Listing.class, id);
         if (listing != null) {

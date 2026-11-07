@@ -29,4 +29,6 @@ public interface ListingDao {
     boolean cancel(Long id);
 
     int replaceModel(Long fromModelId, Long toModelId);
+
+    int replaceSameNameModelsForBrands(Long fromBrandId, Long toBrandId);
 }

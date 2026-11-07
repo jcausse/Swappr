@@ -249,6 +249,20 @@ public class ModelJpaDaoTest {
     /* ---------------------------------------------------------------------------------------------- */
 
     @Test
+    @Sql("classpath:sql/brand-model-merge-data.sql")
+    public void testReplaceBrandDeletesSameNameModelsAndMovesRemaining() {
+        final int updated = modelDao.replaceBrand(90L, 91L);
+
+        Assert.assertEquals(1, updated);
+        Assert.assertEquals(0, JdbcTestUtils.countRowsInTableWhere(
+                jdbcTemplate, "models", "brand_id = 90"));
+        Assert.assertEquals(0, JdbcTestUtils.countRowsInTableWhere(
+                jdbcTemplate, "models", "model_id = 90"));
+        Assert.assertEquals(1, JdbcTestUtils.countRowsInTableWhere(
+                jdbcTemplate, "models", "model_id = 92 AND brand_id = 91"));
+    }
+
+    @Test
     public void testReplaceBrandMovesModelsAndReturnsCount() {
         final int updated = modelDao.replaceBrand(DELL_BRAND_ID, APPLE_BRAND_ID);
 
