@@ -24,6 +24,10 @@
     <link rel="alternate icon" type="image/png" href="<c:url value="/static-image/favicon.png"/>"/>
     <link rel="shortcut icon" href="<c:url value="/favicon.ico"/>"/>
 
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=JetBrains+Mono:wght@100..800&display=swap"/>
+
     <link rel="stylesheet" href="<c:url value="/css/tailwind.css"/>"/>
     <link rel="stylesheet" href="https://unpkg.com/lucide-static@${lucideVersion}/font/lucide.css" />
 
