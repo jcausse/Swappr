@@ -34,7 +34,7 @@
         <c:when test="${filterForm.getStatusGroup().name() == 'PENDING' || filterForm.getStatusGroup().name() == 'PENDING_PAYMENT'}">
             <div class="flex flex-col gap-4 mb-8">
                 <%-- statusGroup values (pending, pending_payment) match the OfferStatus names used by the hint keys --%>
-                <account:offerHint role="buyer" status="${fn:toUpperCase(filterForm.statusGroup)}"/>
+                <account:offerHint role="buyer" status="${fn:toUpperCase(filterForm.statusGroup)}" list="true"/>
                 <c:forEach var="offer" items="${offers}">
                     <account:offerCard offer="${offer}" user="seller">
                         <paw:menu id="my${offer.id}" variant="outline" icon="ellipsis" panelWidth="w-56" panelAlign="right">
