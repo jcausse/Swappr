@@ -261,6 +261,18 @@ public class ModelJpaDao implements ModelDao {
 
     @Override
     public int replaceBrand(Long fromBrandId, Long toBrandId) {
+        em.createNativeQuery(
+                "DELETE FROM models old_model"
+                + " WHERE old_model.brand_id = ?1"
+                + "   AND EXISTS ("
+                + "     SELECT 1 FROM models new_model"
+                + "     WHERE new_model.brand_id = ?2"
+                + "       AND new_model.model_name = old_model.model_name"
+                + "   )")
+                .setParameter(1, fromBrandId)
+                .setParameter(2, toBrandId)
+                .executeUpdate();
+
         final Brand from = em.getReference(Brand.class, fromBrandId);
         final Brand to = em.getReference(Brand.class, toBrandId);
         return em.createQuery("UPDATE Model m SET m.brand = :to WHERE m.brand = :from")

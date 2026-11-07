@@ -192,6 +192,7 @@ public class CatalogServiceImplTest {
     public void testReplaceBrandDelegates() {
         when(brandDao.getById(eq(BRAND_ID))).thenReturn(Optional.of(buildFakeBrand()));
         when(brandDao.getById(eq(2L))).thenReturn(Optional.of(Brand.builder().id(2L).name("Dell").build()));
+        when(listingDao.replaceSameNameModelsForBrands(eq(BRAND_ID), eq(2L))).thenReturn(1);
         when(modelDao.replaceBrand(eq(BRAND_ID), eq(2L))).thenReturn(2);
 
         catalogService.replaceBrand(BRAND_ID, 2L);

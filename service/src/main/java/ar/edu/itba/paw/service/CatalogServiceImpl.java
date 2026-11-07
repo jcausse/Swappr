@@ -75,6 +75,7 @@ public class CatalogServiceImpl implements CatalogService {
             .orElseThrow(() -> NotFoundException.createFor("Brand with ID " + id));
         brandDao.getById(replacementId)
             .orElseThrow(() -> NotFoundException.createFor("Brand with ID " + replacementId));
+        listingDao.replaceSameNameModelsForBrands(id, replacementId);
         modelDao.replaceBrand(id, replacementId);
     }
 
