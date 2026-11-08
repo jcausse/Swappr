@@ -220,7 +220,7 @@ public class ListingServiceImplTest {
     }
 
     @Test
-    public void testSearch_onlyFreeIgnoresPriceRange() {
+    public void testSearch_onlyFreeSearchesZeroPriceRangeIgnoringGivenRange() {
         // Arrange
         final ArgumentCaptor<ListingFilter> captor = ArgumentCaptor.forClass(ListingFilter.class);
         when(listingDao.search(captor.capture())).thenReturn(new Page<>(List.of(), 1, PAGE_SIZE, 0));
@@ -237,9 +237,8 @@ public class ListingServiceImplTest {
 
         // Assert
         final ListingFilter sent = captor.getValue();
-        Assert.assertNull(sent.getMinPrice());
-        Assert.assertNull(sent.getMaxPrice());
-        Assert.assertEquals(Boolean.TRUE, sent.getOnlyFree());
+        Assert.assertEquals(BigDecimal.ZERO, sent.getMinPrice());
+        Assert.assertEquals(BigDecimal.ZERO, sent.getMaxPrice());
     }
 
     @Test
@@ -261,7 +260,6 @@ public class ListingServiceImplTest {
         final ListingFilter sent = captor.getValue();
         Assert.assertEquals(new BigDecimal("10"), sent.getMinPrice());
         Assert.assertEquals(new BigDecimal("100"), sent.getMaxPrice());
-        Assert.assertNull(sent.getOnlyFree());
     }
 
     @Test
@@ -282,7 +280,6 @@ public class ListingServiceImplTest {
         // Assert
         final ListingFilter sent = captor.getValue();
         Assert.assertNull(sent.getAcceptsTrade());
-        Assert.assertEquals(Boolean.TRUE, sent.getOnlyFree());
     }
 
     @Test
