@@ -79,8 +79,8 @@
                                 <span class="py-1 border border-transparent text-sm text-black/70"><c:out value="${currencySymbol}"/></span>
                                 <paw:formInput path="price" type="number" step="0.01" min="0" classname="flex-1"/>
                             </div>
-                            <spring:message code="listing.new.price.freeHint" var="freeHint"/>
-                            <p class="text-sm text-black/60 mt-1"><c:out value="${freeHint}"/></p>
+                            <spring:message code="listing.new.free.label" var="freeLabel"/>
+                            <paw:checkbox id="free" label="${freeLabel}"/>
                         </div>
 
                         <c:choose>
@@ -168,6 +168,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const priceInput = document.getElementById('price');
+            const freeCheckbox = document.getElementById('free');
             const acceptsTradeCheckbox = document.getElementById('acceptsTrade');
             const freeHint = document.getElementById('acceptsTradeFreeHint');
 
@@ -180,8 +181,29 @@
                 freeHint.classList.toggle('hidden', !isFree);
             }
 
+            // "Free" is only a UI control: a free listing is one whose price is 0, which is what gets submitted.
+            // readOnly (not disabled) keeps the 0 in the submitted form.
+            function setFree(isFree) {
+                freeCheckbox.checked = isFree;
+                priceInput.readOnly = isFree;
+                priceInput.classList.toggle('opacity-60', isFree);
+                syncAcceptsTrade();
+            }
+            freeCheckbox.addEventListener('change', function() {
+                if (freeCheckbox.checked) {
+                    priceInput.value = '0';
+                } else {
+                    priceInput.value = '';
+                    priceInput.focus();
+                }
+                setFree(freeCheckbox.checked);
+            });
+            // on change (when leaving the field), not on input, so typing 0.50 is not interrupted
+            priceInput.addEventListener('change', function() {
+                setFree(priceInput.value !== '' && parseFloat(priceInput.value) === 0);
+            });
             priceInput.addEventListener('input', syncAcceptsTrade);
-            syncAcceptsTrade();
+            setFree(priceInput.value !== '' && parseFloat(priceInput.value) === 0);
         });
     </script>
 </paw:layout>

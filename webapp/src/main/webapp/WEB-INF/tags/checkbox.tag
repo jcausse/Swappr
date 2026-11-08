@@ -1,5 +1,5 @@
 <%@ tag language="java" pageEncoding="UTF-8" trimDirectiveWhitespaces="true" %>
-<%@ attribute name="path" required="true" %>
+<%@ attribute name="path" required="false" %>
 <%@ attribute name="id" required="true" %>
 <%@ attribute name="value" required="false" %>
 <%@ attribute name="label" required="false" %>
@@ -15,13 +15,21 @@
 <c:set var="labelClassname" value="${isDisabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}"/>
 
 <label for="${id}" class="flex items-center gap-2 text-sm text-black/80 select-none ${labelClassname} ${inputClass}">
-  <form:checkbox
-    path="${path}"
-    id="${id}"
-    value="${checkboxValue}"
-    disabled="${isDisabled}"
-    cssClass="peer sr-only"
-  />
+  <%-- Without a path the checkbox is only a UI control: it has no name, so it is never submitted --%>
+  <c:choose>
+    <c:when test="${not empty path}">
+      <form:checkbox
+        path="${path}"
+        id="${id}"
+        value="${checkboxValue}"
+        disabled="${isDisabled}"
+        cssClass="peer sr-only"
+      />
+    </c:when>
+    <c:otherwise>
+      <input type="checkbox" id="<c:out value='${id}'/>" class="peer sr-only"<c:if test="${isDisabled}"> disabled</c:if>/>
+    </c:otherwise>
+  </c:choose>
   <span
     aria-hidden="true"
     class="flex h-4 w-4 shrink-0 items-center justify-center rounded-md border border-black/20 bg-white text-lime-600 transition duration-150
