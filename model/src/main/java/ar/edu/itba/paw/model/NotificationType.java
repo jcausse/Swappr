@@ -7,7 +7,7 @@ import java.util.function.Predicate;
 @Getter
 public enum NotificationType {
     // Multi-channel notifications (in-site + email)
-    NEW_OFFER(true, true),
+    NEW_OFFER(true, true, offer -> offer == null || offer.isPending()),
     OFFER_ACCEPTED(true, true, offer -> offer != null && offer.isPendingPayment()),
     OFFER_REJECTED(true, true),
     OFFER_WITHDRAWN(true, true),
