@@ -1,3 +1,8 @@
+OK hacer el images create en un loop (`images.forEach(em::persist)`)? O hacemos una query para un multiple insert?
+
+`ListingJpaDao.createAll`
+
+---
 OK traducir keys en un controller, si estamos armando un string más complejo que un solo i18n key?
 O mejor pasar varios i18n en un objeto y hacerlo en JSP?
 
