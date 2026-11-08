@@ -31,29 +31,16 @@
 
         <%-- Filters --%>
         <paw:card>
-            <form method="get" action="${offersBaseUrl}" class="flex flex-col sm:flex-row gap-3 items-end">
+            <form:form modelAttribute="filterForm" action="${offersBaseUrl}" method="get" class="flex flex-col sm:flex-row gap-3 items-end">
                 <div class="flex-1 w-full">
                     <spring:message code="admin.offers.statusGroup.label" var="statusGroupLabel"/>
-                    <div class="flex flex-col gap-1">
-                        <label for="admin-offer-status" class="text-xs text-black/70 font-medium">
-                            <c:out value="${statusGroupLabel}"/>
-                        </label>
-                        <select id="admin-offer-status" name="statusGroup" class="w-full px-3 py-2 rounded-lg text-sm border border-black/20 focus-visible:border-lime-600 focus-visible:outline-2 bg-white">
-                            <spring:message code="admin.offers.statusGroup.all" var="allStatusGroupText"/>
-                            <spring:message code="admin.offers.statusGroup.pending" var="pendingStatusGroupText"/>
-                            <spring:message code="admin.offers.statusGroup.pendingPayment" var="pendingPaymentStatusGroupText"/>
-                            <spring:message code="admin.offers.statusGroup.resolved" var="resolvedStatusGroupText"/>
-                            <option value="" ${empty currentStatusGroup ? 'selected' : ''}><c:out value="${allStatusGroupText}"/></option>
-                            <option value="PENDING" ${currentStatusGroup.name() eq 'PENDING' ? 'selected' : ''}><c:out value="${pendingStatusGroupText}"/></option>
-                            <option value="PENDING_PAYMENT" ${currentStatusGroup.name() eq 'PENDING_PAYMENT' ? 'selected' : ''}><c:out value="${pendingPaymentStatusGroupText}"/></option>
-                            <option value="RESOLVED" ${currentStatusGroup.name() eq 'RESOLVED' ? 'selected' : ''}><c:out value="${resolvedStatusGroupText}"/></option>
-                        </select>
-                    </div>
+                    <spring:message code="admin.offers.statusGroup.all" var="allStatusGroupText"/>
+                    <paw:formSelect path="statusGroup" label="${statusGroupLabel}" placeholder="${allStatusGroupText}" items="${statusGroupOptions}" itemLabel="label" itemValue="value" translateLabels="true"/>
                 </div>
 
                 <spring:message code="admin.offers.filter.submit" var="submitFilter"/>
                 <paw:button text="${submitFilter}" type="submit" variant="default" role="default" icon="filter" classname="w-full sm:w-auto"/>
-            </form>
+            </form:form>
         </paw:card>
 
         <%-- Offers List --%>
@@ -163,7 +150,7 @@
 
                                     <c:if test="${offer.status.name() == 'PENDING' || offer.status.name() == 'PENDING_PAYMENT'}">
                                         <form method="post" action="${takedownOfferActionUrl}">
-                                            <input type="hidden" name="redirect" value="/admin/offers?page=${offersPage.page}&statusGroup=<c:out value='${currentStatusGroup}'/>"/>
+                                            <input type="hidden" name="redirect" value="/admin/offers?page=${offersPage.page}&statusGroup=<c:out value='${filterForm.statusGroup}'/>"/>
                                             <spring:message code="admin.offers.takedown.btn" var="takeDownOfferBtnText"/>
                                             <paw:button text="${takeDownOfferBtnText}" type="submit" variant="outline" role="danger" size="sm" icon="trash-2"/>
                                         </form>
