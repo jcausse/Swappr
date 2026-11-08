@@ -349,7 +349,12 @@
                     </thead>
                     <tbody>
                         <c:forEach var="model" items="${models}">
-                            <tr class="border-b border-black/5 last:border-0 align-top">
+                            <c:url value="/admin/catalog/models/${model.id}/edit" var="editModelUrl"/>
+                            <tr class="border-b border-black/5 last:border-0 align-top"
+                                data-edit-action="${editModelUrl}"
+                                data-model-name="<c:out value='${model.name}'/>"
+                                data-brand-id="${model.brandId}"
+                                data-subcategory-id="${model.subcategoryId}">
                                 <td class="py-3 pr-4">
                                     <span class="text-xs font-mono font-medium px-1.5 py-0.5 rounded bg-black/5 text-black/70">
                                         #<c:out value="${model.id}"/>
@@ -367,7 +372,7 @@
                                                 variant="outline"
                                                 size="sm"
                                                 icon="pencil"
-                                                onclick="document.getElementById('editModelDialog-${model.id}').showModal()"
+                                                onclick="openEditModelDialog(this)"
                                             />
                                             <c:if test="${not empty modelReplacementOptions[model.id]}">
                                                 <paw:button
@@ -470,59 +475,8 @@
         </paw:card>
 
         <c:forEach var="model" items="${models}">
-            <c:url value="/admin/catalog/models/${model.id}/edit" var="editModelUrl"/>
             <c:url value="/admin/catalog/models/${model.id}/replace" var="replaceModelUrl"/>
             <c:url value="/admin/catalog/models/${model.id}/delete" var="deleteModelUrl"/>
-
-            <paw:formDialog
-                id="editModelDialog-${model.id}"
-                title="${editModelTitle}"
-                confirmText="${editModelConfirm}"
-                cancelText="${editModelCancel}"
-                formAction="${editModelUrl}"
-            >
-                <div class="flex flex-col gap-3">
-                    <paw:input
-                        id="modelName-${model.id}"
-                        name="name"
-                        value="${model.name}"
-                        label="${modelNameLabel}"
-                        variant="outline"
-                    />
-                    <div class="flex flex-col gap-1">
-                        <label for="modelBrand-${model.id}" class="text-xs text-black/70 font-medium">
-                            <c:out value="${modelBrandLabel}"/>
-                        </label>
-                        <select
-                            id="modelBrand-${model.id}"
-                            name="brandId"
-                            class="px-3 py-2 rounded-lg text-sm border border-black/20 focus-visible:border-lime-600 focus-visible:outline-2 bg-white"
-                        >
-                            <c:forEach var="brand" items="${brandOptions}">
-                                <option value="${brand.id}" ${brand.id eq model.brandId ? 'selected' : ''}>
-                                    <c:out value="${brand.name}"/>
-                                </option>
-                            </c:forEach>
-                        </select>
-                    </div>
-                    <div class="flex flex-col gap-1">
-                        <label for="modelSubcategory-${model.id}" class="text-xs text-black/70 font-medium">
-                            <c:out value="${modelSubcategoryLabel}"/>
-                        </label>
-                        <select
-                            id="modelSubcategory-${model.id}"
-                            name="subcategoryId"
-                            class="px-3 py-2 rounded-lg text-sm border border-black/20 focus-visible:border-lime-600 focus-visible:outline-2 bg-white"
-                        >
-                            <c:forEach var="option" items="${subcategoryOptions}">
-                                <option value="${option.id}" ${option.id eq model.subcategoryId ? 'selected' : ''}>
-                                    <c:out value="${option.name}"/>
-                                </option>
-                            </c:forEach>
-                        </select>
-                    </div>
-                </div>
-            </paw:formDialog>
 
             <paw:formDialog
                 id="replaceModelDialog-${model.id}"
@@ -556,6 +510,55 @@
                 <c:out value="${deleteModelMessage}"/>
             </paw:confirmDialog>
         </c:forEach>
+
+        <paw:formDialog
+            id="editModelDialog"
+            title="${editModelTitle}"
+            confirmText="${editModelConfirm}"
+            cancelText="${editModelCancel}"
+            formAction="${catalogUrl}"
+            modelAttribute="editModelForm"
+        >
+            <div class="flex flex-col gap-3">
+                <paw:formInput
+                    id="editModelName"
+                    path="name"
+                    label="${modelNameLabel}"
+                    variant="outline"
+                />
+                <paw:formSelect
+                    id="editModelBrandId"
+                    path="brandId"
+                    label="${modelBrandLabel}"
+                    items="${brandOptions}"
+                    itemLabel="name"
+                    itemValue="id"
+                />
+                <paw:formSelect
+                    id="editModelSubcategoryId"
+                    path="subcategoryId"
+                    label="${modelSubcategoryLabel}"
+                    items="${subcategoryOptions}"
+                    itemLabel="name"
+                    itemValue="id"
+                />
+            </div>
+        </paw:formDialog>
+
+        <script>
+            function openEditModelDialog(button) {
+                var dialog = document.getElementById('editModelDialog');
+                var modelRow = button.closest('tr');
+                var form = dialog.querySelector('form');
+
+                form.action = modelRow.dataset.editAction;
+                form.querySelector('input[name="name"]').value = modelRow.dataset.modelName || '';
+                form.querySelector('select[name="brandId"]').value = modelRow.dataset.brandId || '';
+                form.querySelector('select[name="subcategoryId"]').value = modelRow.dataset.subcategoryId || '';
+
+                dialog.showModal();
+            }
+        </script>
 
     </div>
 </admin:layout>
