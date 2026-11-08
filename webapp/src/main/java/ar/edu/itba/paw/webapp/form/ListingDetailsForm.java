@@ -40,6 +40,7 @@ public class ListingDetailsForm {
 
     @ValidFile(message = "{ValidFiles.detailsForm.images}", allowedTypes = {"image/*"})
     private List<MultipartFile> images;
+    private List<Long> removedImageIds = new ArrayList<>();
 
     @NotNull
     private Condition condition;

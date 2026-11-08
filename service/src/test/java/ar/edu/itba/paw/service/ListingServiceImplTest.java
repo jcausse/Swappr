@@ -125,7 +125,8 @@ public class ListingServiceImplTest {
 
     private static ListingUpdateDto buildUpdateDto(final long listingId, final Condition condition) {
         return new ListingUpdateDto(
-            listingId, LISTING_TITLE, LISTING_PRICE.getAmount(), MODEL_ID, YEAR, condition, true, false, LISTING_DESCRIPTION
+            listingId, LISTING_TITLE, LISTING_PRICE.getAmount(), MODEL_ID, YEAR, condition, true, false, LISTING_DESCRIPTION,
+            List.of(), List.of()
         );
     }
 

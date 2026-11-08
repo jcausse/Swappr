@@ -288,4 +288,16 @@ public class ListingJpaDao implements ListingDao {
         listing.setDescription(description);
         return listing;
     }
+
+    @Override
+    public void updateImages(final Long listingId, final List<Long> imageIds) {
+        final Listing listing = em.find(Listing.class, listingId);
+        if (listing == null) {
+            return;
+        }
+        
+        listing.setImages(imageIds.stream()
+            .map(imageId -> em.getReference(Image.class, imageId))
+            .collect(Collectors.toCollection(ArrayList::new)));
+    }
 }
