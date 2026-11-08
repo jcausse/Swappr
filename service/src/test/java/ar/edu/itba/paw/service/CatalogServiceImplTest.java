@@ -487,6 +487,40 @@ public class CatalogServiceImplTest {
         Assert.assertEquals(0, result.getTotalCount());
     }
 
+    /* ---------------------------------------------------------------------------------------------- */
+    /* getListingInfoSummaryForModel                                                                   */
+    /* ---------------------------------------------------------------------------------------------- */
+
+    @Test
+    public void testGetListingInfoSummaryForModelSortsConditions() {
+        final Model model = buildFakeModel(MODEL_ID, MODEL_NAME);
+        final ModelListingInfo good = buildListingInfo(model, Condition.GOOD);
+        final ModelListingInfo likeNew = buildListingInfo(model, Condition.LIKE_NEW);
+        final ModelListingInfoSummary summary = ModelListingInfoSummary.builder()
+            .brand(model.getBrand())
+            .model(model)
+            .listingInfoByCondition(List.of(good, likeNew))
+            .build();
+        when(modelDao.getListingInfoSummaryForModel(eq(MODEL_ID))).thenReturn(Optional.of(summary));
+
+        final Optional<ModelListingInfoSummary> result = catalogService.getListingInfoSummaryForModel(MODEL_ID);
+
+        Assert.assertTrue(result.isPresent());
+        Assert.assertEquals(
+            List.of(Condition.LIKE_NEW, Condition.GOOD),
+            result.get().getListingInfoByCondition().stream()
+                .map(ModelListingInfo::getCondition)
+                .toList()
+        );
+    }
+
+    @Test
+    public void testGetListingInfoSummaryForModelEmpty() {
+        when(modelDao.getListingInfoSummaryForModel(eq(MODEL_ID))).thenReturn(Optional.empty());
+
+        Assert.assertTrue(catalogService.getListingInfoSummaryForModel(MODEL_ID).isEmpty());
+    }
+
     private ModelListingInfo buildListingInfo(final Model model, final Condition condition) {
         return ModelListingInfo.builder()
             .brand(model.getBrand())

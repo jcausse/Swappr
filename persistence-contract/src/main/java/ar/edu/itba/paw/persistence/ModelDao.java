@@ -5,6 +5,7 @@ import ar.edu.itba.paw.model.Model;
 import ar.edu.itba.paw.model.ModelInfo;
 import ar.edu.itba.paw.model.ModelListingInfo;
 import ar.edu.itba.paw.model.ModelSort;
+import ar.edu.itba.paw.model.ModelListingInfoSummary;
 import ar.edu.itba.paw.model.Page;
 import ar.edu.itba.paw.model.Subcategory;
 import java.util.List;
@@ -35,4 +36,5 @@ public interface ModelDao {
     boolean hasListings(Long modelId);
 
     int replaceBrand(Long fromBrandId, Long toBrandId);
+    Optional<ModelListingInfoSummary> getListingInfoSummaryForModel(Long modelId);
 }

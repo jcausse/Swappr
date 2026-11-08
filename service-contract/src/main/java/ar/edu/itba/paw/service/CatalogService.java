@@ -14,6 +14,7 @@ import ar.edu.itba.paw.service.dto.ModelOption;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public interface CatalogService {
     Page<BrandInfo> getBrands(BrandSort sort, Integer page, int pageSize);
@@ -58,4 +59,6 @@ public interface CatalogService {
 
     Page<ModelListingInfoSummary> getListingInfoSummary(Long brandId, Long modelId, Integer fromYear, Integer toYear,
             Long subcategoryId, Integer page, int pageSize);
+
+    Optional<ModelListingInfoSummary> getListingInfoSummaryForModel(Long modelId);
 }
