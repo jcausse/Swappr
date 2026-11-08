@@ -371,9 +371,11 @@ public class ListingServiceImplTest {
         final Image storedImage = Image.builder().id(IMAGE_ID).filename("photo.jpg").alt("alt").build();
         when(userService.getById(eq(SELLER_ID))).thenReturn(Optional.of(seller));
         when(catalogService.getModelById(eq(MODEL_ID))).thenReturn(buildFakeModel());
-        when(imageService.create(
-            eq("photo.jpg"), eq("Image 1 for listing: " + LISTING_TITLE), eq("image/jpeg"), any(byte[].class)
-        )).thenReturn(storedImage);
+        when(imageService.createAll(argThat(toCreate ->
+                toCreate.size() == 1
+                    && "photo.jpg".equals(toCreate.getFirst().getFilename())
+                    && ("Image 1 for listing: " + LISTING_TITLE).equals(toCreate.getFirst().getAlt())
+            ))).thenReturn(List.of(storedImage));
         when(listingDao.create(any(), any(), any(), any(), anyInt(), any(), anyBoolean(), anyBoolean(), any(), eq(List.of(IMAGE_ID))))
             .thenReturn(listing);
 

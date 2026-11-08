@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
+import java.util.stream.IntStream;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -121,17 +122,25 @@ public class ListingServiceImpl implements ListingService {
         if (images == null) {
             return List.of();
         }
-
-        final List<Long> imageIds = new ArrayList<>();
-        for (final ImageData imageData : images) {
-            if (imageData != null && imageData.imageBytes() != null && imageData.imageBytes().length > 0) {
-                final String alt = "Image " + (firstIndex + imageIds.size() + 1) + " for listing: " + title;
-                final Image image = imageService.create(
-                    imageData.imageFilename(), alt, imageData.imageContentType(), imageData.imageBytes());
-                imageIds.add(image.getId());
-            }
+        final List<ImageData> validImages = images.stream()
+            .filter(imageData -> imageData != null && imageData.imageBytes() != null && imageData.imageBytes().length > 0)
+            .toList();
+        if (validImages.isEmpty()) {
+            return List.of();
         }
-        return imageIds;
+
+        final List<Image> toCreate = IntStream.range(0, validImages.size())
+            .mapToObj(i -> Image.builder()
+                .filename(validImages.get(i).imageFilename())
+                .alt("Image " + (firstIndex + i + 1) + " for listing: " + title)
+                .contentType(validImages.get(i).imageContentType())
+                .data(validImages.get(i).imageBytes())
+                .build())
+            .toList();
+
+        return imageService.createAll(toCreate).stream()
+            .map(Image::getId)
+            .toList();
     }
 
     @Override
@@ -276,7 +285,7 @@ public class ListingServiceImpl implements ListingService {
         if (!removedImageIds.isEmpty() || !newImageIds.isEmpty()) {
             final var finalImageIds = Stream.concat(keptImageIds.stream(), newImageIds.stream()).toList();
             listingDao.updateImages(existing.getId(), finalImageIds);
-            removedImageIds.forEach(imageService::delete);
+            imageService.deleteAll(removedImageIds);
         }
 
         LOGGER.info("Listing updated: id={}, title='{}'", updated.getId(), updated.getTitle());

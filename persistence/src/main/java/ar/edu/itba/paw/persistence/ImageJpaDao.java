@@ -6,6 +6,7 @@ import org.springframework.stereotype.Repository;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.util.Optional;
+import java.util.List;
 
 @Repository
 public class ImageJpaDao implements ImageDao {
@@ -36,5 +37,23 @@ public class ImageJpaDao implements ImageDao {
         if (image != null) {
             em.remove(image);
         }
+    }
+
+    @Override
+    public List<Image> createAll(final List<Image> images) {
+        images.forEach(em::persist);
+        return images;
+    }
+
+    @Override
+    public void deleteAll(final List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return;
+        }
+        
+        em.flush();
+        em.createQuery("DELETE FROM Image i WHERE i.id IN :ids")
+            .setParameter("ids", ids)
+            .executeUpdate();
     }
 }
