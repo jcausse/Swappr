@@ -54,6 +54,36 @@ public class SiteNotificationCreationDtoFactoryTest {
     }
 
     @Test
+    public void testOfferAcceptedForFreeListingUsesDeliveryKeysAndSkipsPaymentPage() {
+        final Listing freeListing = Listing.builder()
+                .id(101L)
+                .title("Free Bookshelf")
+                .creator(SELLER)
+                .price(new Price(BigDecimal.ZERO))
+                .condition(Condition.LIKE_NEW)
+                .status(ListingStatus.ACTIVE)
+                .build();
+        final Offer interest = Offer.builder()
+                .id(603L)
+                .listing(freeListing)
+                .buyer(BUYER)
+                .amount(BigDecimal.ZERO)
+                .isFullPrice(true)
+                .status(OfferStatus.PENDING_PAYMENT)
+                .createdAt(Instant.now())
+                .build();
+
+        final SiteNotificationCreationDto dto = SiteNotificationCreationDtoFactory.offerAccepted(interest);
+
+        Assert.assertSame(BUYER, dto.notificationRecipient());
+        Assert.assertEquals("notification.offerAccepted.title", dto.titleKey());
+        Assert.assertEquals("notification.offerAccepted.free.body", dto.bodyKey());
+        Assert.assertEquals(List.of("Free Bookshelf", "Seller Ana"), dto.bodyArgs());
+        Assert.assertEquals("/account/my-offers?statusGroup=PENDING_PAYMENT", dto.actionUrl());
+        Assert.assertEquals("notification.offerAccepted.free.cta", dto.actionLabelKey());
+    }
+
+    @Test
     public void testOfferAcceptedCashPureTradeAndTradeWithCash() {
         final SiteNotificationCreationDto cashDto =
                 SiteNotificationCreationDtoFactory.offerAccepted(buildOffer(600L, null, new BigDecimal("280.00"), null));

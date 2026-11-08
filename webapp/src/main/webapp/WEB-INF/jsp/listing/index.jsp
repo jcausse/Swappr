@@ -91,8 +91,15 @@
                         </c:when>
                         <c:when test="${userPendingOffer.isPresent()}">
                             <div class="flex flex-col gap-2">
-                                <spring:message code="currency.symbol" var="currencySymbol"/>
-                                <spring:message code="listing.detail.pendingOffer" arguments="${currencySymbol} ${userPendingOffer.get().amount}" var="pendingOfferMsg"/>
+                                <c:choose>
+                                    <c:when test="${listing.free}">
+                                        <spring:message code="listing.detail.pendingOffer.free" var="pendingOfferMsg"/>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <spring:message code="currency.symbol" var="currencySymbol"/>
+                                        <spring:message code="listing.detail.pendingOffer" arguments="${currencySymbol} ${userPendingOffer.get().amount}" var="pendingOfferMsg"/>
+                                    </c:otherwise>
+                                </c:choose>
                                 <p class="text-black/60 text-sm"><c:out value="${pendingOfferMsg}"/></p>
                                 <form action="<c:url value='/offer/${userPendingOffer.get().id}/withdraw'/>" method="POST">
                                     <spring:message code="account.myOffers.withdraw" var="withdrawLabel"/>
@@ -142,9 +149,19 @@
                                         </p>
                                     </c:otherwise>
                                 </c:choose>
-                                <spring:message code="listing.detail.makeOffer" var="makeOfferLabel"/>
-                                <c:url value="/checkout?listingId=${listing.id}" var="checkoutUrl"/>
-                                <paw:linkButton href="${checkoutUrl}" size="lg" classname="w-full" text="${makeOfferLabel}"/>
+                                <c:choose>
+                                    <c:when test="${listing.free}">
+                                        <spring:message code="listing.detail.interested" var="interestedLabel"/>
+                                        <form action="<c:url value='/listing/${listing.id}/interest'/>" method="POST">
+                                            <paw:button type="submit" size="lg" classname="w-full" text="${interestedLabel}"/>
+                                        </form>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <spring:message code="listing.detail.makeOffer" var="makeOfferLabel"/>
+                                        <c:url value="/checkout?listingId=${listing.id}" var="checkoutUrl"/>
+                                        <paw:linkButton href="${checkoutUrl}" size="lg" classname="w-full" text="${makeOfferLabel}"/>
+                                    </c:otherwise>
+                                </c:choose>
                             </div>
                         </c:otherwise>
                     </c:choose>

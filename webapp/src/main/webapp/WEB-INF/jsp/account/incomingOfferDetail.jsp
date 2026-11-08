@@ -51,6 +51,14 @@
                         </c:otherwise>
                     </c:choose>
                 </c:when>
+                <c:when test="${offer.forFreeListing}">
+                    <spring:message code="offer.detail.title.free" var="title">
+                        <spring:argument value="${offer.buyer.displayName}"/>
+                        <spring:argument value="${offer.listing.brand.name}"/>
+                        <spring:argument value="${offer.listing.model.name}"/>
+                        <spring:argument value="${offer.listing.year}"/>
+                    </spring:message>
+                </c:when>
                 <c:otherwise>
                     <spring:message code="offer.detail.title" var="title">
                         <spring:argument value="${offer.buyer.displayName}"/>
@@ -63,7 +71,7 @@
             </c:choose>
             <h1 class="text-xl font-medium text-balance"><c:out value="${title}"/></h1>
 
-            <account:offerHint role="seller" status="${offer.status.name()}" classname="mt-2"/>
+            <account:offerHint role="seller" status="${offer.status.name()}" free="${offer.forFreeListing}" classname="mt-2"/>
         </div>
 
         <c:if test="${offer.hasOtherOffers and offer.status.name() == 'PENDING'}">
@@ -180,7 +188,7 @@
                 </div>
             </c:when>
             <c:when test="${offer.status.name() == 'PENDING_PAYMENT'}">
-                <spring:message code="offer.detail.confirmPayment" var="confirmLabel"/>
+                <spring:message code="${offer.forFreeListing ? 'offer.detail.confirmDelivery' : 'offer.detail.confirmPayment'}" var="confirmLabel"/>
                 <form action="<c:url value='/offer/${offer.id}/confirm-payment'/>" method="POST" class="w-full mb-2">
                     <paw:button type="submit" variant="default" size="lg" classname="w-full" text="${confirmLabel}"/>
                 </form>

@@ -21,6 +21,7 @@ public class ListingFilterForm {
     private BigDecimal maxPrice;
     private Condition condition;
     private Boolean acceptsTrade;
+    private Boolean onlyFree;
     private String query;
     private ListingSort sort = ListingSort.RECENT;
     private ListingStatus status;

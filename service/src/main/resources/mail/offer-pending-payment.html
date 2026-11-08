@@ -21,13 +21,14 @@
                     <!-- Header Badge -->
                     <tr>
                         <td style="padding: 32px 40px 0; text-align: center;">
-                            <span th:text="#{email.offer.pendingPayment.badge}" style="display: inline-block; padding: 4px 12px; font-size: 11px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; border-radius: 9999px; background-color: #fef3c7; color: #b45309; border: 1px solid #fde68a;">Offer Accepted - Pending Payment</span>
+                            <span th:if="${offer.forFreeListing}" th:text="#{email.offer.pendingDelivery.badge}" style="display: inline-block; padding: 4px 12px; font-size: 11px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; border-radius: 9999px; background-color: #fef3c7; color: #b45309; border: 1px solid #fde68a;">Offer Accepted - Pending Delivery</span>
+                            <span th:unless="${offer.forFreeListing}" th:text="#{email.offer.pendingPayment.badge}" style="display: inline-block; padding: 4px 12px; font-size: 11px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; border-radius: 9999px; background-color: #fef3c7; color: #b45309; border: 1px solid #fde68a;">Offer Accepted - Pending Payment</span>
                         </td>
                     </tr>
                     <!-- Greeting -->
                     <tr>
                         <td style="padding: 16px 40px 0; text-align: center;">
-                            <h1 th:text="#{email.offer.pendingPayment.greeting(${buyer.displayName})}" style="margin: 0; font-size: 24px; font-weight: 800; color: #171717;">
+                            <h1 th:text="${offer.forFreeListing} ? #{email.offer.pendingDelivery.greeting(${buyer.displayName})} : #{email.offer.pendingPayment.greeting(${buyer.displayName})}" style="margin: 0; font-size: 24px; font-weight: 800; color: #171717;">
                                 Great news!
                             </h1>
                         </td>
@@ -35,6 +36,12 @@
                     <!-- Body -->
                     <tr>
                         <td style="padding: 16px 40px 0; text-align: center;">
+                            <th:block th:if="${offer.forFreeListing}">
+                                <p th:text="#{email.offer.pendingDelivery.body(${listing.brand}, ${listing.model}, ${listing.year})}" style="margin: 0; font-size: 15px; line-height: 1.6; color: #525252;">
+                                    Your interest was accepted - pending delivery.
+                                </p>
+                            </th:block>
+                            <th:block th:unless="${offer.forFreeListing}">
                             <th:block th:if="${offer.offeredListing.present}" th:with="offeredListing=${offer.offeredListing.get()}">
                                 <p th:text="#{email.offer.pendingPayment.body.trade(${offeredListing.brand}, ${offeredListing.model}, ${offeredListing.year}, ${offer.amount != null and offer.amount > 0 ? #messages.msg('email.shared.tradeAndAmount', currencySymbol + ' ' + offer.amount) : ''}, ${listing.brand}, ${listing.model}, ${listing.year})}" style="margin: 0; font-size: 15px; line-height: 1.6; color: #525252;">
                                     Your offer was accepted - pending payment.
@@ -44,6 +51,7 @@
                                 <p th:text="#{email.offer.pendingPayment.body(${currencySymbol + ' ' + offer.amount}, ${listing.brand}, ${listing.model}, ${listing.year})}" style="margin: 0; font-size: 15px; line-height: 1.6; color: #525252;">
                                     Your offer was accepted - pending payment.
                                 </p>
+                            </th:block>
                             </th:block>
                         </td>
                     </tr>
@@ -74,7 +82,8 @@
                                             <span th:text="${listing.brand + ' ' + listing.model + ' (' + #numbers.formatInteger(listing.year, 1, 'NONE') + ')'}">Brand Model (Year)</span>
                                         </p>
                                         <p style="margin: 0; font-size: 14px; font-weight: 700; color: #b45309;">
-                                            <span th:text="${currencySymbol + ' ' + offer.amount}">US$ 100</span>
+                                            <span th:if="${offer.forFreeListing}" th:text="#{listing.price.free}">Free</span>
+                                            <span th:unless="${offer.forFreeListing}" th:text="${currencySymbol + ' ' + offer.amount}">US$ 100</span>
                                         </p>
                                     </td>
                                 </tr>
@@ -145,7 +154,7 @@
                     <!-- CTA Button -->
                     <tr>
                         <td style="padding: 28px 40px; text-align: center;">
-                            <a th:href="${actionUrl}" th:text="#{email.offer.pendingPayment.cta}" target="_blank"
+                            <a th:href="${actionUrl}" th:text="${offer.forFreeListing} ? #{email.offer.pendingDelivery.cta} : #{email.offer.pendingPayment.cta}" target="_blank"
                                style="display: inline-block; padding: 12px 28px; font-size: 14px; font-weight: 600; color: #ffffff; background-color: #b45309; border-radius: 8px; text-decoration: none; box-shadow: 0 1px 2px rgba(0,0,0,0.05); border: 1px solid #9a3e0a; background-image: linear-gradient(to bottom, #f59e0b, #b45309);">
                                 Upload Proof of Payment
                             </a>
@@ -155,7 +164,7 @@
                     <tr>
                         <td style="padding: 20px 40px 32px; text-align: center; border-top: 1px solid #e5e5e5;">
                             <p style="margin: 0; font-size: 12px; color: #a3a3a3;">
-                                <span th:text="#{email.offer.pendingPayment.footer}">You received this email because you made an offer on</span> <a th:href="${baseUrl + '/'}" th:text="#{email.shared.paw}" style="color: #65a30d; text-decoration: none;">Swappr</a>.
+                                <span th:text="${offer.forFreeListing} ? #{email.offer.pendingDelivery.footer} : #{email.offer.pendingPayment.footer}">You received this email because you made an offer on</span> <a th:href="${baseUrl + '/'}" th:text="#{email.shared.paw}" style="color: #65a30d; text-decoration: none;">Swappr</a>.
                             </p>
                         </td>
                     </tr>
