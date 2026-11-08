@@ -1,6 +1,7 @@
 <%@ tag language="java" pageEncoding="UTF-8" %>
 <%@ attribute name="id" required="true" %>
 <%@ attribute name="name" required="false" %>
+<%@ attribute name="value" required="false" %>
 <%@ attribute name="type" required="false" %>
 <%@ attribute name="label" required="false" %>
 <%@ attribute name="placeholder" required="false" %>
@@ -49,6 +50,7 @@
             ${variantClassnames}
           "
           placeholder="${placeholder}"
+          <c:if test="${not empty value}">value="<c:out value='${value}'/>"</c:if>
           <c:if test="${isDisabled}">disabled</c:if>
           <c:if test="${isError}">data-error</c:if>
         />
@@ -75,6 +77,7 @@
           ${variantClassnames}
         "
         placeholder="${placeholder}"
+        <c:if test="${not empty value}">value="<c:out value='${value}'/>"</c:if>
         <c:if test="${isDisabled}">disabled</c:if>
         <c:if test="${isError}">data-error</c:if>
       />

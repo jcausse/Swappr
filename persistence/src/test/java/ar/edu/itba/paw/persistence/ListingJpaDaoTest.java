@@ -708,6 +708,34 @@ public class ListingJpaDaoTest {
     }
 
     @Test
+    public void testReplaceModelMovesListings() {
+        // Act
+        final int updated = listingDao.replaceModel(MODEL_ID, PHONE_MODEL_ID);
+
+        // Assert
+        Assert.assertEquals(3, updated);
+        Assert.assertEquals(0, countListingsWhere("model_id = " + MODEL_ID));
+        Assert.assertEquals(4, countListingsWhere("model_id = " + PHONE_MODEL_ID));
+    }
+
+    @Test
+    @Sql("classpath:sql/brand-model-merge-data.sql")
+    public void testReplaceSameNameModelsForBrandsMovesOnlyDuplicateModels() {
+        jdbcTemplate.update(
+            "INSERT INTO listings (listing_id, title, creator_id, model_id, year, price, status, condition, accepts_trade) VALUES "
+            + "(900, 'Duplicate listing', 1, 90, 2023, 100.00, 'ACTIVE', 'GOOD', FALSE),"
+            + "(901, 'Unique listing', 1, 92, 2023, 100.00, 'ACTIVE', 'GOOD', FALSE)");
+
+        final int updated = listingDao.replaceSameNameModelsForBrands(90L, 91L);
+
+        Assert.assertEquals(1, updated);
+        Assert.assertEquals(91L, (long) jdbcTemplate.queryForObject(
+                "SELECT model_id FROM listings WHERE listing_id = 900", Long.class));
+        Assert.assertEquals(92L, (long) jdbcTemplate.queryForObject(
+                "SELECT model_id FROM listings WHERE listing_id = 901", Long.class));
+    }
+
+    @Test
     public void testUpdateStatus() {
         // Act
         listingDao.updateStatus(GALAXY_LISTING_ID, ListingStatus.OFFERED_IN_TRADE);

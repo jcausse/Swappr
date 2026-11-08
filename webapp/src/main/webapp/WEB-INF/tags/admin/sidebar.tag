@@ -8,6 +8,7 @@
 <c:url value="/admin/listings" var="listingsUrl"/>
 <c:url value="/admin/offers" var="offersUrl"/>
 <c:url value="/admin/users" var="usersUrl"/>
+<c:url value="/admin/catalog" var="catalogUrl"/>
 <c:url value="/" var="homeUrl"/>
 
 <spring:message code="admin.sidebar.title" var="sidebarTitle"/>
@@ -15,6 +16,7 @@
 <spring:message code="admin.sidebar.listings" var="listingsTitle"/>
 <spring:message code="admin.sidebar.offers" var="offersTitle"/>
 <spring:message code="admin.sidebar.users" var="usersTitle"/>
+<spring:message code="admin.sidebar.catalog" var="catalogTitle"/>
 <spring:message code="admin.sidebar.backToSite" var="backToSiteTitle"/>
 
 <paw:card title="${sidebarTitle}" classname="sticky top-24">
@@ -23,6 +25,7 @@
         <admin:link href="${listingsUrl}" text="${listingsTitle}" icon="store" />
         <admin:link href="${offersUrl}" text="${offersTitle}" icon="handshake" />
         <admin:link href="${usersUrl}" text="${usersTitle}" icon="users" />
+        <admin:link href="${catalogUrl}" text="${catalogTitle}" icon="tags" />
 
         <paw:divider />
 
