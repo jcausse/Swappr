@@ -1,5 +1,6 @@
 package ar.edu.itba.paw.service.dto;
 import java.math.BigDecimal;
+import java.util.List;
 
 import ar.edu.itba.paw.model.Condition;
 
@@ -12,5 +13,7 @@ public record ListingUpdateDto(
     Condition condition,
     boolean acceptsTrade,
     boolean acceptsShipping,
-    String description
+    String description,
+    List<ImageData> newImages,
+    List<Long> removedImageIds
 ) {}

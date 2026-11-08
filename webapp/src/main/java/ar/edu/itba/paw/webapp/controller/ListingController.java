@@ -357,6 +357,7 @@ public class ListingController {
         form.setPrice(listing.getPrice().getAmount());
         form.setCondition(listing.getCondition());
         form.setAcceptsTrade(listing.isAcceptsTrade());
+        form.setAcceptsShipping(listing.isAcceptsShipping());
         form.setDescription(listing.getDescription());
 
         var mav = new ModelAndView("listing/new/details");
@@ -365,6 +366,7 @@ public class ListingController {
         mav.addObject("priceSummary", catalogService.getListingInfoSummaryForModel(listing.getModel().getId()).orElse(null));
         mav.addObject("actionUrl", "/listing/" + id + "/edit");
         mav.addObject("edit", true);
+        mav.addObject("existingImageIds", listing.getImageIds());
         return mav;
     }
 
@@ -379,7 +381,7 @@ public class ListingController {
         LOGGER.info("User {} submitted listing edit for model {}", currentUser.getId(), form.getModelId());
         if (bindingResult.hasErrors()) {
             LOGGER.debug("Validation failed for listing edit for model {}", form.getModelId());
-            return detailsWithErrors(form);
+            return editDetailsWithErrors(id, form);
         }
 
         listingService.update(new ListingUpdateDto(
@@ -391,7 +393,9 @@ public class ListingController {
             form.getCondition(),
             form.isAcceptsTrade(),
             form.isAcceptsShipping(),
-            form.getDescription()
+            form.getDescription(),
+            form.getImages(),
+            form.getRemovedImageIds()
         ), currentUser.getId());
         return new ModelAndView("redirect:/account/listings");
     }
@@ -402,6 +406,13 @@ public class ListingController {
                 .addObject("model", model)
                 .addObject("conditionOptions", buildConditionOptions())
                 .addObject("priceSummary", catalogService.getListingInfoSummaryForModel(model.getId()).orElse(null));
+    }
+
+    private ModelAndView editDetailsWithErrors(final Long listingId, final ListingDetailsForm form) {
+        return detailsWithErrors(form)
+            .addObject("actionUrl", "/listing/" + listingId + "/edit")
+            .addObject("edit", true)
+            .addObject("existingImageIds", listingService.getById(listingId).getImageIds());
     }
 
     @PostMapping("/{id}/cancel")

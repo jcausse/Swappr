@@ -17,6 +17,7 @@ import javax.sql.DataSource;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.util.Optional;
+import java.util.List;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = { TestConfig.class })
@@ -202,5 +203,53 @@ public class ImageJpaDaoTest {
         // Assert
         em.flush();
         Assert.assertEquals(1, JdbcTestUtils.countRowsInTableWhere(jdbcTemplate, TABLE, "image_id = " + IMAGE_ID));
+    }
+
+    /* ---------------------------------------------------------------------------------------------- */
+    /* createAll / deleteAll                                                                           */
+    /* ---------------------------------------------------------------------------------------------- */
+
+    @Test
+    public void testCreateAllPersistsEveryImage() {
+        // Arrange
+        final List<Image> images = List.of(
+            Image.builder().filename(FILENAME).alt(ALT).contentType(CONTENT_TYPE).data(DATA).build(),
+            Image.builder().filename("second.png").alt(ALT).contentType(CONTENT_TYPE).data(DATA).build()
+        );
+
+        // Act
+        final List<Image> created = imageDao.createAll(images);
+
+        // Assert
+        em.flush();
+        Assert.assertTrue(created.stream().allMatch(image -> image.getId() != null));
+        Assert.assertEquals(2, JdbcTestUtils.countRowsInTable(jdbcTemplate, TABLE));
+    }
+
+    @Test
+    public void testDeleteAllRemovesOnlyTheGivenImages() {
+        // Arrange
+        insertImage(IMAGE_ID, CONTENT_TYPE);
+        insertImage(IMAGE_ID + 1, CONTENT_TYPE);
+        insertImage(IMAGE_ID + 2, CONTENT_TYPE);
+
+        // Act
+        imageDao.deleteAll(List.of(IMAGE_ID, IMAGE_ID + 1));
+
+        // Assert
+        Assert.assertEquals(1, JdbcTestUtils.countRowsInTable(jdbcTemplate, TABLE));
+        Assert.assertEquals(1, JdbcTestUtils.countRowsInTableWhere(jdbcTemplate, TABLE, "image_id = " + (IMAGE_ID + 2)));
+    }
+
+    @Test
+    public void testDeleteAllWithEmptyListDoesNothing() {
+        // Arrange
+        insertImage(IMAGE_ID, CONTENT_TYPE);
+
+        // Act
+        imageDao.deleteAll(List.of());
+
+        // Assert
+        Assert.assertEquals(1, JdbcTestUtils.countRowsInTable(jdbcTemplate, TABLE));
     }
 }

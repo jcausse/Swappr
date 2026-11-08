@@ -55,6 +55,7 @@ public class ListingServiceImplTest {
     private static final long MODEL_ID = 1L;
     private static final int YEAR = 2023;
     private static final long IMAGE_ID = 10L;
+    private static final long FOREIGN_IMAGE_ID = 999L;
     private static final int PAGE_SIZE = 12;
 
     @InjectMocks
@@ -157,7 +158,8 @@ public class ListingServiceImplTest {
 
     private static ListingUpdateDto buildUpdateDto(final long listingId, final Condition condition) {
         return new ListingUpdateDto(
-            listingId, LISTING_TITLE, LISTING_PRICE.getAmount(), MODEL_ID, YEAR, condition, true, false, LISTING_DESCRIPTION
+            listingId, LISTING_TITLE, LISTING_PRICE.getAmount(), MODEL_ID, YEAR, condition, true, false, LISTING_DESCRIPTION,
+            List.of(), List.of()
         );
     }
 
@@ -369,9 +371,11 @@ public class ListingServiceImplTest {
         final Image storedImage = Image.builder().id(IMAGE_ID).filename("photo.jpg").alt("alt").build();
         when(userService.getById(eq(SELLER_ID))).thenReturn(Optional.of(seller));
         when(catalogService.getModelById(eq(MODEL_ID))).thenReturn(buildFakeModel());
-        when(imageService.create(
-            eq("photo.jpg"), eq("Image 1 for listing: " + LISTING_TITLE), eq("image/jpeg"), any(byte[].class)
-        )).thenReturn(storedImage);
+        when(imageService.createAll(argThat(toCreate ->
+                toCreate.size() == 1
+                    && "photo.jpg".equals(toCreate.getFirst().getFilename())
+                    && ("Image 1 for listing: " + LISTING_TITLE).equals(toCreate.getFirst().getAlt())
+            ))).thenReturn(List.of(storedImage));
         when(listingDao.create(any(), any(), any(), any(), anyInt(), any(), anyBoolean(), anyBoolean(), any(), eq(List.of(IMAGE_ID))))
             .thenReturn(listing);
 
@@ -544,6 +548,30 @@ public class ListingServiceImplTest {
 
         // Act
         listingService.update(buildUpdateDto(LISTING_ID, null), SELLER_ID);
+    }
+
+    @Test
+    public void testUpdateIgnoresRemovedImagesFromOtherListings() {
+        // Arrange
+        final Listing listing = buildFakeListing(buildFakeUser(SELLER_ID, "seller"));
+        final Model model = buildFakeModel();
+        when(listingDao.getById(eq(LISTING_ID))).thenReturn(Optional.of(listing));
+        when(catalogService.getModelById(eq(MODEL_ID))).thenReturn(model);
+        when(listingDao.update(
+            eq(LISTING_ID), eq(LISTING_TITLE), eq(LISTING_PRICE), eq(model), eq(YEAR),
+            eq(Condition.GOOD), eq(true), anyBoolean(), eq(LISTING_DESCRIPTION)
+        )).thenReturn(listing);
+        lenient().doThrow(new AssertionError("Foreign image must not be deleted"))
+            .when(imageService).delete(eq(FOREIGN_IMAGE_ID));
+
+        // Act
+        final Listing result = listingService.update(new ListingUpdateDto(
+            LISTING_ID, LISTING_TITLE, LISTING_PRICE.getAmount(), MODEL_ID, YEAR, Condition.GOOD, true, false,
+            LISTING_DESCRIPTION, List.of(), List.of(FOREIGN_IMAGE_ID)
+        ), SELLER_ID);
+
+        // Assert
+        Assert.assertEquals(LISTING_ID, (long) result.getId());
     }
 
     /* ---------------------------------------------------------------------------------------------- */

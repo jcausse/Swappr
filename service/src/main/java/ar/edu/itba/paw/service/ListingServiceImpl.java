@@ -23,6 +23,9 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Stream;
+import java.util.stream.IntStream;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -115,6 +118,31 @@ public class ListingServiceImpl implements ListingService {
         return value != null && value.signum() >= 0 ? value : null;
     }
 
+    private List<Long> createImages(final List<ImageData> images, final String title, final int firstIndex) {
+        if (images == null) {
+            return List.of();
+        }
+        final List<ImageData> validImages = images.stream()
+            .filter(imageData -> imageData != null && imageData.imageBytes() != null && imageData.imageBytes().length > 0)
+            .toList();
+        if (validImages.isEmpty()) {
+            return List.of();
+        }
+
+        final List<Image> toCreate = IntStream.range(0, validImages.size())
+            .mapToObj(i -> Image.builder()
+                .filename(validImages.get(i).imageFilename())
+                .alt("Image " + (firstIndex + i + 1) + " for listing: " + title)
+                .contentType(validImages.get(i).imageContentType())
+                .data(validImages.get(i).imageBytes())
+                .build())
+            .toList();
+
+        return imageService.createAll(toCreate).stream()
+            .map(Image::getId)
+            .toList();
+    }
+
     @Override
     @Transactional
     public Listing create(ListingCreationDto dto) {
@@ -131,17 +159,7 @@ public class ListingServiceImpl implements ListingService {
             throw BadParameterException.create("modelId", e.getMessage());
         }
 
-        List<Long> imageIds = new ArrayList<>();
-        if (dto.images() != null) {
-            for (int i = 0; i < dto.images().size(); i++) {
-                ImageData imageData = dto.images().get(i);
-                if (imageData != null && imageData.imageBytes() != null && imageData.imageBytes().length > 0) {
-                    String alt = "Image " + (i + 1) + " for listing: " + dto.title();
-                    Image image = imageService.create(imageData.imageFilename(), alt, imageData.imageContentType(), imageData.imageBytes());
-                    imageIds.add(image.getId());
-                }
-            }
-        }
+        final List<Long> imageIds = createImages(dto.images(), dto.title(), 0);
 
         if (dto.condition() == null) {
             throw BadParameterException.create("condition", "Condition is required");
@@ -253,6 +271,23 @@ public class ListingServiceImpl implements ListingService {
             dto.acceptsShipping(),
             dto.description()
         );
+
+        final var currentImageIds = existing.getImageIds();
+        final var removedImageIds = Optional.ofNullable(dto.removedImageIds()).orElse(List.of()).stream()
+            .filter(currentImageIds::contains)
+            .distinct()
+            .toList();
+        final var keptImageIds = currentImageIds.stream()
+            .filter(imageId -> !removedImageIds.contains(imageId))
+            .toList();
+        final var newImageIds = createImages(dto.newImages(), dto.title(), keptImageIds.size());
+
+        if (!removedImageIds.isEmpty() || !newImageIds.isEmpty()) {
+            final var finalImageIds = Stream.concat(keptImageIds.stream(), newImageIds.stream()).toList();
+            listingDao.updateImages(existing.getId(), finalImageIds);
+            imageService.deleteAll(removedImageIds);
+        }
+
         LOGGER.info("Listing updated: id={}, title='{}'", updated.getId(), updated.getTitle());
         return updated;
     }

@@ -137,7 +137,10 @@
                 </div>
 
                 <spring:message code="listing.new.imagesLabel" var="imagesLabel"/>
-                <paw:fileUpload path="images" label="${imagesLabel}" multiple="true" accept="image/*" />
+                <paw:fileUpload path="images" label="${imagesLabel}" multiple="true" accept="image/*"
+                    existingImageIds="${existingImageIds}"
+                    removedPath="removedImageIds"
+                    removedImageIds="${detailsForm.removedImageIds}" />
 
                 <spring:message code="listing.new.descriptionLabel" var="descriptionLabel"/>
                 <paw:formInput type="textarea" path="description" label="${descriptionLabel}" inputClassname="min-h-40 resize-none" />
