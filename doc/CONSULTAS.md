@@ -1,7 +1,12 @@
+OK traducir keys en un controller, si estamos armando un string más complejo que un solo i18n key?
+O mejor pasar varios i18n en un objeto y hacerlo en JSP?
+
+(subcategory select en admin panel)
+
+---
 
 `getListingInfoSummary` (`ProductJpaDao`):
   - Hay una mejor forma de hacerlo sin castear un `Object[]`?
-  - Llamada a `sorted()` se puede evitar?
 
 Idem `countByStatus` (`OfferJpaDao`)
 

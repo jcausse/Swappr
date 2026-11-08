@@ -24,12 +24,12 @@
   />
   <span
     aria-hidden="true"
-    class="flex h-4 w-4 shrink-0 items-center justify-center rounded-md border border-black/20 bg-white text-lime-600 transition
+    class="flex h-4 w-4 shrink-0 items-center justify-center rounded-md border border-black/20 bg-white text-lime-600 transition duration-150
            peer-checked:border-lime-600 peer-checked:bg-lime-50
            peer-focus-visible:outline-2 peer-focus-visible:outline-offset-0 outline-lime-600/30 peer-focus-visible:border-lime-600
            peer-disabled:opacity-50 peer-disabled:bg-black/10 peer-checked:[&_.check-icon]:opacity-100"
   >
-    <paw:icon name="check" classname="check-icon font-bold text-xl/none translate-x-0.5 -translate-y-0.25 opacity-0 drop-shadow-[1px_1px_white,-1px_-1px_white]" />
+    <paw:icon name="check" classname="check-icon font-bold text-xl/none translate-x-0.5 -translate-y-0.25 opacity-0 drop-shadow-[1px_1px_white,-1px_-1px_white] transition duration-150" />
   </span>
   <c:if test="${not empty label}">
     <span><c:out value="${label}"/></span>
