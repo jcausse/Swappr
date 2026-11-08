@@ -54,6 +54,7 @@ public class ListingServiceImplTest {
     private static final long MODEL_ID = 1L;
     private static final int YEAR = 2023;
     private static final long IMAGE_ID = 10L;
+    private static final long FOREIGN_IMAGE_ID = 999L;
     private static final int PAGE_SIZE = 12;
 
     @InjectMocks
@@ -380,6 +381,30 @@ public class ListingServiceImplTest {
 
         // Act
         listingService.update(buildUpdateDto(LISTING_ID, null), SELLER_ID);
+    }
+
+    @Test
+    public void testUpdateIgnoresRemovedImagesFromOtherListings() {
+        // Arrange
+        final Listing listing = buildFakeListing(buildFakeUser(SELLER_ID, "seller"));
+        final Model model = buildFakeModel();
+        when(listingDao.getById(eq(LISTING_ID))).thenReturn(Optional.of(listing));
+        when(catalogService.getModelById(eq(MODEL_ID))).thenReturn(model);
+        when(listingDao.update(
+            eq(LISTING_ID), eq(LISTING_TITLE), eq(LISTING_PRICE), eq(model), eq(YEAR),
+            eq(Condition.GOOD), eq(true), anyBoolean(), eq(LISTING_DESCRIPTION)
+        )).thenReturn(listing);
+        lenient().doThrow(new AssertionError("Foreign image must not be deleted"))
+            .when(imageService).delete(eq(FOREIGN_IMAGE_ID));
+
+        // Act
+        final Listing result = listingService.update(new ListingUpdateDto(
+            LISTING_ID, LISTING_TITLE, LISTING_PRICE.getAmount(), MODEL_ID, YEAR, Condition.GOOD, true, false,
+            LISTING_DESCRIPTION, List.of(), List.of(FOREIGN_IMAGE_ID)
+        ), SELLER_ID);
+
+        // Assert
+        Assert.assertEquals(LISTING_ID, (long) result.getId());
     }
 
     /* ---------------------------------------------------------------------------------------------- */

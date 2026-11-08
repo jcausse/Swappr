@@ -657,6 +657,19 @@ public class ListingJpaDaoTest {
         Assert.assertEquals(1, count);
     }
 
+    @Test
+    public void testUpdateImagesRemovesFirstImageAndKeepsOrder() {
+        // Act
+        listingDao.updateImages(MACBOOK_LISTING_ID, List.of(BACK_IMAGE_ID, UNASSIGNED_IMAGE_1_ID));
+
+        // Assert
+        em.flush();
+        final List<Long> imageIds = jdbcTemplate.queryForList(
+            "SELECT image_id FROM listing_images WHERE listing_id = ? ORDER BY display_order",
+            Long.class, MACBOOK_LISTING_ID);
+        Assert.assertEquals(List.of(BACK_IMAGE_ID, UNASSIGNED_IMAGE_1_ID), imageIds);
+    }
+
     /* ---------------------------------------------------------------------------------------------- */
     /* status changes                                                                                  */
     /* ---------------------------------------------------------------------------------------------- */
