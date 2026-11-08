@@ -32,7 +32,6 @@ public class SiteNotificationTest {
     @Test
     public void testShowCallToActionNonPaymentNotificationsReturnTrueRegardlessOfOffer() {
         for (NotificationType type : new NotificationType[]{
-                NotificationType.NEW_OFFER,
                 NotificationType.OFFER_REJECTED,
                 NotificationType.OFFER_WITHDRAWN,
                 NotificationType.PURCHASE_CONFIRMED,
@@ -53,6 +52,27 @@ public class SiteNotificationTest {
             final SiteNotification resolvedOffer = buildNotification(type, buildOffer(OfferStatus.ACCEPTED));
             Assert.assertTrue("Expected true for " + type + " with ACCEPTED offer", resolvedOffer.showCallToAction());
         }
+    }
+
+    @Test
+    public void testShowCallToActionNewOfferRequiresPendingOffer() {
+        final SiteNotification pending = buildNotification(NotificationType.NEW_OFFER, buildOffer(OfferStatus.PENDING));
+        Assert.assertTrue(pending.showCallToAction());
+        for (OfferStatus status : new OfferStatus[]{
+                OfferStatus.PENDING_PAYMENT,
+                OfferStatus.ACCEPTED,
+                OfferStatus.REJECTED,
+                OfferStatus.WITHDRAWN
+        }) {
+            final SiteNotification resolved = buildNotification(NotificationType.NEW_OFFER, buildOffer(status));
+            Assert.assertFalse("Expected false for NEW_OFFER when status is " + status, resolved.showCallToAction());
+        }
+    }
+
+    @Test
+    public void testShowCallToActionNewOfferWithoutOfferKeepsLink() {
+        final SiteNotification legacy = buildNotification(NotificationType.NEW_OFFER, null);
+        Assert.assertTrue(legacy.showCallToAction());
     }
 
     @Test

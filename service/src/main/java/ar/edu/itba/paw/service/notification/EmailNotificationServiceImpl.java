@@ -75,32 +75,42 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
 
     @Async
     @Override
-    public void sendPurchaseSellerEmail(UserMailDto seller, UserMailDto buyer, ListingMailDto listing, String message) {
+    public void sendPurchaseSellerEmail(UserMailDto seller, UserMailDto buyer, ListingMailDto listing, String message,
+                                       boolean forFreeListing) {
         final var locale = localeOf(seller);
         var context = new Context(locale);
         context.setVariable("seller", seller);
         context.setVariable("buyer", buyer);
         context.setVariable("listing", listing);
         context.setVariable("message", message);
+        context.setVariable("forFreeListing", forFreeListing);
         context.setVariable("baseUrl", baseUrl);
         context.setVariable("actionUrl", "mailto:" + buyer.getEmail());
 
-        String subject = messageSource.getMessage("email.purchase.seller.subject", null, locale);
+        final String subjectKey = forFreeListing
+                ? "email.purchase.seller.free.subject"
+                : "email.purchase.seller.subject";
+        String subject = messageSource.getMessage(subjectKey, null, locale);
         sendEmail(seller.getEmail(), subject, "purchase-seller", context);
     }
 
     @Async
     @Override
-    public void sendPurchaseBuyerEmail(UserMailDto buyer, UserMailDto seller, ListingMailDto listing) {
+    public void sendPurchaseBuyerEmail(UserMailDto buyer, UserMailDto seller, ListingMailDto listing,
+                                      boolean forFreeListing) {
         final var locale = localeOf(buyer);
         var context = new Context(locale);
         context.setVariable("buyer", buyer);
         context.setVariable("seller", seller);
         context.setVariable("listing", listing);
         context.setVariable("baseUrl", baseUrl);
+        context.setVariable("forFreeListing", forFreeListing);
         context.setVariable("actionUrl", "mailto:" + seller.getEmail());
 
-        String subject = messageSource.getMessage("email.purchase.buyer.subject", null, locale);
+        final String subjectKey = forFreeListing
+                ? "email.purchase.buyer.free.subject"
+                : "email.purchase.buyer.subject";
+        String subject = messageSource.getMessage(subjectKey, null, locale);
         sendEmail(buyer.getEmail(), subject, "purchase-buyer", context);
     }
 
@@ -164,9 +174,15 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
         context.setVariable("listing", offer.getListing());
         context.setVariable("offer", offer);
         context.setVariable("baseUrl", baseUrl);
-        context.setVariable("actionUrl", baseUrl + "/account/my-offers/" + offer.getId() + "/payment");
+        final String actionPath = offer.isForFreeListing()
+                ? "/account/my-offers?statusGroup=PENDING_PAYMENT"
+                : "/account/my-offers/" + offer.getId() + "/payment";
+        context.setVariable("actionUrl", baseUrl + actionPath);
 
-        String subject = messageSource.getMessage("email.offer.pendingPayment.subject", null, locale);
+        final String subjectKey = offer.isForFreeListing()
+                ? "email.offer.pendingDelivery.subject"
+                : "email.offer.pendingPayment.subject";
+        String subject = messageSource.getMessage(subjectKey, null, locale);
         sendEmail(buyer.getEmail(), subject, "offer-pending-payment", context);
     }
 

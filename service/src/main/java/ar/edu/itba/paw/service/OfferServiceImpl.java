@@ -113,6 +113,10 @@ public class OfferServiceImpl implements OfferService {
         final var listing = listingService.getById(dto.listingId());
         final var listingPrice = listing.getPrice().getAmount();
 
+        if (listing.isFree() && dto.offerType() != OfferType.FULL) {
+            throw BadParameterException.create("offerType", "Free listings only accept interest offers");
+        }
+
         final BigDecimal amount = switch (dto.offerType()) {
             case FULL -> listingPrice;
             case CUSTOM -> dto.customAmount();
@@ -142,6 +146,10 @@ public class OfferServiceImpl implements OfferService {
 
         final User buyer = userService.getById(dto.buyerId())
                 .orElseThrow(() -> new BadParameterException("Invalid buyerId"));
+
+        if (offerDao.getByListingAndBuyer(listing, buyer).isPresent()) {
+            throw BadParameterException.create("listingId", "You already have an active offer on this listing");
+        }
 
         final boolean isTrade = offeredListingId != null;
 
@@ -179,6 +187,16 @@ public class OfferServiceImpl implements OfferService {
         notificationDispatcherService.notifyNewOffer(offer);
 
         return offer;
+    }
+
+    @Override
+    @Transactional
+    public Offer createInterest(Long listingId, Long buyerId) {
+        final Listing listing = listingService.getById(listingId);
+        if (!listing.isFree()) {
+            throw BadParameterException.create("listingId", "Interest can only be expressed on free listings");
+        }
+        return create(new OfferCreationDto(listingId, buyerId, OfferType.FULL, null, null, null, null));
     }
 
     @Override
@@ -317,6 +335,10 @@ public class OfferServiceImpl implements OfferService {
         final Offer offer = offerDao.getById(offerId)
             .orElseThrow(() -> NotFoundException.createFor("Offer with ID " + offerId));
 
+        if (offer.isForFreeListing()) {
+            throw new BadParameterException("Free-listing offers have no payment or shipping step");
+        }
+
         if (!offer.isBuyer(buyerId)) {
             LOGGER.warn("User {} unauthorized to upload proof of payment for offer {}", buyerId, offerId);
             throw new BadParameterException("Only the buyer can upload proof of payment");
@@ -361,6 +383,10 @@ public class OfferServiceImpl implements OfferService {
         LOGGER.debug("Uploading proof of shipping: offerId={}, sellerId={}", offerId, sellerId);
         final Offer offer = offerDao.getById(offerId)
             .orElseThrow(() -> NotFoundException.createFor("Offer with ID " + offerId));
+
+        if (offer.isForFreeListing()) {
+            throw new BadParameterException("Free-listing offers have no payment or shipping step");
+        }
 
         // TODO remove this validation after implementing preatuhorize
         if (!offer.isSeller(sellerId)) {

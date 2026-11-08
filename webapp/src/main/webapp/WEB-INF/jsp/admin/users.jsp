@@ -17,22 +17,16 @@
     <div class="flex flex-col gap-6">
         <%-- Search User by Username --%>
         <paw:card>
-            <form method="get" action="${usersBaseUrl}" class="flex flex-col sm:flex-row gap-3 items-end">
+            <form:form modelAttribute="filterForm" action="${usersBaseUrl}" method="get" class="flex flex-col sm:flex-row gap-3 items-end">
                 <div class="flex-1 w-full">
                     <spring:message code="admin.users.search.label" var="searchLabel"/>
                     <spring:message code="admin.users.search.placeholder" var="searchPlaceholder"/>
-                    <div class="flex flex-col gap-1">
-                        <label for="admin-user-search" class="text-xs text-black/70 font-medium">
-                            <c:out value="${searchLabel}"/>
-                        </label>
-                        <input id="admin-user-search" name="username" type="text" value="<c:out value='${searchedUsername}'/>" placeholder="${searchPlaceholder}"
-                               class="w-full px-3 py-2 rounded-lg text-sm border border-black/20 focus-visible:border-lime-600 focus-visible:outline-2"/>
-                    </div>
+                    <paw:formInput path="username" label="${searchLabel}" placeholder="${searchPlaceholder}" variant="outline"/>
                 </div>
 
                 <spring:message code="admin.users.search.submit" var="submitSearch"/>
                 <paw:button text="${submitSearch}" type="submit" variant="default" role="default" icon="search" classname="w-full sm:w-auto"/>
-            </form>
+            </form:form>
         </paw:card>
 
         <%-- Search Result --%>

@@ -119,6 +119,18 @@ public class OfferServiceImplTest {
     }
 
 
+    private static Listing buildFreeListing() {
+        return Listing.builder()
+            .id(LISTING_ID)
+            .title("Listing " + LISTING_ID)
+            .creator(buildFakeUser(SELLER_ID))
+            .price(new Price(BigDecimal.ZERO))
+            .status(ListingStatus.ACTIVE)
+            .condition(Condition.GOOD)
+            .acceptsTrade(true)
+            .build();
+    }
+
     private static Offer.OfferBuilder offerBuilder(final OfferStatus status) {
         return Offer.builder()
             .id(OFFER_ID)
@@ -216,6 +228,68 @@ public class OfferServiceImplTest {
 
         // Assert
         Assert.assertEquals(OFFER_ID, (long) result.getId());
+    }
+
+    @Test(expected = BadParameterException.class)
+    public void testCreateTradeOnFreeListingThrows() {
+        // Arrange
+        when(listingService.getById(eq(LISTING_ID))).thenReturn(buildFreeListing());
+
+        // Act
+        offerService.create(buildCreationDto(BUYER_ID, OFFERED_LISTING_ID));
+    }
+
+    @Test(expected = BadParameterException.class)
+    public void testCreateCustomOnFreeListingThrows() {
+        // Arrange
+        when(listingService.getById(eq(LISTING_ID))).thenReturn(buildFreeListing());
+
+        // Act
+        offerService.create(buildCreationDto(BUYER_ID, null));
+    }
+
+    @Test
+    public void testCreateInterestOnFreeListingReturnsOffer() {
+        // Arrange
+        final Listing listing = buildFreeListing();
+        final User buyer = buildFakeUser(BUYER_ID);
+        final Offer offer = buildFakeOffer(OfferStatus.PENDING);
+        when(listingService.getById(eq(LISTING_ID))).thenReturn(listing);
+        when(userService.getById(eq(BUYER_ID))).thenReturn(Optional.of(buyer));
+        when(offerDao.create(
+            eq(LISTING_ID), eq(buyer), eq(BigDecimal.ZERO), eq(true), eq(OfferStatus.PENDING),
+            isNull(), any(Instant.class), isNull()
+        )).thenReturn(offer);
+
+        // Act
+        final Offer result = offerService.createInterest(LISTING_ID, BUYER_ID);
+
+        // Assert
+        Assert.assertEquals(OFFER_ID, (long) result.getId());
+    }
+
+    @Test
+    public void testCanUploadDocumentsPendingPaymentFreeOfferIsFalse() {
+        // Arrange
+        final Offer offer = offerBuilder(OfferStatus.PENDING_PAYMENT).listing(buildFreeListing()).build();
+
+        // Act
+        final boolean canUpload = offer.canUploadDocuments();
+
+        // Assert
+        Assert.assertFalse(canUpload);
+    }
+
+    @Test
+    public void testCanUploadDocumentsPendingPaymentPaidOfferIsTrue() {
+        // Arrange
+        final Offer offer = buildFakeOffer(OfferStatus.PENDING_PAYMENT);
+
+        // Act
+        final boolean canUpload = offer.canUploadDocuments();
+
+        // Assert
+        Assert.assertTrue(canUpload);
     }
 
     @Test(expected = BadParameterException.class)

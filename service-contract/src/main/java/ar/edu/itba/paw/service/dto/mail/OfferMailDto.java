@@ -21,6 +21,7 @@ public class OfferMailDto {
     UserMailDto seller;
     ListingMailDto listing;
     ListingMailDto offeredListing;
+    boolean forFreeListing;
 
     public Optional<ListingMailDto> getOfferedListing() {
         return Optional.ofNullable(offeredListing);
@@ -38,6 +39,7 @@ public class OfferMailDto {
                 .seller(UserMailDto.from(listing.getCreator()))
                 .listing(ListingMailDto.from(listing))
                 .offeredListing(offer.getOfferedListing().map(ListingMailDto::from).orElse(null))
+                .forFreeListing(offer.isForFreeListing())
                 .build();
     }
 }

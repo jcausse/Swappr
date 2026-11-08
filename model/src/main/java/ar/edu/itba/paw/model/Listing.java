@@ -113,6 +113,10 @@ public class Listing {
         return status == ListingStatus.CANCELED;
     }
 
+    public boolean isFree() {
+        return price != null && price.getAmount().signum() == 0;
+    }
+
     public boolean isCreator(Long userId) {
         return userId != null && userId.equals(creator.getId());
     }

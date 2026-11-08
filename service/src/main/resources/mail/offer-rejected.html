@@ -35,6 +35,10 @@
                     <!-- Body -->
                     <tr>
                         <td style="padding: 16px 40px 0; text-align: center;">
+                            <p th:if="${offer.forFreeListing}" th:text="#{email.offer.rejected.free.body(${listing.brand}, ${listing.model}, ${listing.year})}" style="margin: 0; font-size: 15px; line-height: 1.6; color: #525252;">
+                                Your interest was not accepted.
+                            </p>
+                            <th:block th:unless="${offer.forFreeListing}">
                             <th:block th:if="${offer.offeredListing.present}" th:with="offeredListing=${offer.offeredListing.get()}">
                                 <p th:text="#{email.offer.rejected.body.trade(${offeredListing.brand}, ${offeredListing.model}, ${offeredListing.year}, ${offer.amount != null and offer.amount > 0 ? #messages.msg('email.shared.tradeAndAmount', currencySymbol + ' ' + offer.amount) : ''}, ${listing.brand}, ${listing.model}, ${listing.year})}" style="margin: 0; font-size: 15px; line-height: 1.6; color: #525252;">
                                     Your offer was not accepted.
@@ -44,6 +48,7 @@
                                 <p th:text="#{email.offer.rejected.body(${currencySymbol + ' ' + offer.amount}, ${listing.brand}, ${listing.model}, ${listing.year})}" style="margin: 0; font-size: 15px; line-height: 1.6; color: #525252;">
                                     Your offer was not accepted.
                                 </p>
+                            </th:block>
                             </th:block>
                         </td>
                     </tr>
@@ -72,7 +77,8 @@
                                             <span th:text="${listing.brand + ' ' + listing.model + ' (' + #numbers.formatInteger(listing.year, 1, 'NONE') + ')'}">Brand Model (Year)</span>
                                         </p>
                                         <p style="margin: 0; font-size: 14px; font-weight: 700; color: #dc2626;">
-                                            <span th:text="${currencySymbol + ' ' + offer.amount}">US$ 100</span>
+                                            <span th:if="${offer.forFreeListing}" th:text="#{listing.price.free}">Free</span>
+                                            <span th:unless="${offer.forFreeListing}" th:text="${currencySymbol + ' ' + offer.amount}">US$ 100</span>
                                         </p>
                                     </td>
                                 </tr>
