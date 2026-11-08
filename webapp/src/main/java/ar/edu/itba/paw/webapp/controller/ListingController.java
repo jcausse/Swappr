@@ -67,6 +67,7 @@ public class ListingController {
             .maxPrice(filterForm.getMaxPrice())
             .condition(filterForm.getCondition())
             .acceptsTrade(filterForm.getAcceptsTrade())
+            .onlyFree(filterForm.getOnlyFree())
             .query(filterForm.getQuery())
             .sort(filterForm.getSort())
             .status(ListingStatus.ACTIVE)
@@ -165,6 +166,13 @@ public class ListingController {
         return new ModelAndView("listing/index")
                 .addObject("listing", listing)
                 .addObject("userPendingOffer", userPendingOffer);
+    }
+
+    @PostMapping("/{id}/interest")
+    @PreAuthorize("isAuthenticated()")
+    public ModelAndView interest(@PathVariable Long id, @CurrentUser User currentUser) {
+        offerService.createInterest(id, currentUser.getId());
+        return new ModelAndView("redirect:/listing/" + id);
     }
 
     @GetMapping("/new/choose-product")

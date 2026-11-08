@@ -31,7 +31,7 @@
         <c:when test="${filterForm.getStatusGroup().name() == 'PENDING' || filterForm.getStatusGroup().name() == 'PENDING_PAYMENT'}">
             <div class="flex flex-col gap-4 mb-8">
                 <%-- statusGroup values (pending, pending_payment) match the OfferStatus names used by the hint keys --%>
-                <account:offerHint role="seller" status="${fn:toUpperCase(filterForm.statusGroup)}"/>
+                <account:offerHint role="seller" status="${fn:toUpperCase(filterForm.statusGroup)}" list="true"/>
                 <c:forEach var="offer" items="${offers}">
                     <account:offerCard offer="${offer}" user="buyer">
                         <c:url value="/account/incoming-offers/${offer.id}" var="offerUrl"/>
@@ -43,11 +43,13 @@
                                 <paw:linkButton href="${offeredListingUrl}" variant="ghost" icon="eye" text="${viewOfferedListingLabel}" classname="w-full justify-start" />
                             </c:if>
                             <c:if test="${offer.status.name() == 'PENDING_PAYMENT'}">
-                                <c:url value="/account/my-offers/${offer.id}/shipping" var="shippingUrl"/>
-                                <spring:message code="offer.proofOfShipping.uploadLabel" var="shippingLabel"/>
-                                <paw:linkButton href="${shippingUrl}" variant="ghost" icon="truck" text="${shippingLabel}" classname="w-full justify-start" />
+                                <c:if test="${not offer.forFreeListing}">
+                                    <c:url value="/account/my-offers/${offer.id}/shipping" var="shippingUrl"/>
+                                    <spring:message code="offer.proofOfShipping.uploadLabel" var="shippingLabel"/>
+                                    <paw:linkButton href="${shippingUrl}" variant="ghost" icon="truck" text="${shippingLabel}" classname="w-full justify-start" />
+                                </c:if>
                                 <form action="<c:url value='/offer/${offer.id}/confirm-payment'/>" method="POST">
-                                    <spring:message code="offer.action.confirmPayment" var="confirmLabel"/>
+                                    <spring:message code="${offer.forFreeListing ? 'offer.action.confirmDelivery' : 'offer.action.confirmPayment'}" var="confirmLabel"/>
                                     <paw:button type="submit" variant="ghost" icon="check" text="${confirmLabel}" classname="w-full justify-start" />
                                 </form>
                             </c:if>

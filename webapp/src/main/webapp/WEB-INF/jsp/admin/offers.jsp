@@ -72,7 +72,7 @@
                             </c:when>
                             <c:when test="${offer.status.name() == 'PENDING_PAYMENT'}">
                                 <c:set var="statusBadgeClass" value="text-blue-700 bg-blue-50 border-blue-200"/>
-                                <spring:message code="${offer.offeredListing.present ? 'offer.status.PENDING_TRADE' : 'offer.status.PENDING_PAYMENT'}" var="statusBadgeText"/>
+                                <spring:message code="${offer.forFreeListing ? 'offer.status.PENDING_DELIVERY' : (offer.offeredListing.present ? 'offer.status.PENDING_TRADE' : 'offer.status.PENDING_PAYMENT')}" var="statusBadgeText"/>
                             </c:when>
                             <c:when test="${offer.status.name() == 'ACCEPTED'}">
                                 <c:set var="statusBadgeClass" value="text-green-700 bg-green-50 border-green-200"/>

@@ -58,13 +58,17 @@ public class ListingServiceImpl implements ListingService {
         LOGGER.debug("Searching listings: query='{}', categoryId={}, status={}, sort={}, page={}",
                 dto.query(), dto.categoryId(), dto.status(), dto.sort(), dto.page());
 
+        final boolean onlyFree = Boolean.TRUE.equals(dto.onlyFree());
+
+        // "only free" is a price range of exactly zero. The price range and the trade filter are hidden in the UI
+        // while it is active, and a free listing never accepts trade, so both are ignored here
         final var filter = ListingFilter.builder()
             .categoryId(dto.categoryId())
             .subcategoryId(dto.subcategoryId())
-            .minPrice(sanitizePrice(dto.minPrice()))
-            .maxPrice(sanitizePrice(dto.maxPrice()))
+            .minPrice(onlyFree ? BigDecimal.ZERO : sanitizePrice(dto.minPrice()))
+            .maxPrice(onlyFree ? BigDecimal.ZERO : sanitizePrice(dto.maxPrice()))
             .condition(dto.condition())
-            .acceptsTrade(Boolean.TRUE.equals(dto.acceptsTrade()) ? Boolean.TRUE : null)
+            .acceptsTrade(!onlyFree && Boolean.TRUE.equals(dto.acceptsTrade()) ? Boolean.TRUE : null)
             .query(dto.query())
             .sort(dto.sort())
             .page(sanitizePage(dto.page()))
@@ -144,14 +148,15 @@ public class ListingServiceImpl implements ListingService {
         }
         final Condition condition = dto.condition();
 
+        final Price price = new Price(dto.price());
         var listing = listingDao.create(
             dto.title(),
-            new Price(dto.price()),
+            price,
             creator,
             model,
             dto.year(),
             condition,
-            dto.acceptsTrade(),
+            acceptsTradeFor(price, dto.acceptsTrade()),
             dto.acceptsShipping(),
             dto.description(),
             imageIds
@@ -163,6 +168,11 @@ public class ListingServiceImpl implements ListingService {
         notificationDispatcherService.notifyListingPublished(listing);
 
         return listing;
+    }
+
+    // A free listing can't be traded: there is no value to exchange against, so the request is silently dropped.
+    private static boolean acceptsTradeFor(final Price price, final boolean requested) {
+        return requested && price.getAmount().signum() > 0;
     }
 
     @Override
@@ -231,14 +241,15 @@ public class ListingServiceImpl implements ListingService {
         }
         final Condition condition = dto.condition();
 
+        final Price price = new Price(dto.price());
         var updated = listingDao.update(
             existing.getId(),
             dto.title(),
-            new Price(dto.price()),
+            price,
             model,
             dto.year(),
             condition,
-            dto.acceptsTrade(),
+            acceptsTradeFor(price, dto.acceptsTrade()),
             dto.acceptsShipping(),
             dto.description()
         );

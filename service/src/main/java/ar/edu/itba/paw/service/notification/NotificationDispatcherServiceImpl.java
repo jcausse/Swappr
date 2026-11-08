@@ -55,7 +55,8 @@ public class NotificationDispatcherServiceImpl implements NotificationDispatcher
                     UserMailDto.from(seller),
                     UserMailDto.from(buyer),
                     ListingMailDto.from(listing),
-                    message
+                    message,
+                    listing.isFree()
             );
         }
     }
@@ -75,7 +76,8 @@ public class NotificationDispatcherServiceImpl implements NotificationDispatcher
             emailNotificationService.sendPurchaseBuyerEmail(
                     UserMailDto.from(buyer),
                     UserMailDto.from(seller),
-                    ListingMailDto.from(listing)
+                    ListingMailDto.from(listing),
+                    listing.isFree()
             );
         }
     }

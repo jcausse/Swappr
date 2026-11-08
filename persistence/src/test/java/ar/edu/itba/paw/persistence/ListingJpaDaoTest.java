@@ -349,6 +349,19 @@ public class ListingJpaDaoTest {
     }
 
     @Test
+    public void testSearchByZeroPriceRangeReturnsOnlyFreeListings() {
+        // Arrange (seed a free listing directly in the table)
+        jdbcTemplate.update("UPDATE listings SET price = 0 WHERE listing_id = ?", GALAXY_LISTING_ID);
+
+        // Act
+        final Page<Listing> page = listingDao.search(baseFilter().minPrice(BigDecimal.ZERO).maxPrice(BigDecimal.ZERO).build());
+
+        // Assert
+        Assert.assertEquals(List.of(GALAXY_LISTING_ID), idsOf(page));
+        Assert.assertEquals(1, page.getTotalCount());
+    }
+
+    @Test
     public void testSearchByCreator() {
         // Act
         final Page<Listing> page = listingDao.search(baseFilter().creatorId(BUYER_ID).build());

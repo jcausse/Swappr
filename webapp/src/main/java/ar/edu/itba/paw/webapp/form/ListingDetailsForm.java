@@ -34,7 +34,7 @@ public class ListingDetailsForm {
     private String title;
 
     @NotNull
-    @DecimalMin(value = "0.01")
+    @DecimalMin(value = "0.0")
     @Digits(integer = 9, fraction = 2)
     private BigDecimal price;
 

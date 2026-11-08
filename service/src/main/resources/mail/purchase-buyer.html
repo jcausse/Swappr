@@ -21,13 +21,13 @@
                     <!-- Header Badge -->
                     <tr>
                         <td style="padding: 32px 40px 0; text-align: center;">
-                            <span th:text="#{email.purchase.buyer.badge}" style="display: inline-block; padding: 4px 12px; font-size: 11px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; border-radius: 9999px; background-color: #ecfccb; color: #4d7c0f; border: 1px solid #d9f99d;">Purchased</span>
+                            <span th:text="${forFreeListing} ? #{email.purchase.buyer.free.badge} : #{email.purchase.buyer.badge}" style="display: inline-block; padding: 4px 12px; font-size: 11px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; border-radius: 9999px; background-color: #ecfccb; color: #4d7c0f; border: 1px solid #d9f99d;">Purchased</span>
                         </td>
                     </tr>
                     <!-- Greeting -->
                     <tr>
                         <td style="padding: 16px 40px 0; text-align: center;">
-                            <h1 th:text="#{email.purchase.buyer.greeting(${buyer.displayName})}" style="margin: 0; font-size: 24px; font-weight: 800; color: #171717;">
+                            <h1 th:text="${forFreeListing} ? #{email.purchase.buyer.free.greeting(${buyer.displayName})} : #{email.purchase.buyer.greeting(${buyer.displayName})}" style="margin: 0; font-size: 24px; font-weight: 800; color: #171717;">
                                 Purchase confirmed!
                             </h1>
                         </td>
@@ -35,7 +35,7 @@
                     <!-- Body -->
                     <tr>
                         <td style="padding: 16px 40px 0; text-align: center;">
-                            <p th:text="#{email.purchase.buyer.body(${listing.title})}" style="margin: 0; font-size: 15px; line-height: 1.6; color: #525252;">
+                            <p th:text="${forFreeListing} ? #{email.purchase.buyer.free.body(${listing.title})} : #{email.purchase.buyer.body(${listing.title})}" style="margin: 0; font-size: 15px; line-height: 1.6; color: #525252;">
                                 You purchased an item.
                             </p>
                         </td>
@@ -51,7 +51,8 @@
                                             <span th:text="${listing.brand + ' ' + listing.model + ' (' + #numbers.formatInteger(listing.year, 1, 'NONE') + ')'}">Brand Model (Year)</span>
                                         </p>
                                         <p style="margin: 0; font-size: 14px; font-weight: 700; color: #65a30d;">
-                                            <span th:text="${currencySymbol + ' ' + listing.price.amount}">US$ 100</span>
+                                            <span th:if="${forFreeListing}" th:text="#{listing.price.free}">Free</span>
+                                            <span th:unless="${forFreeListing}" th:text="${currencySymbol + ' ' + listing.price.amount}">US$ 100</span>
                                         </p>
                                     </td>
                                 </tr>
@@ -87,7 +88,7 @@
                     <tr>
                         <td style="padding: 20px 40px 32px; text-align: center; border-top: 1px solid #e5e5e5;">
                             <p style="margin: 0; font-size: 12px; color: #a3a3a3;">
-                                <span th:text="#{email.purchase.buyer.footer}">You received this email because you made a purchase on</span> <a th:href="${baseUrl + '/'}" th:text="#{email.shared.paw}" style="color: #65a30d; text-decoration: none;">Swappr</a>.
+                                <span th:text="${forFreeListing} ? #{email.purchase.buyer.free.footer} : #{email.purchase.buyer.footer}">You received this email because you made a purchase on</span> <a th:href="${baseUrl + '/'}" th:text="#{email.shared.paw}" style="color: #65a30d; text-decoration: none;">Swappr</a>.
                             </p>
                         </td>
                     </tr>

@@ -25,6 +25,8 @@ public interface OfferService {
 
     Offer create(OfferCreationDto dto);
 
+    Offer createInterest(Long listingId, Long buyerId);
+
     Offer accept(Long offerId, Long currentUserId);
 
     Offer reject(Long offerId, Long currentUserId);
