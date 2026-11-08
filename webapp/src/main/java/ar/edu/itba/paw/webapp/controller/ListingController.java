@@ -299,6 +299,7 @@ public class ListingController {
         var mav = new ModelAndView("listing/new/details");
         mav.addObject("model", model);
         mav.addObject("conditionOptions", buildConditionOptions());
+        mav.addObject("priceSummary", catalogService.getListingInfoSummaryForModel(model.getId()).orElse(null));
         mav.addObject("actionUrl", "/listing/new/details");
         mav.addObject("edit", false);
         return mav;
@@ -353,6 +354,7 @@ public class ListingController {
         var mav = new ModelAndView("listing/new/details");
         mav.addObject("conditionOptions", buildConditionOptions());
         mav.addObject("model", listing.getModel());
+        mav.addObject("priceSummary", catalogService.getListingInfoSummaryForModel(listing.getModel().getId()).orElse(null));
         mav.addObject("actionUrl", "/listing/" + id + "/edit");
         mav.addObject("edit", true);
         return mav;
@@ -390,7 +392,8 @@ public class ListingController {
         var model = catalogService.getModelById(form.getModelId());
         return new ModelAndView("listing/new/details")
                 .addObject("model", model)
-                .addObject("conditionOptions", buildConditionOptions());
+                .addObject("conditionOptions", buildConditionOptions())
+                .addObject("priceSummary", catalogService.getListingInfoSummaryForModel(model.getId()).orElse(null));
     }
 
     @PostMapping("/{id}/cancel")
