@@ -20,12 +20,16 @@ import ar.edu.itba.paw.service.exception.SelfSuspendException;
 import ar.edu.itba.paw.webapp.auth.CurrentUser;
 import ar.edu.itba.paw.webapp.form.AdminCreateBrandForm;
 import ar.edu.itba.paw.webapp.form.AdminGrantRoleForm;
+import ar.edu.itba.paw.webapp.form.AdminListingFilterForm;
 import ar.edu.itba.paw.webapp.form.AdminModelFilterForm;
 import ar.edu.itba.paw.webapp.form.AdminModelForm;
+import ar.edu.itba.paw.webapp.form.AdminOfferFilterForm;
 import ar.edu.itba.paw.webapp.form.AdminRenameBrandForm;
 import ar.edu.itba.paw.webapp.form.AdminReplaceBrandForm;
 import ar.edu.itba.paw.webapp.form.AdminReplaceModelForm;
+import ar.edu.itba.paw.webapp.form.AdminUserFilterForm;
 import ar.edu.itba.paw.webapp.form.SelectOption;
+import ar.edu.itba.paw.webapp.form.StringSelectOption;
 import ar.edu.itba.paw.webapp.form.AdminSuspendUserForm;
 import ar.edu.itba.paw.webapp.form.AdminTakeDownListingForm;
 import ar.edu.itba.paw.webapp.form.AdminTakeDownOfferForm;
@@ -46,6 +50,7 @@ import org.springframework.web.servlet.ModelAndView;
 import javax.validation.Valid;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
@@ -306,22 +311,22 @@ public class AdminController {
     @PreAuthorize("hasRole('ADMIN')")
     public ModelAndView listings(
             @CurrentUser User currentUser,
-            @RequestParam(value = "query", required = false) String query,
-            @RequestParam(value = "status", required = false) ListingStatus status,
+            @ModelAttribute("filterForm") AdminListingFilterForm filterForm,
             @RequestParam(value = "page", defaultValue = "1") int page,
             @ModelAttribute("takeDownListingForm") AdminTakeDownListingForm takeDownListingForm
     ) {
-        LOGGER.debug("Admin {} accessed listings page: page={}, query={}, status={}", currentUser.getUsername(), page, query, status);
+        LOGGER.debug("Admin {} accessed listings page: page={}, query={}, status={}", currentUser.getUsername(), page, filterForm.getQuery(), filterForm.getStatus());
         ModelAndView mav = new ModelAndView("admin/listings");
         var filter = ListingFilterDto.builder()
-                .query(query)
-                .status(status)
+                .query(filterForm.getQuery())
+                .status(filterForm.getStatus())
                 .page(page)
                 .pageSize(DEFAULT_PAGE_SIZE)
                 .build();
         mav.addObject("listingsPage", listingService.search(filter));
-        mav.addObject("currentQuery", query);
-        mav.addObject("currentStatus", status);
+        mav.addObject("statusOptions", Arrays.stream(ListingStatus.values())
+                .map(status -> new StringSelectOption(status.name(), "listing.status." + status.name()))
+                .toList());
         return mav;
     }
 
@@ -383,19 +388,21 @@ public class AdminController {
     @PreAuthorize("hasRole('ADMIN')")
     public ModelAndView offers(
             @CurrentUser User currentUser,
-            @RequestParam(value = "statusGroup", required = false) OfferStatusGroup statusGroup,
+            @ModelAttribute("filterForm") AdminOfferFilterForm filterForm,
             @RequestParam(value = "page", defaultValue = "1") int page,
             @ModelAttribute("takeDownOfferForm") AdminTakeDownOfferForm takeDownOfferForm
     ) {
-        LOGGER.debug("Admin {} accessed offers page: page={}, statusGroup={}", currentUser.getUsername(), page, statusGroup);
+        LOGGER.debug("Admin {} accessed offers page: page={}, statusGroup={}", currentUser.getUsername(), page, filterForm.getStatusGroup());
         ModelAndView mav = new ModelAndView("admin/offers");
         var filter = OfferFilterDto.builder()
-                .statusGroup(statusGroup)
+                .statusGroup(filterForm.getStatusGroup())
                 .page(page)
                 .pageSize(DEFAULT_PAGE_SIZE)
                 .build();
         mav.addObject("offersPage", offerService.get(filter));
-        mav.addObject("currentStatusGroup", statusGroup);
+        mav.addObject("statusGroupOptions", Arrays.stream(OfferStatusGroup.values())
+                .map(statusGroup -> new StringSelectOption(statusGroup.name(), "offer.statusGroup." + statusGroup.getStatus()))
+                .toList());
         return mav;
     }
 
@@ -467,15 +474,15 @@ public class AdminController {
     @PreAuthorize("hasRole('ADMIN')")
     public ModelAndView users(
             @CurrentUser User currentUser,
-            @RequestParam(value = "username", required = false) String username,
+            @ModelAttribute("filterForm") AdminUserFilterForm filterForm,
             @ModelAttribute("suspendUserForm") AdminSuspendUserForm suspendUserForm,
             @ModelAttribute("grantRoleForm") AdminGrantRoleForm grantRoleForm
     ) {
+        final var username = filterForm.getUsername();
         LOGGER.debug("Admin {} accessed users management page: username={}", currentUser.getUsername(), username);
         ModelAndView mav = new ModelAndView("admin/users");
         if (username != null && !username.isBlank()) {
             Optional<User> targetUser = userService.getByUsernameOrEmail(username);
-            mav.addObject("searchedUsername", username);
             if (targetUser.isPresent()) {
                 User user = targetUser.get();
                 mav.addObject("targetUser", user);
