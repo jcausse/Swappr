@@ -30,4 +30,16 @@ public class BrandModelRequestForm {
     @NotBlank
     @Size(max = 100)
     private String modelName;
+
+    public void applyDefaults(Long subcategoryId, Long brandId) {
+        if (this.subcategoryId == null) {
+            this.subcategoryId = subcategoryId;
+        }
+        if (this.brandId == null) {
+            this.brandId = brandId;
+        }
+        if (brandId != null) {
+            this.type = BrandModelRequestType.EXISTING_BRAND;
+        }
+    }
 }

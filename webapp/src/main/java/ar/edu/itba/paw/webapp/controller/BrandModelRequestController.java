@@ -1,6 +1,5 @@
 package ar.edu.itba.paw.webapp.controller;
 
-import ar.edu.itba.paw.model.BrandModelRequestType;
 import ar.edu.itba.paw.model.User;
 import ar.edu.itba.paw.service.BrandModelRequestService;
 import ar.edu.itba.paw.service.CatalogService;
@@ -40,15 +39,7 @@ public class BrandModelRequestController {
             @RequestParam(value = "subcategoryId", required = false) Long subcategoryId,
             @RequestParam(value = "brandId", required = false) Long brandId
     ) {
-        if (form.getSubcategoryId() == null) {
-            form.setSubcategoryId(subcategoryId);
-        }
-        if (form.getBrandId() == null) {
-            form.setBrandId(brandId);
-        }
-        if (brandId != null) {
-            form.setType(BrandModelRequestType.EXISTING_BRAND);
-        }
+        form.applyDefaults(subcategoryId, brandId);
         return render(form);
     }
 
