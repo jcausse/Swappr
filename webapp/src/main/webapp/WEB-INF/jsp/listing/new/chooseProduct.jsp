@@ -75,7 +75,7 @@
                 </c:url>
                 <spring:message code="listing.new.catalogRequest.link" var="catalogRequestLink"/>
                 <div class="text-sm">
-                    <a href="${catalogRequestUrl}" class="text-lime-700 font-medium hover:underline">
+                    <a href="${catalogRequestUrl}" class="text-lime-600 underline hover:text-lime-700">
                         <c:out value="${catalogRequestLink}"/>
                     </a>
                 </div>
