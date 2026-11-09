@@ -541,7 +541,6 @@
                 <table class="w-full text-sm">
                     <thead>
                         <tr class="border-b border-black/10 text-left text-xs uppercase tracking-wide text-black/50">
-                            <th class="py-2 pr-4 font-medium"><c:out value="${requestIdLabel}"/></th>
                             <th class="py-2 pr-4 font-medium"><c:out value="${requestTypeLabel}"/></th>
                             <th class="py-2 pr-4 font-medium"><c:out value="${requestBrandLabel}"/></th>
                             <th class="py-2 pr-4 font-medium"><c:out value="${requestModelLabel}"/></th>
@@ -565,11 +564,6 @@
                                 data-brand-id="${request.brandId}"
                                 data-brand-name="<c:out value='${request.requestedBrandName}'/>"
                                 data-model-name="<c:out value='${request.modelName}'/>">
-                                <td class="py-3 pr-4">
-                                    <span class="text-xs font-mono font-medium px-1.5 py-0.5 rounded bg-black/5 text-black/70">
-                                        #<c:out value="${request.id}"/>
-                                    </span>
-                                </td>
                                 <td class="py-3 pr-4">
                                     <c:choose>
                                         <c:when test="${request.newBrand}">
