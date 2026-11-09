@@ -144,6 +144,7 @@ While you as an AI agent are allowed to edit this file on your own, you must **a
 - Admin review lives in the catalog page (`/admin/catalog`) as a paginated requests card with accept/reject actions. Reject uses `confirmDialog.tag`; accept uses one shared `formDialog.tag` bound to `acceptRequestForm`, populated per row via `data-accept-action`/`data-request-type`/`data-brand-id`/`data-brand-name`/`data-model-name` and `openAcceptRequestDialog(this)`. The admin can change the addition type, new/existing brand and model name before accepting.
 - Acceptance/rejection deletes the request and sends site + email notifications (`NotificationType.BRAND_MODEL_REQUEST_ACCEPTED` / `BRAND_MODEL_REQUEST_REJECTED`). The accepted site notification/email CTA links to `/listing/new/choose-product?modelId=<newModelId>` so the user can immediately create a listing; the rejected CTA links to `/listing`.
 - `CatalogService` gained `getBrandById` and `getSubcategoryById` for request validation/acceptance.
+- Both request forms rely exclusively on class-level Bean Validation custom validators (`@ValidBrandModelRequest`, `@ValidBrandModelRequestAccept`) for conditional fields; controllers must never perform manual validation or catch creation errors after `@Valid` succeeds.
 
 ## Spring Security
 

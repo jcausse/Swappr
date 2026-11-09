@@ -22,7 +22,6 @@
 <spring:message code="catalogRequest.modelPlaceholder" var="modelPlaceholder"/>
 <spring:message code="catalogRequest.submit" var="submitLabel"/>
 <spring:message code="catalogRequest.cancel" var="cancelLabel"/>
-<spring:message code="catalogRequest.error" var="requestErrorLabel"/>
 
 <c:set var="isExistingBrand" value="${requestForm.type.name() eq 'EXISTING_BRAND'}"/>
 
@@ -32,12 +31,6 @@
         <p class="text-sm text-black/60 mt-2"><c:out value="${requestSubtitle}"/></p>
 
         <paw:divider />
-
-        <c:if test="${requestError}">
-            <div class="mt-4">
-                <paw:banner text="${requestErrorLabel}" role="danger" icon="alert-circle"/>
-            </div>
-        </c:if>
 
         <form:form id="catalogRequestForm" modelAttribute="requestForm" action="${requestUrl}" method="post" class="flex flex-col gap-4 mt-4">
             <paw:formSelect

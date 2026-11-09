@@ -1,7 +1,6 @@
 package ar.edu.itba.paw.webapp.controller;
 
 import ar.edu.itba.paw.model.Brand;
-import ar.edu.itba.paw.model.BrandModelRequestType;
 import ar.edu.itba.paw.model.BrandSort;
 import ar.edu.itba.paw.model.ListingStatus;
 import ar.edu.itba.paw.model.ModelSort;
@@ -143,7 +142,6 @@ public class AdminController {
             BindingResult errors
     ) {
         LOGGER.info("Admin {} requested acceptance of brand/model request {}", currentUser.getUsername(), id);
-        validateRequestAcceptForm(form, errors);
         if (errors.hasErrors()) {
             return new ModelAndView("redirect:/admin/catalog?error=requestInvalid");
         }
@@ -180,16 +178,6 @@ public class AdminController {
             return new ModelAndView("redirect:/admin/catalog?error=requestNotFound");
         }
         return new ModelAndView("redirect:/admin/catalog?success=request_rejected");
-    }
-
-    private static void validateRequestAcceptForm(AdminBrandModelRequestAcceptForm form, BindingResult errors) {
-        if (form.getType() == BrandModelRequestType.EXISTING_BRAND && form.getBrandId() == null) {
-            errors.rejectValue("brandId", "error.catalogRequest.existingBrandRequired");
-        }
-        if (form.getType() == BrandModelRequestType.NEW_BRAND
-                && (form.getNewBrandName() == null || form.getNewBrandName().isBlank())) {
-            errors.rejectValue("newBrandName", "error.catalogRequest.newBrandRequired");
-        }
     }
 
     @PostMapping("/catalog/brands")

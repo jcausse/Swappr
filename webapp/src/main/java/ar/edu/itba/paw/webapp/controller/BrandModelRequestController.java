@@ -5,8 +5,6 @@ import ar.edu.itba.paw.model.User;
 import ar.edu.itba.paw.service.BrandModelRequestService;
 import ar.edu.itba.paw.service.CatalogService;
 import ar.edu.itba.paw.service.dto.BrandModelRequestCreationDto;
-import ar.edu.itba.paw.service.exception.BadParameterException;
-import ar.edu.itba.paw.service.exception.NotFoundException;
 import ar.edu.itba.paw.webapp.auth.CurrentUser;
 import ar.edu.itba.paw.webapp.form.BrandModelRequestForm;
 import ar.edu.itba.paw.webapp.form.SelectOption;
@@ -61,25 +59,19 @@ public class BrandModelRequestController {
             BindingResult errors,
             @CurrentUser User currentUser
     ) {
-        validate(form, errors);
         if (errors.hasErrors()) {
             return render(form);
         }
 
         LOGGER.info("User {} requested a new brand/model ({})", currentUser.getId(), form.getModelName());
-        try {
-            brandModelRequestService.create(new BrandModelRequestCreationDto(
-                    currentUser.getId(),
-                    form.getType(),
-                    form.getSubcategoryId(),
-                    form.getBrandId(),
-                    form.getNewBrandName(),
-                    form.getModelName()
-            ));
-        } catch (BadParameterException | NotFoundException e) {
-            LOGGER.warn("Brand/model request could not be created: {}", e.getMessage());
-            return render(form).addObject("requestError", true);
-        }
+        brandModelRequestService.create(new BrandModelRequestCreationDto(
+                currentUser.getId(),
+                form.getType(),
+                form.getSubcategoryId(),
+                form.getBrandId(),
+                form.getNewBrandName(),
+                form.getModelName()
+        ));
 
         return new ModelAndView("redirect:/catalog-requests/success");
     }
@@ -96,15 +88,5 @@ public class BrandModelRequestController {
                         .map(subcategory -> new SelectOption(subcategory.getId(), "subcategory." + subcategory.getName()))
                         .toList())
                 .addObject("brandOptions", catalogService.getAllBrands());
-    }
-
-    private static void validate(BrandModelRequestForm form, BindingResult errors) {
-        if (form.getType() == BrandModelRequestType.EXISTING_BRAND && form.getBrandId() == null) {
-            errors.rejectValue("brandId", "error.catalogRequest.existingBrandRequired");
-        }
-        if (form.getType() == BrandModelRequestType.NEW_BRAND
-                && (form.getNewBrandName() == null || form.getNewBrandName().isBlank())) {
-            errors.rejectValue("newBrandName", "error.catalogRequest.newBrandRequired");
-        }
     }
 }

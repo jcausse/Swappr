@@ -1,6 +1,7 @@
 package ar.edu.itba.paw.webapp.form;
 
 import ar.edu.itba.paw.model.BrandModelRequestType;
+import ar.edu.itba.paw.webapp.form.validation.ValidBrandModelRequestAccept;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -12,6 +13,7 @@ import javax.validation.constraints.Size;
 @NoArgsConstructor
 @Getter
 @Setter
+@ValidBrandModelRequestAccept
 public class AdminBrandModelRequestAcceptForm {
 
     @NotNull
