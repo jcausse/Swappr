@@ -66,6 +66,19 @@
                     <spring:message code="listing.new.filter.year.select" var="yearPlaceholder"/>
                     <paw:formInput path="year" label="${filterYearLabel}" placeholder="${yearPlaceholder}" type="number" classname="w-32" />
                 </div>
+
+                <c:url value="/catalog-requests/new" var="catalogRequestUrl">
+                    <c:param name="subcategoryId" value="${chooseProductForm.subcategoryId}"/>
+                    <c:if test="${not empty chooseProductForm.brandId}">
+                        <c:param name="brandId" value="${chooseProductForm.brandId}"/>
+                    </c:if>
+                </c:url>
+                <spring:message code="listing.new.catalogRequest.link" var="catalogRequestLink"/>
+                <div class="text-sm">
+                    <a href="${catalogRequestUrl}" class="text-lime-700 font-medium hover:underline">
+                        <c:out value="${catalogRequestLink}"/>
+                    </a>
+                </div>
             </c:if>
 
             <div class="mt-2 flex justify-center gap-4">

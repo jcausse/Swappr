@@ -52,4 +52,10 @@ public interface EmailNotificationService {
 
     /** Notify user that their account has been unsuspended by an administrator. */
     void sendAccountUnsuspendedEmail(UserMailDto user);
+
+    /** Notify the requester that their brand/model request was accepted. */
+    void sendBrandModelRequestAcceptedEmail(UserMailDto user, String brandName, String modelName, Long modelId);
+
+    /** Notify the requester that their brand/model request was rejected. */
+    void sendBrandModelRequestRejectedEmail(UserMailDto user, String brandName, String modelName);
 }

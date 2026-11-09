@@ -3,6 +3,9 @@ package ar.edu.itba.paw.service;
 import ar.edu.itba.paw.model.Listing;
 import ar.edu.itba.paw.model.Offer;
 import ar.edu.itba.paw.model.User;
+import ar.edu.itba.paw.model.Brand;
+import ar.edu.itba.paw.model.BrandModelRequest;
+import ar.edu.itba.paw.model.Model;
 import lombok.NonNull;
 
 public interface NotificationDispatcherService {
@@ -51,4 +54,10 @@ public interface NotificationDispatcherService {
 
     /** Notify user that their account has been unsuspended by an administrator. */
     void notifyAccountUnsuspended(@NonNull User user);
+
+    /** Notify the requester that their brand/model request was accepted and the catalog item now exists. */
+    void notifyBrandModelRequestAccepted(@NonNull BrandModelRequest request, @NonNull Brand brand, @NonNull Model model);
+
+    /** Notify the requester that their brand/model request was rejected by an administrator. */
+    void notifyBrandModelRequestRejected(@NonNull BrandModelRequest request);
 }

@@ -4,6 +4,9 @@ import ar.edu.itba.paw.model.Listing;
 import ar.edu.itba.paw.model.NotificationType;
 import ar.edu.itba.paw.model.Offer;
 import ar.edu.itba.paw.model.User;
+import ar.edu.itba.paw.model.Brand;
+import ar.edu.itba.paw.model.BrandModelRequest;
+import ar.edu.itba.paw.model.Model;
 import ar.edu.itba.paw.service.dto.SiteNotificationCreationDto;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -276,6 +279,34 @@ final class SiteNotificationCreationDtoFactory {
                 .actionUrl("/account/my-offers?statusGroup=PENDING_PAYMENT")
                 .actionLabelKey("notification.proofOfShippingUploaded.cta")
                 .offer(offer)
+                .build();
+    }
+
+    static SiteNotificationCreationDto brandModelRequestAccepted(
+            @NonNull final BrandModelRequest request,
+            @NonNull final Brand brand,
+            @NonNull final Model model
+    ) {
+        return SiteNotificationCreationDto.builder()
+                .notificationRecipient(request.getRequester())
+                .notificationType(NotificationType.BRAND_MODEL_REQUEST_ACCEPTED)
+                .titleKey("notification.brandModelRequest.accepted.title")
+                .bodyKey("notification.brandModelRequest.accepted.body")
+                .bodyArgs(List.of(brand.getName(), model.getName()))
+                .actionUrl("/listing/new/choose-product?modelId=" + model.getId())
+                .actionLabelKey("notification.brandModelRequest.accepted.cta")
+                .build();
+    }
+
+    static SiteNotificationCreationDto brandModelRequestRejected(@NonNull final BrandModelRequest request) {
+        return SiteNotificationCreationDto.builder()
+                .notificationRecipient(request.getRequester())
+                .notificationType(NotificationType.BRAND_MODEL_REQUEST_REJECTED)
+                .titleKey("notification.brandModelRequest.rejected.title")
+                .bodyKey("notification.brandModelRequest.rejected.body")
+                .bodyArgs(List.of(request.getRequestedBrandName(), request.getModelName()))
+                .actionUrl("/listing")
+                .actionLabelKey("notification.brandModelRequest.rejected.cta")
                 .build();
     }
 

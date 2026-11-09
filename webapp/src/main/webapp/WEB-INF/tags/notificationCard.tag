@@ -29,6 +29,12 @@
     <c:when test="${notification.type.name() eq 'PURCHASE_CONFIRMED'}">
         <c:set var="typeBadgeClass" value="text-green-600"/>
     </c:when>
+    <c:when test="${notification.type.name() eq 'BRAND_MODEL_REQUEST_ACCEPTED'}">
+        <c:set var="typeBadgeClass" value="text-lime-600"/>
+    </c:when>
+    <c:when test="${notification.type.name() eq 'BRAND_MODEL_REQUEST_REJECTED'}">
+        <c:set var="typeBadgeClass" value="text-red-600"/>
+    </c:when>
     <c:otherwise>
         <c:set var="typeBadgeClass" value="text-neutral-600"/>
     </c:otherwise>

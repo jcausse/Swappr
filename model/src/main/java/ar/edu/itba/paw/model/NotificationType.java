@@ -14,6 +14,8 @@ public enum NotificationType {
     PROOF_OF_PAYMENT_UPLOADED(true, true, offer -> offer != null && offer.isPendingPayment()),
     PROOF_OF_SHIPPING_UPLOADED(true, true, offer -> offer != null && offer.isPendingPayment()),
     PURCHASE_CONFIRMED(true, true),
+    BRAND_MODEL_REQUEST_ACCEPTED(true, true),
+    BRAND_MODEL_REQUEST_REJECTED(true, true),
 
     // Email-only notifications (self-triggered receipts, auth OTPs, account moderation)
     WELCOME(false, true),
