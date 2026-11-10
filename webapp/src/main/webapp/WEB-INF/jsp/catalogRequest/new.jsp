@@ -33,6 +33,12 @@
         <paw:divider />
 
         <form:form id="catalogRequestForm" modelAttribute="requestForm" action="${requestUrl}" method="post" class="flex flex-col gap-4 mt-4">
+            <c:if test="${not empty formError}">
+                <div class="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+                    <spring:message code="${formError}"/>
+                </div>
+            </c:if>
+
             <paw:formSelect
                 path="subcategoryId"
                 label="${subcategoryLabel}"

@@ -284,11 +284,12 @@ final class SiteNotificationCreationDtoFactory {
 
     static SiteNotificationCreationDto brandModelRequestAccepted(
             @NonNull final BrandModelRequest request,
+            @NonNull final User recipient,
             @NonNull final Brand brand,
             @NonNull final Model model
     ) {
         return SiteNotificationCreationDto.builder()
-                .notificationRecipient(request.getRequester())
+                .notificationRecipient(recipient)
                 .notificationType(NotificationType.BRAND_MODEL_REQUEST_ACCEPTED)
                 .titleKey("notification.brandModelRequest.accepted.title")
                 .bodyKey("notification.brandModelRequest.accepted.body")
@@ -298,9 +299,12 @@ final class SiteNotificationCreationDtoFactory {
                 .build();
     }
 
-    static SiteNotificationCreationDto brandModelRequestRejected(@NonNull final BrandModelRequest request) {
+    static SiteNotificationCreationDto brandModelRequestRejected(
+            @NonNull final BrandModelRequest request,
+            @NonNull final User recipient
+    ) {
         return SiteNotificationCreationDto.builder()
-                .notificationRecipient(request.getRequester())
+                .notificationRecipient(recipient)
                 .notificationType(NotificationType.BRAND_MODEL_REQUEST_REJECTED)
                 .titleKey("notification.brandModelRequest.rejected.title")
                 .bodyKey("notification.brandModelRequest.rejected.body")

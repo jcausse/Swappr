@@ -33,8 +33,11 @@ import java.util.Optional;
 public class BrandModelRequestJpaDaoTest {
 
     private static final String TABLE = "brand_model_requests";
+    private static final String ADDITIONAL_TABLE = "brand_model_request_additional_users";
     private static final long USER_ID = 1L;
+    private static final long ADDITIONAL_USER_ID = 2L;
     private static final long SUBCATEGORY_ID = 1L;
+    private static final long OTHER_SUBCATEGORY_ID = 2L;
     private static final long BRAND_ID = 1L;
     private static final long NON_EXISTING_ID = 9000L;
 
@@ -52,7 +55,7 @@ public class BrandModelRequestJpaDaoTest {
     @Before
     public void setUp() {
         jdbcTemplate = new JdbcTemplate(dataSource);
-        JdbcTestUtils.deleteFromTables(jdbcTemplate, TABLE);
+        JdbcTestUtils.deleteFromTables(jdbcTemplate, ADDITIONAL_TABLE, TABLE);
     }
 
     private void insertRequest(
@@ -61,6 +64,18 @@ public class BrandModelRequestJpaDaoTest {
             final Long brandId,
             final String brandName,
             final String modelName,
+            final Instant createdAt
+    ) {
+        insertRequest(id, type, brandId, brandName, modelName, SUBCATEGORY_ID, createdAt);
+    }
+
+    private void insertRequest(
+            final long id,
+            final BrandModelRequestType type,
+            final Long brandId,
+            final String brandName,
+            final String modelName,
+            final long subcategoryId,
             final Instant createdAt
     ) {
         jdbcTemplate.update(
@@ -72,9 +87,21 @@ public class BrandModelRequestJpaDaoTest {
                 brandId,
                 brandName,
                 modelName,
-                SUBCATEGORY_ID,
+                subcategoryId,
                 USER_ID,
                 Timestamp.from(createdAt)
+        );
+    }
+
+    private void insertAdditionalUser() {
+        jdbcTemplate.update(
+                "INSERT INTO users (user_id, username, display_name, email, password)"
+                + " VALUES (?, ?, ?, ?, ?)",
+                ADDITIONAL_USER_ID,
+                "additional_user",
+                "Additional User",
+                "additional@example.com",
+                "secret"
         );
     }
 
@@ -138,6 +165,105 @@ public class BrandModelRequestJpaDaoTest {
     @Test
     public void testGetByIdDoesNotExist() {
         Assert.assertFalse(brandModelRequestDao.getById(NON_EXISTING_ID).isPresent());
+    }
+
+    /* ---------------------------------------------------------------------------------------------- */
+    /* findMatching                                                                                    */
+    /* ---------------------------------------------------------------------------------------------- */
+
+    @Test
+    public void testFindMatchingNewBrand() {
+        insertSampleRequests();
+
+        final Optional<BrandModelRequest> maybeRequest =
+                brandModelRequestDao.findMatching("Acme", "Acme One", SUBCATEGORY_ID);
+
+        Assert.assertTrue(maybeRequest.isPresent());
+        Assert.assertEquals(701L, (long) maybeRequest.get().getId());
+    }
+
+    @Test
+    public void testFindMatchingExistingBrandByName() {
+        insertSampleRequests();
+
+        final Optional<BrandModelRequest> maybeRequest =
+                brandModelRequestDao.findMatching("Apple", "MacBook Pro", SUBCATEGORY_ID);
+
+        Assert.assertTrue(maybeRequest.isPresent());
+        Assert.assertEquals(702L, (long) maybeRequest.get().getId());
+    }
+
+    @Test
+    public void testFindMatchingDifferentSubcategory() {
+        insertSampleRequests();
+
+        Assert.assertFalse(
+                brandModelRequestDao.findMatching("Apple", "MacBook Pro", OTHER_SUBCATEGORY_ID).isPresent()
+        );
+    }
+
+    @Test
+    public void testFindMatchingDifferentModel() {
+        insertSampleRequests();
+
+        Assert.assertFalse(
+                brandModelRequestDao.findMatching("Acme", "Acme Two", SUBCATEGORY_ID).isPresent()
+        );
+    }
+
+    /* ---------------------------------------------------------------------------------------------- */
+    /* additional requesters                                                                           */
+    /* ---------------------------------------------------------------------------------------------- */
+
+    @Test
+    public void testIsAdditionalRequester() {
+        insertAdditionalUser();
+        insertRequest(701L, BrandModelRequestType.NEW_BRAND, null, "Acme", "Acme One",
+                Instant.parse("2026-01-01T10:00:00Z"));
+        jdbcTemplate.update(
+                "INSERT INTO brand_model_request_additional_users (request_id, user_id) VALUES (?, ?)",
+                701L,
+                ADDITIONAL_USER_ID
+        );
+
+        Assert.assertTrue(brandModelRequestDao.isAdditionalRequester(701L, ADDITIONAL_USER_ID));
+        Assert.assertFalse(brandModelRequestDao.isAdditionalRequester(701L, USER_ID));
+        Assert.assertFalse(brandModelRequestDao.isAdditionalRequester(702L, ADDITIONAL_USER_ID));
+    }
+
+    @Test
+    public void testAddAdditionalRequester() {
+        insertAdditionalUser();
+        insertRequest(701L, BrandModelRequestType.NEW_BRAND, null, "Acme", "Acme One",
+                Instant.parse("2026-01-01T10:00:00Z"));
+
+        brandModelRequestDao.addAdditionalRequester(701L, ADDITIONAL_USER_ID);
+        em.flush();
+
+        Assert.assertEquals(1, JdbcTestUtils.countRowsInTableWhere(
+                jdbcTemplate,
+                ADDITIONAL_TABLE,
+                "request_id = 701 AND user_id = " + ADDITIONAL_USER_ID
+        ));
+    }
+
+    @Test
+    public void testGetMatchingFetchesAdditionalRequesters() {
+        insertAdditionalUser();
+        insertSampleRequests();
+        jdbcTemplate.update(
+                "INSERT INTO brand_model_request_additional_users (request_id, user_id) VALUES (?, ?)",
+                702L,
+                ADDITIONAL_USER_ID
+        );
+
+        final Page<BrandModelRequest> page = brandModelRequestDao.getMatching(1, 10);
+
+        final BrandModelRequest request = page.getContent().stream()
+                .filter(item -> item.getId().equals(702L))
+                .findFirst()
+                .orElseThrow();
+        Assert.assertEquals(1, request.getAdditionalRequesterCount());
     }
 
     @Test

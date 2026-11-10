@@ -4,7 +4,9 @@ import lombok.*;
 
 import javax.persistence.*;
 import java.time.Instant;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -46,6 +48,15 @@ public class BrandModelRequest {
     private User requester;
 
     @Builder.Default
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+        name = "brand_model_request_additional_users",
+        joinColumns = @JoinColumn(name = "request_id"),
+        inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
+    private Set<User> additionalRequesters = new HashSet<>();
+
+    @Builder.Default
     @Column(name = "created_at", nullable = false)
     private Instant createdAt = Instant.now();
 
@@ -63,5 +74,9 @@ public class BrandModelRequest {
 
     public String getRequestedBrandName() {
         return brand != null ? brand.getName() : brandName;
+    }
+
+    public int getAdditionalRequesterCount() {
+        return additionalRequesters == null ? 0 : additionalRequesters.size();
     }
 }

@@ -4,15 +4,20 @@ import ar.edu.itba.paw.model.Brand;
 import ar.edu.itba.paw.model.BrandModelRequest;
 import ar.edu.itba.paw.model.BrandModelRequestType;
 import ar.edu.itba.paw.model.Page;
+import ar.edu.itba.paw.model.User;
 import ar.edu.itba.paw.persistence.BrandModelRequestDao;
 import ar.edu.itba.paw.service.dto.BrandModelRequestAcceptanceDto;
 import ar.edu.itba.paw.service.dto.BrandModelRequestCreationDto;
 import ar.edu.itba.paw.service.exception.BadParameterException;
+import ar.edu.itba.paw.service.exception.BrandModelRequestAlreadyExistsException;
 import ar.edu.itba.paw.service.exception.ModelAlreadyExistsException;
 import ar.edu.itba.paw.service.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -75,6 +80,20 @@ public class BrandModelRequestServiceImpl implements BrandModelRequestService {
             }
         }
 
+        final String matchingBrandName = brand != null ? brand.getName() : brandName;
+        final var existingRequest = brandModelRequestDao.findMatching(
+            matchingBrandName, modelName, subcategory.getId()
+        );
+        if (existingRequest.isPresent()) {
+            final BrandModelRequest request = existingRequest.get();
+            if (request.getRequester().getId().equals(requester.getId())
+                    || brandModelRequestDao.isAdditionalRequester(request.getId(), requester.getId())) {
+                throw new BrandModelRequestAlreadyExistsException(dto);
+            }
+            brandModelRequestDao.addAdditionalRequester(request.getId(), requester.getId());
+            return request;
+        }
+
         return brandModelRequestDao.create(type, brand, brandName, modelName, subcategory, requester);
     }
 
@@ -112,8 +131,9 @@ public class BrandModelRequestServiceImpl implements BrandModelRequestService {
             request.getSubcategory().getId()
         );
 
+        final List<User> recipients = requestersOf(request);
         brandModelRequestDao.delete(requestId);
-        notificationDispatcherService.notifyBrandModelRequestAccepted(request, brand, model);
+        notificationDispatcherService.notifyBrandModelRequestAccepted(request, recipients, brand, model);
     }
 
     @Override
@@ -121,8 +141,18 @@ public class BrandModelRequestServiceImpl implements BrandModelRequestService {
     public void reject(Long requestId) {
         final var request = brandModelRequestDao.getById(requestId)
             .orElseThrow(() -> NotFoundException.createFor("Brand model request with ID " + requestId));
+        final List<User> recipients = requestersOf(request);
         brandModelRequestDao.delete(requestId);
-        notificationDispatcherService.notifyBrandModelRequestRejected(request);
+        notificationDispatcherService.notifyBrandModelRequestRejected(request, recipients);
+    }
+
+    private static List<User> requestersOf(BrandModelRequest request) {
+        return Stream.concat(
+                Stream.of(request.getRequester()),
+                request.getAdditionalRequesters().stream()
+            )
+            .distinct()
+            .toList();
     }
 
     private static String normalized(String value) {
