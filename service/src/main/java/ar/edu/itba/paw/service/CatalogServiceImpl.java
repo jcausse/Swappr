@@ -55,6 +55,13 @@ public class CatalogServiceImpl implements CatalogService {
     }
 
     @Override
+    public Brand getBrandById(Long id) {
+        return brandDao
+            .getById(id)
+            .orElseThrow(() -> NotFoundException.createFor("Brand with ID " + id));
+    }
+
+    @Override
     public Map<Long, List<Brand>> getBrandReplacementOptions() {
         final List<Brand> brands = brandDao.getAll();
         final Map<Long, List<Brand>> options = new HashMap<>();
@@ -131,6 +138,13 @@ public class CatalogServiceImpl implements CatalogService {
     @Override
     public List<Subcategory> getAllSubcategories() {
         return subcategoryDao.getAll();
+    }
+
+    @Override
+    public Subcategory getSubcategoryById(Long id) {
+        return subcategoryDao
+            .getById(id)
+            .orElseThrow(() -> NotFoundException.createFor("Subcategory with ID " + id));
     }
 
     @Override

@@ -8,16 +8,19 @@ import ar.edu.itba.paw.model.OfferStatusGroup;
 import ar.edu.itba.paw.model.Role;
 import ar.edu.itba.paw.model.User;
 import ar.edu.itba.paw.service.AdminService;
+import ar.edu.itba.paw.service.BrandModelRequestService;
 import ar.edu.itba.paw.service.CatalogService;
 import ar.edu.itba.paw.service.ListingService;
 import ar.edu.itba.paw.service.OfferService;
 import ar.edu.itba.paw.service.UserService;
+import ar.edu.itba.paw.service.dto.BrandModelRequestAcceptanceDto;
 import ar.edu.itba.paw.service.dto.ListingFilterDto;
 import ar.edu.itba.paw.service.dto.OfferFilterDto;
 import ar.edu.itba.paw.service.exception.BadParameterException;
 import ar.edu.itba.paw.service.exception.NotFoundException;
 import ar.edu.itba.paw.service.exception.SelfSuspendException;
 import ar.edu.itba.paw.webapp.auth.CurrentUser;
+import ar.edu.itba.paw.webapp.form.AdminBrandModelRequestAcceptForm;
 import ar.edu.itba.paw.webapp.form.AdminCreateBrandForm;
 import ar.edu.itba.paw.webapp.form.AdminGrantRoleForm;
 import ar.edu.itba.paw.webapp.form.AdminListingFilterForm;
@@ -63,10 +66,12 @@ public class AdminController {
     private static final int DEFAULT_PAGE_SIZE = 10;
     private static final int BRAND_PAGE_SIZE = 10;
     private static final int MODEL_PAGE_SIZE = 10;
+    private static final int REQUEST_PAGE_SIZE = 10;
     private static final Predicate<String> ADMIN_PATH_FILTER = RedirectHelper.hasPathPrefix("/admin");
 
     private final AdminService adminService;
     private final CatalogService catalogService;
+    private final BrandModelRequestService brandModelRequestService;
     private final ListingService listingService;
     private final OfferService offerService;
     private final UserService userService;
@@ -92,19 +97,22 @@ public class AdminController {
             @RequestParam(value = "sort", defaultValue = "BRAND_ASC") BrandSort sort,
             @RequestParam(value = "modelPage", defaultValue = "1") int modelPage,
             @RequestParam(value = "modelSort", defaultValue = "NAME_ASC") ModelSort modelSort,
+            @RequestParam(value = "requestPage", defaultValue = "1") int requestPage,
             @ModelAttribute("renameBrandForm") AdminRenameBrandForm renameBrandForm,
             @ModelAttribute("createBrandForm") AdminCreateBrandForm createBrandForm,
             @ModelAttribute("replaceBrandForm") AdminReplaceBrandForm replaceBrandForm,
             @ModelAttribute("modelFilterForm") AdminModelFilterForm modelFilterForm,
             @ModelAttribute("createModelForm") AdminModelForm createModelForm,
             @ModelAttribute("editModelForm") AdminModelForm editModelForm,
-            @ModelAttribute("replaceModelForm") AdminReplaceModelForm replaceModelForm
+            @ModelAttribute("replaceModelForm") AdminReplaceModelForm replaceModelForm,
+            @ModelAttribute("acceptRequestForm") AdminBrandModelRequestAcceptForm acceptRequestForm
     ) {
-        LOGGER.debug("Admin {} accessed catalog management page: brandPage={}, modelPage={}", currentUser.getUsername(), page, modelPage);
+        LOGGER.debug("Admin {} accessed catalog management page: brandPage={}, modelPage={}, requestPage={}", currentUser.getUsername(), page, modelPage, requestPage);
         final var brandsPage = catalogService.getBrands(sort, page, BRAND_PAGE_SIZE);
         final var modelsPage = catalogService.getModels(
                 modelFilterForm.getBrandId(), modelFilterForm.getSubcategoryId(),
                 modelSort, modelPage, MODEL_PAGE_SIZE);
+        final var requestsPage = brandModelRequestService.getRequests(requestPage, REQUEST_PAGE_SIZE);
         final List<Brand> allBrands = catalogService.getAllBrands();
         return new ModelAndView("admin/catalog")
                 .addObject("brands", brandsPage.getContent())
@@ -120,7 +128,56 @@ public class AdminController {
                 .addObject("models", modelsPage.getContent())
                 .addObject("modelsPage", modelsPage)
                 .addObject("currentModelSort", modelSort)
-                .addObject("modelReplacementOptions", catalogService.getModelReplacementOptions());
+                .addObject("modelReplacementOptions", catalogService.getModelReplacementOptions())
+                .addObject("requests", requestsPage.getContent())
+                .addObject("requestsPage", requestsPage);
+    }
+
+    @PostMapping("/catalog/requests/{id}/accept")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ModelAndView acceptBrandModelRequest(
+            @CurrentUser User currentUser,
+            @PathVariable Long id,
+            @Valid @ModelAttribute("acceptRequestForm") AdminBrandModelRequestAcceptForm form,
+            BindingResult errors
+    ) {
+        LOGGER.info("Admin {} requested acceptance of brand/model request {}", currentUser.getUsername(), id);
+        if (errors.hasErrors()) {
+            return new ModelAndView("redirect:/admin/catalog?error=requestInvalid");
+        }
+
+        try {
+            brandModelRequestService.accept(id, new BrandModelRequestAcceptanceDto(
+                    form.getType(),
+                    form.getBrandId(),
+                    form.getNewBrandName(),
+                    form.getModelName()
+            ));
+        } catch (BadParameterException e) {
+            LOGGER.warn("Brand/model request {} could not be accepted: {}", id, e.getMessage());
+            return new ModelAndView("redirect:/admin/catalog?error=requestInvalid");
+        } catch (NotFoundException e) {
+            LOGGER.warn("Brand/model request {} not found for acceptance", id);
+            return new ModelAndView("redirect:/admin/catalog?error=requestNotFound");
+        }
+
+        return new ModelAndView("redirect:/admin/catalog?success=request_accepted");
+    }
+
+    @PostMapping("/catalog/requests/{id}/reject")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ModelAndView rejectBrandModelRequest(
+            @CurrentUser User currentUser,
+            @PathVariable Long id
+    ) {
+        LOGGER.info("Admin {} requested rejection of brand/model request {}", currentUser.getUsername(), id);
+        try {
+            brandModelRequestService.reject(id);
+        } catch (NotFoundException e) {
+            LOGGER.warn("Brand/model request {} not found for rejection", id);
+            return new ModelAndView("redirect:/admin/catalog?error=requestNotFound");
+        }
+        return new ModelAndView("redirect:/admin/catalog?success=request_rejected");
     }
 
     @PostMapping("/catalog/brands")

@@ -70,6 +70,31 @@
 <spring:message code="admin.catalog.models.delete.confirm" var="deleteModelConfirm"/>
 <spring:message code="admin.catalog.models.delete.cancel" var="deleteModelCancel"/>
 <spring:message code="admin.catalog.models.delete.blocked" var="deleteModelBlocked"/>
+<spring:message code="admin.catalog.requests.title" var="requestsTitle"/>
+<spring:message code="admin.catalog.requests.subtitle" var="requestsSubtitle"/>
+<spring:message code="admin.catalog.requests.id" var="requestIdLabel"/>
+<spring:message code="admin.catalog.requests.type" var="requestTypeLabel"/>
+<spring:message code="admin.catalog.requests.type.newBrand" var="requestNewBrandType"/>
+<spring:message code="admin.catalog.requests.type.existingBrand" var="requestExistingBrandType"/>
+<spring:message code="admin.catalog.requests.brand" var="requestBrandLabel"/>
+<spring:message code="admin.catalog.requests.model" var="requestModelLabel"/>
+<spring:message code="admin.catalog.requests.subcategory" var="requestSubcategoryLabel"/>
+<spring:message code="admin.catalog.requests.requester" var="requestRequesterLabel"/>
+<spring:message code="admin.catalog.requests.actions" var="requestActionsLabel"/>
+<spring:message code="admin.catalog.requests.empty" var="requestsEmptyLabel"/>
+<spring:message code="admin.catalog.requests.accept" var="acceptRequestLabel"/>
+<spring:message code="admin.catalog.requests.reject" var="rejectRequestLabel"/>
+<spring:message code="admin.catalog.requests.accept.title" var="acceptRequestTitle"/>
+<spring:message code="admin.catalog.requests.accept.confirm" var="acceptRequestConfirm"/>
+<spring:message code="admin.catalog.requests.accept.cancel" var="acceptRequestCancel"/>
+<spring:message code="admin.catalog.requests.reject.title" var="rejectRequestTitle"/>
+<spring:message code="admin.catalog.requests.reject.message" var="rejectRequestMessage"/>
+<spring:message code="admin.catalog.requests.reject.confirm" var="rejectRequestConfirm"/>
+<spring:message code="admin.catalog.requests.reject.cancel" var="rejectRequestCancel"/>
+<spring:message code="admin.catalog.requests.typeLabel" var="acceptRequestTypeLabel"/>
+<spring:message code="admin.catalog.requests.newBrandLabel" var="acceptRequestNewBrandLabel"/>
+<spring:message code="admin.catalog.requests.existingBrandLabel" var="acceptRequestExistingBrandLabel"/>
+<spring:message code="admin.catalog.requests.modelLabel" var="acceptRequestModelLabel"/>
 
 
 <admin:layout titleKey="admin.catalog.title" title="${catalogTitle}" subtitle="${catalogSubtitle}">
@@ -511,6 +536,141 @@
             </paw:confirmDialog>
         </c:forEach>
 
+        <paw:card title="${requestsTitle}" subtitle="${requestsSubtitle}">
+            <div class="mt-4 overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="border-b border-black/10 text-left text-xs uppercase tracking-wide text-black/50">
+                            <th class="py-2 pr-4 font-medium"><c:out value="${requestTypeLabel}"/></th>
+                            <th class="py-2 pr-4 font-medium"><c:out value="${requestBrandLabel}"/></th>
+                            <th class="py-2 pr-4 font-medium"><c:out value="${requestModelLabel}"/></th>
+                            <th class="py-2 pr-4 font-medium"><c:out value="${requestSubcategoryLabel}"/></th>
+                            <th class="py-2 pr-4 font-medium"><c:out value="${requestRequesterLabel}"/></th>
+                            <th class="py-2 text-right font-medium"><c:out value="${requestActionsLabel}"/></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <c:if test="${empty requests}">
+                            <tr>
+                                <td colspan="7" class="py-6 text-center text-black/50"><c:out value="${requestsEmptyLabel}"/></td>
+                            </tr>
+                        </c:if>
+                        <c:forEach var="request" items="${requests}">
+                            <c:url value="/admin/catalog/requests/${request.id}/accept" var="acceptRequestUrl"/>
+                            <c:url value="/admin/catalog/requests/${request.id}/reject" var="rejectRequestUrl"/>
+                            <tr class="border-b border-black/5 last:border-0 align-top"
+                                data-accept-action="${acceptRequestUrl}"
+                                data-request-type="${request.type.name()}"
+                                data-brand-id="${request.brandId}"
+                                data-brand-name="<c:out value='${request.requestedBrandName}'/>"
+                                data-model-name="<c:out value='${request.modelName}'/>">
+                                <td class="py-3 pr-4">
+                                    <c:choose>
+                                        <c:when test="${request.newBrand}">
+                                            <paw:badge text="${requestNewBrandType}" classname="text-amber-700 bg-amber-100" size="sm"/>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <paw:badge text="${requestExistingBrandType}" classname="text-blue-700 bg-blue-100" size="sm"/>
+                                        </c:otherwise>
+                                    </c:choose>
+                                </td>
+                                <td class="py-3 pr-4 font-medium"><c:out value="${request.requestedBrandName}"/></td>
+                                <td class="py-3 pr-4 text-black/70"><c:out value="${request.modelName}"/></td>
+                                <td class="py-3 pr-4 text-black/70">
+                                    <c:out value="${request.subcategory.category.name}"/> / <c:out value="${request.subcategory.name}"/>
+                                </td>
+                                <td class="py-3 pr-4">
+                                    <paw:user user="${request.requester}" variant="compact"/>
+                                </td>
+                                <td class="py-3">
+                                    <div class="flex items-center justify-end gap-2">
+                                        <paw:button
+                                            text="${acceptRequestLabel}"
+                                            type="button"
+                                            variant="outline"
+                                            role="default"
+                                            size="sm"
+                                            icon="check"
+                                            onclick="openAcceptRequestDialog(this)"
+                                        />
+                                        <paw:button
+                                            text="${rejectRequestLabel}"
+                                            type="button"
+                                            variant="outline"
+                                            role="danger"
+                                            size="sm"
+                                            icon="x"
+                                            onclick="document.getElementById('rejectRequestDialog-${request.id}').showModal()"
+                                        />
+                                    </div>
+                                </td>
+                            </tr>
+                        </c:forEach>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="-mt-8 mb-4">
+                <paw:pagination page="${requestsPage}" baseUrl="/admin/catalog" pageParam="requestPage"/>
+            </div>
+        </paw:card>
+
+        <c:forEach var="request" items="${requests}">
+            <c:url value="/admin/catalog/requests/${request.id}/reject" var="rejectRequestUrl"/>
+            <paw:confirmDialog
+                id="rejectRequestDialog-${request.id}"
+                title="${rejectRequestTitle}"
+                confirmText="${rejectRequestConfirm}"
+                cancelText="${rejectRequestCancel}"
+                formAction="${rejectRequestUrl}"
+            >
+                <c:out value="${rejectRequestMessage}"/>
+            </paw:confirmDialog>
+        </c:forEach>
+
+        <paw:formDialog
+            id="acceptRequestDialog"
+            title="${acceptRequestTitle}"
+            confirmText="${acceptRequestConfirm}"
+            cancelText="${acceptRequestCancel}"
+            formAction="${catalogUrl}"
+            modelAttribute="acceptRequestForm"
+        >
+            <div class="flex flex-col gap-3">
+                <div class="flex flex-col gap-2">
+                    <span class="text-xs text-black/70 font-medium"><c:out value="${acceptRequestTypeLabel}"/></span>
+                    <div class="flex flex-col sm:flex-row gap-2">
+                        <paw:radio path="type" id="acceptRequestTypeNew" value="NEW_BRAND" label="${requestNewBrandType}"/>
+                        <paw:radio path="type" id="acceptRequestTypeExisting" value="EXISTING_BRAND" label="${requestExistingBrandType}"/>
+                    </div>
+                </div>
+                <div id="acceptNewBrandFields" class="flex flex-col gap-3">
+                    <paw:formInput
+                        id="acceptRequestNewBrandName"
+                        path="newBrandName"
+                        label="${acceptRequestNewBrandLabel}"
+                        variant="outline"
+                    />
+                </div>
+                <div id="acceptExistingBrandFields" class="flex flex-col gap-3">
+                    <paw:formSelect
+                        id="acceptRequestBrandId"
+                        path="brandId"
+                        label="${acceptRequestExistingBrandLabel}"
+                        items="${brandOptions}"
+                        itemLabel="name"
+                        itemValue="id"
+                    />
+                </div>
+                <paw:formInput
+                    id="acceptRequestModelName"
+                    path="modelName"
+                    label="${acceptRequestModelLabel}"
+                    variant="outline"
+                />
+            </div>
+        </paw:formDialog>
+
         <paw:formDialog
             id="editModelDialog"
             title="${editModelTitle}"
@@ -558,6 +718,46 @@
 
                 dialog.showModal();
             }
+
+            function updateAcceptRequestFields() {
+                var existingRadio = document.getElementById('acceptRequestTypeExisting');
+                var isExisting = existingRadio && existingRadio.checked;
+                var newBrandFields = document.getElementById('acceptNewBrandFields');
+                var existingBrandFields = document.getElementById('acceptExistingBrandFields');
+                if (newBrandFields) {
+                    newBrandFields.style.display = isExisting ? 'none' : '';
+                }
+                if (existingBrandFields) {
+                    existingBrandFields.style.display = isExisting ? '' : 'none';
+                }
+            }
+
+            function openAcceptRequestDialog(button) {
+                var dialog = document.getElementById('acceptRequestDialog');
+                var requestRow = button.closest('tr');
+                var form = dialog.querySelector('form');
+                var type = requestRow.dataset.requestType || 'NEW_BRAND';
+
+                form.action = requestRow.dataset.acceptAction;
+                form.querySelector('input[name="modelName"]').value = requestRow.dataset.modelName || '';
+                form.querySelector('input[name="newBrandName"]').value = requestRow.dataset.brandName || '';
+                form.querySelector('select[name="brandId"]').value = requestRow.dataset.brandId || '';
+                form.querySelector('input[name="type"][value="' + type + '"]').checked = true;
+
+                updateAcceptRequestFields();
+                dialog.showModal();
+            }
+
+            document.addEventListener('DOMContentLoaded', function () {
+                var newRadio = document.getElementById('acceptRequestTypeNew');
+                var existingRadio = document.getElementById('acceptRequestTypeExisting');
+                if (newRadio) {
+                    newRadio.addEventListener('change', updateAcceptRequestFields);
+                }
+                if (existingRadio) {
+                    existingRadio.addEventListener('change', updateAcceptRequestFields);
+                }
+            });
         </script>
 
     </div>

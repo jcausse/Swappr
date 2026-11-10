@@ -133,7 +133,7 @@ public class ListingServiceImplTest {
 
     private static ListingUpdateDto buildUpdateDtoWithPrice(final BigDecimal price) {
         return new ListingUpdateDto(
-            LISTING_ID, LISTING_TITLE, price, MODEL_ID, YEAR, Condition.FAIR, true, false, LISTING_DESCRIPTION
+            LISTING_ID, LISTING_TITLE, price, MODEL_ID, YEAR, Condition.FAIR, true, false, LISTING_DESCRIPTION, null, null
         );
     }
 

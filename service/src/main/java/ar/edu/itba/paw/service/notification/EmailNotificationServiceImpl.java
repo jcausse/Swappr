@@ -296,6 +296,36 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
         sendEmail(user.getEmail(), subject, "user-unsuspended", context);
     }
 
+    @Async
+    @Override
+    public void sendBrandModelRequestAcceptedEmail(UserMailDto user, String brandName, String modelName, Long modelId) {
+        final var locale = localeOf(user);
+        var context = new Context(locale);
+        context.setVariable("user", user);
+        context.setVariable("brandName", brandName);
+        context.setVariable("modelName", modelName);
+        context.setVariable("baseUrl", baseUrl);
+        context.setVariable("actionUrl", baseUrl + "/listing/new/choose-product?modelId=" + modelId);
+
+        String subject = messageSource.getMessage("email.brandModelRequest.accepted.subject", null, locale);
+        sendEmail(user.getEmail(), subject, "brand-model-request-accepted", context);
+    }
+
+    @Async
+    @Override
+    public void sendBrandModelRequestRejectedEmail(UserMailDto user, String brandName, String modelName) {
+        final var locale = localeOf(user);
+        var context = new Context(locale);
+        context.setVariable("user", user);
+        context.setVariable("brandName", brandName);
+        context.setVariable("modelName", modelName);
+        context.setVariable("baseUrl", baseUrl);
+        context.setVariable("actionUrl", baseUrl + "/listing");
+
+        String subject = messageSource.getMessage("email.brandModelRequest.rejected.subject", null, locale);
+        sendEmail(user.getEmail(), subject, "brand-model-request-rejected", context);
+    }
+
     /**
      * The locale to use for an email, derived from the recipient's preferred language
      * (not the acting user's request locale). This is what makes emails arrive in the

@@ -24,7 +24,7 @@
     aria-hidden="true"
     class="flex h-4 w-4 shrink-0 items-center justify-center rounded-full border border-black/20 bg-white transition duration-150
            peer-checked:border-lime-600 peer-checked:bg-lime-50
-           peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-lime-600
+           peer-focus-visible:outline-2 outline-offset-0 outline-lime-600/30 peer-focus-visible:border-lime-600
            peer-disabled:opacity-50 peer-disabled:bg-black/10 peer-checked:[&_.radio-dot]:scale-100"
   >
     <span class="radio-dot h-2 w-2 rounded-full bg-lime-600 scale-0 transition duration-150"></span>

@@ -21,6 +21,8 @@ public interface CatalogService {
 
     List<Brand> getAllBrands();
 
+    Brand getBrandById(Long id);
+
     Map<Long, List<Brand>> getBrandReplacementOptions();
 
     Brand createBrand(String name);
@@ -36,6 +38,8 @@ public interface CatalogService {
     List<Subcategory> getSubcategoriesByCategory(Long categoryId);
 
     List<Subcategory> getAllSubcategories();
+
+    Subcategory getSubcategoryById(Long id);
 
     List<Brand> getBrandsBySubcategory(Long subcategoryId);
 

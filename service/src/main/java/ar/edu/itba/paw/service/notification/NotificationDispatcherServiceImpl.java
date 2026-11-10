@@ -4,6 +4,9 @@ import ar.edu.itba.paw.model.Listing;
 import ar.edu.itba.paw.model.NotificationType;
 import ar.edu.itba.paw.model.Offer;
 import ar.edu.itba.paw.model.User;
+import ar.edu.itba.paw.model.Brand;
+import ar.edu.itba.paw.model.BrandModelRequest;
+import ar.edu.itba.paw.model.Model;
 import ar.edu.itba.paw.service.EmailNotificationService;
 import ar.edu.itba.paw.service.NotificationDispatcherService;
 import ar.edu.itba.paw.service.SiteNotificationService;
@@ -217,6 +220,47 @@ public class NotificationDispatcherServiceImpl implements NotificationDispatcher
         LOGGER.debug("Dispatching {} notification for user id={}", NotificationType.ACCOUNT_UNSUSPENDED, user.getId());
         if (shouldSendEmail(user, NotificationType.ACCOUNT_UNSUSPENDED)) {
             emailNotificationService.sendAccountUnsuspendedEmail(UserMailDto.from(user));
+        }
+    }
+
+    @Override
+    @Transactional
+    public void notifyBrandModelRequestAccepted(@NonNull BrandModelRequest request, @NonNull Brand brand, @NonNull Model model) {
+        final User requester = request.getRequester();
+        LOGGER.debug("Dispatching {} notification for request id={}, requester id={}",
+                NotificationType.BRAND_MODEL_REQUEST_ACCEPTED, request.getId(), requester.getId());
+
+        if (shouldSendSite(requester, NotificationType.BRAND_MODEL_REQUEST_ACCEPTED)) {
+            siteNotificationService.create(SiteNotificationCreationDtoFactory.brandModelRequestAccepted(request, brand, model));
+        }
+
+        if (shouldSendEmail(requester, NotificationType.BRAND_MODEL_REQUEST_ACCEPTED)) {
+            emailNotificationService.sendBrandModelRequestAcceptedEmail(
+                    UserMailDto.from(requester),
+                    brand.getName(),
+                    model.getName(),
+                    model.getId()
+            );
+        }
+    }
+
+    @Override
+    @Transactional
+    public void notifyBrandModelRequestRejected(@NonNull BrandModelRequest request) {
+        final User requester = request.getRequester();
+        LOGGER.debug("Dispatching {} notification for request id={}, requester id={}",
+                NotificationType.BRAND_MODEL_REQUEST_REJECTED, request.getId(), requester.getId());
+
+        if (shouldSendSite(requester, NotificationType.BRAND_MODEL_REQUEST_REJECTED)) {
+            siteNotificationService.create(SiteNotificationCreationDtoFactory.brandModelRequestRejected(request));
+        }
+
+        if (shouldSendEmail(requester, NotificationType.BRAND_MODEL_REQUEST_REJECTED)) {
+            emailNotificationService.sendBrandModelRequestRejectedEmail(
+                    UserMailDto.from(requester),
+                    request.getRequestedBrandName(),
+                    request.getModelName()
+            );
         }
     }
 
