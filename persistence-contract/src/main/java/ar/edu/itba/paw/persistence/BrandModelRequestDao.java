@@ -11,6 +11,12 @@ import java.util.Optional;
 public interface BrandModelRequestDao {
     Optional<BrandModelRequest> getById(Long id);
 
+    Optional<BrandModelRequest> findMatching(String brandName, String modelName, Long subcategoryId);
+
+    boolean isAdditionalRequester(Long requestId, Long userId);
+
+    void addAdditionalRequester(Long requestId, Long userId);
+
     Page<BrandModelRequest> getMatching(int page, int pageSize);
 
     BrandModelRequest create(

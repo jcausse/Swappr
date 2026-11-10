@@ -581,6 +581,11 @@
                                 </td>
                                 <td class="py-3 pr-4">
                                     <paw:user user="${request.requester}" variant="compact"/>
+                                    <c:if test="${request.additionalRequesterCount > 0}">
+                                        <div class="text-xs text-black/50 mt-1">
+                                            <spring:message code="admin.catalog.requests.additionalOthers" arguments="${request.additionalRequesterCount}"/>
+                                        </div>
+                                    </c:if>
                                 </td>
                                 <td class="py-3">
                                     <div class="flex items-center justify-end gap-2">

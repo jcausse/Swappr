@@ -20,6 +20,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -225,42 +227,54 @@ public class NotificationDispatcherServiceImpl implements NotificationDispatcher
 
     @Override
     @Transactional
-    public void notifyBrandModelRequestAccepted(@NonNull BrandModelRequest request, @NonNull Brand brand, @NonNull Model model) {
-        final User requester = request.getRequester();
-        LOGGER.debug("Dispatching {} notification for request id={}, requester id={}",
-                NotificationType.BRAND_MODEL_REQUEST_ACCEPTED, request.getId(), requester.getId());
+    public void notifyBrandModelRequestAccepted(
+            @NonNull BrandModelRequest request,
+            @NonNull List<User> recipients,
+            @NonNull Brand brand,
+            @NonNull Model model
+    ) {
+        for (final User recipient : recipients) {
+            LOGGER.debug("Dispatching {} notification for request id={}, recipient id={}",
+                    NotificationType.BRAND_MODEL_REQUEST_ACCEPTED, request.getId(), recipient.getId());
 
-        if (shouldSendSite(requester, NotificationType.BRAND_MODEL_REQUEST_ACCEPTED)) {
-            siteNotificationService.create(SiteNotificationCreationDtoFactory.brandModelRequestAccepted(request, brand, model));
-        }
+            if (shouldSendSite(recipient, NotificationType.BRAND_MODEL_REQUEST_ACCEPTED)) {
+                siteNotificationService.create(
+                        SiteNotificationCreationDtoFactory.brandModelRequestAccepted(request, recipient, brand, model));
+            }
 
-        if (shouldSendEmail(requester, NotificationType.BRAND_MODEL_REQUEST_ACCEPTED)) {
-            emailNotificationService.sendBrandModelRequestAcceptedEmail(
-                    UserMailDto.from(requester),
-                    brand.getName(),
-                    model.getName(),
-                    model.getId()
-            );
+            if (shouldSendEmail(recipient, NotificationType.BRAND_MODEL_REQUEST_ACCEPTED)) {
+                emailNotificationService.sendBrandModelRequestAcceptedEmail(
+                        UserMailDto.from(recipient),
+                        brand.getName(),
+                        model.getName(),
+                        model.getId()
+                );
+            }
         }
     }
 
     @Override
     @Transactional
-    public void notifyBrandModelRequestRejected(@NonNull BrandModelRequest request) {
-        final User requester = request.getRequester();
-        LOGGER.debug("Dispatching {} notification for request id={}, requester id={}",
-                NotificationType.BRAND_MODEL_REQUEST_REJECTED, request.getId(), requester.getId());
+    public void notifyBrandModelRequestRejected(
+            @NonNull BrandModelRequest request,
+            @NonNull List<User> recipients
+    ) {
+        for (final User recipient : recipients) {
+            LOGGER.debug("Dispatching {} notification for request id={}, recipient id={}",
+                    NotificationType.BRAND_MODEL_REQUEST_REJECTED, request.getId(), recipient.getId());
 
-        if (shouldSendSite(requester, NotificationType.BRAND_MODEL_REQUEST_REJECTED)) {
-            siteNotificationService.create(SiteNotificationCreationDtoFactory.brandModelRequestRejected(request));
-        }
+            if (shouldSendSite(recipient, NotificationType.BRAND_MODEL_REQUEST_REJECTED)) {
+                siteNotificationService.create(
+                        SiteNotificationCreationDtoFactory.brandModelRequestRejected(request, recipient));
+            }
 
-        if (shouldSendEmail(requester, NotificationType.BRAND_MODEL_REQUEST_REJECTED)) {
-            emailNotificationService.sendBrandModelRequestRejectedEmail(
-                    UserMailDto.from(requester),
-                    request.getRequestedBrandName(),
-                    request.getModelName()
-            );
+            if (shouldSendEmail(recipient, NotificationType.BRAND_MODEL_REQUEST_REJECTED)) {
+                emailNotificationService.sendBrandModelRequestRejectedEmail(
+                        UserMailDto.from(recipient),
+                        request.getRequestedBrandName(),
+                        request.getModelName()
+                );
+            }
         }
     }
 

@@ -37,10 +37,15 @@ public class BrandModelRequestController {
     public ModelAndView form(
             @ModelAttribute("requestForm") BrandModelRequestForm form,
             @RequestParam(value = "subcategoryId", required = false) Long subcategoryId,
-            @RequestParam(value = "brandId", required = false) Long brandId
+            @RequestParam(value = "brandId", required = false) Long brandId,
+            @RequestParam(value = "duplicate", defaultValue = "false") boolean duplicate
     ) {
         form.applyDefaults(subcategoryId, brandId);
-        return render(form);
+        final ModelAndView mav = render(form);
+        if (duplicate) {
+            mav.addObject("formError", "error.catalogRequest.duplicate");
+        }
+        return mav;
     }
 
     @PostMapping

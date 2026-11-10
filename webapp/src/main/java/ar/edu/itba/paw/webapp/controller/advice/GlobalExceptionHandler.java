@@ -1,6 +1,7 @@
 package ar.edu.itba.paw.webapp.controller.advice;
 
 import ar.edu.itba.paw.service.exception.BadParameterException;
+import ar.edu.itba.paw.service.exception.BrandModelRequestAlreadyExistsException;
 import ar.edu.itba.paw.service.exception.ForbiddenException;
 import ar.edu.itba.paw.service.exception.ModelAlreadyExistsException;
 import ar.edu.itba.paw.service.exception.NotFoundException;
@@ -61,6 +62,12 @@ public class GlobalExceptionHandler {
             .addObject("modelId", ex.getModelId())
             .addObject("brandName", ex.getBrandName())
             .addObject("modelName", ex.getModelName());
+    }
+
+    @ExceptionHandler(BrandModelRequestAlreadyExistsException.class)
+    public ModelAndView handleBrandModelRequestAlreadyExists(BrandModelRequestAlreadyExistsException ex) {
+        LOGGER.warn("Brand/model request already exists: {}", ex.getMessage());
+        return new ModelAndView("redirect:/catalog-requests/new?duplicate=1");
     }
 
     @ExceptionHandler({BindException.class, MethodArgumentTypeMismatchException.class, MissingServletRequestParameterException.class})

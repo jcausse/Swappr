@@ -25,6 +25,44 @@ public class BrandModelRequestJpaDao implements BrandModelRequestDao {
     }
 
     @Override
+    public Optional<BrandModelRequest> findMatching(String brandName, String modelName, Long subcategoryId) {
+        return em.createQuery(
+                "SELECT DISTINCT r FROM BrandModelRequest r"
+                + " LEFT JOIN FETCH r.brand b"
+                + " WHERE r.modelName = :modelName"
+                + " AND r.subcategory.id = :subcategoryId"
+                + " AND (r.brandName = :brandName OR b.name = :brandName)"
+                + " ORDER BY r.createdAt ASC, r.id ASC",
+                BrandModelRequest.class)
+                .setParameter("brandName", brandName)
+                .setParameter("modelName", modelName)
+                .setParameter("subcategoryId", subcategoryId)
+                .getResultStream()
+                .findFirst();
+    }
+
+    @Override
+    public boolean isAdditionalRequester(Long requestId, Long userId) {
+        return em.createQuery(
+                "SELECT COUNT(r) FROM BrandModelRequest r"
+                + " JOIN r.additionalRequesters u"
+                + " WHERE r.id = :requestId AND u.id = :userId",
+                Long.class)
+                .setParameter("requestId", requestId)
+                .setParameter("userId", userId)
+                .getSingleResult() > 0;
+    }
+
+    @Override
+    public void addAdditionalRequester(Long requestId, Long userId) {
+        final BrandModelRequest request = em.find(BrandModelRequest.class, requestId);
+        if (request == null) {
+            return;
+        }
+        request.getAdditionalRequesters().add(em.getReference(User.class, userId));
+    }
+
+    @Override
     public Page<BrandModelRequest> getMatching(int page, int pageSize) {
         final long totalCount = em.createQuery(
                 "SELECT COUNT(r) FROM BrandModelRequest r",
@@ -50,8 +88,9 @@ public class BrandModelRequestJpaDao implements BrandModelRequestDao {
         }
 
         final List<BrandModelRequest> content = em.createQuery(
-                "SELECT r FROM BrandModelRequest r"
+                "SELECT DISTINCT r FROM BrandModelRequest r"
                 + " LEFT JOIN FETCH r.brand"
+                + " LEFT JOIN FETCH r.additionalRequesters"
                 + " JOIN FETCH r.requester"
                 + " JOIN FETCH r.subcategory s"
                 + " JOIN FETCH s.category"
