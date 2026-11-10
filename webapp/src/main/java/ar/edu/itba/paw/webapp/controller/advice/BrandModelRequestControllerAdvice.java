@@ -3,6 +3,7 @@ package ar.edu.itba.paw.webapp.controller.advice;
 import ar.edu.itba.paw.service.CatalogService;
 import ar.edu.itba.paw.service.exception.BrandModelRequestAlreadyExistsException;
 import ar.edu.itba.paw.service.dto.BrandModelRequestCreationDto;
+import ar.edu.itba.paw.webapp.auth.AuthHelper;
 import ar.edu.itba.paw.webapp.controller.BrandModelRequestController;
 import ar.edu.itba.paw.webapp.form.BrandModelRequestForm;
 import ar.edu.itba.paw.webapp.form.SelectOption;
@@ -16,6 +17,7 @@ import org.springframework.web.servlet.ModelAndView;
 public class BrandModelRequestControllerAdvice {
 
     private final CatalogService catalogService;
+    private final AuthHelper authHelper;
 
     @ExceptionHandler(BrandModelRequestAlreadyExistsException.class)
     public ModelAndView handleAlreadyExists(BrandModelRequestAlreadyExistsException ex) {
@@ -30,6 +32,7 @@ public class BrandModelRequestControllerAdvice {
         return new ModelAndView("catalogRequest/new")
                 .addObject("requestForm", form)
                 .addObject("formError", "error.catalogRequest.duplicate")
+                .addObject("currentUser", authHelper.getCurrentUser())
                 .addObject("subcategoryOptions", catalogService.getAllSubcategories().stream()
                         .map(subcategory -> new SelectOption(
                                 subcategory.getId(), "subcategory." + subcategory.getName()))
