@@ -2,6 +2,7 @@ package ar.edu.itba.paw.webapp.controller.advice;
 
 import ar.edu.itba.paw.service.exception.BadParameterException;
 import ar.edu.itba.paw.service.exception.ForbiddenException;
+import ar.edu.itba.paw.service.exception.ModelAlreadyExistsException;
 import ar.edu.itba.paw.service.exception.NotFoundException;
 import ar.edu.itba.paw.webapp.auth.AuthHelper;
 import ar.edu.itba.paw.webapp.exception.UserNotAuthenticatedException;
@@ -50,6 +51,16 @@ public class GlobalExceptionHandler {
     public ModelAndView handleBadParameter(BadParameterException ex) {
         LOGGER.warn("Bad parameter: {}", ex.getMessage());
         return new ModelAndView("error/badRequest");
+    }
+
+    @ExceptionHandler(ModelAlreadyExistsException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ModelAndView handleModelAlreadyExists(ModelAlreadyExistsException ex) {
+        LOGGER.warn("Model already exists: {}", ex.getMessage());
+        return new ModelAndView("error/modelAlreadyExists")
+            .addObject("modelId", ex.getModelId())
+            .addObject("brandName", ex.getBrandName())
+            .addObject("modelName", ex.getModelName());
     }
 
     @ExceptionHandler({BindException.class, MethodArgumentTypeMismatchException.class, MissingServletRequestParameterException.class})

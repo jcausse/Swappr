@@ -84,6 +84,29 @@ public class ModelJpaDaoTest {
     }
 
     /* ---------------------------------------------------------------------------------------------- */
+    /* getByNameAndBrandId                                                                             */
+    /* ---------------------------------------------------------------------------------------------- */
+
+    @Test
+    public void testGetByNameAndBrandIdExists() {
+        final Optional<Model> maybeModel = modelDao.getByNameAndBrandId("MacBook Pro", APPLE_BRAND_ID);
+
+        Assert.assertTrue(maybeModel.isPresent());
+        Assert.assertEquals(MACBOOK_PRO_MODEL_ID, (long) maybeModel.get().getId());
+        Assert.assertEquals("MacBook Pro", maybeModel.get().getName());
+    }
+
+    @Test
+    public void testGetByNameAndBrandIdWrongBrand() {
+        Assert.assertFalse(modelDao.getByNameAndBrandId("MacBook Pro", DELL_BRAND_ID).isPresent());
+    }
+
+    @Test
+    public void testGetByNameAndBrandIdUnknownName() {
+        Assert.assertFalse(modelDao.getByNameAndBrandId("Unknown Model", APPLE_BRAND_ID).isPresent());
+    }
+
+    /* ---------------------------------------------------------------------------------------------- */
     /* getBySubcategoryIdAndBrandId                                                                    */
     /* ---------------------------------------------------------------------------------------------- */
 

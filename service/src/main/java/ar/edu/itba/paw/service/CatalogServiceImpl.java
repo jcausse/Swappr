@@ -62,6 +62,11 @@ public class CatalogServiceImpl implements CatalogService {
     }
 
     @Override
+    public Optional<Brand> findBrandByName(String name) {
+        return brandDao.getByName(name);
+    }
+
+    @Override
     public Map<Long, List<Brand>> getBrandReplacementOptions() {
         final List<Brand> brands = brandDao.getAll();
         final Map<Long, List<Brand>> options = new HashMap<>();
@@ -162,6 +167,11 @@ public class CatalogServiceImpl implements CatalogService {
         return modelDao
             .getById(id)
             .orElseThrow(() -> NotFoundException.createFor("Model with ID " + id));
+    }
+
+    @Override
+    public Optional<Model> findModelByNameAndBrand(String name, Long brandId) {
+        return modelDao.getByNameAndBrandId(name, brandId);
     }
 
     @Override

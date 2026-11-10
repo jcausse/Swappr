@@ -113,6 +113,28 @@ public class CatalogServiceImplTest {
     /* ---------------------------------------------------------------------------------------------- */
 
     @Test
+    public void testFindBrandByNameDelegates() {
+        final Brand brand = buildFakeBrand();
+        when(brandDao.getByName(eq(BRAND_NAME))).thenReturn(Optional.of(brand));
+
+        final Optional<Brand> result = catalogService.findBrandByName(BRAND_NAME);
+
+        Assert.assertTrue(result.isPresent());
+        Assert.assertSame(brand, result.get());
+    }
+
+    @Test
+    public void testFindModelByNameAndBrandDelegates() {
+        final Model model = buildFakeModel(MODEL_ID, MODEL_NAME);
+        when(modelDao.getByNameAndBrandId(eq(MODEL_NAME), eq(BRAND_ID))).thenReturn(Optional.of(model));
+
+        final Optional<Model> result = catalogService.findModelByNameAndBrand(MODEL_NAME, BRAND_ID);
+
+        Assert.assertTrue(result.isPresent());
+        Assert.assertSame(model, result.get());
+    }
+
+    @Test
     public void testGetAllCategoriesDelegates() {
         final List<Category> categories = List.of(Category.builder().id(CATEGORY_ID).name("Electronics").build());
         when(categoryDao.getAll()).thenReturn(categories);

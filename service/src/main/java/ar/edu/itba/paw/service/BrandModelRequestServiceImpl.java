@@ -8,6 +8,7 @@ import ar.edu.itba.paw.persistence.BrandModelRequestDao;
 import ar.edu.itba.paw.service.dto.BrandModelRequestAcceptanceDto;
 import ar.edu.itba.paw.service.dto.BrandModelRequestCreationDto;
 import ar.edu.itba.paw.service.exception.BadParameterException;
+import ar.edu.itba.paw.service.exception.ModelAlreadyExistsException;
 import ar.edu.itba.paw.service.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -46,9 +47,10 @@ public class BrandModelRequestServiceImpl implements BrandModelRequestService {
         final var requester = userService.getById(dto.requesterId())
             .orElseThrow(() -> NotFoundException.createFor("User with ID " + dto.requesterId()));
 
+        BrandModelRequestType type = dto.type();
         Brand brand = null;
         String brandName = null;
-        if (dto.type() == BrandModelRequestType.EXISTING_BRAND) {
+        if (type == BrandModelRequestType.EXISTING_BRAND) {
             if (dto.brandId() == null) {
                 throw BadParameterException.create("brandId", "Brand is required");
             }
@@ -58,9 +60,22 @@ public class BrandModelRequestServiceImpl implements BrandModelRequestService {
             if (brandName.isEmpty()) {
                 throw BadParameterException.create("newBrandName", "Brand name is required");
             }
+            final var existingBrand = catalogService.findBrandByName(brandName);
+            if (existingBrand.isPresent()) {
+                brand = existingBrand.get();
+                brandName = null;
+                type = BrandModelRequestType.EXISTING_BRAND;
+            }
         }
 
-        return brandModelRequestDao.create(dto.type(), brand, brandName, modelName, subcategory, requester);
+        if (brand != null) {
+            final var existingModel = catalogService.findModelByNameAndBrand(modelName, brand.getId());
+            if (existingModel.isPresent()) {
+                throw ModelAlreadyExistsException.createFor(existingModel.get());
+            }
+        }
+
+        return brandModelRequestDao.create(type, brand, brandName, modelName, subcategory, requester);
     }
 
     @Override

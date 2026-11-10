@@ -23,6 +23,8 @@ public interface CatalogService {
 
     Brand getBrandById(Long id);
 
+    Optional<Brand> findBrandByName(String name);
+
     Map<Long, List<Brand>> getBrandReplacementOptions();
 
     Brand createBrand(String name);
@@ -46,6 +48,8 @@ public interface CatalogService {
     List<Model> getModelsBySubcategoryAndBrand(Long subcategoryId, Long brandId);
 
     Model getModelById(Long id);
+
+    Optional<Model> findModelByNameAndBrand(String name, Long brandId);
 
     Page<ModelInfo> getModels(Long brandId, Long subcategoryId, ModelSort sort, Integer page, int pageSize);
 
