@@ -14,6 +14,8 @@ import java.util.Optional;
 public interface ModelDao {
     Optional<Model> getById(Long id);
 
+    Optional<Model> getByNameAndBrandId(String name, Long brandId);
+
     List<Model> getBySubcategoryIdAndBrandId(Long subcategoryId, Long brandId);
 
     Page<ModelListingInfo> getListingInfoSummary(Long brandId, Long modelId, Integer fromYear, Integer toYear,
