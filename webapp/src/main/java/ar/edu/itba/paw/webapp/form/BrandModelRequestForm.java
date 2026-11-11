@@ -20,6 +20,9 @@ public class BrandModelRequestForm {
     private BrandModelRequestType type = BrandModelRequestType.NEW_BRAND;
 
     @NotNull
+    private Long categoryId;
+
+    @NotNull
     private Long subcategoryId;
 
     private Long brandId;
@@ -31,7 +34,10 @@ public class BrandModelRequestForm {
     @Size(max = 100)
     private String modelName;
 
-    public void applyDefaults(Long subcategoryId, Long brandId) {
+    public void applyDefaults(Long categoryId, Long subcategoryId, Long brandId) {
+        if (this.categoryId == null) {
+            this.categoryId = categoryId;
+        }
         if (this.subcategoryId == null) {
             this.subcategoryId = subcategoryId;
         }

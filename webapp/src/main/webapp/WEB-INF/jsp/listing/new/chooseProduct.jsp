@@ -68,6 +68,7 @@
                 </div>
 
                 <c:url value="/catalog-requests/new" var="catalogRequestUrl">
+                    <c:param name="categoryId" value="${chooseProductForm.categoryId}"/>
                     <c:param name="subcategoryId" value="${chooseProductForm.subcategoryId}"/>
                     <c:if test="${not empty chooseProductForm.brandId}">
                         <c:param name="brandId" value="${chooseProductForm.brandId}"/>

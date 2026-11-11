@@ -5,6 +5,7 @@
 <%@ taglib prefix="paw" tagdir="/WEB-INF/tags" %>
 
 <c:url value="/catalog-requests" var="requestUrl"/>
+<c:url value="/catalog-requests/new" var="requestFormUrl"/>
 <c:url value="/listing/new/choose-product" var="chooseProductUrl"/>
 
 <spring:message code="catalogRequest.title" var="requestTitle"/>
@@ -12,6 +13,8 @@
 <spring:message code="catalogRequest.typeLabel" var="typeLabel"/>
 <spring:message code="catalogRequest.type.newBrand" var="newBrandTypeLabel"/>
 <spring:message code="catalogRequest.type.existingBrand" var="existingBrandTypeLabel"/>
+<spring:message code="catalogRequest.categoryLabel" var="categoryLabel"/>
+<spring:message code="catalogRequest.categoryPlaceholder" var="categoryPlaceholder"/>
 <spring:message code="catalogRequest.subcategoryLabel" var="subcategoryLabel"/>
 <spring:message code="catalogRequest.subcategoryPlaceholder" var="subcategoryPlaceholder"/>
 <spring:message code="catalogRequest.brandLabel" var="brandLabel"/>
@@ -39,13 +42,25 @@
                 </div>
             </c:if>
 
-            <paw:formSelect
-                path="subcategoryId"
-                label="${subcategoryLabel}"
-                placeholder="${subcategoryPlaceholder}"
-                items="${subcategoryOptions}"
-                translateLabels="true"
-            />
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <paw:formSelect
+                    path="categoryId"
+                    label="${categoryLabel}"
+                    placeholder="${categoryPlaceholder}"
+                    items="${categoryOptions}"
+                    translateLabels="true"
+                />
+
+                <c:if test="${not empty requestForm.categoryId}">
+                    <paw:formSelect
+                        path="subcategoryId"
+                        label="${subcategoryLabel}"
+                        placeholder="${subcategoryPlaceholder}"
+                        items="${subcategoryOptions}"
+                        translateLabels="true"
+                    />
+                </c:if>
+            </div>
 
             <div class="flex flex-col gap-2">
                 <span class="text-xs text-black/70 font-medium"><c:out value="${typeLabel}"/></span>
@@ -92,10 +107,21 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            var categorySelect = document.getElementById('categoryId');
             var newBrandFields = document.getElementById('newBrandFields');
             var existingBrandFields = document.getElementById('existingBrandFields');
             var newBrandRadio = document.getElementById('requestTypeNew');
             var existingBrandRadio = document.getElementById('requestTypeExisting');
+
+            if (categorySelect) {
+                categorySelect.addEventListener('change', function () {
+                    var url = '${requestFormUrl}';
+                    if (categorySelect.value) {
+                        url += '?categoryId=' + encodeURIComponent(categorySelect.value);
+                    }
+                    window.location.href = url;
+                });
+            }
 
             function updateFields() {
                 var isExisting = existingBrandRadio && existingBrandRadio.checked;
