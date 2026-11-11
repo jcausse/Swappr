@@ -244,6 +244,7 @@ While you as an AI agent are allowed to edit this file on your own, you must **a
 - **Important: never use `Mockito.verify()`**. The usage of `Mockito.verify()` is strictly forbidden by the PAW course rules. Tests should NEVER use it.
 - **Commit messages**: Always prefix commit messages with a bracketed type tag in title case, e.g. `[Feat]`, `[Fix]`, `[Refactor]`, `[Test]`, `[Chore]`, followed by a capitalized imperative summary (e.g. `[Refactor] Extract SiteNotificationCreationDtoFactory in notification package`). Never use Conventional Commits style (`feat(scope): ...`). Never `git commit --amend` a commit that may have already been pushed or authored by someone else; check `git log`/`git status` against the remote first.
 - **Commit and push when done**: After completing any requested changes, commit them and push the current branch without waiting for a separate instruction, unless the developer explicitly says otherwise.
+- **Code review tracker**: `doc/CODE_REVIEW_DEV.md` holds the `dev` code review and a status table at the top. Whenever you fix any issue listed there, update that item's status column in the table.
 
 ## Notifications, Mailing, and Email Templates
 
