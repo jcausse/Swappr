@@ -36,11 +36,12 @@ public class BrandModelRequestController {
     @PreAuthorize("isAuthenticated()")
     public ModelAndView form(
             @ModelAttribute("requestForm") BrandModelRequestForm form,
+            @RequestParam(value = "categoryId", required = false) Long categoryId,
             @RequestParam(value = "subcategoryId", required = false) Long subcategoryId,
             @RequestParam(value = "brandId", required = false) Long brandId,
             @RequestParam(value = "duplicate", defaultValue = "false") boolean duplicate
     ) {
-        form.applyDefaults(subcategoryId, brandId);
+        form.applyDefaults(categoryId, subcategoryId, brandId);
         final ModelAndView mav = render(form);
         if (duplicate) {
             mav.addObject("formError", "error.catalogRequest.duplicate");
@@ -79,10 +80,19 @@ public class BrandModelRequestController {
     }
 
     private ModelAndView render(BrandModelRequestForm form) {
-        return new ModelAndView("catalogRequest/new")
-                .addObject("subcategoryOptions", catalogService.getAllSubcategories().stream()
-                        .map(subcategory -> new SelectOption(subcategory.getId(), "subcategory." + subcategory.getName()))
+        final ModelAndView mav = new ModelAndView("catalogRequest/new")
+                .addObject("categoryOptions", catalogService.getAllCategories().stream()
+                        .map(category -> new SelectOption(category.getId(), "category." + category.getName()))
                         .toList())
                 .addObject("brandOptions", catalogService.getAllBrands());
+
+        if (form.getCategoryId() != null) {
+            mav.addObject("subcategoryOptions", catalogService.getSubcategoriesByCategory(form.getCategoryId())
+                    .stream()
+                    .map(subcategory -> new SelectOption(subcategory.getId(), "subcategory." + subcategory.getName()))
+                    .toList());
+        }
+
+        return mav;
     }
 }
