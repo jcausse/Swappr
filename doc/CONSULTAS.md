@@ -1,8 +1,19 @@
+Manejo de errores de service: catchear excepciones en el controller está mal, por qué?
+El modo correcto de hacerlo es verificar precondiciones en un form validator, aunque implique otra llamada a service y transaction/conexión a la db?
+
+---
+
+Los service que buscan un objeto específico (e.g. getById o getByName) deberían tirar NotFoundException o retornar Optional y que tire la exception el controller?
+Ahora tenemos las dos, hay que unificar. A cuál??
+
+---
+
 OK hacer el images create en un loop (`images.forEach(em::persist)`)? O hacemos una query para un multiple insert?
 
 `ListingJpaDao.createAll`
 
 ---
+
 OK traducir keys en un controller, si estamos armando un string más complejo que un solo i18n key?
 O mejor pasar varios i18n en un objeto y hacerlo en JSP?
 
