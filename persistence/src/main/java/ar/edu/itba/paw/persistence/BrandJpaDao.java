@@ -24,7 +24,7 @@ public class BrandJpaDao implements BrandDao {
 
     @Override
     public Optional<Brand> getByName(String name) {
-        return em.createQuery("FROM Brand b WHERE b.name = :name", Brand.class)
+        return em.createQuery("FROM Brand b WHERE LOWER(b.name) = LOWER(:name)", Brand.class)
                 .setParameter("name", name)
                 .getResultStream()
                 .findFirst();

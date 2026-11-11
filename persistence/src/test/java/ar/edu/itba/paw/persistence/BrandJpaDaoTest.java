@@ -81,6 +81,14 @@ public class BrandJpaDaoTest {
     }
 
     @Test
+    public void testGetByNameIsCaseInsensitive() {
+        final Optional<Brand> maybeBrand = brandDao.getByName("dElL");
+
+        Assert.assertTrue(maybeBrand.isPresent());
+        Assert.assertEquals(DELL_BRAND_ID, (long) maybeBrand.get().getId());
+    }
+
+    @Test
     public void testGetByNameDoesNotExist() {
         Assert.assertFalse(brandDao.getByName("Toshiba").isPresent());
     }
