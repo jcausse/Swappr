@@ -4,12 +4,15 @@ import ar.edu.itba.paw.model.User;
 import ar.edu.itba.paw.service.BrandModelRequestService;
 import ar.edu.itba.paw.service.CatalogService;
 import ar.edu.itba.paw.service.dto.BrandModelRequestCreationDto;
+import ar.edu.itba.paw.service.exception.BrandModelRequestAlreadyExistsException;
+import ar.edu.itba.paw.service.exception.ModelAlreadyExistsException;
 import ar.edu.itba.paw.webapp.auth.CurrentUser;
 import ar.edu.itba.paw.webapp.form.BrandModelRequestForm;
 import ar.edu.itba.paw.webapp.form.SelectOption;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
@@ -61,14 +64,27 @@ public class BrandModelRequestController {
         }
 
         LOGGER.info("User {} requested a new brand/model ({})", currentUser.getId(), form.getModelName());
-        brandModelRequestService.create(new BrandModelRequestCreationDto(
-                currentUser.getId(),
-                form.getType(),
-                form.getSubcategoryId(),
-                form.getBrandId(),
-                form.getNewBrandName(),
-                form.getModelName()
-        ));
+        try {
+            brandModelRequestService.create(new BrandModelRequestCreationDto(
+                    currentUser.getId(),
+                    form.getType(),
+                    form.getSubcategoryId(),
+                    form.getBrandId(),
+                    form.getNewBrandName(),
+                    form.getModelName()
+            ));
+        } catch (ModelAlreadyExistsException ex) {
+            LOGGER.warn("Model '{}' already exists for brand '{}'", ex.getModelName(), ex.getBrandName());
+            final ModelAndView mav = new ModelAndView("error/modelAlreadyExists")
+                    .addObject("modelId", ex.getModelId())
+                    .addObject("brandName", ex.getBrandName())
+                    .addObject("modelName", ex.getModelName());
+            mav.setStatus(HttpStatus.CONFLICT);
+            return mav;
+        } catch (BrandModelRequestAlreadyExistsException ex) {
+            LOGGER.warn("Brand/model request already exists: {}", ex.getMessage());
+            return new ModelAndView("redirect:/catalog-requests/new?duplicate=1");
+        }
 
         return new ModelAndView("redirect:/catalog-requests/success");
     }
