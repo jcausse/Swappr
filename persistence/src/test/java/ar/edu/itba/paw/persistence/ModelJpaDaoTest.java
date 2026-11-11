@@ -97,6 +97,14 @@ public class ModelJpaDaoTest {
     }
 
     @Test
+    public void testGetByNameAndBrandIdIsCaseInsensitive() {
+        final Optional<Model> maybeModel = modelDao.getByNameAndBrandId("mAcBoOk pRo", APPLE_BRAND_ID);
+
+        Assert.assertTrue(maybeModel.isPresent());
+        Assert.assertEquals(MACBOOK_PRO_MODEL_ID, (long) maybeModel.get().getId());
+    }
+
+    @Test
     public void testGetByNameAndBrandIdWrongBrand() {
         Assert.assertFalse(modelDao.getByNameAndBrandId("MacBook Pro", DELL_BRAND_ID).isPresent());
     }

@@ -29,9 +29,9 @@ public class BrandModelRequestJpaDao implements BrandModelRequestDao {
         return em.createQuery(
                 "SELECT DISTINCT r FROM BrandModelRequest r"
                 + " LEFT JOIN FETCH r.brand b"
-                + " WHERE r.modelName = :modelName"
+                + " WHERE LOWER(r.modelName) = LOWER(:modelName)"
                 + " AND r.subcategory.id = :subcategoryId"
-                + " AND (r.brandName = :brandName OR b.name = :brandName)"
+                + " AND (LOWER(r.brandName) = LOWER(:brandName) OR LOWER(b.name) = LOWER(:brandName))"
                 + " ORDER BY r.createdAt ASC, r.id ASC",
                 BrandModelRequest.class)
                 .setParameter("brandName", brandName)

@@ -183,11 +183,33 @@ public class BrandModelRequestJpaDaoTest {
     }
 
     @Test
+    public void testFindMatchingNewBrandIsCaseInsensitive() {
+        insertSampleRequests();
+
+        final Optional<BrandModelRequest> maybeRequest =
+                brandModelRequestDao.findMatching("aCmE", "aCmE oNe", SUBCATEGORY_ID);
+
+        Assert.assertTrue(maybeRequest.isPresent());
+        Assert.assertEquals(701L, (long) maybeRequest.get().getId());
+    }
+
+    @Test
     public void testFindMatchingExistingBrandByName() {
         insertSampleRequests();
 
         final Optional<BrandModelRequest> maybeRequest =
                 brandModelRequestDao.findMatching("Apple", "MacBook Pro", SUBCATEGORY_ID);
+
+        Assert.assertTrue(maybeRequest.isPresent());
+        Assert.assertEquals(702L, (long) maybeRequest.get().getId());
+    }
+
+    @Test
+    public void testFindMatchingExistingBrandByNameIsCaseInsensitive() {
+        insertSampleRequests();
+
+        final Optional<BrandModelRequest> maybeRequest =
+                brandModelRequestDao.findMatching("aPpLe", "mAcBoOk pRo", SUBCATEGORY_ID);
 
         Assert.assertTrue(maybeRequest.isPresent());
         Assert.assertEquals(702L, (long) maybeRequest.get().getId());

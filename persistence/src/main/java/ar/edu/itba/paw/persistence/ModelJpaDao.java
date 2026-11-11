@@ -35,7 +35,7 @@ public class ModelJpaDao implements ModelDao {
     @Override
     public Optional<Model> getByNameAndBrandId(String name, Long brandId) {
         return em.createQuery(
-                "FROM Model m WHERE m.name = :name AND m.brand.id = :brandId",
+                "FROM Model m WHERE LOWER(m.name) = LOWER(:name) AND m.brand.id = :brandId",
                 Model.class)
                 .setParameter("name", name)
                 .setParameter("brandId", brandId)
