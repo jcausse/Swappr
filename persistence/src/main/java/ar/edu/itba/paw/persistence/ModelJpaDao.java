@@ -24,8 +24,29 @@ import java.util.Optional;
 @Repository
 public class ModelJpaDao implements ModelDao {
 
+    private static final String CONDITION_ORDER_CASE =
+            " CASE l.condition"
+            + " WHEN :conditionUnused THEN 0"
+            + " WHEN :conditionLikeNew THEN 1"
+            + " WHEN :conditionExcellent THEN 2"
+            + " WHEN :conditionGood THEN 3"
+            + " WHEN :conditionFair THEN 4"
+            + " WHEN :conditionAsIs THEN 5"
+            + " WHEN :conditionForParts THEN 6"
+            + " END";
+
     @PersistenceContext
     private EntityManager em;
+
+    private static void bindConditionOrder(final Query query) {
+        query.setParameter("conditionUnused", Condition.UNUSED.name());
+        query.setParameter("conditionLikeNew", Condition.LIKE_NEW.name());
+        query.setParameter("conditionExcellent", Condition.EXCELLENT.name());
+        query.setParameter("conditionGood", Condition.GOOD.name());
+        query.setParameter("conditionFair", Condition.FAIR.name());
+        query.setParameter("conditionAsIs", Condition.AS_IS.name());
+        query.setParameter("conditionForParts", Condition.FOR_PARTS.name());
+    }
 
     @Override
     public Optional<Model> getById(Long id) {
@@ -248,10 +269,11 @@ public class ModelJpaDao implements ModelDao {
                 + " FROM Listing l JOIN l.model m JOIN m.brand b"
                 + " WHERE m.id IN :modelIds AND l.status = :status" + yearWhere
                 + " GROUP BY b, m, l.condition"
-                + " ORDER BY b.name, m.name, l.condition",
+                + " ORDER BY b.name, m.name," + CONDITION_ORDER_CASE,
                 Object[].class)
                 .setParameter("modelIds", modelIds)
                 .setParameter("status", ListingStatus.ACTIVE);
+        bindConditionOrder(query);
         if (fromYear != null) query.setParameter("yearFrom", fromYear);
         if (toYear != null) query.setParameter("yearTo", toYear);
 
@@ -299,15 +321,18 @@ public class ModelJpaDao implements ModelDao {
             return Optional.empty();
         }
 
-        final List<ModelListingInfo> infos = em.createQuery(
+        final var query = em.createQuery(
                 "SELECT l.condition, COUNT(l), MIN(l.price.amount), MAX(l.price.amount), AVG(l.price.amount)"
                 + " FROM Listing l"
                 + " WHERE l.model.id = :modelId AND l.status = :status"
-                + " GROUP BY l.condition",
+                + " GROUP BY l.condition"
+                + " ORDER BY" + CONDITION_ORDER_CASE,
                 Object[].class)
                 .setParameter("modelId", modelId)
-                .setParameter("status", ListingStatus.ACTIVE)
-                .getResultList()
+                .setParameter("status", ListingStatus.ACTIVE);
+        bindConditionOrder(query);
+
+        final List<ModelListingInfo> infos = query.getResultList()
                 .stream()
                 .map((fields) -> ModelListingInfo.builder()
                     .brand(model.getBrand())
