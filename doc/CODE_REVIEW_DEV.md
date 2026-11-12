@@ -6,44 +6,44 @@ Status values: `todo`, `done`, `underspecified`, `needs bigger refactor`, `false
 
 | Item | Description | Status |
 | --- | --- | --- |
-| 1.1 | [Listing card images trigger an N+1 query per card](#11-listing-cards-load-every-image-of-every-listing-one-query-per-card-n1-graded--reproduced) | done |
-| 1.2 | [Same brand/model requested in another subcategory returns 500](#12-requesting-the-same-brandmodel-in-a-different-subcategory-returns-a-500--reproduced) | done |
-| 1.3 | [Reflected XSS through pagination links](#13-reflected-xss-through-the-pagination-links-public-pages--reproduced-earlier-code-unchanged) | done |
-| 1.4 | [`suspendUser`: bulk operations in loops and swallowed exceptions](#14-adminserviceimplsuspenduser-bulk-operations-in-loops-and-swallowed-exceptions-inside-the-transaction-graded-still-open-from-the-e1-feedback) | needs bigger refactor |
-| 1.5 | [Writes done one row at a time in loops](#15-writes-done-one-row-at-a-time-in-a-loop-graded) | todo |
-| 1.6 | [Sorting done in Java](#16-sorting-done-in-java-graded) | done |
-| 1.7 | [Business logic in the DAO](#17-business-logic-in-the-dao-graded) | needs bigger refactor |
-| 1.8 | [`Mockito.verify` used in a test](#18-mockitoverify-in-a-test-forbidden-by-the-course-rules) | done |
-| 1.9 | [Boxed `Boolean` for always-present fields](#19-boxed-boolean-for-fields-that-are-always-present-graded-offerisfullprice-was-flagged-to-us) | done |
-| 2.1 | [Session id not rotated on login (session fixation)](#21-login-without-rotating-the-session-id-session-fixation) | done |
-| 2.2 | [`OpenEntityManagerInViewFilter` runs before Spring Security](#22-openentitymanagerinviewfilter-runs-before-spring-security) | done |
-| 2.3 | [Free-text fields without a maximum length](#23-free-text-fields-without-a-maximum-length) | done |
-| 2.4 | [Listing year not validated on the server](#24-the-listing-year-is-not-validated-on-the-server) | done |
-| 2.5 | [`clone_prod_db.py` exposes production data on the LAN](#25-scriptclone_prod_dbpy-exposes-a-copy-of-production-data-on-the-local-network) | false positive |
-| 2.6 | [User input written to logs as-is (log forging)](#26-user-input-written-to-the-logs-as-is-log-forging) | todo |
-| 3.1 | [Password recovery POST does not redirect (no PRG)](#31-password-recovery-post-does-not-redirect-no-prg) | todo |
-| 3.2 | ["Withdraw" offered for offers that cannot be withdrawn](#32-withdraw-is-offered-for-offers-that-cannot-be-withdrawn) | todo |
-| 3.3 | [Replacing/editing a model can move listings across subcategories](#33-replacing-or-editing-a-model-can-move-listings-to-another-subcategory) | false positive |
-| 3.4 | [Brand/model names compared case-sensitively on rename/create/edit](#34-brand-and-model-names-are-still-compared-case-sensitively-when-renaming-a-brand-and-creating-or-editing-a-model) | todo |
-| 3.5 | [Price summary includes free listings and the listing being edited](#35-the-price-summary-in-the-listing-form-includes-free-listings-and-the-listing-being-edited) | todo |
-| 3.6 | [Admin catalog shows raw subcategory codes](#36-admin-catalog-shows-raw-subcategory-codes) | todo |
-| 3.7 | ["Already exists" page breaks names with commas and does not escape](#37-brandmodel-already-exists-page-breaks-names-with-commas-and-does-not-escape-them--reproduced) | todo |
-| 3.8 | [Price range "max" printed unformatted](#38-the-max-of-the-price-range-is-printed-unformatted) | false positive |
-| 3.9 | [Takedown redirects built without URL-encoding](#39-takedown-redirects-in-the-admin-are-built-without-url-encoding) | todo |
-| 3.10 | [Admin catalog actions lose page, sort and filters; generic errors](#310-admin-catalog-actions-lose-page-sort-and-filters-and-report-generic-errors) | todo |
-| 3.11 | [Duplicate-request redirect empties the form](#311-the-duplicate-request-redirect-empties-the-form) | false positive |
-| 3.12 | [Brand/model requests table `colspan` out of date](#312-brandmodel-requests-table-colspan-out-of-date) | todo |
-| 3.13 | [Changing category wipes the request form fields](#313-changing-the-category-in-the-brandmodel-request-form-wipes-what-the-user-typed) | todo |
-| 4.1 | [Circular service dependency broken with `@Lazy`](#41-circular-dependency-between-services-broken-with-lazy) | todo |
-| 4.2 | [`PermissionServiceImpl` write transactions for read-only checks; unused methods](#42-permissionserviceimpl-write-transactions-for-read-only-checks-and-methods-exposed-for-nothing) | todo |
-| 4.3 | [Authorization failures thrown as `BadParameterException`](#43-authorization-failures-thrown-as-badparameterexception) | todo |
-| 4.4 | [Domain exception in the web module](#44-domain-exception-in-the-web-module) | todo |
-| 4.5 | [A public model method returns `null`](#45-a-public-model-method-returns-null) | todo |
-| 4.6 | [Business rules decided in the views](#46-business-rules-decided-in-the-views) | todo |
-| 4.7 | [Categories queried on every request](#47-categories-queried-on-every-request) | todo |
-| 4.8 | [Smaller layering issues](#48-smaller-layering-issues) | todo |
-| 4.9 | [Duplicated code](#49-duplicated-code) | todo |
-| 4.10 | [Replacement dialogs build N² options on every request](#410-replacement-dialogs-build-n-options-on-every-request) | todo |
+| 1.1 | [Listing card images trigger an N+1 query per card](#11-listing-cards-load-every-image-of-every-listing-one-query-per-card-n1-graded--reproduced) | ✅ done |
+| 1.2 | [Same brand/model requested in another subcategory returns 500](#12-requesting-the-same-brandmodel-in-a-different-subcategory-returns-a-500--reproduced) | ✅ done |
+| 1.3 | [Reflected XSS through pagination links](#13-reflected-xss-through-the-pagination-links-public-pages--reproduced-earlier-code-unchanged) | ✅ done |
+| 1.4 | [`suspendUser`: bulk operations in loops and swallowed exceptions](#14-adminserviceimplsuspenduser-bulk-operations-in-loops-and-swallowed-exceptions-inside-the-transaction-graded-still-open-from-the-e1-feedback) | ⚠️ needs bigger refactor |
+| 1.5 | [Writes done one row at a time in loops](#15-writes-done-one-row-at-a-time-in-a-loop-graded) | 🕓 todo |
+| 1.6 | [Sorting done in Java](#16-sorting-done-in-java-graded) | ✅ done |
+| 1.7 | [Business logic in the DAO](#17-business-logic-in-the-dao-graded) | ⚠️ needs bigger refactor |
+| 1.8 | [`Mockito.verify` used in a test](#18-mockitoverify-in-a-test-forbidden-by-the-course-rules) | ✅ done |
+| 1.9 | [Boxed `Boolean` for always-present fields](#19-boxed-boolean-for-fields-that-are-always-present-graded-offerisfullprice-was-flagged-to-us) | ✅ done |
+| 2.1 | [Session id not rotated on login (session fixation)](#21-login-without-rotating-the-session-id-session-fixation) | ✅ done |
+| 2.2 | [`OpenEntityManagerInViewFilter` runs before Spring Security](#22-openentitymanagerinviewfilter-runs-before-spring-security) | ✅ done |
+| 2.3 | [Free-text fields without a maximum length](#23-free-text-fields-without-a-maximum-length) | ✅ done |
+| 2.4 | [Listing year not validated on the server](#24-the-listing-year-is-not-validated-on-the-server) | ✅ done |
+| 2.5 | [`clone_prod_db.py` exposes production data on the LAN](#25-scriptclone_prod_dbpy-exposes-a-copy-of-production-data-on-the-local-network) | ❌ false positive |
+| 2.6 | [User input written to logs as-is (log forging)](#26-user-input-written-to-the-logs-as-is-log-forging) | 🕓 todo |
+| 3.1 | [Password recovery POST does not redirect (no PRG)](#31-password-recovery-post-does-not-redirect-no-prg) | 🕓 todo |
+| 3.2 | ["Withdraw" offered for offers that cannot be withdrawn](#32-withdraw-is-offered-for-offers-that-cannot-be-withdrawn) | 🕓 todo |
+| 3.3 | [Replacing/editing a model can move listings across subcategories](#33-replacing-or-editing-a-model-can-move-listings-to-another-subcategory) | ❌ false positive |
+| 3.4 | [Brand/model names compared case-sensitively on rename/create/edit](#34-brand-and-model-names-are-still-compared-case-sensitively-when-renaming-a-brand-and-creating-or-editing-a-model) | 🕓 todo |
+| 3.5 | [Price summary includes free listings and the listing being edited](#35-the-price-summary-in-the-listing-form-includes-free-listings-and-the-listing-being-edited) | 🕓 todo |
+| 3.6 | [Admin catalog shows raw subcategory codes](#36-admin-catalog-shows-raw-subcategory-codes) | 🕓 todo |
+| 3.7 | ["Already exists" page breaks names with commas and does not escape](#37-brandmodel-already-exists-page-breaks-names-with-commas-and-does-not-escape-them--reproduced) | 🕓 todo |
+| 3.8 | [Price range "max" printed unformatted](#38-the-max-of-the-price-range-is-printed-unformatted) | ❌ false positive |
+| 3.9 | [Takedown redirects built without URL-encoding](#39-takedown-redirects-in-the-admin-are-built-without-url-encoding) | 🕓 todo |
+| 3.10 | [Admin catalog actions lose page, sort and filters; generic errors](#310-admin-catalog-actions-lose-page-sort-and-filters-and-report-generic-errors) | 🕓 todo |
+| 3.11 | [Duplicate-request redirect empties the form](#311-the-duplicate-request-redirect-empties-the-form) | ❌ false positive |
+| 3.12 | [Brand/model requests table `colspan` out of date](#312-brandmodel-requests-table-colspan-out-of-date) | 🕓 todo |
+| 3.13 | [Changing category wipes the request form fields](#313-changing-the-category-in-the-brandmodel-request-form-wipes-what-the-user-typed) | 🕓 todo |
+| 4.1 | [Circular service dependency broken with `@Lazy`](#41-circular-dependency-between-services-broken-with-lazy) | 🕓 todo |
+| 4.2 | [`PermissionServiceImpl` write transactions for read-only checks; unused methods](#42-permissionserviceimpl-write-transactions-for-read-only-checks-and-methods-exposed-for-nothing) | 🕓 todo |
+| 4.3 | [Authorization failures thrown as `BadParameterException`](#43-authorization-failures-thrown-as-badparameterexception) | 🕓 todo |
+| 4.4 | [Domain exception in the web module](#44-domain-exception-in-the-web-module) | 🕓 todo |
+| 4.5 | [A public model method returns `null`](#45-a-public-model-method-returns-null) | 🕓 todo |
+| 4.6 | [Business rules decided in the views](#46-business-rules-decided-in-the-views) | 🕓 todo |
+| 4.7 | [Categories queried on every request](#47-categories-queried-on-every-request) | 🕓 todo |
+| 4.8 | [Smaller layering issues](#48-smaller-layering-issues) | 🕓 todo |
+| 4.9 | [Duplicated code](#49-duplicated-code) | 🕓 todo |
+| 4.10 | [Replacement dialogs build N² options on every request](#410-replacement-dialogs-build-n-options-on-every-request) | 🕓 todo |
 
 Things to fix before the final delivery. Every item below was checked against the current code of `dev` (`a80c04fd`, 2026-11-11). Nothing here is a guess: each one points to the file and line where it happens.
 
