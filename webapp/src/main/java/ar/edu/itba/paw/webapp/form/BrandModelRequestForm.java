@@ -6,34 +6,25 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
-
+// Field validations live in BrandModelRequestValidator so automatic category submits can skip them.
 @NoArgsConstructor
 @Getter
 @Setter
 @ValidBrandModelRequest
 public class BrandModelRequestForm {
 
-    @NotNull
     private BrandModelRequestType type = BrandModelRequestType.NEW_BRAND;
 
-    @NotNull
     private Long categoryId;
 
-    @NotNull
     private Long subcategoryId;
 
     private Boolean isAutoSubmit = false;
 
     private Long brandId;
 
-    @Size(max = 100)
     private String newBrandName;
 
-    @NotBlank
-    @Size(max = 100)
     private String modelName;
 
     public void applyDefaults(Long categoryId, Long subcategoryId, Long brandId) {
