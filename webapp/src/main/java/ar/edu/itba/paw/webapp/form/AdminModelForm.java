@@ -19,10 +19,6 @@ public class AdminModelForm {
     @NotNull
     private Long brandId;
 
-    private Long categoryId;
-
     @NotNull
     private Long subcategoryId;
-
-    private Boolean isAutoSubmit = false;
 }

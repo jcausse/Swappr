@@ -49,7 +49,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.validation.Valid;
 import java.net.URLEncoder;
@@ -112,7 +111,7 @@ public class AdminController {
         modelFilterForm.setIsAutoSubmit(false);
         final var brandsPage = catalogService.getBrands(sort, page, BRAND_PAGE_SIZE);
         final var modelsPage = catalogService.getModels(
-                modelFilterForm.getFilterBrandId(), modelFilterForm.getFilterSubcategoryId(),
+                modelFilterForm.getBrandId(), modelFilterForm.getSubcategoryId(),
                 modelSort, modelPage, MODEL_PAGE_SIZE);
         final var requestsPage = brandModelRequestService.getRequests(requestPage, REQUEST_PAGE_SIZE);
         final List<Brand> allBrands = catalogService.getAllBrands();
@@ -130,24 +129,18 @@ public class AdminController {
                 .addObject("categoryOptions", catalogService.getAllCategories().stream()
                         .map(category -> new SelectOption(category.getId(), "category." + category.getName()))
                         .toList())
-                .addObject("modelFilterSubcategoryOptions", subcategoryOptions(modelFilterForm.getFilterCategoryId()))
-                .addObject("createModelSubcategoryOptions", subcategoryOptions(createModelForm.getCategoryId()))
+                .addObject("modelFilterSubcategoryOptions", modelFilterForm.getCategoryId() == null
+                        ? List.of()
+                        : catalogService.getSubcategoriesByCategory(modelFilterForm.getCategoryId()).stream()
+                                .map(subcategory -> new SelectOption(
+                                        subcategory.getId(), "subcategory." + subcategory.getName()))
+                                .toList())
                 .addObject("models", modelsPage.getContent())
                 .addObject("modelsPage", modelsPage)
                 .addObject("currentModelSort", modelSort)
                 .addObject("modelReplacementOptions", catalogService.getModelReplacementOptions())
                 .addObject("requests", requestsPage.getContent())
                 .addObject("requestsPage", requestsPage);
-    }
-
-    private List<SelectOption> subcategoryOptions(Long categoryId) {
-        if (categoryId == null) {
-            return List.of();
-        }
-        return catalogService.getSubcategoriesByCategory(categoryId).stream()
-                .map(subcategory -> new SelectOption(
-                        subcategory.getId(), "subcategory." + subcategory.getName()))
-                .toList();
     }
 
     @PostMapping("/catalog/requests/{id}/accept")
@@ -276,15 +269,8 @@ public class AdminController {
     public ModelAndView createModel(
             @CurrentUser User currentUser,
             @Valid @ModelAttribute("createModelForm") AdminModelForm form,
-            BindingResult errors,
-            RedirectAttributes redirectAttributes
+            BindingResult errors
     ) {
-        if (Boolean.TRUE.equals(form.getIsAutoSubmit())) {
-            form.setIsAutoSubmit(false);
-            redirectAttributes.addFlashAttribute("createModelForm", form);
-            return new ModelAndView("redirect:/admin/catalog");
-        }
-
         LOGGER.info("Admin {} requested creation of model '{}'", currentUser.getUsername(), form.getName());
         if (errors.hasErrors()) {
             return new ModelAndView("redirect:/admin/catalog?error=modelInvalid");
