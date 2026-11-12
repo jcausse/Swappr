@@ -6,14 +6,14 @@ Status values: `todo`, `done`, `underspecified`, `needs bigger refactor`, `false
 
 | Item | Description | Status |
 | --- | --- | --- |
-| 1.1 | [Listing card images trigger an N+1 query per card](#11-listing-cards-load-every-image-of-every-listing-one-query-per-card-n1-graded--reproduced) | todo |
+| 1.1 | [Listing card images trigger an N+1 query per card](#11-listing-cards-load-every-image-of-every-listing-one-query-per-card-n1-graded--reproduced) | done |
 | 1.2 | [Same brand/model requested in another subcategory returns 500](#12-requesting-the-same-brandmodel-in-a-different-subcategory-returns-a-500--reproduced) | todo |
-| 1.3 | [Reflected XSS through pagination links](#13-reflected-xss-through-the-pagination-links-public-pages--reproduced-earlier-code-unchanged) | todo |
+| 1.3 | [Reflected XSS through pagination links](#13-reflected-xss-through-the-pagination-links-public-pages--reproduced-earlier-code-unchanged) | done |
 | 1.4 | [`suspendUser`: bulk operations in loops and swallowed exceptions](#14-adminserviceimplsuspenduser-bulk-operations-in-loops-and-swallowed-exceptions-inside-the-transaction-graded-still-open-from-the-e1-feedback) | needs bigger refactor |
 | 1.5 | [Writes done one row at a time in loops](#15-writes-done-one-row-at-a-time-in-a-loop-graded) | todo |
-| 1.6 | [Sorting done in Java](#16-sorting-done-in-java-graded) | todo |
+| 1.6 | [Sorting done in Java](#16-sorting-done-in-java-graded) | done |
 | 1.7 | [Business logic in the DAO](#17-business-logic-in-the-dao-graded) | needs bigger refactor |
-| 1.8 | [`Mockito.verify` used in a test](#18-mockitoverify-in-a-test-forbidden-by-the-course-rules) | todo |
+| 1.8 | [`Mockito.verify` used in a test](#18-mockitoverify-in-a-test-forbidden-by-the-course-rules) | done |
 | 1.9 | [Boxed `Boolean` for always-present fields](#19-boxed-boolean-for-fields-that-are-always-present-graded-offerisfullprice-was-flagged-to-us) | done |
 | 2.1 | [Session id not rotated on login (session fixation)](#21-login-without-rotating-the-session-id-session-fixation) | todo |
 | 2.2 | [`OpenEntityManagerInViewFilter` runs before Spring Security](#22-openentitymanagerinviewfilter-runs-before-spring-security) | todo |

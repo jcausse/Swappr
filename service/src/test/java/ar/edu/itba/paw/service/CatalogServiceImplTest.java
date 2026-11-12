@@ -514,14 +514,14 @@ public class CatalogServiceImplTest {
     /* ---------------------------------------------------------------------------------------------- */
 
     @Test
-    public void testGetListingInfoSummaryForModelSortsConditions() {
+    public void testGetListingInfoSummaryForModelKeepsQueryConditionOrder() {
         final Model model = buildFakeModel(MODEL_ID, MODEL_NAME);
         final ModelListingInfo good = buildListingInfo(model, Condition.GOOD);
         final ModelListingInfo likeNew = buildListingInfo(model, Condition.LIKE_NEW);
         final ModelListingInfoSummary summary = ModelListingInfoSummary.builder()
             .brand(model.getBrand())
             .model(model)
-            .listingInfoByCondition(List.of(good, likeNew))
+            .listingInfoByCondition(List.of(likeNew, good))
             .build();
         when(modelDao.getListingInfoSummaryForModel(eq(MODEL_ID))).thenReturn(Optional.of(summary));
 

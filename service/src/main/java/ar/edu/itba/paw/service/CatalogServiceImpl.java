@@ -25,7 +25,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -282,9 +281,7 @@ public class CatalogServiceImpl implements CatalogService {
             .map(values -> ModelListingInfoSummary.builder()
                 .brand(values.get(0).getBrand())
                 .model(values.get(0).getModel())
-                .listingInfoByCondition(values.stream()
-                    .sorted(Comparator.comparingInt(info -> info.getCondition().ordinal()))
-                    .toList())
+                .listingInfoByCondition(values)
                 .build()
             )
             .toList();
@@ -298,9 +295,7 @@ public class CatalogServiceImpl implements CatalogService {
             .map(summary -> ModelListingInfoSummary.builder()
                 .brand(summary.getBrand())
                 .model(summary.getModel())
-                .listingInfoByCondition(summary.getListingInfoByCondition().stream()
-                    .sorted(Comparator.comparingInt(info -> info.getCondition().ordinal()))
-                    .toList())
+                .listingInfoByCondition(summary.getListingInfoByCondition())
                 .build());
     }
 }
