@@ -27,7 +27,7 @@ Status values: `todo`, `done`, `underspecified`, `needs bigger refactor`, `false
 | 3.4 | [Brand/model names compared case-sensitively on rename/create/edit](#34-brand-and-model-names-are-still-compared-case-sensitively-when-renaming-a-brand-and-creating-or-editing-a-model) | 🕓 todo |
 | 3.5 | [Price summary includes free listings and the listing being edited](#35-the-price-summary-in-the-listing-form-includes-free-listings-and-the-listing-being-edited) | 🕓 todo |
 | 3.6 | [Admin catalog shows raw subcategory codes](#36-admin-catalog-shows-raw-subcategory-codes) | 🕓 todo |
-| 3.7 | ["Already exists" page breaks names with commas and does not escape](#37-brandmodel-already-exists-page-breaks-names-with-commas-and-does-not-escape-them--reproduced) | 🕓 todo |
+| 3.7 | ["Already exists" page breaks names with commas and does not escape](#37-brandmodel-already-exists-page-breaks-names-with-commas-and-does-not-escape-them--reproduced) | ✅ done |
 | 3.8 | [Price range "max" printed unformatted](#38-the-max-of-the-price-range-is-printed-unformatted) | ❌ false positive |
 | 3.9 | [Takedown redirects built without URL-encoding](#39-takedown-redirects-in-the-admin-are-built-without-url-encoding) | 🕓 todo |
 | 3.10 | [Admin catalog actions lose page, sort and filters; generic errors](#310-admin-catalog-actions-lose-page-sort-and-filters-and-report-generic-errors) | 🕓 todo |
