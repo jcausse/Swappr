@@ -6,7 +6,7 @@ Status values: `todo`, `done`, `underspecified`, `needs bigger refactor`, `false
 
 | Item | Description | Status |
 | --- | --- | --- |
-| 1.1 | [Listing card images trigger an N+1 query per card](#11-listing-cards-load-every-image-of-every-listing-one-query-per-card-n1-graded--reproduced) | todo |
+| 1.1 | [Listing card images trigger an N+1 query per card](#11-listing-cards-load-every-image-of-every-listing-one-query-per-card-n1-graded--reproduced) | done |
 | 1.2 | [Same brand/model requested in another subcategory returns 500](#12-requesting-the-same-brandmodel-in-a-different-subcategory-returns-a-500--reproduced) | todo |
 | 1.3 | [Reflected XSS through pagination links](#13-reflected-xss-through-the-pagination-links-public-pages--reproduced-earlier-code-unchanged) | todo |
 | 1.4 | [`suspendUser`: bulk operations in loops and swallowed exceptions](#14-adminserviceimplsuspenduser-bulk-operations-in-loops-and-swallowed-exceptions-inside-the-transaction-graded-still-open-from-the-e1-feedback) | needs bigger refactor |
