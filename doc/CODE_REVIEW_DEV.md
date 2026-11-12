@@ -10,7 +10,7 @@ Status values: `todo`, `done`, `underspecified`, `needs bigger refactor`, `false
 | 1.2 | [Same brand/model requested in another subcategory returns 500](#12-requesting-the-same-brandmodel-in-a-different-subcategory-returns-a-500--reproduced) | ✅ done |
 | 1.3 | [Reflected XSS through pagination links](#13-reflected-xss-through-the-pagination-links-public-pages--reproduced-earlier-code-unchanged) | ✅ done |
 | 1.4 | [`suspendUser`: bulk operations in loops and swallowed exceptions](#14-adminserviceimplsuspenduser-bulk-operations-in-loops-and-swallowed-exceptions-inside-the-transaction-graded-still-open-from-the-e1-feedback) | ⚠️ needs bigger refactor |
-| 1.5 | [Writes done one row at a time in loops](#15-writes-done-one-row-at-a-time-in-a-loop-graded) | 🕓 todo |
+| 1.5 | [Writes done one row at a time in loops](#15-writes-done-one-row-at-a-time-in-a-loop-graded) | ✅ done |
 | 1.6 | [Sorting done in Java](#16-sorting-done-in-java-graded) | ✅ done |
 | 1.7 | [Business logic in the DAO](#17-business-logic-in-the-dao-graded) | ⚠️ needs bigger refactor |
 | 1.8 | [`Mockito.verify` used in a test](#18-mockitoverify-in-a-test-forbidden-by-the-course-rules) | ✅ done |
