@@ -109,6 +109,12 @@ public class BrandJpaDaoTest {
     }
 
     @Test
+    public void testExistsByNameAndIdNotIsCaseInsensitiveButExcludesSameBrand() {
+        Assert.assertTrue(brandDao.existsByNameAndIdNot("apple", DELL_BRAND_ID));
+        Assert.assertFalse(brandDao.existsByNameAndIdNot("apple", APPLE_BRAND_ID));
+    }
+
+    @Test
     public void testGetAllIsSortedByName() {
         final List<Brand> brands = brandDao.getAll();
 

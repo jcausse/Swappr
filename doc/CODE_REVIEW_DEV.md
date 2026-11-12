@@ -24,7 +24,7 @@ Status values: `todo`, `done`, `underspecified`, `needs bigger refactor`, `false
 | 3.1 | [Password recovery POST does not redirect (no PRG)](#31-password-recovery-post-does-not-redirect-no-prg) | ✅ done |
 | 3.2 | ["Withdraw" offered for offers that cannot be withdrawn](#32-withdraw-is-offered-for-offers-that-cannot-be-withdrawn) | ✅ done |
 | 3.3 | [Replacing/editing a model can move listings across subcategories](#33-replacing-or-editing-a-model-can-move-listings-to-another-subcategory) | ❌ false positive |
-| 3.4 | [Brand/model names compared case-sensitively on rename/create/edit](#34-brand-and-model-names-are-still-compared-case-sensitively-when-renaming-a-brand-and-creating-or-editing-a-model) | 🕓 todo |
+| 3.4 | [Brand/model names compared case-sensitively on rename/create/edit](#34-brand-and-model-names-are-still-compared-case-sensitively-when-renaming-a-brand-and-creating-or-editing-a-model) | ✅ done |
 | 3.5 | [Price summary includes free listings and the listing being edited](#35-the-price-summary-in-the-listing-form-includes-free-listings-and-the-listing-being-edited) | 🕓 todo |
 | 3.6 | [Admin catalog shows raw subcategory codes](#36-admin-catalog-shows-raw-subcategory-codes) | 🕓 todo |
 | 3.7 | ["Already exists" page breaks names with commas and does not escape](#37-brandmodel-already-exists-page-breaks-names-with-commas-and-does-not-escape-them--reproduced) | 🕓 todo |
