@@ -35,15 +35,6 @@ public class AuthHelper {
         return getCurrentUser().isPresent();
     }
 
-    /**
-     * Authenticates the given user programmatically (outside Spring Security's login form).
-     * <p>
-     * The session id is rotated first, so a session id planted before login (session fixation)
-     * stops being valid once the user is authenticated.
-     *
-     * @param request         the current request, whose session id is rotated if a session exists
-     * @param usernameOrEmail the username or email of the user to authenticate
-     */
     public void login(final @NonNull HttpServletRequest request, final @NonNull String usernameOrEmail) {
         final UserDetails ud = userDetailsService.loadUserByUsername(usernameOrEmail);
         if (request.getSession(false) != null) {
