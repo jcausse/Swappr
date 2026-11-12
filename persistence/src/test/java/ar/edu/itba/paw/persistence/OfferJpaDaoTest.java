@@ -798,6 +798,38 @@ public class OfferJpaDaoTest {
         Assert.assertFalse(updated);
     }
 
+    @Test
+    public void testSetSellerRatingsBulkUpdatesOnlyUnratedOffers() {
+        // Act
+        final int updated = offerDao.setSellerRatings(
+            List.of(ACCEPTED_OFFER_ID, RECENT_ACCEPTED_OFFER_ID, RATED_OFFER_ID), OfferRating.NEGATIVE);
+
+        // Assert
+        Assert.assertEquals(2, updated);
+        Assert.assertEquals(1, countOffersWhere(
+            "offer_id = " + ACCEPTED_OFFER_ID + " AND seller_rating = 'NEGATIVE'"));
+        Assert.assertEquals(1, countOffersWhere(
+            "offer_id = " + RECENT_ACCEPTED_OFFER_ID + " AND seller_rating = 'NEGATIVE'"));
+        Assert.assertEquals(1, countOffersWhere(
+            "offer_id = " + RATED_OFFER_ID + " AND seller_rating = 'NEUTRAL'"));
+    }
+
+    @Test
+    public void testSetBuyerRatingsBulkUpdatesOnlyUnratedOffers() {
+        // Act
+        final int updated = offerDao.setBuyerRatings(
+            List.of(ACCEPTED_OFFER_ID, RECENT_ACCEPTED_OFFER_ID, RATED_OFFER_ID), OfferRating.NEGATIVE);
+
+        // Assert
+        Assert.assertEquals(1, updated);
+        Assert.assertEquals(1, countOffersWhere(
+            "offer_id = " + RECENT_ACCEPTED_OFFER_ID + " AND buyer_rating = 'NEGATIVE'"));
+        Assert.assertEquals(1, countOffersWhere(
+            "offer_id = " + ACCEPTED_OFFER_ID + " AND buyer_rating = 'POSITIVE'"));
+        Assert.assertEquals(1, countOffersWhere(
+            "offer_id = " + RATED_OFFER_ID + " AND buyer_rating = 'POSITIVE'"));
+    }
+
     /* ---------------------------------------------------------------------------------------------- */
     /* getAcceptedUnratedBefore                                                                        */
     /* ---------------------------------------------------------------------------------------------- */

@@ -45,5 +45,9 @@ public interface OfferDao {
 
     boolean setBuyerRating(Long offerId, OfferRating rating);
 
+    int setSellerRatings(List<Long> offerIds, OfferRating rating);
+
+    int setBuyerRatings(List<Long> offerIds, OfferRating rating);
+
     List<Offer> getAcceptedUnratedBefore(Instant cutoff);
 }

@@ -157,6 +157,9 @@ public class ListingServiceImpl implements ListingService {
         } catch (NotFoundException e) {
             throw BadParameterException.create("modelId", e.getMessage());
         }
+        if (!Listing.isValidYear(dto.year())) {
+            throw BadParameterException.create("year", "Year must be between " + Listing.MIN_YEAR + " and the current year");
+        }
 
         final List<Long> imageIds = createImages(dto.images(), dto.title(), 0);
 
@@ -251,6 +254,9 @@ public class ListingServiceImpl implements ListingService {
             model = catalogService.getModelById(dto.modelId());
         } catch (NotFoundException e) {
             throw BadParameterException.create("modelId", e.getMessage());
+        }
+        if (!Listing.isValidYear(dto.year())) {
+            throw BadParameterException.create("year", "Year must be between " + Listing.MIN_YEAR + " and the current year");
         }
 
         if (dto.condition() == null) {

@@ -6,6 +6,7 @@ import ar.edu.itba.paw.model.Language;
 import ar.edu.itba.paw.model.OfferRating;
 
 import java.time.Instant;
+import java.util.Map;
 import java.util.Optional;
 
 public interface UserDao {
@@ -40,4 +41,7 @@ public interface UserDao {
 
     void incrementSellerRatingCounter(Long userId, OfferRating rating);
     void incrementBuyerRatingCounter(Long userId, OfferRating rating);
+
+    void incrementSellerRatingCounters(Map<Long, Long> increments, OfferRating rating);
+    void incrementBuyerRatingCounters(Map<Long, Long> increments, OfferRating rating);
 }
