@@ -306,21 +306,25 @@ public class ModelJpaDao implements ModelDao {
                 .executeUpdate();
     }
 
-    public Optional<ModelListingInfoSummary> getListingInfoSummaryForModel(final Long modelId) {
+    public Optional<ModelListingInfoSummary> getListingInfoSummaryForModel(final Long modelId, final Long excludedListingId) {
         final Model model = em.find(Model.class, modelId);
         if (model == null) {
             return Optional.empty();
         }
 
+        final String excludedClause = excludedListingId != null ? " AND l.id <> :excludedListingId" : "";
         final var query = em.createQuery(
                 "SELECT l.condition, COUNT(l), MIN(l.price.amount), MAX(l.price.amount), AVG(l.price.amount)"
                 + " FROM Listing l"
-                + " WHERE l.model.id = :modelId AND l.status = :status"
+                + " WHERE l.model.id = :modelId AND l.status = :status" + excludedClause
                 + " GROUP BY l.condition"
                 + " ORDER BY" + CONDITION_ORDER_CASE,
                 Object[].class)
                 .setParameter("modelId", modelId)
                 .setParameter("status", ListingStatus.ACTIVE);
+        if (excludedListingId != null) {
+            query.setParameter("excludedListingId", excludedListingId);
+        }
 
         final List<ModelListingInfo> infos = query.getResultList()
                 .stream()
