@@ -59,6 +59,13 @@ public class BrandModelRequestController {
             BindingResult errors,
             @CurrentUser User currentUser
     ) {
+        final boolean isAutoSubmit = Boolean.TRUE.equals(form.getIsAutoSubmit());
+        form.setIsAutoSubmit(false);
+        if (isAutoSubmit) {
+            form.setSubcategoryId(null);
+            return render(form);
+        }
+
         if (errors.hasErrors()) {
             return render(form);
         }
