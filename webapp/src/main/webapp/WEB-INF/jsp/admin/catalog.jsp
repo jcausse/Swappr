@@ -44,6 +44,7 @@
 <spring:message code="admin.catalog.models.replace" var="replaceModelLabel"/>
 <spring:message code="admin.catalog.models.delete" var="deleteModelLabel"/>
 <spring:message code="admin.catalog.models.filter.brand" var="modelFilterBrandLabel"/>
+<spring:message code="admin.catalog.models.filter.category" var="modelFilterCategoryLabel"/>
 <spring:message code="admin.catalog.models.filter.subcategory" var="modelFilterSubcategoryLabel"/>
 <spring:message code="admin.catalog.models.filter.all" var="modelFilterAllLabel"/>
 <spring:message code="admin.catalog.models.filter.apply" var="modelFilterApplyLabel"/>
@@ -300,6 +301,7 @@
             <c:set var="modelNameNextSort" value="${currentModelSort.key eq 'name' and currentModelSort.ascending ? 'NAME_DESC' : 'NAME_ASC'}"/>
 
             <form:form
+                id="modelFilterForm"
                 modelAttribute="modelFilterForm"
                 action="${catalogUrl}"
                 method="get"
@@ -308,6 +310,7 @@
                 <input type="hidden" name="page" value="${brandsPage.page}"/>
                 <input type="hidden" name="sort" value="${currentSort.name()}"/>
                 <input type="hidden" name="modelSort" value="${currentModelSort.name()}"/>
+                <form:hidden path="isAutoSubmit"/>
                 <div class="flex-1 w-full">
                     <paw:formSelect
                         path="brandId"
@@ -320,12 +323,22 @@
                 </div>
                 <div class="flex-1 w-full">
                     <paw:formSelect
+                        id="modelFilterCategoryId"
+                        path="categoryId"
+                        label="${modelFilterCategoryLabel}"
+                        placeholder="${modelFilterAllLabel}"
+                        items="${categoryOptions}"
+                        translateLabels="true"
+                    />
+                </div>
+                <div class="flex-1 w-full">
+                    <paw:formSelect
+                        id="modelFilterSubcategoryId"
                         path="subcategoryId"
                         label="${modelFilterSubcategoryLabel}"
                         placeholder="${modelFilterAllLabel}"
-                        items="${subcategoryOptions}"
-                        itemLabel="name"
-                        itemValue="id"
+                        items="${modelFilterSubcategoryOptions}"
+                        translateLabels="true"
                     />
                 </div>
                 <paw:button text="${modelFilterApplyLabel}" type="submit" variant="default" role="default" icon="search" classname="w-full sm:w-auto"/>
@@ -761,6 +774,22 @@
                 }
                 if (existingRadio) {
                     existingRadio.addEventListener('change', updateAcceptRequestFields);
+                }
+
+                var filterForm = document.getElementById('modelFilterForm');
+                var filterCategory = document.getElementById('modelFilterCategoryId');
+                var filterSubcategory = document.getElementById('modelFilterSubcategoryId');
+                if (filterForm && filterCategory) {
+                    filterCategory.addEventListener('change', function () {
+                        if (filterSubcategory) {
+                            filterSubcategory.value = '';
+                        }
+                        var autoSubmit = filterForm.querySelector('input[name="isAutoSubmit"]');
+                        if (autoSubmit) {
+                            autoSubmit.value = 'true';
+                        }
+                        filterForm.submit();
+                    });
                 }
             });
         </script>

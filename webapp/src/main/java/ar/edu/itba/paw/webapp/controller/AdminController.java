@@ -108,6 +108,7 @@ public class AdminController {
             @ModelAttribute("acceptRequestForm") AdminBrandModelRequestAcceptForm acceptRequestForm
     ) {
         LOGGER.debug("Admin {} accessed catalog management page: brandPage={}, modelPage={}, requestPage={}", currentUser.getUsername(), page, modelPage, requestPage);
+        modelFilterForm.setIsAutoSubmit(false);
         final var brandsPage = catalogService.getBrands(sort, page, BRAND_PAGE_SIZE);
         final var modelsPage = catalogService.getModels(
                 modelFilterForm.getBrandId(), modelFilterForm.getSubcategoryId(),
@@ -125,6 +126,15 @@ public class AdminController {
                                 subcategory.getId(),
                                 subcategory.getCategory().getName() + " / " + subcategory.getName()))
                         .toList())
+                .addObject("categoryOptions", catalogService.getAllCategories().stream()
+                        .map(category -> new SelectOption(category.getId(), "category." + category.getName()))
+                        .toList())
+                .addObject("modelFilterSubcategoryOptions", modelFilterForm.getCategoryId() == null
+                        ? List.of()
+                        : catalogService.getSubcategoriesByCategory(modelFilterForm.getCategoryId()).stream()
+                                .map(subcategory -> new SelectOption(
+                                        subcategory.getId(), "subcategory." + subcategory.getName()))
+                                .toList())
                 .addObject("models", modelsPage.getContent())
                 .addObject("modelsPage", modelsPage)
                 .addObject("currentModelSort", modelSort)
