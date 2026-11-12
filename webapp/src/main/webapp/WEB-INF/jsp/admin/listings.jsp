@@ -127,8 +127,17 @@
                                     <paw:linkButton href="${listingViewUrl}" text="${viewListingText}" variant="outline" size="sm" icon="external-link"/>
 
                                     <c:if test="${listing.status.name() ne 'CANCELED' and listing.status.name() ne 'SOLD'}">
+                                        <c:url value="/admin/listings" var="takedownRedirectUrl">
+                                            <c:param name="page" value="${listingsPage.page}"/>
+                                            <c:if test="${not empty filterForm.query}">
+                                                <c:param name="query" value="${filterForm.query}"/>
+                                            </c:if>
+                                            <c:if test="${not empty filterForm.status}">
+                                                <c:param name="status" value="${filterForm.status}"/>
+                                            </c:if>
+                                        </c:url>
                                         <form method="post" action="${takedownActionUrl}">
-                                            <input type="hidden" name="redirect" value="/admin/listings?page=${listingsPage.page}&query=<c:out value='${filterForm.query}'/>&status=<c:out value='${filterForm.status}'/>"/>
+                                            <input type="hidden" name="redirect" value="<c:out value='${takedownRedirectUrl}'/>"/>
                                             <spring:message code="admin.listings.takedown.btn" var="takeDownBtnText"/>
                                             <paw:button text="${takeDownBtnText}" type="submit" variant="outline" role="danger" size="sm" icon="trash-2"/>
                                         </form>
