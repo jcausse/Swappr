@@ -21,7 +21,7 @@ Status values: `todo`, `done`, `underspecified`, `needs bigger refactor`, `false
 | 2.4 | [Listing year not validated on the server](#24-the-listing-year-is-not-validated-on-the-server) | 🕓 todo |
 | 2.5 | [`clone_prod_db.py` exposes production data on the LAN](#25-scriptclone_prod_dbpy-exposes-a-copy-of-production-data-on-the-local-network) | ❌ false positive |
 | 2.6 | [User input written to logs as-is (log forging)](#26-user-input-written-to-the-logs-as-is-log-forging) | 🕓 todo |
-| 3.1 | [Password recovery POST does not redirect (no PRG)](#31-password-recovery-post-does-not-redirect-no-prg) | 🕓 todo |
+| 3.1 | [Password recovery POST does not redirect (no PRG)](#31-password-recovery-post-does-not-redirect-no-prg) | ✅ done |
 | 3.2 | ["Withdraw" offered for offers that cannot be withdrawn](#32-withdraw-is-offered-for-offers-that-cannot-be-withdrawn) | 🕓 todo |
 | 3.3 | [Replacing/editing a model can move listings across subcategories](#33-replacing-or-editing-a-model-can-move-listings-to-another-subcategory) | ❌ false positive |
 | 3.4 | [Brand/model names compared case-sensitively on rename/create/edit](#34-brand-and-model-names-are-still-compared-case-sensitively-when-renaming-a-brand-and-creating-or-editing-a-model) | 🕓 todo |
