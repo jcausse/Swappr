@@ -98,31 +98,16 @@ public class AdminController {
             @RequestParam(value = "modelPage", defaultValue = "1") int modelPage,
             @RequestParam(value = "modelSort", defaultValue = "NAME_ASC") ModelSort modelSort,
             @RequestParam(value = "requestPage", defaultValue = "1") int requestPage,
-            @ModelAttribute("modelFilterForm") AdminModelFilterForm modelFilterForm
+            @ModelAttribute("renameBrandForm") AdminRenameBrandForm renameBrandForm,
+            @ModelAttribute("createBrandForm") AdminCreateBrandForm createBrandForm,
+            @ModelAttribute("replaceBrandForm") AdminReplaceBrandForm replaceBrandForm,
+            @ModelAttribute("modelFilterForm") AdminModelFilterForm modelFilterForm,
+            @ModelAttribute("createModelForm") AdminModelForm createModelForm,
+            @ModelAttribute("editModelForm") AdminModelForm editModelForm,
+            @ModelAttribute("replaceModelForm") AdminReplaceModelForm replaceModelForm,
+            @ModelAttribute("acceptRequestForm") AdminBrandModelRequestAcceptForm acceptRequestForm
     ) {
         LOGGER.debug("Admin {} accessed catalog management page: brandPage={}, modelPage={}, requestPage={}", currentUser.getUsername(), page, modelPage, requestPage);
-        final boolean isAutoSubmit = Boolean.TRUE.equals(modelFilterForm.getIsAutoSubmit());
-        modelFilterForm.setIsAutoSubmit(false);
-        if (isAutoSubmit) {
-            modelFilterForm.setSubcategoryId(null);
-        }
-        return catalogView(
-                page, sort, modelPage, modelSort, requestPage,
-                modelFilterForm, new AdminModelForm(), new AdminModelForm(), false, null);
-    }
-
-    private ModelAndView catalogView(
-            int page,
-            BrandSort sort,
-            int modelPage,
-            ModelSort modelSort,
-            int requestPage,
-            AdminModelFilterForm modelFilterForm,
-            AdminModelForm createModelForm,
-            AdminModelForm editModelForm,
-            boolean editDialogOpen,
-            Long editModelId
-    ) {
         final var brandsPage = catalogService.getBrands(sort, page, BRAND_PAGE_SIZE);
         final var modelsPage = catalogService.getModels(
                 modelFilterForm.getBrandId(), modelFilterForm.getSubcategoryId(),
@@ -135,48 +120,17 @@ public class AdminController {
                 .addObject("currentSort", sort)
                 .addObject("brandReplacementOptions", catalogService.getBrandReplacementOptions())
                 .addObject("brandOptions", allBrands)
+                .addObject("subcategoryOptions", catalogService.getAllSubcategories().stream()
+                        .map(subcategory -> new SelectOption(
+                                subcategory.getId(),
+                                subcategory.getCategory().getName() + " / " + subcategory.getName()))
+                        .toList())
                 .addObject("models", modelsPage.getContent())
                 .addObject("modelsPage", modelsPage)
                 .addObject("currentModelSort", modelSort)
                 .addObject("modelReplacementOptions", catalogService.getModelReplacementOptions())
                 .addObject("requests", requestsPage.getContent())
-                .addObject("requestsPage", requestsPage)
-                .addObject("renameBrandForm", new AdminRenameBrandForm())
-                .addObject("createBrandForm", new AdminCreateBrandForm())
-                .addObject("replaceBrandForm", new AdminReplaceBrandForm())
-                .addObject("replaceModelForm", new AdminReplaceModelForm())
-                .addObject("acceptRequestForm", new AdminBrandModelRequestAcceptForm())
-                .addObject("modelFilterForm", modelFilterForm)
-                .addObject("createModelForm", createModelForm)
-                .addObject("editModelForm", editModelForm)
-                .addObject("categoryOptions", catalogService.getAllCategories().stream()
-                        .map(category -> new SelectOption(category.getId(), "category." + category.getName()))
-                        .toList())
-                .addObject("modelFilterSubcategoryOptions", subcategoryOptions(modelFilterForm.getCategoryId()))
-                .addObject("createModelSubcategoryOptions", subcategoryOptions(createModelForm.getCategoryId()))
-                .addObject("editModelSubcategoryOptions", subcategoryOptions(editModelForm.getCategoryId()))
-                .addObject("editDialogOpen", editDialogOpen)
-                .addObject("editModelActionUrl", editModelId != null
-                        ? "/admin/catalog/models/" + editModelId + "/edit"
-                        : "/admin/catalog");
-    }
-
-    private List<SelectOption> subcategoryOptions(Long categoryId) {
-        if (categoryId == null) {
-            return List.of();
-        }
-        return catalogService.getSubcategoriesByCategory(categoryId).stream()
-                .map(subcategory -> new SelectOption(
-                        subcategory.getId(), "subcategory." + subcategory.getName()))
-                .toList();
-    }
-
-    private AdminModelFilterForm modelFilterForm(Long brandId, Long categoryId, Long subcategoryId) {
-        final AdminModelFilterForm form = new AdminModelFilterForm();
-        form.setBrandId(brandId);
-        form.setCategoryId(categoryId);
-        form.setSubcategoryId(subcategoryId);
-        return form;
+                .addObject("requestsPage", requestsPage);
     }
 
     @PostMapping("/catalog/requests/{id}/accept")
@@ -304,27 +258,9 @@ public class AdminController {
     @PreAuthorize("hasRole('ADMIN')")
     public ModelAndView createModel(
             @CurrentUser User currentUser,
-            @RequestParam(value = "page", defaultValue = "1") int page,
-            @RequestParam(value = "sort", defaultValue = "BRAND_ASC") BrandSort sort,
-            @RequestParam(value = "modelPage", defaultValue = "1") int modelPage,
-            @RequestParam(value = "modelSort", defaultValue = "NAME_ASC") ModelSort modelSort,
-            @RequestParam(value = "requestPage", defaultValue = "1") int requestPage,
-            @RequestParam(value = "filterBrandId", required = false) Long filterBrandId,
-            @RequestParam(value = "filterCategoryId", required = false) Long filterCategoryId,
-            @RequestParam(value = "filterSubcategoryId", required = false) Long filterSubcategoryId,
             @Valid @ModelAttribute("createModelForm") AdminModelForm form,
             BindingResult errors
     ) {
-        final boolean isAutoSubmit = Boolean.TRUE.equals(form.getIsAutoSubmit());
-        form.setIsAutoSubmit(false);
-        if (isAutoSubmit) {
-            form.setSubcategoryId(null);
-            return catalogView(
-                    page, sort, modelPage, modelSort, requestPage,
-                    modelFilterForm(filterBrandId, filterCategoryId, filterSubcategoryId),
-                    form, new AdminModelForm(), false, null);
-        }
-
         LOGGER.info("Admin {} requested creation of model '{}'", currentUser.getUsername(), form.getName());
         if (errors.hasErrors()) {
             return new ModelAndView("redirect:/admin/catalog?error=modelInvalid");
@@ -346,30 +282,9 @@ public class AdminController {
     public ModelAndView editModel(
             @CurrentUser User currentUser,
             @PathVariable Long id,
-            @RequestParam(value = "page", defaultValue = "1") int page,
-            @RequestParam(value = "sort", defaultValue = "BRAND_ASC") BrandSort sort,
-            @RequestParam(value = "modelPage", defaultValue = "1") int modelPage,
-            @RequestParam(value = "modelSort", defaultValue = "NAME_ASC") ModelSort modelSort,
-            @RequestParam(value = "requestPage", defaultValue = "1") int requestPage,
-            @RequestParam(value = "filterBrandId", required = false) Long filterBrandId,
-            @RequestParam(value = "filterCategoryId", required = false) Long filterCategoryId,
-            @RequestParam(value = "filterSubcategoryId", required = false) Long filterSubcategoryId,
-            @RequestParam(value = "pendingSubcategoryId", required = false) Long pendingSubcategoryId,
             @Valid @ModelAttribute("editModelForm") AdminModelForm form,
             BindingResult errors
     ) {
-        final boolean isAutoSubmit = Boolean.TRUE.equals(form.getIsAutoSubmit());
-        form.setIsAutoSubmit(false);
-        if (isAutoSubmit) {
-            if (form.getSubcategoryId() == null && pendingSubcategoryId != null) {
-                form.setSubcategoryId(pendingSubcategoryId);
-            }
-            return catalogView(
-                    page, sort, modelPage, modelSort, requestPage,
-                    modelFilterForm(filterBrandId, filterCategoryId, filterSubcategoryId),
-                    new AdminModelForm(), form, true, id);
-        }
-
         LOGGER.info("Admin {} requested edit of model {}", currentUser.getUsername(), id);
         if (errors.hasErrors()) {
             return new ModelAndView("redirect:/admin/catalog?error=modelInvalid");

@@ -10,7 +10,5 @@ import lombok.Setter;
 public class AdminModelFilterForm {
 
     private Long brandId;
-    private Long categoryId;
     private Long subcategoryId;
-    private Boolean isAutoSubmit = false;
 }

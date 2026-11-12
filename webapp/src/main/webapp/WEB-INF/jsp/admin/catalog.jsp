@@ -38,14 +38,12 @@
 <spring:message code="admin.catalog.models.id" var="modelIdLabel"/>
 <spring:message code="admin.catalog.models.name" var="modelNameLabel"/>
 <spring:message code="admin.catalog.models.brand" var="modelBrandLabel"/>
-<spring:message code="admin.catalog.models.category" var="modelCategoryLabel"/>
 <spring:message code="admin.catalog.models.subcategory" var="modelSubcategoryLabel"/>
 <spring:message code="admin.catalog.models.actions" var="modelActionsLabel"/>
 <spring:message code="admin.catalog.models.edit" var="editModelLabel"/>
 <spring:message code="admin.catalog.models.replace" var="replaceModelLabel"/>
 <spring:message code="admin.catalog.models.delete" var="deleteModelLabel"/>
 <spring:message code="admin.catalog.models.filter.brand" var="modelFilterBrandLabel"/>
-<spring:message code="admin.catalog.models.filter.category" var="modelFilterCategoryLabel"/>
 <spring:message code="admin.catalog.models.filter.subcategory" var="modelFilterSubcategoryLabel"/>
 <spring:message code="admin.catalog.models.filter.all" var="modelFilterAllLabel"/>
 <spring:message code="admin.catalog.models.filter.apply" var="modelFilterApplyLabel"/>
@@ -55,8 +53,6 @@
 <spring:message code="admin.catalog.models.create.namePlaceholder" var="createModelNamePlaceholder"/>
 <spring:message code="admin.catalog.models.create.brandLabel" var="createModelBrandLabel"/>
 <spring:message code="admin.catalog.models.create.brandPlaceholder" var="createModelBrandPlaceholder"/>
-<spring:message code="admin.catalog.models.create.categoryLabel" var="createModelCategoryLabel"/>
-<spring:message code="admin.catalog.models.create.categoryPlaceholder" var="createModelCategoryPlaceholder"/>
 <spring:message code="admin.catalog.models.create.subcategoryLabel" var="createModelSubcategoryLabel"/>
 <spring:message code="admin.catalog.models.create.subcategoryPlaceholder" var="createModelSubcategoryPlaceholder"/>
 <spring:message code="admin.catalog.models.create.submit" var="createModelSubmit"/>
@@ -304,7 +300,6 @@
             <c:set var="modelNameNextSort" value="${currentModelSort.key eq 'name' and currentModelSort.ascending ? 'NAME_DESC' : 'NAME_ASC'}"/>
 
             <form:form
-                id="modelFilterForm"
                 modelAttribute="modelFilterForm"
                 action="${catalogUrl}"
                 method="get"
@@ -313,8 +308,6 @@
                 <input type="hidden" name="page" value="${brandsPage.page}"/>
                 <input type="hidden" name="sort" value="${currentSort.name()}"/>
                 <input type="hidden" name="modelSort" value="${currentModelSort.name()}"/>
-                <input type="hidden" name="requestPage" value="${requestsPage.page}"/>
-                <form:hidden path="isAutoSubmit"/>
                 <div class="flex-1 w-full">
                     <paw:formSelect
                         path="brandId"
@@ -327,22 +320,12 @@
                 </div>
                 <div class="flex-1 w-full">
                     <paw:formSelect
-                        id="modelFilterCategoryId"
-                        path="categoryId"
-                        label="${modelFilterCategoryLabel}"
-                        placeholder="${modelFilterAllLabel}"
-                        items="${categoryOptions}"
-                        translateLabels="true"
-                    />
-                </div>
-                <div class="flex-1 w-full">
-                    <paw:formSelect
-                        id="modelFilterSubcategoryId"
                         path="subcategoryId"
                         label="${modelFilterSubcategoryLabel}"
                         placeholder="${modelFilterAllLabel}"
-                        items="${modelFilterSubcategoryOptions}"
-                        translateLabels="true"
+                        items="${subcategoryOptions}"
+                        itemLabel="name"
+                        itemValue="id"
                     />
                 </div>
                 <paw:button text="${modelFilterApplyLabel}" type="submit" variant="default" role="default" icon="search" classname="w-full sm:w-auto"/>
@@ -396,7 +379,6 @@
                                 data-edit-action="${editModelUrl}"
                                 data-model-name="<c:out value='${model.name}'/>"
                                 data-brand-id="${model.brandId}"
-                                data-category-id="${model.categoryId}"
                                 data-subcategory-id="${model.subcategoryId}">
                                 <td class="py-3 pr-4">
                                     <span class="text-xs font-mono font-medium px-1.5 py-0.5 rounded bg-black/5 text-black/70">
@@ -476,28 +458,12 @@
                 <h3 class="text-sm font-semibold"><c:out value="${createModelTitle}"/></h3>
                 <c:url value="/admin/catalog/models" var="createModelUrl"/>
                 <form:form
-                    id="createModelForm"
                     modelAttribute="createModelForm"
                     action="${createModelUrl}"
                     method="post"
                     class="flex flex-col gap-3"
                 >
-                    <form:hidden path="isAutoSubmit"/>
-                    <input type="hidden" name="page" value="${brandsPage.page}"/>
-                    <input type="hidden" name="sort" value="${currentSort.name()}"/>
-                    <input type="hidden" name="modelPage" value="${modelsPage.page}"/>
-                    <input type="hidden" name="modelSort" value="${currentModelSort.name()}"/>
-                    <input type="hidden" name="requestPage" value="${requestsPage.page}"/>
-                    <c:if test="${not empty modelFilterForm.brandId}">
-                        <input type="hidden" name="filterBrandId" value="${modelFilterForm.brandId}"/>
-                    </c:if>
-                    <c:if test="${not empty modelFilterForm.categoryId}">
-                        <input type="hidden" name="filterCategoryId" value="${modelFilterForm.categoryId}"/>
-                    </c:if>
-                    <c:if test="${not empty modelFilterForm.subcategoryId}">
-                        <input type="hidden" name="filterSubcategoryId" value="${modelFilterForm.subcategoryId}"/>
-                    </c:if>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3 items-end">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
                         <paw:formInput
                             path="name"
                             label="${createModelNameLabel}"
@@ -513,20 +479,12 @@
                             itemValue="id"
                         />
                         <paw:formSelect
-                            id="createModelCategoryId"
-                            path="categoryId"
-                            label="${createModelCategoryLabel}"
-                            placeholder="${createModelCategoryPlaceholder}"
-                            items="${categoryOptions}"
-                            translateLabels="true"
-                        />
-                        <paw:formSelect
-                            id="createModelSubcategoryId"
                             path="subcategoryId"
                             label="${createModelSubcategoryLabel}"
                             placeholder="${createModelSubcategoryPlaceholder}"
-                            items="${createModelSubcategoryOptions}"
-                            translateLabels="true"
+                            items="${subcategoryOptions}"
+                            itemLabel="name"
+                            itemValue="id"
                         />
                         <paw:button
                             text="${createModelSubmit}"
@@ -723,25 +681,9 @@
             title="${editModelTitle}"
             confirmText="${editModelConfirm}"
             cancelText="${editModelCancel}"
-            formAction="${editModelActionUrl}"
+            formAction="${catalogUrl}"
             modelAttribute="editModelForm"
         >
-            <form:hidden path="isAutoSubmit"/>
-            <input type="hidden" name="pendingSubcategoryId" value=""/>
-            <input type="hidden" name="page" value="${brandsPage.page}"/>
-            <input type="hidden" name="sort" value="${currentSort.name()}"/>
-            <input type="hidden" name="modelPage" value="${modelsPage.page}"/>
-            <input type="hidden" name="modelSort" value="${currentModelSort.name()}"/>
-            <input type="hidden" name="requestPage" value="${requestsPage.page}"/>
-            <c:if test="${not empty modelFilterForm.brandId}">
-                <input type="hidden" name="filterBrandId" value="${modelFilterForm.brandId}"/>
-            </c:if>
-            <c:if test="${not empty modelFilterForm.categoryId}">
-                <input type="hidden" name="filterCategoryId" value="${modelFilterForm.categoryId}"/>
-            </c:if>
-            <c:if test="${not empty modelFilterForm.subcategoryId}">
-                <input type="hidden" name="filterSubcategoryId" value="${modelFilterForm.subcategoryId}"/>
-            </c:if>
             <div class="flex flex-col gap-3">
                 <paw:formInput
                     id="editModelName"
@@ -758,20 +700,12 @@
                     itemValue="id"
                 />
                 <paw:formSelect
-                    id="editModelCategoryId"
-                    path="categoryId"
-                    label="${modelCategoryLabel}"
-                    placeholder="${createModelCategoryPlaceholder}"
-                    items="${categoryOptions}"
-                    translateLabels="true"
-                />
-                <paw:formSelect
                     id="editModelSubcategoryId"
                     path="subcategoryId"
                     label="${modelSubcategoryLabel}"
-                    placeholder="${createModelSubcategoryPlaceholder}"
-                    items="${editModelSubcategoryOptions}"
-                    translateLabels="true"
+                    items="${subcategoryOptions}"
+                    itemLabel="name"
+                    itemValue="id"
                 />
             </div>
         </paw:formDialog>
@@ -785,18 +719,9 @@
                 form.action = modelRow.dataset.editAction;
                 form.querySelector('input[name="name"]').value = modelRow.dataset.modelName || '';
                 form.querySelector('select[name="brandId"]').value = modelRow.dataset.brandId || '';
-                form.querySelector('select[name="categoryId"]').value = modelRow.dataset.categoryId || '';
-                form.querySelector('input[name="pendingSubcategoryId"]').value = modelRow.dataset.subcategoryId || '';
+                form.querySelector('select[name="subcategoryId"]').value = modelRow.dataset.subcategoryId || '';
 
-                submitWithAutoFlag(form);
-            }
-
-            function submitWithAutoFlag(form) {
-                var autoSubmit = form.querySelector('input[name="isAutoSubmit"]');
-                if (autoSubmit) {
-                    autoSubmit.value = 'true';
-                }
-                form.submit();
+                dialog.showModal();
             }
 
             function updateAcceptRequestFields() {
@@ -837,38 +762,6 @@
                 if (existingRadio) {
                     existingRadio.addEventListener('change', updateAcceptRequestFields);
                 }
-
-                var filterForm = document.getElementById('modelFilterForm');
-                var filterCategory = document.getElementById('modelFilterCategoryId');
-                if (filterForm && filterCategory) {
-                    filterCategory.addEventListener('change', function () {
-                        submitWithAutoFlag(filterForm);
-                    });
-                }
-
-                var createForm = document.getElementById('createModelForm');
-                var createCategory = document.getElementById('createModelCategoryId');
-                if (createForm && createCategory) {
-                    createCategory.addEventListener('change', function () {
-                        submitWithAutoFlag(createForm);
-                    });
-                }
-
-                var editDialog = document.getElementById('editModelDialog');
-                var editCategory = document.getElementById('editModelCategoryId');
-                if (editDialog && editCategory) {
-                    editCategory.addEventListener('change', function () {
-                        var editForm = editDialog.querySelector('form');
-                        editForm.querySelector('input[name="pendingSubcategoryId"]').value = '';
-                        submitWithAutoFlag(editForm);
-                    });
-                }
-
-                <c:if test="${editDialogOpen}">
-                if (editDialog) {
-                    editDialog.showModal();
-                }
-                </c:if>
             });
         </script>
 

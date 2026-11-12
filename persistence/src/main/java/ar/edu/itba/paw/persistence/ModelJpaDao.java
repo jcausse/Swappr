@@ -95,11 +95,11 @@ public class ModelJpaDao implements ModelDao {
                 ? "m.id " + direction
                 : "m.name " + direction + ", m.id " + direction;
         final var query = em.createQuery(
-                "SELECT m.id, m.name, b.id, b.name, s.id, s.name, s.category.id, COUNT(DISTINCT l.id)"
+                "SELECT m.id, m.name, b.id, b.name, s.id, s.name, COUNT(DISTINCT l.id)"
                 + " FROM Model m JOIN m.brand b JOIN m.subcategory s"
                 + " LEFT JOIN Listing l ON l.model.id = m.id"
                 + where
-                + " GROUP BY m.id, m.name, b.id, b.name, s.id, s.name, s.category.id"
+                + " GROUP BY m.id, m.name, b.id, b.name, s.id, s.name"
                 + " ORDER BY " + orderBy,
                 Object[].class);
         if (brandId != null) query.setParameter("brandId", brandId);
@@ -115,8 +115,7 @@ public class ModelJpaDao implements ModelDao {
                         .brandName((String) row[3])
                         .subcategoryId((Long) row[4])
                         .subcategoryName((String) row[5])
-                        .categoryId((Long) row[6])
-                        .hasListings(((Number) row[7]).longValue() > 0)
+                        .hasListings(((Number) row[6]).longValue() > 0)
                         .build())
                 .toList();
 
