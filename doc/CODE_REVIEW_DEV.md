@@ -30,7 +30,7 @@ Status values: `todo`, `done`, `underspecified`, `needs bigger refactor`, `false
 | 3.7 | ["Already exists" page breaks names with commas and does not escape](#37-brandmodel-already-exists-page-breaks-names-with-commas-and-does-not-escape-them--reproduced) | 🕓 todo |
 | 3.8 | [Price range "max" printed unformatted](#38-the-max-of-the-price-range-is-printed-unformatted) | ❌ false positive |
 | 3.9 | [Takedown redirects built without URL-encoding](#39-takedown-redirects-in-the-admin-are-built-without-url-encoding) | 🕓 todo |
-| 3.10 | [Admin catalog actions lose page, sort and filters; generic errors](#310-admin-catalog-actions-lose-page-sort-and-filters-and-report-generic-errors) | 🕓 todo |
+| 3.10 | [Admin catalog actions lose page, sort and filters; generic errors](#310-admin-catalog-actions-lose-page-sort-and-filters-and-report-generic-errors) | ⚠️ needs bigger refactor |
 | 3.11 | [Duplicate-request redirect empties the form](#311-the-duplicate-request-redirect-empties-the-form) | ❌ false positive |
 | 3.12 | [Brand/model requests table `colspan` out of date](#312-brandmodel-requests-table-colspan-out-of-date) | 🕓 todo |
 | 3.13 | [Changing category wipes the request form fields](#313-changing-the-category-in-the-brandmodel-request-form-wipes-what-the-user-typed) | 🕓 todo |
