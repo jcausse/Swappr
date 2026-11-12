@@ -308,6 +308,15 @@ public class CatalogServiceImplTest {
         catalogService.renameBrand(BRAND_ID, "Apple");
     }
 
+    @Test
+    public void testRenameBrandChangingOnlyCaseIsAllowed() {
+        when(brandDao.existsByNameAndIdNot(eq("apple"), eq(BRAND_ID))).thenReturn(false);
+        when(brandDao.rename(eq(BRAND_ID), eq("apple")))
+                .thenReturn(Optional.of(Brand.builder().id(BRAND_ID).name("apple").build()));
+
+        catalogService.renameBrand(BRAND_ID, "apple");
+    }
+
     @Test(expected = BadParameterException.class)
     public void testRenameBrandToExistingNameThrows() {
         when(brandDao.existsByNameAndIdNot(eq("Dell"), eq(BRAND_ID))).thenReturn(true);

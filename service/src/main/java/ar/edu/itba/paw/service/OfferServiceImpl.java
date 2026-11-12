@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -561,20 +562,29 @@ public class OfferServiceImpl implements OfferService {
         final Instant cutoff = Instant.now().minus(RATING_AUTO_ASSIGN_DELAY);
         final List<Offer> pending = offerDao.getAcceptedUnratedBefore(cutoff);
 
-        for (Offer offer : pending) {
-            if (offer.getSellerRating().isEmpty()) {
-                final boolean updated = offerDao.setSellerRating(offer.getId(), OfferRating.POSITIVE);
-                if (updated) {
-                    userDao.incrementSellerRatingCounter(offer.getListing().getCreator().getId(), OfferRating.POSITIVE);
-                }
-            }
-            if (offer.getBuyerRating().isEmpty()) {
-                final boolean updated = offerDao.setBuyerRating(offer.getId(), OfferRating.POSITIVE);
-                if (updated) {
-                    userDao.incrementBuyerRatingCounter(offer.getBuyer().getId(), OfferRating.POSITIVE);
-                }
-            }
-        }
+        final List<Long> sellerRatingOfferIds = pending.stream()
+            .filter(offer -> offer.getSellerRating().isEmpty())
+            .map(Offer::getId)
+            .toList();
+        final Map<Long, Long> sellerIncrements = pending.stream()
+            .filter(offer -> offer.getSellerRating().isEmpty())
+            .collect(Collectors.groupingBy(
+                offer -> offer.getListing().getCreator().getId(),
+                Collectors.counting()));
+        final List<Long> buyerRatingOfferIds = pending.stream()
+            .filter(offer -> offer.getBuyerRating().isEmpty())
+            .map(Offer::getId)
+            .toList();
+        final Map<Long, Long> buyerIncrements = pending.stream()
+            .filter(offer -> offer.getBuyerRating().isEmpty())
+            .collect(Collectors.groupingBy(
+                offer -> offer.getBuyer().getId(),
+                Collectors.counting()));
+
+        offerDao.setSellerRatings(sellerRatingOfferIds, OfferRating.POSITIVE);
+        userDao.incrementSellerRatingCounters(sellerIncrements, OfferRating.POSITIVE);
+        offerDao.setBuyerRatings(buyerRatingOfferIds, OfferRating.POSITIVE);
+        userDao.incrementBuyerRatingCounters(buyerIncrements, OfferRating.POSITIVE);
     }
 
     @Override

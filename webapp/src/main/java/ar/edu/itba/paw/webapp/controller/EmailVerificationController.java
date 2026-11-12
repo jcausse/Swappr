@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -43,7 +44,8 @@ public class EmailVerificationController {
     @PostMapping("/verify")
     public ModelAndView verify(
             @Valid @ModelAttribute("emailVerificationForm") EmailVerificationForm form,
-            BindingResult errors
+            BindingResult errors,
+            HttpServletRequest request
     ) {
         if (errors.hasErrors()) {
             LOGGER.debug("Validation failed for email verification form");
@@ -53,7 +55,7 @@ public class EmailVerificationController {
         final var result = userService.verifyEmail(form.getUsernameOrEmail(), form.getOtp());
         if (result == OneTimePasswordVerificationResult.ACCEPTED) {
             LOGGER.info("User {} successfully verified email", form.getUsernameOrEmail());
-            authHelper.login(form.getUsernameOrEmail());
+            authHelper.login(request, form.getUsernameOrEmail());
             return new ModelAndView("redirect:/");
         }
 

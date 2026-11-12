@@ -368,7 +368,7 @@ public class AdminController {
     @PreAuthorize("hasRole('ADMIN')")
     public ModelAndView listings(
             @CurrentUser User currentUser,
-            @ModelAttribute("filterForm") AdminListingFilterForm filterForm,
+            @Valid @ModelAttribute("filterForm") AdminListingFilterForm filterForm,
             @RequestParam(value = "page", defaultValue = "1") int page,
             @ModelAttribute("takeDownListingForm") AdminTakeDownListingForm takeDownListingForm
     ) {
@@ -531,7 +531,7 @@ public class AdminController {
     @PreAuthorize("hasRole('ADMIN')")
     public ModelAndView users(
             @CurrentUser User currentUser,
-            @ModelAttribute("filterForm") AdminUserFilterForm filterForm,
+            @Valid @ModelAttribute("filterForm") AdminUserFilterForm filterForm,
             @ModelAttribute("suspendUserForm") AdminSuspendUserForm suspendUserForm,
             @ModelAttribute("grantRoleForm") AdminGrantRoleForm grantRoleForm
     ) {
