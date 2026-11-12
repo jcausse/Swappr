@@ -25,6 +25,8 @@ public class BrandModelRequestForm {
     @NotNull
     private Long subcategoryId;
 
+    private Boolean isAutoSubmit = false;
+
     private Long brandId;
 
     @Size(max = 100)
