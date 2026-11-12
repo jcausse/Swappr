@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.sql.DataSource;
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
@@ -80,6 +81,12 @@ public class ModelListingInfoJpaDaoTest {
         Assert.assertEquals(0, new BigDecimal("2000.00").compareTo(excellent.getMaxPrice().getAmount()));
 
         Assert.assertFalse(byCondition.containsKey(Condition.FOR_PARTS));
+        Assert.assertEquals(
+                List.of(Condition.EXCELLENT, Condition.GOOD),
+                summary.getListingInfoByCondition().stream()
+                        .map(ModelListingInfo::getCondition)
+                        .toList()
+        );
     }
 
     @Test

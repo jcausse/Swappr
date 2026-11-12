@@ -60,10 +60,10 @@ public class Listing {
     private Condition condition;
 
     @Column(name = "accepts_trade", nullable = false)
-    private Boolean acceptsTrade;
+    private boolean acceptsTrade;
 
     @Column(name = "accepts_shipping", nullable = false)
-    private Boolean acceptsShipping;
+    private boolean acceptsShipping;
 
     @OneToMany
     @JoinTable(
@@ -73,6 +73,9 @@ public class Listing {
     )
     @OrderColumn(name = "display_order")
     private List<Image> images = new ArrayList<>();
+
+    @Formula("(SELECT li.image_id FROM listing_images li WHERE li.listing_id = listing_id AND li.display_order = 0)")
+    private Long coverImageId;
 
     @Formula("(SELECT COUNT(*) FROM offers o WHERE o.listing_id = listing_id AND o.status = 'PENDING')")
     private int pendingOffersCount;

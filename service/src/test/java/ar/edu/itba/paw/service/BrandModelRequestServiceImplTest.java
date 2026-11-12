@@ -75,7 +75,7 @@ public class BrandModelRequestServiceImplTest {
     }
 
     private void stubNoMatchingRequest() {
-        when(brandModelRequestDao.findMatching(any(), any(), any())).thenReturn(Optional.empty());
+        when(brandModelRequestDao.findMatching(any(), any())).thenReturn(Optional.empty());
     }
 
     private BrandModelRequest buildRequest(User requester, Set<User> additionalRequesters) {
@@ -247,7 +247,7 @@ public class BrandModelRequestServiceImplTest {
         final BrandModelRequest existingRequest = buildRequest(requester, Set.of());
         when(catalogService.getBrandById(BRAND_ID)).thenReturn(existingBrand);
         when(catalogService.findModelByNameAndBrand(MODEL_NAME, BRAND_ID)).thenReturn(Optional.empty());
-        when(brandModelRequestDao.findMatching(BRAND_NAME, MODEL_NAME, SUBCATEGORY_ID))
+        when(brandModelRequestDao.findMatching(BRAND_NAME, MODEL_NAME))
             .thenReturn(Optional.of(existingRequest));
 
         try {
@@ -272,7 +272,7 @@ public class BrandModelRequestServiceImplTest {
         final BrandModelRequest existingRequest = buildRequest(buildOtherUser(), Set.of(buildRequester()));
         when(catalogService.getBrandById(BRAND_ID)).thenReturn(existingBrand);
         when(catalogService.findModelByNameAndBrand(MODEL_NAME, BRAND_ID)).thenReturn(Optional.empty());
-        when(brandModelRequestDao.findMatching(BRAND_NAME, MODEL_NAME, SUBCATEGORY_ID))
+        when(brandModelRequestDao.findMatching(BRAND_NAME, MODEL_NAME))
             .thenReturn(Optional.of(existingRequest));
         when(brandModelRequestDao.isAdditionalRequester(REQUEST_ID, REQUESTER_ID)).thenReturn(true);
 
@@ -298,7 +298,7 @@ public class BrandModelRequestServiceImplTest {
         final BrandModelRequest existingRequest = buildRequest(buildOtherUser(), Set.of());
         when(catalogService.getBrandById(BRAND_ID)).thenReturn(existingBrand);
         when(catalogService.findModelByNameAndBrand(MODEL_NAME, BRAND_ID)).thenReturn(Optional.empty());
-        when(brandModelRequestDao.findMatching(BRAND_NAME, MODEL_NAME, SUBCATEGORY_ID))
+        when(brandModelRequestDao.findMatching(BRAND_NAME, MODEL_NAME))
             .thenReturn(Optional.of(existingRequest));
         when(brandModelRequestDao.isAdditionalRequester(REQUEST_ID, REQUESTER_ID)).thenReturn(false);
 

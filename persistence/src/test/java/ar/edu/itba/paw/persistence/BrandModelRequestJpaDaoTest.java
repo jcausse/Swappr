@@ -37,7 +37,6 @@ public class BrandModelRequestJpaDaoTest {
     private static final long USER_ID = 1L;
     private static final long ADDITIONAL_USER_ID = 2L;
     private static final long SUBCATEGORY_ID = 1L;
-    private static final long OTHER_SUBCATEGORY_ID = 2L;
     private static final long BRAND_ID = 1L;
     private static final long NON_EXISTING_ID = 9000L;
 
@@ -176,7 +175,7 @@ public class BrandModelRequestJpaDaoTest {
         insertSampleRequests();
 
         final Optional<BrandModelRequest> maybeRequest =
-                brandModelRequestDao.findMatching("Acme", "Acme One", SUBCATEGORY_ID);
+                brandModelRequestDao.findMatching("Acme", "Acme One");
 
         Assert.assertTrue(maybeRequest.isPresent());
         Assert.assertEquals(701L, (long) maybeRequest.get().getId());
@@ -187,7 +186,7 @@ public class BrandModelRequestJpaDaoTest {
         insertSampleRequests();
 
         final Optional<BrandModelRequest> maybeRequest =
-                brandModelRequestDao.findMatching("aCmE", "aCmE oNe", SUBCATEGORY_ID);
+                brandModelRequestDao.findMatching("aCmE", "aCmE oNe");
 
         Assert.assertTrue(maybeRequest.isPresent());
         Assert.assertEquals(701L, (long) maybeRequest.get().getId());
@@ -198,7 +197,7 @@ public class BrandModelRequestJpaDaoTest {
         insertSampleRequests();
 
         final Optional<BrandModelRequest> maybeRequest =
-                brandModelRequestDao.findMatching("Apple", "MacBook Pro", SUBCATEGORY_ID);
+                brandModelRequestDao.findMatching("Apple", "MacBook Pro");
 
         Assert.assertTrue(maybeRequest.isPresent());
         Assert.assertEquals(702L, (long) maybeRequest.get().getId());
@@ -209,19 +208,22 @@ public class BrandModelRequestJpaDaoTest {
         insertSampleRequests();
 
         final Optional<BrandModelRequest> maybeRequest =
-                brandModelRequestDao.findMatching("aPpLe", "mAcBoOk pRo", SUBCATEGORY_ID);
+                brandModelRequestDao.findMatching("aPpLe", "mAcBoOk pRo");
 
         Assert.assertTrue(maybeRequest.isPresent());
         Assert.assertEquals(702L, (long) maybeRequest.get().getId());
     }
 
     @Test
-    public void testFindMatchingDifferentSubcategory() {
+    public void testFindMatchingIgnoresSubcategory() {
         insertSampleRequests();
 
-        Assert.assertFalse(
-                brandModelRequestDao.findMatching("Apple", "MacBook Pro", OTHER_SUBCATEGORY_ID).isPresent()
-        );
+        final Optional<BrandModelRequest> maybeRequest =
+                brandModelRequestDao.findMatching("Apple", "MacBook Pro");
+
+        Assert.assertTrue(maybeRequest.isPresent());
+        Assert.assertEquals(702L, (long) maybeRequest.get().getId());
+        Assert.assertEquals(SUBCATEGORY_ID, (long) maybeRequest.get().getSubcategory().getId());
     }
 
     @Test
@@ -229,7 +231,7 @@ public class BrandModelRequestJpaDaoTest {
         insertSampleRequests();
 
         Assert.assertFalse(
-                brandModelRequestDao.findMatching("Acme", "Acme Two", SUBCATEGORY_ID).isPresent()
+                brandModelRequestDao.findMatching("Acme", "Acme Two").isPresent()
         );
     }
 

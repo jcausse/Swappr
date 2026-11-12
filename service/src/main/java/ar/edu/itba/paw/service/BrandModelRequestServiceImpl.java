@@ -82,7 +82,7 @@ public class BrandModelRequestServiceImpl implements BrandModelRequestService {
 
         final String matchingBrandName = brand != null ? brand.getName() : brandName;
         final var existingRequest = brandModelRequestDao.findMatching(
-            matchingBrandName, modelName, subcategory.getId()
+            matchingBrandName, modelName
         );
         if (existingRequest.isPresent()) {
             final BrandModelRequest request = existingRequest.get();
