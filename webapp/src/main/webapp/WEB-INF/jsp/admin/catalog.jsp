@@ -552,7 +552,7 @@
                     <tbody>
                         <c:if test="${empty requests}">
                             <tr>
-                                <td colspan="7" class="py-6 text-center text-black/50"><c:out value="${requestsEmptyLabel}"/></td>
+                                <td colspan="6" class="py-6 text-center text-black/50"><c:out value="${requestsEmptyLabel}"/></td>
                             </tr>
                         </c:if>
                         <c:forEach var="request" items="${requests}">
