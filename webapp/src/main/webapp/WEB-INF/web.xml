@@ -75,7 +75,17 @@
     <url-pattern>/*</url-pattern>
   </filter-mapping>
 
-  <!-- Open EntityManager in View Filter -->
+  <!-- Spring Security Filter -->
+  <filter>
+    <filter-name>springSecurityFilterChain</filter-name>
+    <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
+  </filter>
+  
+  <filter-mapping>
+    <filter-name>springSecurityFilterChain</filter-name>
+    <url-pattern>/*</url-pattern>
+  </filter-mapping>
+  <!-- Open EntityManager in View Filter (must run after Spring Security) -->
   <!-- TODO: Sacar esto para el final -->
   <filter>
     <filter-name>openEntityManagerInViewFilter</filter-name>
@@ -87,15 +97,5 @@
     <url-pattern>/*</url-pattern>
   </filter-mapping>
 
-  <!-- Spring Security Filter -->
-  <filter>
-    <filter-name>springSecurityFilterChain</filter-name>
-    <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
-  </filter>
-  
-  <filter-mapping>
-    <filter-name>springSecurityFilterChain</filter-name>
-    <url-pattern>/*</url-pattern>
-  </filter-mapping>
 
 </web-app>

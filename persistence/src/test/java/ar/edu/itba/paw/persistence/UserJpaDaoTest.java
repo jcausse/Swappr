@@ -20,6 +20,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.sql.DataSource;
 import java.time.Instant;
+import java.util.Map;
 import java.util.Optional;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -188,6 +189,30 @@ public class UserJpaDaoTest {
         // started at 1 negative buyer rating
         Assert.assertEquals(1, countUsersWhere(
             "user_id = " + VERIFIED_USER_ID + " AND buyer_negative_ratings = 2"));
+    }
+
+    @Test
+    public void testIncrementSellerRatingCountersAddsPerUserAmounts() {
+        userDao.incrementSellerRatingCounters(
+            Map.of(VERIFIED_USER_ID, 2L, PLAIN_USER_ID, 1L), OfferRating.POSITIVE);
+
+        // started at 3 positive seller ratings
+        Assert.assertEquals(1, countUsersWhere(
+            "user_id = " + VERIFIED_USER_ID + " AND seller_positive_ratings = 5"));
+        Assert.assertEquals(1, countUsersWhere(
+            "user_id = " + PLAIN_USER_ID + " AND seller_positive_ratings = 1"));
+    }
+
+    @Test
+    public void testIncrementBuyerRatingCountersAddsPerUserAmounts() {
+        userDao.incrementBuyerRatingCounters(
+            Map.of(VERIFIED_USER_ID, 2L, PLAIN_USER_ID, 1L), OfferRating.NEGATIVE);
+
+        // started at 1 negative buyer rating
+        Assert.assertEquals(1, countUsersWhere(
+            "user_id = " + VERIFIED_USER_ID + " AND buyer_negative_ratings = 3"));
+        Assert.assertEquals(1, countUsersWhere(
+            "user_id = " + PLAIN_USER_ID + " AND buyer_negative_ratings = 1"));
     }
 
     /* ---------------------------------------------------------------------------------------------- */
