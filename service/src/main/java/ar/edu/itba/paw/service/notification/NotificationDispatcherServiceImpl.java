@@ -9,6 +9,7 @@ import ar.edu.itba.paw.model.BrandModelRequest;
 import ar.edu.itba.paw.model.Model;
 import ar.edu.itba.paw.service.EmailNotificationService;
 import ar.edu.itba.paw.service.NotificationDispatcherService;
+import ar.edu.itba.paw.service.NotificationPreferenceService;
 import ar.edu.itba.paw.service.SiteNotificationService;
 import ar.edu.itba.paw.service.dto.mail.ListingMailDto;
 import ar.edu.itba.paw.service.dto.mail.OfferMailDto;
@@ -31,6 +32,7 @@ public class NotificationDispatcherServiceImpl implements NotificationDispatcher
 
     private final SiteNotificationService siteNotificationService;
     private final EmailNotificationService emailNotificationService;
+    private final NotificationPreferenceService notificationPreferenceService;
 
     @Override
     public void notifyWelcome(@NonNull User user) {
@@ -279,10 +281,10 @@ public class NotificationDispatcherServiceImpl implements NotificationDispatcher
     }
 
     private boolean shouldSendSite(final User recipient, final NotificationType type) {
-        return recipient != null && type.supportsSite();
+        return recipient != null && notificationPreferenceService.getMode(recipient, type).isSiteEnabled();
     }
 
     private boolean shouldSendEmail(final User recipient, final NotificationType type) {
-        return recipient != null && type.supportsEmail();
+        return recipient != null && notificationPreferenceService.getMode(recipient, type).isEmailEnabled();
     }
 }

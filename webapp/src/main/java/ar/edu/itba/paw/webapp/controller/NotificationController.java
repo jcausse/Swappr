@@ -2,15 +2,18 @@ package ar.edu.itba.paw.webapp.controller;
 
 import ar.edu.itba.paw.model.NotificationType;
 import ar.edu.itba.paw.model.User;
+import ar.edu.itba.paw.service.NotificationPreferenceService;
 import ar.edu.itba.paw.service.SiteNotificationService;
 import ar.edu.itba.paw.webapp.auth.CurrentUser;
 import ar.edu.itba.paw.webapp.form.NotificationFilterForm;
+import ar.edu.itba.paw.webapp.form.NotificationPreferencesForm;
 import ar.edu.itba.paw.webapp.form.StringSelectOption;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -21,7 +24,9 @@ import org.springframework.web.servlet.ModelAndView;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 @RequiredArgsConstructor
 @Controller
@@ -31,6 +36,7 @@ public class NotificationController {
     private static final Logger LOGGER = LoggerFactory.getLogger(NotificationController.class);
 
     private final SiteNotificationService siteNotificationService;
+    private final NotificationPreferenceService notificationPreferenceService;
 
     @GetMapping
     @PreAuthorize("isAuthenticated()")
@@ -96,5 +102,48 @@ public class NotificationController {
 
         final String target = RedirectHelper.resolveReferer(request, "/notifications");
         return new ModelAndView("redirect:" + target);
+    }
+
+    @GetMapping("/preferences")
+    @PreAuthorize("isAuthenticated()")
+    public ModelAndView preferences(
+            @CurrentUser User currentUser,
+            @ModelAttribute("preferencesForm") NotificationPreferencesForm preferencesForm
+    ) {
+        LOGGER.debug("User {} viewing notification preferences", currentUser.getId());
+        preferencesForm.setPreferences(notificationPreferenceService.getModesForUser(currentUser));
+        return buildPreferencesView();
+    }
+
+    @PostMapping("/preferences")
+    @PreAuthorize("isAuthenticated()")
+    public ModelAndView updatePreferences(
+            @CurrentUser User currentUser,
+            @Valid @ModelAttribute("preferencesForm") NotificationPreferencesForm preferencesForm,
+            BindingResult errors
+    ) {
+        if (errors.hasErrors()) {
+            LOGGER.debug("Validation errors updating notification preferences for user {}", currentUser.getId());
+            return buildPreferencesView();
+        }
+
+        LOGGER.info("User {} updating notification preferences", currentUser.getId());
+        notificationPreferenceService.updatePreferences(currentUser, preferencesForm.getPreferences());
+        return new ModelAndView("redirect:/notifications/preferences?saved=true");
+    }
+
+    private ModelAndView buildPreferencesView() {
+        final List<NotificationType> configurableTypes = NotificationType.getConfigurableTypes();
+        final Map<String, List<StringSelectOption>> optionsByType = new LinkedHashMap<>();
+        for (final NotificationType type : configurableTypes) {
+            final List<StringSelectOption> options = type.getSupportedModes().stream()
+                    .map(mode -> new StringSelectOption(mode.name(), "notifications.preferences.mode." + mode.name()))
+                    .toList();
+            optionsByType.put(type.name(), options);
+        }
+
+        return new ModelAndView("notifications/preferences")
+                .addObject("configurableTypes", configurableTypes)
+                .addObject("optionsByType", optionsByType);
     }
 }
