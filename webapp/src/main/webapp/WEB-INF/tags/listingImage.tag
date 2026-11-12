@@ -20,8 +20,8 @@
 }"/>
 
 <c:set var="coverUrl" value=""/>
-<c:if test="${not empty listing.imageIds}">
-    <c:url value="/image/${listing.imageIds[0]}" var="coverUrl"/>
+<c:if test="${not empty listing.coverImageId}">
+    <c:url value="/image/${listing.coverImageId}" var="coverUrl"/>
 </c:if>
 
 <div class="flex-shrink-0 rounded-lg overflow-hidden border border-black/10 bg-neutral-200 ${sizeClassnames}">

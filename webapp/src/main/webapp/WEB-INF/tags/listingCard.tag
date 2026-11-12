@@ -12,8 +12,8 @@
 
 <c:set var="listingCardVariant" value="${not empty variant ? variant : 'default'}"/>
 <c:set var="imageUrl" value=""/>
-<c:if test="${not empty listing.imageIds}">
-    <c:url value="/image/${listing.imageIds[0]}" var="imageUrl"/>
+<c:if test="${not empty listing.coverImageId}">
+    <c:url value="/image/${listing.coverImageId}" var="imageUrl"/>
 </c:if>
 <c:set var="subLabel" value=""/>
 <c:if test="${not empty listing.model and not empty listing.model.subcategory}">
