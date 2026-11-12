@@ -5,6 +5,7 @@ import org.hibernate.annotations.Formula;
 
 import javax.persistence.*;
 import java.time.Instant;
+import java.time.Year;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -20,6 +21,8 @@ import java.util.Optional;
 @Entity
 @Table(name = "listings")
 public class Listing {
+
+    public static final int MIN_YEAR = 1900;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -111,6 +114,10 @@ public class Listing {
 
     public boolean isCanceled() {
         return status == ListingStatus.CANCELED;
+    }
+
+    public static boolean isValidYear(final int year) {
+        return year >= MIN_YEAR && year <= Year.now().getValue();
     }
 
     public boolean isFree() {
