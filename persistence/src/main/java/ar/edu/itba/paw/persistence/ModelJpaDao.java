@@ -24,29 +24,21 @@ import java.util.Optional;
 @Repository
 public class ModelJpaDao implements ModelDao {
 
-    private static final String CONDITION_ORDER_CASE =
-            " CASE l.condition"
-            + " WHEN :conditionUnused THEN 0"
-            + " WHEN :conditionLikeNew THEN 1"
-            + " WHEN :conditionExcellent THEN 2"
-            + " WHEN :conditionGood THEN 3"
-            + " WHEN :conditionFair THEN 4"
-            + " WHEN :conditionAsIs THEN 5"
-            + " WHEN :conditionForParts THEN 6"
-            + " END";
+    private static final String CONDITION_ORDER_CASE = buildConditionOrderCase();
+
+    private static String buildConditionOrderCase() {
+        final StringBuilder orderCase = new StringBuilder(" CASE l.condition");
+        for (final Condition condition : Condition.values()) {
+            orderCase.append(" WHEN '")
+                    .append(condition.name())
+                    .append("' THEN ")
+                    .append(condition.ordinal());
+        }
+        return orderCase.append(" END").toString();
+    }
 
     @PersistenceContext
     private EntityManager em;
-
-    private static void bindConditionOrder(final Query query) {
-        query.setParameter("conditionUnused", Condition.UNUSED.name());
-        query.setParameter("conditionLikeNew", Condition.LIKE_NEW.name());
-        query.setParameter("conditionExcellent", Condition.EXCELLENT.name());
-        query.setParameter("conditionGood", Condition.GOOD.name());
-        query.setParameter("conditionFair", Condition.FAIR.name());
-        query.setParameter("conditionAsIs", Condition.AS_IS.name());
-        query.setParameter("conditionForParts", Condition.FOR_PARTS.name());
-    }
 
     @Override
     public Optional<Model> getById(Long id) {
@@ -273,7 +265,6 @@ public class ModelJpaDao implements ModelDao {
                 Object[].class)
                 .setParameter("modelIds", modelIds)
                 .setParameter("status", ListingStatus.ACTIVE);
-        bindConditionOrder(query);
         if (fromYear != null) query.setParameter("yearFrom", fromYear);
         if (toYear != null) query.setParameter("yearTo", toYear);
 
@@ -330,7 +321,6 @@ public class ModelJpaDao implements ModelDao {
                 Object[].class)
                 .setParameter("modelId", modelId)
                 .setParameter("status", ListingStatus.ACTIVE);
-        bindConditionOrder(query);
 
         final List<ModelListingInfo> infos = query.getResultList()
                 .stream()
