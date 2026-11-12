@@ -33,7 +33,7 @@ public class BrandJpaDao implements BrandDao {
     @Override
     public boolean existsByNameAndIdNot(String name, Long id) {
         return em.createQuery(
-                "SELECT COUNT(b) FROM Brand b WHERE b.name = :name AND b.id <> :id",
+                "SELECT COUNT(b) FROM Brand b WHERE LOWER(b.name) = LOWER(:name) AND b.id <> :id",
                 Long.class)
                 .setParameter("name", name)
                 .setParameter("id", id)
