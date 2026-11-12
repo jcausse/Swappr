@@ -10,6 +10,7 @@ public class ModelInfo {
     String name;
     Long brandId;
     String brandName;
+    Long categoryId;
     Long subcategoryId;
     String subcategoryName;
     boolean hasListings;
