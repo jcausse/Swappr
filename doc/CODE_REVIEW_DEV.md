@@ -22,18 +22,18 @@ Status values: `todo`, `done`, `underspecified`, `needs bigger refactor`, `false
 | 2.5 | [`clone_prod_db.py` exposes production data on the LAN](#25-scriptclone_prod_dbpy-exposes-a-copy-of-production-data-on-the-local-network) | ❌ false positive |
 | 2.6 | [User input written to logs as-is (log forging)](#26-user-input-written-to-the-logs-as-is-log-forging) | ✅ done |
 | 3.1 | [Password recovery POST does not redirect (no PRG)](#31-password-recovery-post-does-not-redirect-no-prg) | ✅ done |
-| 3.2 | ["Withdraw" offered for offers that cannot be withdrawn](#32-withdraw-is-offered-for-offers-that-cannot-be-withdrawn) | 🕓 todo |
+| 3.2 | ["Withdraw" offered for offers that cannot be withdrawn](#32-withdraw-is-offered-for-offers-that-cannot-be-withdrawn) | ✅ done |
 | 3.3 | [Replacing/editing a model can move listings across subcategories](#33-replacing-or-editing-a-model-can-move-listings-to-another-subcategory) | ❌ false positive |
 | 3.4 | [Brand/model names compared case-sensitively on rename/create/edit](#34-brand-and-model-names-are-still-compared-case-sensitively-when-renaming-a-brand-and-creating-or-editing-a-model) | 🕓 todo |
 | 3.5 | [Price summary includes free listings and the listing being edited](#35-the-price-summary-in-the-listing-form-includes-free-listings-and-the-listing-being-edited) | 🕓 todo |
 | 3.6 | [Admin catalog shows raw subcategory codes](#36-admin-catalog-shows-raw-subcategory-codes) | 🕓 todo |
 | 3.7 | ["Already exists" page breaks names with commas and does not escape](#37-brandmodel-already-exists-page-breaks-names-with-commas-and-does-not-escape-them--reproduced) | 🕓 todo |
 | 3.8 | [Price range "max" printed unformatted](#38-the-max-of-the-price-range-is-printed-unformatted) | ❌ false positive |
-| 3.9 | [Takedown redirects built without URL-encoding](#39-takedown-redirects-in-the-admin-are-built-without-url-encoding) | 🕓 todo |
+| 3.9 | [Takedown redirects built without URL-encoding](#39-takedown-redirects-in-the-admin-are-built-without-url-encoding) | ✅ done |
 | 3.10 | [Admin catalog actions lose page, sort and filters; generic errors](#310-admin-catalog-actions-lose-page-sort-and-filters-and-report-generic-errors) | ⚠️ needs bigger refactor |
 | 3.11 | [Duplicate-request redirect empties the form](#311-the-duplicate-request-redirect-empties-the-form) | ❌ false positive |
 | 3.12 | [Brand/model requests table `colspan` out of date](#312-brandmodel-requests-table-colspan-out-of-date) | ✅ done |
-| 3.13 | [Changing category wipes the request form fields](#313-changing-the-category-in-the-brandmodel-request-form-wipes-what-the-user-typed) | 🕓 todo |
+| 3.13 | [Changing category wipes the request form fields](#313-changing-the-category-in-the-brandmodel-request-form-wipes-what-the-user-typed) | ✅ done |
 | 4.1 | [Circular service dependency broken with `@Lazy`](#41-circular-dependency-between-services-broken-with-lazy) | 🕓 todo |
 | 4.2 | [`PermissionServiceImpl` write transactions for read-only checks; unused methods](#42-permissionserviceimpl-write-transactions-for-read-only-checks-and-methods-exposed-for-nothing) | 🕓 todo |
 | 4.3 | [Authorization failures thrown as `BadParameterException`](#43-authorization-failures-thrown-as-badparameterexception) | 🕓 todo |
