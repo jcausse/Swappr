@@ -10,7 +10,7 @@ public class BrandModelRequestValidator implements ConstraintValidator<ValidBran
 
     @Override
     public boolean isValid(BrandModelRequestForm form, ConstraintValidatorContext context) {
-        if (form == null) {
+        if (form == null || Boolean.TRUE.equals(form.getIsAutoSubmit())) {
             return true;
         }
 
