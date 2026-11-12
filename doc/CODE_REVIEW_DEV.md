@@ -15,12 +15,12 @@ Status values: `todo`, `done`, `underspecified`, `needs bigger refactor`, `false
 | 1.7 | [Business logic in the DAO](#17-business-logic-in-the-dao-graded) | ⚠️ needs bigger refactor |
 | 1.8 | [`Mockito.verify` used in a test](#18-mockitoverify-in-a-test-forbidden-by-the-course-rules) | ✅ done |
 | 1.9 | [Boxed `Boolean` for always-present fields](#19-boxed-boolean-for-fields-that-are-always-present-graded-offerisfullprice-was-flagged-to-us) | ✅ done |
-| 2.1 | [Session id not rotated on login (session fixation)](#21-login-without-rotating-the-session-id-session-fixation) | 🕓 todo |
-| 2.2 | [`OpenEntityManagerInViewFilter` runs before Spring Security](#22-openentitymanagerinviewfilter-runs-before-spring-security) | 🕓 todo |
-| 2.3 | [Free-text fields without a maximum length](#23-free-text-fields-without-a-maximum-length) | 🕓 todo |
-| 2.4 | [Listing year not validated on the server](#24-the-listing-year-is-not-validated-on-the-server) | 🕓 todo |
+| 2.1 | [Session id not rotated on login (session fixation)](#21-login-without-rotating-the-session-id-session-fixation) | ✅ done |
+| 2.2 | [`OpenEntityManagerInViewFilter` runs before Spring Security](#22-openentitymanagerinviewfilter-runs-before-spring-security) | ✅ done |
+| 2.3 | [Free-text fields without a maximum length](#23-free-text-fields-without-a-maximum-length) | ✅ done |
+| 2.4 | [Listing year not validated on the server](#24-the-listing-year-is-not-validated-on-the-server) | ✅ done |
 | 2.5 | [`clone_prod_db.py` exposes production data on the LAN](#25-scriptclone_prod_dbpy-exposes-a-copy-of-production-data-on-the-local-network) | ❌ false positive |
-| 2.6 | [User input written to logs as-is (log forging)](#26-user-input-written-to-the-logs-as-is-log-forging) | 🕓 todo |
+| 2.6 | [User input written to logs as-is (log forging)](#26-user-input-written-to-the-logs-as-is-log-forging) | ✅ done |
 | 3.1 | [Password recovery POST does not redirect (no PRG)](#31-password-recovery-post-does-not-redirect-no-prg) | 🕓 todo |
 | 3.2 | ["Withdraw" offered for offers that cannot be withdrawn](#32-withdraw-is-offered-for-offers-that-cannot-be-withdrawn) | 🕓 todo |
 | 3.3 | [Replacing/editing a model can move listings across subcategories](#33-replacing-or-editing-a-model-can-move-listings-to-another-subcategory) | ❌ false positive |

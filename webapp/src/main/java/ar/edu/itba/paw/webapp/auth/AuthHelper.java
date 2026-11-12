@@ -10,6 +10,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
 
+import javax.servlet.http.HttpServletRequest;
+
 import java.util.Optional;
 
 @Component
@@ -33,8 +35,11 @@ public class AuthHelper {
         return getCurrentUser().isPresent();
     }
 
-    public void login(final @NonNull String usernameOrEmail) {
+    public void login(final @NonNull HttpServletRequest request, final @NonNull String usernameOrEmail) {
         final UserDetails ud = userDetailsService.loadUserByUsername(usernameOrEmail);
+        if (request.getSession(false) != null) {
+            request.changeSessionId();
+        }
         SecurityContextHolder.getContext().setAuthentication(
                 new UsernamePasswordAuthenticationToken(ud, null, ud.getAuthorities())
         );
