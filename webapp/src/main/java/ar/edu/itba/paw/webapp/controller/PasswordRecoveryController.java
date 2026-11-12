@@ -1,5 +1,6 @@
 package ar.edu.itba.paw.webapp.controller;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 import org.slf4j.Logger;
@@ -76,7 +77,8 @@ public class PasswordRecoveryController {
     @PostMapping("/recovery/verification")
     public ModelAndView passwordRecoveryVerificationPOST(
             @Valid @ModelAttribute("passwordRecoveryVerificationForm") PasswordRecoveryVerificationForm form,
-            BindingResult errors
+            BindingResult errors,
+            HttpServletRequest request
     ) {
         if (errors.hasErrors()) {
             LOGGER.debug("Validation failed for password recovery verification form");
@@ -91,7 +93,7 @@ public class PasswordRecoveryController {
 
         if (result == OneTimePasswordVerificationResult.ACCEPTED) {
             LOGGER.info("Password successfully recovered for {}", form.getUsernameOrEmail());
-            authHelper.login(form.getUsernameOrEmail());
+            authHelper.login(request, form.getUsernameOrEmail());
             return new ModelAndView("redirect:/");
         }
 
