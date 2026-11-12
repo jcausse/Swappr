@@ -178,10 +178,6 @@ public class Offer {
         return listing != null && listing.isFree();
     }
 
-    public boolean getIsFullPrice() {
-        return isFullPrice;
-    }
-
     public boolean isBuyer(Long userId) {
         return userId != null && userId.equals(buyer.getId());
     }

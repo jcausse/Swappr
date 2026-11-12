@@ -33,7 +33,7 @@ public class OfferMailDto {
         return OfferMailDto.builder()
                 .id(offer.getId())
                 .amount(offer.getAmount())
-                .isFullPrice(offer.getIsFullPrice())
+                .isFullPrice(offer.isFullPrice())
                 .trackingNumber(offer.getTrackingNumber())
                 .buyer(UserMailDto.from(offer.getBuyer()))
                 .seller(UserMailDto.from(listing.getCreator()))
