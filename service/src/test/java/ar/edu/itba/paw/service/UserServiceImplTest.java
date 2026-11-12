@@ -183,10 +183,10 @@ public class UserServiceImplTest {
         when(userDao.updatePreferredLanguage(eq(USER_ID), eq(Language.SPANISH))).thenReturn(Optional.of(user));
 
         // Act
-        userService.updatePreferredLanguage(user, Language.SPANISH);
+        final User result = userService.updatePreferredLanguage(user, Language.SPANISH);
 
         // Assert
-        verify(userDao).updatePreferredLanguage(USER_ID, Language.SPANISH);
+        Assert.assertSame(user, result);
     }
 
     @Test

@@ -13,7 +13,7 @@ Status values: `todo`, `done`, `underspecified`, `needs bigger refactor`, `false
 | 1.5 | [Writes done one row at a time in loops](#15-writes-done-one-row-at-a-time-in-a-loop-graded) | todo |
 | 1.6 | [Sorting done in Java](#16-sorting-done-in-java-graded) | todo |
 | 1.7 | [Business logic in the DAO](#17-business-logic-in-the-dao-graded) | needs bigger refactor |
-| 1.8 | [`Mockito.verify` used in a test](#18-mockitoverify-in-a-test-forbidden-by-the-course-rules) | todo |
+| 1.8 | [`Mockito.verify` used in a test](#18-mockitoverify-in-a-test-forbidden-by-the-course-rules) | done |
 | 1.9 | [Boxed `Boolean` for always-present fields](#19-boxed-boolean-for-fields-that-are-always-present-graded-offerisfullprice-was-flagged-to-us) | todo |
 | 2.1 | [Session id not rotated on login (session fixation)](#21-login-without-rotating-the-session-id-session-fixation) | todo |
 | 2.2 | [`OpenEntityManagerInViewFilter` runs before Spring Security](#22-openentitymanagerinviewfilter-runs-before-spring-security) | todo |
