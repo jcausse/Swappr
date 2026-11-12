@@ -156,7 +156,7 @@ public class OfferJpaDaoTest {
         final Offer offer = maybeOffer.get();
         Assert.assertEquals(LOW_OFFER_ID, (long) offer.getId());
         Assert.assertEquals(0, new BigDecimal("1400.00").compareTo(offer.getAmount()));
-        Assert.assertFalse(offer.isFullPrice());
+        Assert.assertFalse(offer.getIsFullPrice());
         Assert.assertEquals(OfferStatus.PENDING, offer.getStatus());
         Assert.assertNull(offer.getMessage());
         final Instant storedCreatedAt = jdbcTemplate.queryForObject(
@@ -487,7 +487,7 @@ public class OfferJpaDaoTest {
         Assert.assertEquals(GALAXY_LISTING_ID, (long) offer.getListing().getId());
         Assert.assertEquals(BUYER_ID, (long) offer.getBuyer().getId());
         Assert.assertEquals(0, new BigDecimal("750.00").compareTo(offer.getAmount()));
-        Assert.assertFalse(offer.isFullPrice());
+        Assert.assertFalse(offer.getIsFullPrice());
         Assert.assertEquals(OfferStatus.PENDING, offer.getStatus());
         Assert.assertEquals("Is it unlocked?", offer.getMessage());
         Assert.assertEquals(NEW_OFFER_CREATED_AT, offer.getCreatedAt());
