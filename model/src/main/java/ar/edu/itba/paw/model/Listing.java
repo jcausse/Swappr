@@ -57,10 +57,10 @@ public class Listing {
     private Condition condition;
 
     @Column(name = "accepts_trade", nullable = false)
-    private Boolean acceptsTrade;
+    private boolean acceptsTrade;
 
     @Column(name = "accepts_shipping", nullable = false)
-    private Boolean acceptsShipping;
+    private boolean acceptsShipping;
 
     @OneToMany
     @JoinTable(
