@@ -70,8 +70,6 @@ public class ListingServiceImplTest {
     private ImageService imageService;
     @Mock
     private NotificationDispatcherService notificationDispatcherService;
-    @Mock
-    private OfferService offerService;
 
     /* ---------------------------------------------------------------------------------------------- */
     /* Fixtures                                                                                        */
@@ -572,18 +570,5 @@ public class ListingServiceImplTest {
 
         // Assert
         Assert.assertEquals(LISTING_ID, (long) result.getId());
-    }
-
-    /* ---------------------------------------------------------------------------------------------- */
-    /* cancel / updateStatus                                                                           */
-    /* ---------------------------------------------------------------------------------------------- */
-
-    @Test(expected = NotFoundException.class)
-    public void testCancelNonExistingListingThrows() {
-        // Arrange
-        when(listingDao.getById(eq(NON_EXISTING_ID))).thenReturn(Optional.empty());
-
-        // Act
-        listingService.cancel(NON_EXISTING_ID, SELLER_ID);
     }
 }

@@ -46,7 +46,6 @@ public class ListingServiceImpl implements ListingService {
     private final CatalogService catalogService;
     private final ImageService imageService;
     private final NotificationDispatcherService notificationDispatcherService;
-    private final OfferService offerService;
 
     @Override
     public Listing getById(Long id) {
@@ -290,32 +289,6 @@ public class ListingServiceImpl implements ListingService {
 
         LOGGER.info("Listing updated: id={}, title='{}'", updated.getId(), updated.getTitle());
         return updated;
-    }
-
-    @Override
-    @Transactional
-    public void cancel(Long id, Long currentUserId) {
-        LOGGER.info("Canceling listing id={} by user {}", id, currentUserId);
-        var listing = getById(id);
-        if (!listing.isCreator(currentUserId)) {
-            throw new ForbiddenException("Not authorized to cancel this listing");
-        }
-        offerService.rejectPendingOffersForListing(id, null);
-        if (!listingDao.cancel(id)) {
-            throw NotFoundException.createFor("Listing with ID " + id);
-        }
-        LOGGER.info("Listing canceled: id={}", id);
-    }
-
-    @Override
-    @Transactional
-    public void cancelByAdmin(Long id) {
-        LOGGER.info("Canceling listing id={} by Admin", id);
-        offerService.rejectPendingOffersForListing(id, null);
-        if (!listingDao.cancel(id)) {
-            throw NotFoundException.createFor("Listing with ID " + id);
-        }
-        LOGGER.info("Listing canceled by Admin: id={}", id);
     }
 
     @Override

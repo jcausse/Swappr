@@ -25,6 +25,7 @@ import ar.edu.itba.paw.model.Model;
 import ar.edu.itba.paw.model.Page;
 import ar.edu.itba.paw.model.User;
 import ar.edu.itba.paw.service.CatalogService;
+import ar.edu.itba.paw.service.ListingCancellationService;
 import ar.edu.itba.paw.service.ListingService;
 import ar.edu.itba.paw.service.OfferService;
 import ar.edu.itba.paw.service.ProvinceService;
@@ -52,6 +53,7 @@ public class ListingController {
 
 
     private final ListingService listingService;
+    private final ListingCancellationService listingCancellationService;
     private final OfferService offerService;
     private final CatalogService catalogService;
     private final ProvinceService provinceService;
@@ -419,7 +421,7 @@ public class ListingController {
     @PreAuthorize("@webPermissionService.canManageListing(authentication, #id)")
     public ModelAndView cancelListing(@PathVariable Long id, @CurrentUser User currentUser) {
         LOGGER.info("User {} canceled listing {}", currentUser.getId(), id);
-        listingService.cancel(id, currentUser.getId());
+        listingCancellationService.cancel(id, currentUser.getId());
         return new ModelAndView("redirect:/account/listings");
     }
 
