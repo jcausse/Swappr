@@ -24,6 +24,19 @@ import java.util.Optional;
 @Repository
 public class ModelJpaDao implements ModelDao {
 
+    private static final String CONDITION_ORDER_CASE = buildConditionOrderCase();
+
+    private static String buildConditionOrderCase() {
+        final StringBuilder orderCase = new StringBuilder(" CASE l.condition");
+        for (final Condition condition : Condition.values()) {
+            orderCase.append(" WHEN '")
+                    .append(condition.name())
+                    .append("' THEN ")
+                    .append(condition.ordinal());
+        }
+        return orderCase.append(" END").toString();
+    }
+
     @PersistenceContext
     private EntityManager em;
 
@@ -248,7 +261,7 @@ public class ModelJpaDao implements ModelDao {
                 + " FROM Listing l JOIN l.model m JOIN m.brand b"
                 + " WHERE m.id IN :modelIds AND l.status = :status" + yearWhere
                 + " GROUP BY b, m, l.condition"
-                + " ORDER BY b.name, m.name, l.condition",
+                + " ORDER BY b.name, m.name," + CONDITION_ORDER_CASE,
                 Object[].class)
                 .setParameter("modelIds", modelIds)
                 .setParameter("status", ListingStatus.ACTIVE);
@@ -299,15 +312,17 @@ public class ModelJpaDao implements ModelDao {
             return Optional.empty();
         }
 
-        final List<ModelListingInfo> infos = em.createQuery(
+        final var query = em.createQuery(
                 "SELECT l.condition, COUNT(l), MIN(l.price.amount), MAX(l.price.amount), AVG(l.price.amount)"
                 + " FROM Listing l"
                 + " WHERE l.model.id = :modelId AND l.status = :status"
-                + " GROUP BY l.condition",
+                + " GROUP BY l.condition"
+                + " ORDER BY" + CONDITION_ORDER_CASE,
                 Object[].class)
                 .setParameter("modelId", modelId)
-                .setParameter("status", ListingStatus.ACTIVE)
-                .getResultList()
+                .setParameter("status", ListingStatus.ACTIVE);
+
+        final List<ModelListingInfo> infos = query.getResultList()
                 .stream()
                 .map((fields) -> ModelListingInfo.builder()
                     .brand(model.getBrand())

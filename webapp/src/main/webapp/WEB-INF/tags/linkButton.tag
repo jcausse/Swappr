@@ -71,7 +71,7 @@
 }"/>
 
 <a
-    href="${href}"
+    href="<c:out value='${href}' />"
     class="
         font-semibold rounded-lg
         flex flex-row flex-shrink-0 items-center justify-center gap-2
