@@ -9,8 +9,8 @@ import lombok.Setter;
 @Setter
 public class AdminModelFilterForm {
 
-    private Long brandId;
-    private Long categoryId;
-    private Long subcategoryId;
+    private Long filterBrandId;
+    private Long filterCategoryId;
+    private Long filterSubcategoryId;
     private Boolean isAutoSubmit = false;
 }
