@@ -220,6 +220,18 @@ public class ModelJpaDaoTest {
     }
 
     @Test
+    public void testExistsByNameAndBrandIdIsCaseInsensitive() {
+        Assert.assertTrue(modelDao.existsByNameAndBrandId("macbook pro", APPLE_BRAND_ID));
+        Assert.assertFalse(modelDao.existsByNameAndBrandId("macbook pro", DELL_BRAND_ID));
+    }
+
+    @Test
+    public void testExistsByNameAndBrandIdAndIdNotIsCaseInsensitiveButExcludesSameModel() {
+        Assert.assertTrue(modelDao.existsByNameAndBrandIdAndIdNot("macbook pro", APPLE_BRAND_ID, 2L));
+        Assert.assertFalse(modelDao.existsByNameAndBrandIdAndIdNot("macbook pro", APPLE_BRAND_ID, MACBOOK_PRO_MODEL_ID));
+    }
+
+    @Test
     public void testCreatePersistsModel() {
         final Model created = modelDao.create("New Model",
                 Brand.builder().id(APPLE_BRAND_ID).build(),

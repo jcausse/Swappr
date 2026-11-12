@@ -149,8 +149,14 @@
                                     <paw:linkButton href="${listingViewUrl}" text="${viewListingBtnText}" variant="outline" size="sm" icon="external-link"/>
 
                                     <c:if test="${offer.status.name() == 'PENDING' || offer.status.name() == 'PENDING_PAYMENT'}">
+                                        <c:url value="/admin/offers" var="takedownOfferRedirectUrl">
+                                            <c:param name="page" value="${offersPage.page}"/>
+                                            <c:if test="${not empty filterForm.statusGroup}">
+                                                <c:param name="statusGroup" value="${filterForm.statusGroup}"/>
+                                            </c:if>
+                                        </c:url>
                                         <form method="post" action="${takedownOfferActionUrl}">
-                                            <input type="hidden" name="redirect" value="/admin/offers?page=${offersPage.page}&statusGroup=<c:out value='${filterForm.statusGroup}'/>"/>
+                                            <input type="hidden" name="redirect" value="<c:out value='${takedownOfferRedirectUrl}'/>"/>
                                             <spring:message code="admin.offers.takedown.btn" var="takeDownOfferBtnText"/>
                                             <paw:button text="${takeDownOfferBtnText}" type="submit" variant="outline" role="danger" size="sm" icon="trash-2"/>
                                         </form>

@@ -7,6 +7,11 @@
     <c:param name="modelId" value="${modelId}"/>
 </c:url>
 
+<spring:message code="catalogRequest.modelExists.message" var="modelExistsMessage">
+    <spring:argument value="${brandName}"/>
+    <spring:argument value="${modelName}"/>
+</spring:message>
+
 <!DOCTYPE html>
 <html lang="${pageContext.response.locale.language}">
 <paw:head titleKey="catalogRequest.modelExists.title"/>
@@ -22,7 +27,7 @@
         </div>
 
         <p class="text-neutral-600 text-base">
-            <spring:message code="catalogRequest.modelExists.message" arguments="${brandName},${modelName}"/>
+            <c:out value="${modelExistsMessage}"/>
         </p>
 
         <div class="flex flex-col sm:flex-row items-center gap-3">

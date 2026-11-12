@@ -290,8 +290,8 @@ public class CatalogServiceImpl implements CatalogService {
     }
 
     @Override
-    public Optional<ModelListingInfoSummary> getListingInfoSummaryForModel(final Long modelId) {
-        return modelDao.getListingInfoSummaryForModel(modelId)
+    public Optional<ModelListingInfoSummary> getListingInfoSummaryForModel(final Long modelId, final Long excludedListingId) {
+        return modelDao.getListingInfoSummaryForModel(modelId, excludedListingId)
             .map(summary -> ModelListingInfoSummary.builder()
                 .brand(summary.getBrand())
                 .model(summary.getModel())
