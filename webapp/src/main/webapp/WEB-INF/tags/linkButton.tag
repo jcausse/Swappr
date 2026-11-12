@@ -18,7 +18,6 @@
 <c:set var="btnClass" value="${not empty classname ? classname : ''}"/>
 
 <c:set var="isDisabled" value="${disabled ne null ? disabled : false}"/>
-<c:out value="${href}" var="escapedHref"/>
 
 <c:set var="variantClassnames" value="${
   btnVariant eq 'outline'
@@ -72,7 +71,7 @@
 }"/>
 
 <a
-    href="${escapedHref}"
+    href="<c:out value='${href}' />"
     class="
         font-semibold rounded-lg
         flex flex-row flex-shrink-0 items-center justify-center gap-2
