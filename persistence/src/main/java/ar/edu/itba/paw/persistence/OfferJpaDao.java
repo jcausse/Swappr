@@ -13,6 +13,7 @@ import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -138,20 +139,29 @@ public class OfferJpaDao implements OfferDao {
 
     @Override
     public List<Offer> rejectPendingOffers(Long listingId, Long exceptOfferId) {
-        final String jpql = exceptOfferId != null
-                ? "FROM Offer o WHERE o.listing.id = :listingId AND o.status = :status AND o.id <> :exceptOfferId"
-                : "FROM Offer o WHERE o.listing.id = :listingId AND o.status = :status";
-        final TypedQuery<Offer> query = em.createQuery(jpql, Offer.class)
+        final String pendingClause = exceptOfferId != null
+                ? " FROM Offer o WHERE o.listing.id = :listingId AND o.status = :status AND o.id <> :exceptOfferId"
+                : " FROM Offer o WHERE o.listing.id = :listingId AND o.status = :status";
+        final TypedQuery<Long> idQuery = em.createQuery("SELECT o.id" + pendingClause, Long.class)
                 .setParameter("listingId", listingId)
                 .setParameter("status", OfferStatus.PENDING);
         if (exceptOfferId != null) {
-            query.setParameter("exceptOfferId", exceptOfferId);
+            idQuery.setParameter("exceptOfferId", exceptOfferId);
         }
-        final List<Offer> toReject = query.getResultList();
-        for (Offer o : toReject) {
-            o.setStatus(OfferStatus.REJECTED);
+        final List<Long> ids = idQuery.getResultList();
+        if (ids.isEmpty()) {
+            return List.of();
         }
-        return toReject;
+
+        final Query update = em.createQuery(
+                        "UPDATE Offer o SET o.status = :rejected WHERE o.id IN :ids")
+                .setParameter("rejected", OfferStatus.REJECTED)
+                .setParameter("ids", ids);
+        update.executeUpdate();
+
+        return em.createQuery("FROM Offer o WHERE o.id IN :ids", Offer.class)
+                .setParameter("ids", ids)
+                .getResultList();
     }
 
     @Override
@@ -231,6 +241,26 @@ public class OfferJpaDao implements OfferDao {
         if (offer == null || offer.getBuyerRating().isPresent()) return false;
         offer.setBuyerRating(rating);
         return true;
+    }
+
+    @Override
+    public int setSellerRatings(List<Long> offerIds, OfferRating rating) {
+        if (offerIds == null || offerIds.isEmpty()) return 0;
+        return em.createQuery(
+                "UPDATE Offer o SET o.sellerRating = :rating WHERE o.id IN :ids AND o.sellerRating IS NULL")
+                .setParameter("rating", rating)
+                .setParameter("ids", offerIds)
+                .executeUpdate();
+    }
+
+    @Override
+    public int setBuyerRatings(List<Long> offerIds, OfferRating rating) {
+        if (offerIds == null || offerIds.isEmpty()) return 0;
+        return em.createQuery(
+                "UPDATE Offer o SET o.buyerRating = :rating WHERE o.id IN :ids AND o.buyerRating IS NULL")
+                .setParameter("rating", rating)
+                .setParameter("ids", offerIds)
+                .executeUpdate();
     }
 
     @Override
