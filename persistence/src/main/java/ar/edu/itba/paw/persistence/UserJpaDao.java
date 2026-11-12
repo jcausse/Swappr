@@ -9,7 +9,10 @@ import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 @Repository
@@ -181,5 +184,42 @@ public class UserJpaDao implements UserDao {
                 case NEGATIVE -> user.setBuyerNegativeRatings((user.getBuyerNegativeRatings() != null ? user.getBuyerNegativeRatings() : 0) + 1);
             }
         }
+    }
+
+    @Override
+    public void incrementSellerRatingCounters(Map<Long, Long> increments, OfferRating rating) {
+        incrementRatingCounters(increments, rating, true);
+    }
+
+    @Override
+    public void incrementBuyerRatingCounters(Map<Long, Long> increments, OfferRating rating) {
+        incrementRatingCounters(increments, rating, false);
+    }
+
+    private void incrementRatingCounters(Map<Long, Long> increments, OfferRating rating, boolean seller) {
+        if (increments == null || increments.isEmpty()) return;
+
+        final String field = switch (rating) {
+            case POSITIVE -> seller ? "sellerPositiveRatings" : "buyerPositiveRatings";
+            case NEUTRAL -> seller ? "sellerNeutralRatings" : "buyerNeutralRatings";
+            case NEGATIVE -> seller ? "sellerNegativeRatings" : "buyerNegativeRatings";
+        };
+
+        final StringBuilder incrementsCase = new StringBuilder("CASE u.id");
+        final Map<String, Object> params = new HashMap<>();
+        int index = 0;
+        for (final Map.Entry<Long, Long> entry : increments.entrySet()) {
+            final String param = "userId" + index++;
+            incrementsCase.append(" WHEN :").append(param).append(" THEN ").append(entry.getValue());
+            params.put(param, entry.getKey());
+        }
+        incrementsCase.append(" ELSE 0 END");
+
+        final Query update = em.createQuery(
+                "UPDATE User u SET u." + field + " = COALESCE(u." + field + ", 0) + "
+                        + incrementsCase + " WHERE u.id IN :ids")
+                .setParameter("ids", increments.keySet());
+        params.forEach(update::setParameter);
+        update.executeUpdate();
     }
 }

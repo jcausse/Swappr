@@ -234,6 +234,26 @@ public class OfferJpaDao implements OfferDao {
     }
 
     @Override
+    public int setSellerRatings(List<Long> offerIds, OfferRating rating) {
+        if (offerIds == null || offerIds.isEmpty()) return 0;
+        return em.createQuery(
+                "UPDATE Offer o SET o.sellerRating = :rating WHERE o.id IN :ids AND o.sellerRating IS NULL")
+                .setParameter("rating", rating)
+                .setParameter("ids", offerIds)
+                .executeUpdate();
+    }
+
+    @Override
+    public int setBuyerRatings(List<Long> offerIds, OfferRating rating) {
+        if (offerIds == null || offerIds.isEmpty()) return 0;
+        return em.createQuery(
+                "UPDATE Offer o SET o.buyerRating = :rating WHERE o.id IN :ids AND o.buyerRating IS NULL")
+                .setParameter("rating", rating)
+                .setParameter("ids", offerIds)
+                .executeUpdate();
+    }
+
+    @Override
     public List<Offer> getAcceptedUnratedBefore(Instant cutoff) {
         final List<Offer> offers = em.createQuery(
                 "FROM Offer o WHERE o.status = :status AND o.acceptedAt IS NOT NULL AND o.acceptedAt < :cutoff AND (o.sellerRating IS NULL OR o.buyerRating IS NULL)",
