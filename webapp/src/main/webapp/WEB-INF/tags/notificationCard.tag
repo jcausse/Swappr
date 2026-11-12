@@ -1,5 +1,5 @@
 <%@ tag language="java" pageEncoding="UTF-8" %>
-<%@ attribute name="notification" required="true" type="ar.edu.itba.paw.model.SiteNotification" %>
+<%@ attribute name="notification" required="true" type="ar.edu.itba.paw.model.notification.SiteNotification" %>
 <%@ attribute name="compact" required="false" type="java.lang.Boolean" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="spring" uri="http://www.springframework.org/tags" %>

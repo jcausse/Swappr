@@ -1,9 +1,9 @@
 package ar.edu.itba.paw.persistence;
 
-import ar.edu.itba.paw.model.NotificationMode;
-import ar.edu.itba.paw.model.NotificationType;
+import ar.edu.itba.paw.model.notification.NotificationMode;
+import ar.edu.itba.paw.model.notification.NotificationType;
 import ar.edu.itba.paw.model.User;
-import ar.edu.itba.paw.model.UserNotificationPreference;
+import ar.edu.itba.paw.model.notification.UserNotificationPreference;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;

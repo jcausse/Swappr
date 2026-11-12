@@ -1,8 +1,8 @@
 package ar.edu.itba.paw.service;
 
 import ar.edu.itba.paw.model.Page;
-import ar.edu.itba.paw.model.SiteNotification;
-import ar.edu.itba.paw.model.SiteNotificationFilter;
+import ar.edu.itba.paw.model.notification.SiteNotification;
+import ar.edu.itba.paw.model.notification.SiteNotificationFilter;
 import ar.edu.itba.paw.model.User;
 import ar.edu.itba.paw.service.dto.SiteNotificationCreationDto;
 import lombok.NonNull;

@@ -1,4 +1,4 @@
-package ar.edu.itba.paw.model;
+package ar.edu.itba.paw.model.notification;
 
 import lombok.Builder;
 import lombok.Getter;

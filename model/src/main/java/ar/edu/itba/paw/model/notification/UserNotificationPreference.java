@@ -1,5 +1,6 @@
-package ar.edu.itba.paw.model;
+package ar.edu.itba.paw.model.notification;
 
+import ar.edu.itba.paw.model.User;
 import lombok.*;
 
 import javax.persistence.*;

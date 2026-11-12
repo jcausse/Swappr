@@ -1,6 +1,9 @@
 package ar.edu.itba.paw.service.notification;
 
 import ar.edu.itba.paw.model.*;
+import ar.edu.itba.paw.model.notification.NotificationMode;
+import ar.edu.itba.paw.model.notification.NotificationType;
+import ar.edu.itba.paw.model.notification.SiteNotification;
 import ar.edu.itba.paw.service.EmailNotificationService;
 import ar.edu.itba.paw.service.NotificationPreferenceService;
 import ar.edu.itba.paw.service.SiteNotificationService;

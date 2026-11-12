@@ -1,9 +1,9 @@
 package ar.edu.itba.paw.service.notification;
 
-import ar.edu.itba.paw.model.NotificationMode;
-import ar.edu.itba.paw.model.NotificationType;
+import ar.edu.itba.paw.model.notification.NotificationMode;
+import ar.edu.itba.paw.model.notification.NotificationType;
 import ar.edu.itba.paw.model.User;
-import ar.edu.itba.paw.model.UserNotificationPreference;
+import ar.edu.itba.paw.model.notification.UserNotificationPreference;
 import ar.edu.itba.paw.persistence.UserNotificationPreferenceDao;
 import ar.edu.itba.paw.service.NotificationPreferenceService;
 import ar.edu.itba.paw.service.exception.BadParameterException;

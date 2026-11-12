@@ -1,6 +1,9 @@
 package ar.edu.itba.paw.service.notification;
 
 import ar.edu.itba.paw.model.*;
+import ar.edu.itba.paw.model.notification.NotificationType;
+import ar.edu.itba.paw.model.notification.SiteNotification;
+import ar.edu.itba.paw.model.notification.SiteNotificationFilter;
 import ar.edu.itba.paw.persistence.SiteNotificationDao;
 import ar.edu.itba.paw.service.dto.SiteNotificationCreationDto;
 import ar.edu.itba.paw.service.exception.ForbiddenException;

@@ -1,5 +1,7 @@
 package ar.edu.itba.paw.model;
 
+import ar.edu.itba.paw.model.notification.NotificationMode;
+import ar.edu.itba.paw.model.notification.NotificationType;
 import org.junit.Assert;
 import org.junit.Test;
 
