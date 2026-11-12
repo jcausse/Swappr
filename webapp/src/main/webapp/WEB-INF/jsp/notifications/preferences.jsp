@@ -8,7 +8,7 @@
 <spring:message code="notifications.preferences.subtitle" var="subtitleMsg"/>
 <spring:message code="notifications.preferences.backToNotifications" var="backLabel"/>
 <spring:message code="notifications.preferences.table.type" var="typeHeaderLabel"/>
-<spring:message code="notifications.preferences.table.channel" var="channelHeaderLabel"/>
+<spring:message code="notifications.preferences.notSupported" var="notSupportedMsg"/>
 <spring:message code="notifications.preferences.submit" var="submitLabel"/>
 <spring:message code="notifications.preferences.cancel" var="cancelLabel"/>
 
@@ -41,7 +41,10 @@
                     <thead>
                         <tr class="border-b border-black/10 text-xs font-semibold uppercase tracking-wide text-black/60">
                             <th class="pb-3 pr-4"><c:out value="${typeHeaderLabel}"/></th>
-                            <th class="pb-3 pl-4 w-56"><c:out value="${channelHeaderLabel}"/></th>
+                            <c:forEach var="channel" items="${channels}">
+                                <spring:message code="notifications.preferences.channel.${channel.name()}" var="channelLabel"/>
+                                <th class="pb-3 px-4 w-28 text-center"><c:out value="${channelLabel}"/></th>
+                            </c:forEach>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-black/10">
@@ -53,18 +56,23 @@
                                     <div class="font-medium text-sm text-black"><c:out value="${typeLabel}"/></div>
                                     <p class="text-xs text-black/60 mt-0.5"><c:out value="${typeDesc}"/></p>
                                 </td>
-                                <td class="py-3.5 pl-4 align-middle w-56">
-                                    <paw:formSelect
-                                        path="preferences[${type.name()}]"
-                                        id="pref_${type.name()}"
-                                        items="${optionsByType[type.name()]}"
-                                        itemLabel="label"
-                                        itemValue="value"
-                                        translateLabels="true"
-                                        variant="outline"
-                                        classname="w-full sm:w-56"
-                                    />
-                                </td>
+                                <c:forEach var="channel" items="${channels}">
+                                    <td class="py-3.5 px-4 align-middle w-28 text-center">
+                                        <c:choose>
+                                            <c:when test="${type.supportsChannel(channel)}">
+                                                <paw:checkbox
+                                                    path="preferences[${type.name()}]"
+                                                    id="pref_${type.name()}_${channel.name()}"
+                                                    value="${channel.name()}"
+                                                    classname="justify-center"
+                                                />
+                                            </c:when>
+                                            <c:otherwise>
+                                                <span class="text-black/30 select-none" title="${notSupportedMsg}" aria-label="${notSupportedMsg}">—</span>
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </td>
+                                </c:forEach>
                             </tr>
                         </c:forEach>
                     </tbody>

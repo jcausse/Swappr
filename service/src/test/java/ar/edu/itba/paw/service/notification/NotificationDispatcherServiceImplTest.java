@@ -1,7 +1,7 @@
 package ar.edu.itba.paw.service.notification;
 
 import ar.edu.itba.paw.model.*;
-import ar.edu.itba.paw.model.notification.NotificationMode;
+import ar.edu.itba.paw.model.notification.NotificationChannel;
 import ar.edu.itba.paw.model.notification.NotificationType;
 import ar.edu.itba.paw.model.notification.SiteNotification;
 import ar.edu.itba.paw.service.EmailNotificationService;
@@ -46,11 +46,12 @@ public class NotificationDispatcherServiceImplTest {
 
     @Before
     public void setUp() {
-        lenient().when(notificationPreferenceService.getMode(
-                any(User.class), any(NotificationType.class)
+        lenient().when(notificationPreferenceService.isNotificationEnabled(
+                any(User.class), any(NotificationType.class), any(NotificationChannel.class)
         )).thenAnswer(inv -> {
             final NotificationType type = inv.getArgument(1);
-            return type != null ? type.getDefaultMode() : NotificationMode.DISABLED;
+            final NotificationChannel channel = inv.getArgument(2);
+            return type != null && type.supportsChannel(channel);
         });
         dispatcher = new NotificationDispatcherServiceImpl(
                 siteNotificationService,
@@ -544,8 +545,10 @@ public class NotificationDispatcherServiceImplTest {
                 .createdAt(Instant.now())
                 .build();
 
-        when(notificationPreferenceService.getMode(seller, NotificationType.NEW_OFFER))
-                .thenReturn(NotificationMode.EMAIL_ONLY);
+        when(notificationPreferenceService.isNotificationEnabled(
+                seller, NotificationType.NEW_OFFER, NotificationChannel.SITE)).thenReturn(false);
+        when(notificationPreferenceService.isNotificationEnabled(
+                seller, NotificationType.NEW_OFFER, NotificationChannel.EMAIL)).thenReturn(true);
 
         final ArgumentCaptor<SiteNotificationCreationDto> siteCaptor =
                 ArgumentCaptor.forClass(SiteNotificationCreationDto.class);
@@ -574,8 +577,10 @@ public class NotificationDispatcherServiceImplTest {
                 .createdAt(Instant.now())
                 .build();
 
-        when(notificationPreferenceService.getMode(seller, NotificationType.NEW_OFFER))
-                .thenReturn(NotificationMode.SITE_ONLY);
+        when(notificationPreferenceService.isNotificationEnabled(
+                seller, NotificationType.NEW_OFFER, NotificationChannel.SITE)).thenReturn(true);
+        when(notificationPreferenceService.isNotificationEnabled(
+                seller, NotificationType.NEW_OFFER, NotificationChannel.EMAIL)).thenReturn(false);
 
         final ArgumentCaptor<SiteNotificationCreationDto> siteCaptor =
                 ArgumentCaptor.forClass(SiteNotificationCreationDto.class);
@@ -604,8 +609,10 @@ public class NotificationDispatcherServiceImplTest {
                 .createdAt(Instant.now())
                 .build();
 
-        when(notificationPreferenceService.getMode(seller, NotificationType.NEW_OFFER))
-                .thenReturn(NotificationMode.DISABLED);
+        when(notificationPreferenceService.isNotificationEnabled(
+                seller, NotificationType.NEW_OFFER, NotificationChannel.SITE)).thenReturn(false);
+        when(notificationPreferenceService.isNotificationEnabled(
+                seller, NotificationType.NEW_OFFER, NotificationChannel.EMAIL)).thenReturn(false);
 
         final ArgumentCaptor<SiteNotificationCreationDto> siteCaptor =
                 ArgumentCaptor.forClass(SiteNotificationCreationDto.class);

@@ -1,6 +1,7 @@
 package ar.edu.itba.paw.service.notification;
 
 import ar.edu.itba.paw.model.Listing;
+import ar.edu.itba.paw.model.notification.NotificationChannel;
 import ar.edu.itba.paw.model.notification.NotificationType;
 import ar.edu.itba.paw.model.Offer;
 import ar.edu.itba.paw.model.User;
@@ -281,10 +282,10 @@ public class NotificationDispatcherServiceImpl implements NotificationDispatcher
     }
 
     private boolean shouldSendSite(final User recipient, final NotificationType type) {
-        return recipient != null && notificationPreferenceService.getMode(recipient, type).isSiteEnabled();
+        return notificationPreferenceService.isNotificationEnabled(recipient, type, NotificationChannel.SITE);
     }
 
     private boolean shouldSendEmail(final User recipient, final NotificationType type) {
-        return recipient != null && notificationPreferenceService.getMode(recipient, type).isEmailEnabled();
+        return notificationPreferenceService.isNotificationEnabled(recipient, type, NotificationChannel.EMAIL);
     }
 }

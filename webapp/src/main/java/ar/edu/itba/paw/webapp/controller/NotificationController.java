@@ -1,5 +1,6 @@
 package ar.edu.itba.paw.webapp.controller;
 
+import ar.edu.itba.paw.model.notification.NotificationChannel;
 import ar.edu.itba.paw.model.notification.NotificationType;
 import ar.edu.itba.paw.model.User;
 import ar.edu.itba.paw.service.NotificationPreferenceService;
@@ -24,9 +25,7 @@ import org.springframework.web.servlet.ModelAndView;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.Arrays;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 @RequiredArgsConstructor
 @Controller
@@ -111,7 +110,7 @@ public class NotificationController {
             @ModelAttribute("preferencesForm") NotificationPreferencesForm preferencesForm
     ) {
         LOGGER.debug("User {} viewing notification preferences", currentUser.getId());
-        preferencesForm.setPreferences(notificationPreferenceService.getModesForUser(currentUser));
+        preferencesForm.setPreferences(notificationPreferenceService.getEnabledChannelsForUser(currentUser));
         return buildPreferencesView();
     }
 
@@ -122,11 +121,13 @@ public class NotificationController {
             @Valid @ModelAttribute("preferencesForm") NotificationPreferencesForm preferencesForm,
             BindingResult errors
     ) {
+        // Re-render the preferences matrix if Spring binding or validation rejects an input
         if (errors.hasErrors()) {
             LOGGER.debug("Validation errors updating notification preferences for user {}", currentUser.getId());
             return buildPreferencesView();
         }
 
+        // Persist the submitted channel selections and redirect with a confirmation banner
         LOGGER.info("User {} updating notification preferences", currentUser.getId());
         notificationPreferenceService.updatePreferences(currentUser, preferencesForm.getPreferences());
         return new ModelAndView("redirect:/notifications/preferences?saved=true");
@@ -134,16 +135,11 @@ public class NotificationController {
 
     private ModelAndView buildPreferencesView() {
         final List<NotificationType> configurableTypes = NotificationType.getConfigurableTypes();
-        final Map<String, List<StringSelectOption>> optionsByType = new LinkedHashMap<>();
-        for (final NotificationType type : configurableTypes) {
-            final List<StringSelectOption> options = type.getSupportedModes().stream()
-                    .map(mode -> new StringSelectOption(mode.name(), "notifications.preferences.mode." + mode.name()))
-                    .toList();
-            optionsByType.put(type.name(), options);
-        }
+        // Email appears on the left and Site on the right per the preferences matrix layout
+        final List<NotificationChannel> channels = List.of(NotificationChannel.EMAIL, NotificationChannel.SITE);
 
         return new ModelAndView("notifications/preferences")
                 .addObject("configurableTypes", configurableTypes)
-                .addObject("optionsByType", optionsByType);
+                .addObject("channels", channels);
     }
 }

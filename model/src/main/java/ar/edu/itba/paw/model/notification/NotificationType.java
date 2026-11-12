@@ -5,74 +5,62 @@ import lombok.Getter;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Predicate;
 
 @Getter
 public enum NotificationType {
     // Multi-channel notifications (in-site + email)
-    NEW_OFFER(NotificationMode.SITE_AND_EMAIL, true, offer -> offer == null || offer.isPending()),
-    OFFER_ACCEPTED(NotificationMode.SITE_AND_EMAIL, true, offer -> offer != null && offer.isPendingPayment()),
-    OFFER_REJECTED(NotificationMode.SITE_AND_EMAIL, true),
-    OFFER_WITHDRAWN(NotificationMode.SITE_AND_EMAIL, true),
-    PROOF_OF_PAYMENT_UPLOADED(NotificationMode.SITE_AND_EMAIL, true, offer -> offer != null && offer.isPendingPayment()),
-    PROOF_OF_SHIPPING_UPLOADED(NotificationMode.SITE_AND_EMAIL, true, offer -> offer != null && offer.isPendingPayment()),
-    PURCHASE_CONFIRMED(NotificationMode.SITE_AND_EMAIL, true),
-    BRAND_MODEL_REQUEST_ACCEPTED(NotificationMode.SITE_AND_EMAIL, true),
-    BRAND_MODEL_REQUEST_REJECTED(NotificationMode.SITE_AND_EMAIL, true),
+    NEW_OFFER(Set.of(NotificationChannel.SITE, NotificationChannel.EMAIL), true, offer -> offer == null || offer.isPending()),
+    OFFER_ACCEPTED(Set.of(NotificationChannel.SITE, NotificationChannel.EMAIL), true, offer -> offer != null && offer.isPendingPayment()),
+    OFFER_REJECTED(Set.of(NotificationChannel.SITE, NotificationChannel.EMAIL), true),
+    OFFER_WITHDRAWN(Set.of(NotificationChannel.SITE, NotificationChannel.EMAIL), true),
+    PROOF_OF_PAYMENT_UPLOADED(Set.of(NotificationChannel.SITE, NotificationChannel.EMAIL), true, offer -> offer != null && offer.isPendingPayment()),
+    PROOF_OF_SHIPPING_UPLOADED(Set.of(NotificationChannel.SITE, NotificationChannel.EMAIL), true, offer -> offer != null && offer.isPendingPayment()),
+    PURCHASE_CONFIRMED(Set.of(NotificationChannel.SITE, NotificationChannel.EMAIL), true),
+    BRAND_MODEL_REQUEST_ACCEPTED(Set.of(NotificationChannel.SITE, NotificationChannel.EMAIL), true),
+    BRAND_MODEL_REQUEST_REJECTED(Set.of(NotificationChannel.SITE, NotificationChannel.EMAIL), true),
 
     // Configurable email-only notifications (self-triggered receipts & transaction updates)
-    LISTING_PUBLISHED(NotificationMode.EMAIL_ONLY, true),
-    PENDING_TRANSACTION(NotificationMode.EMAIL_ONLY, true, offer -> offer != null && offer.isPendingPayment()),
-    LISTING_SOLD(NotificationMode.EMAIL_ONLY, true),
+    LISTING_PUBLISHED(Set.of(NotificationChannel.EMAIL), true),
+    PENDING_TRANSACTION(Set.of(NotificationChannel.EMAIL), true, offer -> offer != null && offer.isPendingPayment()),
+    LISTING_SOLD(Set.of(NotificationChannel.EMAIL), true),
 
     // Non-configurable email-only notifications (onboarding, auth OTPs, account moderation)
-    WELCOME(NotificationMode.EMAIL_ONLY, false),
-    PASSWORD_RECOVERY(NotificationMode.EMAIL_ONLY, false),
-    EMAIL_VERIFICATION(NotificationMode.EMAIL_ONLY, false),
-    ACCOUNT_SUSPENDED(NotificationMode.EMAIL_ONLY, false),
-    ACCOUNT_UNSUSPENDED(NotificationMode.EMAIL_ONLY, false);
+    WELCOME(Set.of(NotificationChannel.EMAIL), false),
+    PASSWORD_RECOVERY(Set.of(NotificationChannel.EMAIL), false),
+    EMAIL_VERIFICATION(Set.of(NotificationChannel.EMAIL), false),
+    ACCOUNT_SUSPENDED(Set.of(NotificationChannel.EMAIL), false),
+    ACCOUNT_UNSUSPENDED(Set.of(NotificationChannel.EMAIL), false);
 
-    private final NotificationMode defaultMode;
+    private final Set<NotificationChannel> supportedChannels;
     private final boolean configurable;
     private final Predicate<Offer> callToActionPredicate;
 
-    NotificationType(NotificationMode defaultMode, boolean configurable) {
-        this(defaultMode, configurable, offer -> true);
+    NotificationType(Set<NotificationChannel> supportedChannels, boolean configurable) {
+        this(supportedChannels, configurable, offer -> true);
     }
 
     NotificationType(
-            NotificationMode defaultMode,
+            Set<NotificationChannel> supportedChannels,
             boolean configurable,
             Predicate<Offer> callToActionPredicate
     ) {
-        this.defaultMode = defaultMode;
+        this.supportedChannels = supportedChannels;
         this.configurable = configurable;
         this.callToActionPredicate = callToActionPredicate;
     }
 
+    public boolean supportsChannel(NotificationChannel channel) {
+        return channel != null && supportedChannels.contains(channel);
+    }
+
     public boolean supportsSite() {
-        return defaultMode.isSiteEnabled();
+        return supportsChannel(NotificationChannel.SITE);
     }
 
     public boolean supportsEmail() {
-        return defaultMode.isEmailEnabled();
-    }
-
-    public boolean isModeSupported(NotificationMode mode) {
-        if (mode == null || !configurable) {
-            return false;
-        }
-        return (!mode.isSiteEnabled() || supportsSite())
-                && (!mode.isEmailEnabled() || supportsEmail());
-    }
-
-    public List<NotificationMode> getSupportedModes() {
-        if (!configurable) {
-            return List.of();
-        }
-        return Arrays.stream(NotificationMode.values())
-                .filter(this::isModeSupported)
-                .toList();
+        return supportsChannel(NotificationChannel.EMAIL);
     }
 
     public static List<NotificationType> getConfigurableTypes() {

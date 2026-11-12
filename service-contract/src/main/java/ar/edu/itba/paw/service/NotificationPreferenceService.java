@@ -1,16 +1,17 @@
 package ar.edu.itba.paw.service;
 
-import ar.edu.itba.paw.model.notification.NotificationMode;
-import ar.edu.itba.paw.model.notification.NotificationType;
 import ar.edu.itba.paw.model.User;
+import ar.edu.itba.paw.model.notification.NotificationChannel;
+import ar.edu.itba.paw.model.notification.NotificationType;
 
 import java.util.Map;
+import java.util.Set;
 
 public interface NotificationPreferenceService {
 
-    NotificationMode getMode(User user, NotificationType type);
+    boolean isNotificationEnabled(User user, NotificationType type, NotificationChannel channel);
 
-    Map<NotificationType, NotificationMode> getModesForUser(User user);
+    Map<NotificationType, Set<NotificationChannel>> getEnabledChannelsForUser(User user);
 
-    void updatePreferences(User user, Map<NotificationType, NotificationMode> modesByType);
+    void updatePreferences(User user, Map<NotificationType, Set<NotificationChannel>> enabledChannelsByType);
 }

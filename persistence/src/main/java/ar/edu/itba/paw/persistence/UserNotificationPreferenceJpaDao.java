@@ -1,9 +1,10 @@
 package ar.edu.itba.paw.persistence;
 
-import ar.edu.itba.paw.model.notification.NotificationMode;
-import ar.edu.itba.paw.model.notification.NotificationType;
 import ar.edu.itba.paw.model.User;
+import ar.edu.itba.paw.model.notification.NotificationChannel;
+import ar.edu.itba.paw.model.notification.NotificationType;
 import ar.edu.itba.paw.model.notification.UserNotificationPreference;
+import ar.edu.itba.paw.model.notification.UserNotificationPreferenceId;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
@@ -18,15 +19,21 @@ public class UserNotificationPreferenceJpaDao implements UserNotificationPrefere
     private EntityManager em;
 
     @Override
-    public Optional<UserNotificationPreference> getByUserAndType(final User user, final NotificationType type) {
-        if (user == null || user.getId() == null || type == null) {
+    public Optional<UserNotificationPreference> getByUserTypeAndChannel(
+            final User user,
+            final NotificationType type,
+            final NotificationChannel channel
+    ) {
+        if (user == null || user.getId() == null || type == null || channel == null) {
             return Optional.empty();
         }
         return em.createQuery(
-                        "SELECT p FROM UserNotificationPreference p WHERE p.user.id = :userId AND p.type = :type",
+                        "SELECT p FROM UserNotificationPreference p " +
+                        "WHERE p.id.userId = :userId AND p.id.type = :type AND p.id.channel = :channel",
                         UserNotificationPreference.class)
                 .setParameter("userId", user.getId())
                 .setParameter("type", type)
+                .setParameter("channel", channel)
                 .getResultStream()
                 .findFirst();
     }
@@ -37,7 +44,7 @@ public class UserNotificationPreferenceJpaDao implements UserNotificationPrefere
             return List.of();
         }
         return em.createQuery(
-                        "SELECT p FROM UserNotificationPreference p WHERE p.user.id = :userId",
+                        "SELECT p FROM UserNotificationPreference p WHERE p.id.userId = :userId",
                         UserNotificationPreference.class)
                 .setParameter("userId", user.getId())
                 .getResultList();
@@ -47,23 +54,21 @@ public class UserNotificationPreferenceJpaDao implements UserNotificationPrefere
     public UserNotificationPreference saveOrUpdate(
             final User user,
             final NotificationType type,
-            final NotificationMode mode
+            final NotificationChannel channel,
+            final boolean enabled
     ) {
-        final int updated = em.createQuery(
-                        "UPDATE UserNotificationPreference p SET p.mode = :mode WHERE p.user.id = :userId AND p.type = :type")
-                .setParameter("mode", mode)
-                .setParameter("userId", user.getId())
-                .setParameter("type", type)
-                .executeUpdate();
-
-        final UserNotificationPreference preference = UserNotificationPreference.builder()
-                .user(em.getReference(User.class, user.getId()))
-                .type(type)
-                .mode(mode)
-                .build();
-        if (updated == 0) {
-            em.persist(preference);
+        final UserNotificationPreferenceId id = new UserNotificationPreferenceId(user.getId(), type, channel);
+        final UserNotificationPreference existing = em.find(UserNotificationPreference.class, id);
+        if (existing != null) {
+            existing.setEnabled(enabled);
+            return existing;
         }
-        return preference;
+        final UserNotificationPreference created = UserNotificationPreference.builder()
+                .id(id)
+                .user(em.getReference(User.class, user.getId()))
+                .enabled(enabled)
+                .build();
+        em.persist(created);
+        return created;
     }
 }

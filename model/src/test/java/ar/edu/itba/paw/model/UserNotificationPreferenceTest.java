@@ -1,6 +1,6 @@
 package ar.edu.itba.paw.model;
 
-import ar.edu.itba.paw.model.notification.NotificationMode;
+import ar.edu.itba.paw.model.notification.NotificationChannel;
 import ar.edu.itba.paw.model.notification.NotificationType;
 import org.junit.Assert;
 import org.junit.Test;
@@ -26,40 +26,19 @@ public class UserNotificationPreferenceTest {
     }
 
     @Test
-    public void testDefaultModesMatchSupportedChannels() {
-        Assert.assertEquals(NotificationMode.SITE_AND_EMAIL, NotificationType.NEW_OFFER.getDefaultMode());
+    public void testSupportedChannelsMatchSiteAndEmailHelpers() {
+        Assert.assertTrue(NotificationType.NEW_OFFER.supportsChannel(NotificationChannel.SITE));
+        Assert.assertTrue(NotificationType.NEW_OFFER.supportsChannel(NotificationChannel.EMAIL));
         Assert.assertTrue(NotificationType.NEW_OFFER.supportsSite());
         Assert.assertTrue(NotificationType.NEW_OFFER.supportsEmail());
 
-        Assert.assertEquals(NotificationMode.EMAIL_ONLY, NotificationType.LISTING_PUBLISHED.getDefaultMode());
+        Assert.assertFalse(NotificationType.LISTING_PUBLISHED.supportsChannel(NotificationChannel.SITE));
+        Assert.assertTrue(NotificationType.LISTING_PUBLISHED.supportsChannel(NotificationChannel.EMAIL));
         Assert.assertFalse(NotificationType.LISTING_PUBLISHED.supportsSite());
         Assert.assertTrue(NotificationType.LISTING_PUBLISHED.supportsEmail());
 
-        Assert.assertEquals(NotificationMode.EMAIL_ONLY, NotificationType.PASSWORD_RECOVERY.getDefaultMode());
-        Assert.assertFalse(NotificationType.PASSWORD_RECOVERY.supportsSite());
-        Assert.assertTrue(NotificationType.PASSWORD_RECOVERY.supportsEmail());
-    }
-
-    @Test
-    public void testSupportedModesForMultiChannelAndEmailOnlyTypes() {
-        Assert.assertEquals(
-                List.of(
-                        NotificationMode.DISABLED,
-                        NotificationMode.SITE_ONLY,
-                        NotificationMode.EMAIL_ONLY,
-                        NotificationMode.SITE_AND_EMAIL
-                ),
-                NotificationType.NEW_OFFER.getSupportedModes()
-        );
-
-        Assert.assertEquals(
-                List.of(
-                        NotificationMode.DISABLED,
-                        NotificationMode.EMAIL_ONLY
-                ),
-                NotificationType.LISTING_PUBLISHED.getSupportedModes()
-        );
-
-        Assert.assertTrue(NotificationType.PASSWORD_RECOVERY.getSupportedModes().isEmpty());
+        Assert.assertFalse(NotificationType.PASSWORD_RECOVERY.supportsChannel(NotificationChannel.SITE));
+        Assert.assertTrue(NotificationType.PASSWORD_RECOVERY.supportsChannel(NotificationChannel.EMAIL));
+        Assert.assertFalse(NotificationType.PASSWORD_RECOVERY.supportsChannel(null));
     }
 }
