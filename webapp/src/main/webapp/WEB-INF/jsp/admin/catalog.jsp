@@ -495,9 +495,8 @@
                             path="subcategoryId"
                             label="${createModelSubcategoryLabel}"
                             placeholder="${createModelSubcategoryPlaceholder}"
-                            items="${subcategoryOptions}"
-                            itemLabel="name"
-                            itemValue="id"
+                            items="${modelFilterSubcategoryOptions}"
+                            translateLabels="true"
                         />
                         <paw:button
                             text="${createModelSubmit}"
