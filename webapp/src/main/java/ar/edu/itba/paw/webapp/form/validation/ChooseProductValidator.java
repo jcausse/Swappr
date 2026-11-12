@@ -1,5 +1,6 @@
 package ar.edu.itba.paw.webapp.form.validation;
 
+import ar.edu.itba.paw.model.Listing;
 import ar.edu.itba.paw.webapp.form.ChooseProductForm;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.MessageSource;
@@ -76,10 +77,10 @@ public class ChooseProductValidator implements ConstraintValidator<ValidChoosePr
                         .addPropertyNode("year")
                         .addConstraintViolation();
                 valid = false;
-            } else if (year < 1900 || year > currentYear) {
+            } else if (!Listing.isValidYear(year)) {
                 final String message = messageSource.getMessage(
                     "Range.chooseProductForm.year",
-                    new Object[]{String.valueOf(1900), String.valueOf(currentYear)},
+                    new Object[]{String.valueOf(Listing.MIN_YEAR), String.valueOf(currentYear)},
                     LocaleContextHolder.getLocale()
                 );
                 context.buildConstraintViolationWithTemplate(message)
