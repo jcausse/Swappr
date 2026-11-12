@@ -43,10 +43,12 @@
                                 <spring:message code="offer.proofOfPayment.uploadLabel" var="proofLabel"/>
                                 <paw:linkButton href="${proofUrl}" variant="ghost" icon="upload" text="${proofLabel}" classname="w-full justify-start" />
                             </c:if>
-                            <spring:message code="account.myOffers.withdraw" var="withdrawLabel"/>
-                            <form action="<c:url value='/offer/${offer.id}/withdraw'/>" method="POST">
-                                <paw:button type="submit" variant="ghost" icon="x" role="danger" text="${withdrawLabel}" classname="w-full justify-start" />
-                            </form>
+                            <c:if test="${offer.status.name() == 'PENDING'}">
+                                <spring:message code="account.myOffers.withdraw" var="withdrawLabel"/>
+                                <form action="<c:url value='/offer/${offer.id}/withdraw'/>" method="POST">
+                                    <paw:button type="submit" variant="ghost" icon="x" role="danger" text="${withdrawLabel}" classname="w-full justify-start" />
+                                </form>
+                            </c:if>
                         </paw:menu>
                     </account:offerCard>
                 </c:forEach>
