@@ -38,5 +38,5 @@ public interface ModelDao {
     boolean hasListings(Long modelId);
 
     int replaceBrand(Long fromBrandId, Long toBrandId);
-    Optional<ModelListingInfoSummary> getListingInfoSummaryForModel(Long modelId);
+    Optional<ModelListingInfoSummary> getListingInfoSummaryForModel(Long modelId, Long excludedListingId);
 }
