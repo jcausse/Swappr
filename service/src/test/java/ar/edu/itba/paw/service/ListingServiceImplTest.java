@@ -30,6 +30,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.Year;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -128,6 +129,19 @@ public class ListingServiceImplTest {
     private static ListingCreationDto buildCreationDtoWithPrice(final BigDecimal price) {
         return new ListingCreationDto(
             LISTING_TITLE, price, SELLER_ID, MODEL_ID, YEAR, Condition.GOOD, true, false, LISTING_DESCRIPTION, null
+        );
+    }
+
+    private static ListingCreationDto buildCreationDtoWithYear(final int year) {
+        return new ListingCreationDto(
+            LISTING_TITLE, LISTING_PRICE.getAmount(), SELLER_ID, MODEL_ID, year, Condition.GOOD, true, false, LISTING_DESCRIPTION, null
+        );
+    }
+
+    private static ListingUpdateDto buildUpdateDtoWithYear(final int year) {
+        return new ListingUpdateDto(
+            LISTING_ID, LISTING_TITLE, LISTING_PRICE.getAmount(), MODEL_ID, year, Condition.GOOD, true, false, LISTING_DESCRIPTION,
+            List.of(), List.of()
         );
     }
 
@@ -406,6 +420,24 @@ public class ListingServiceImplTest {
     }
 
     @Test(expected = BadParameterException.class)
+    public void testCreateYearBeforeMinimumThrows() {
+        // Arrange
+        when(userService.getById(eq(SELLER_ID))).thenReturn(Optional.of(buildFakeUser(SELLER_ID, "seller")));
+        when(catalogService.getModelById(eq(MODEL_ID))).thenReturn(buildFakeModel());
+        // Act
+        listingService.create(buildCreationDtoWithYear(Listing.MIN_YEAR - 1));
+    }
+
+    @Test(expected = BadParameterException.class)
+    public void testCreateYearInTheFutureThrows() {
+        // Arrange
+        when(userService.getById(eq(SELLER_ID))).thenReturn(Optional.of(buildFakeUser(SELLER_ID, "seller")));
+        when(catalogService.getModelById(eq(MODEL_ID))).thenReturn(buildFakeModel());
+        // Act
+        listingService.create(buildCreationDtoWithYear(Year.now().getValue() + 1));
+    }
+
+    @Test(expected = BadParameterException.class)
     public void testCreateMissingConditionThrows() {
         // Arrange
         when(userService.getById(eq(SELLER_ID))).thenReturn(Optional.of(buildFakeUser(SELLER_ID, "seller")));
@@ -538,6 +570,24 @@ public class ListingServiceImplTest {
 
         // Act
         listingService.update(buildUpdateDto(LISTING_ID, Condition.GOOD), SELLER_ID);
+    }
+
+    @Test(expected = BadParameterException.class)
+    public void testUpdateYearBeforeMinimumThrows() {
+        // Arrange
+        when(listingDao.getById(eq(LISTING_ID))).thenReturn(Optional.of(buildFakeListing(buildFakeUser(SELLER_ID, "seller"))));
+        when(catalogService.getModelById(eq(MODEL_ID))).thenReturn(buildFakeModel());
+        // Act
+        listingService.update(buildUpdateDtoWithYear(Listing.MIN_YEAR - 1), SELLER_ID);
+    }
+
+    @Test(expected = BadParameterException.class)
+    public void testUpdateYearInTheFutureThrows() {
+        // Arrange
+        when(listingDao.getById(eq(LISTING_ID))).thenReturn(Optional.of(buildFakeListing(buildFakeUser(SELLER_ID, "seller"))));
+        when(catalogService.getModelById(eq(MODEL_ID))).thenReturn(buildFakeModel());
+        // Act
+        listingService.update(buildUpdateDtoWithYear(Year.now().getValue() + 1), SELLER_ID);
     }
 
     @Test(expected = BadParameterException.class)

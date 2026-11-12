@@ -25,18 +25,16 @@ public class BrandModelRequestJpaDao implements BrandModelRequestDao {
     }
 
     @Override
-    public Optional<BrandModelRequest> findMatching(String brandName, String modelName, Long subcategoryId) {
+    public Optional<BrandModelRequest> findMatching(String brandName, String modelName) {
         return em.createQuery(
                 "SELECT DISTINCT r FROM BrandModelRequest r"
                 + " LEFT JOIN FETCH r.brand b"
                 + " WHERE LOWER(r.modelName) = LOWER(:modelName)"
-                + " AND r.subcategory.id = :subcategoryId"
                 + " AND (LOWER(r.brandName) = LOWER(:brandName) OR LOWER(b.name) = LOWER(:brandName))"
                 + " ORDER BY r.createdAt ASC, r.id ASC",
                 BrandModelRequest.class)
                 .setParameter("brandName", brandName)
                 .setParameter("modelName", modelName)
-                .setParameter("subcategoryId", subcategoryId)
                 .getResultStream()
                 .findFirst();
     }

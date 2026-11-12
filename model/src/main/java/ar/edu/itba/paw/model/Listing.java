@@ -5,6 +5,7 @@ import org.hibernate.annotations.Formula;
 
 import javax.persistence.*;
 import java.time.Instant;
+import java.time.Year;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -20,6 +21,8 @@ import java.util.Optional;
 @Entity
 @Table(name = "listings")
 public class Listing {
+
+    public static final int MIN_YEAR = 1900;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -57,10 +60,10 @@ public class Listing {
     private Condition condition;
 
     @Column(name = "accepts_trade", nullable = false)
-    private Boolean acceptsTrade;
+    private boolean acceptsTrade;
 
     @Column(name = "accepts_shipping", nullable = false)
-    private Boolean acceptsShipping;
+    private boolean acceptsShipping;
 
     @OneToMany
     @JoinTable(
@@ -70,6 +73,9 @@ public class Listing {
     )
     @OrderColumn(name = "display_order")
     private List<Image> images = new ArrayList<>();
+
+    @Formula("(SELECT li.image_id FROM listing_images li WHERE li.listing_id = listing_id AND li.display_order = 0)")
+    private Long coverImageId;
 
     @Formula("(SELECT COUNT(*) FROM offers o WHERE o.listing_id = listing_id AND o.status = 'PENDING')")
     private int pendingOffersCount;
@@ -111,6 +117,10 @@ public class Listing {
 
     public boolean isCanceled() {
         return status == ListingStatus.CANCELED;
+    }
+
+    public static boolean isValidYear(final int year) {
+        return year >= MIN_YEAR && year <= Year.now().getValue();
     }
 
     public boolean isFree() {
