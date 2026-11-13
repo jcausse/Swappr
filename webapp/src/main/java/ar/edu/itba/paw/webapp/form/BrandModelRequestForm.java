@@ -12,7 +12,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @ValidBrandModelRequest
-public class BrandModelRequestForm {
+public class BrandModelRequestForm implements BrandModelRequestFields {
 
     private BrandModelRequestType type = BrandModelRequestType.NEW_BRAND;
 
