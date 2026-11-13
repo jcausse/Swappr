@@ -35,7 +35,7 @@ Status values: `todo`, `done`, `underspecified`, `needs bigger refactor`, `false
 | 3.12 | [Brand/model requests table `colspan` out of date](#312-brandmodel-requests-table-colspan-out-of-date) | ✅ done |
 | 3.13 | [Changing category wipes the request form fields](#313-changing-the-category-in-the-brandmodel-request-form-wipes-what-the-user-typed) | ✅ done |
 | 4.1 | [Circular service dependency broken with `@Lazy`](#41-circular-dependency-between-services-broken-with-lazy) | ✅ done |
-| 4.2 | [`PermissionServiceImpl` write transactions for read-only checks; unused methods](#42-permissionserviceimpl-write-transactions-for-read-only-checks-and-methods-exposed-for-nothing) | 🕓 todo |
+| 4.2 | [`PermissionServiceImpl` write transactions for read-only checks; unused methods](#42-permissionserviceimpl-write-transactions-for-read-only-checks-and-methods-exposed-for-nothing) | ✅ done |
 | 4.3 | [Authorization failures thrown as `BadParameterException`](#43-authorization-failures-thrown-as-badparameterexception) | ✅ done |
 | 4.4 | [Domain exception in the web module](#44-domain-exception-in-the-web-module) | ✅ done |
 | 4.5 | [A public model method returns `null`](#45-a-public-model-method-returns-null) | ✅ done |
