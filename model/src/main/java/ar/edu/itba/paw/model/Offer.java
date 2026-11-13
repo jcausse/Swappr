@@ -207,18 +207,18 @@ public class Offer {
         return user != null && isParticipant(user.getId());
     }
 
-    public RatingRole getUserRole(User user) {
-        if (isBuyer(user)) return RatingRole.BUYER;
-        if (isSeller(user)) return RatingRole.SELLER;
-        return null;
+    private Optional<RatingRole> getUserRole(User user) {
+        if (isBuyer(user)) return Optional.of(RatingRole.BUYER);
+        if (isSeller(user)) return Optional.of(RatingRole.SELLER);
+        return Optional.empty();
     }
 
     public boolean canUploadDocuments() {
         return isPendingPayment() && !isForFreeListing();
     }
 
-    public boolean canBeRatedBy(RatingRole userRole) {
-        if (!isAccepted() || userRole == null) return false;
+    private boolean canBeRatedBy(RatingRole userRole) {
+        if (!isAccepted()) return false;
         return switch (userRole) {
             case BUYER -> sellerRating == null;
             case SELLER -> buyerRating == null;
@@ -226,6 +226,6 @@ public class Offer {
     }
 
     public boolean canBeRatedBy(User user) {
-        return canBeRatedBy(getUserRole(user));
+        return getUserRole(user).map(this::canBeRatedBy).orElse(false);
     }
 }
