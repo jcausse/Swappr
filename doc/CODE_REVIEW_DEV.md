@@ -38,7 +38,7 @@ Status values: `todo`, `done`, `underspecified`, `needs bigger refactor`, `false
 | 4.2 | [`PermissionServiceImpl` write transactions for read-only checks; unused methods](#42-permissionserviceimpl-write-transactions-for-read-only-checks-and-methods-exposed-for-nothing) | 🕓 todo |
 | 4.3 | [Authorization failures thrown as `BadParameterException`](#43-authorization-failures-thrown-as-badparameterexception) | 🕓 todo |
 | 4.4 | [Domain exception in the web module](#44-domain-exception-in-the-web-module) | 🕓 todo |
-| 4.5 | [A public model method returns `null`](#45-a-public-model-method-returns-null) | 🕓 todo |
+| 4.5 | [A public model method returns `null`](#45-a-public-model-method-returns-null) | ✅ done |
 | 4.6 | [Business rules decided in the views](#46-business-rules-decided-in-the-views) | 🕓 todo |
 | 4.7 | [Categories queried on every request](#47-categories-queried-on-every-request) | 🕓 todo |
 | 4.8 | [Smaller layering issues](#48-smaller-layering-issues) | 🕓 todo |
