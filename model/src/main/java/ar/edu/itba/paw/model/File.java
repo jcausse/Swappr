@@ -48,17 +48,6 @@ public class File {
         return Optional.ofNullable(contentType);
     }
 
-    public String getExtension() {
-        if (filename == null || filename.isBlank()) {
-            return "";
-        }
-        int lastDot = filename.lastIndexOf('.');
-        if (lastDot == -1 || lastDot == filename.length() - 1) {
-            return "";
-        }
-        return filename.substring(lastDot + 1).toLowerCase();
-    }
-
     public long getSize() {
         if (size != null) {
             return size;
@@ -67,11 +56,4 @@ public class File {
         return data != null ? data.length : 0L;
     }
 
-    public long getSizeKb() {
-        return getSize() / 1024;
-    }
-
-    public boolean isImage() {
-        return contentType != null && contentType.startsWith("image/");
-    }
 }

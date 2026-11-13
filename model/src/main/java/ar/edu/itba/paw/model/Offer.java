@@ -94,10 +94,6 @@ public class Offer {
         return Optional.ofNullable(offeredListing);
     }
 
-    public Optional<Instant> getAcceptedAt() {
-        return Optional.ofNullable(acceptedAt);
-    }
-
     public Optional<OfferRating> getBuyerRating() {
         return Optional.ofNullable(buyerRating);
     }
@@ -106,18 +102,13 @@ public class Offer {
         return Optional.ofNullable(sellerRating);
     }
 
-    // -- Transitional getters for Service / Webapp compatibility --
-    // TODO: [JPA Migration Cleanup] Transitional getters for compatibility.
+    // -- Convenience getters for Service / Webapp compatibility --
     public Long getOfferedListingId() {
         return offeredListing != null ? offeredListing.getId() : null;
     }
 
     public Long getProofOfPaymentId() {
         return proofOfPayment != null ? proofOfPayment.getId() : null;
-    }
-
-    public String getProofOfPaymentFilename() {
-        return proofOfPayment != null ? proofOfPayment.getFilename() : null;
     }
 
     public Long getProofOfPaymentSizeKb() {
@@ -139,10 +130,6 @@ public class Offer {
 
     public Long getProofOfShippingId() {
         return proofOfShipping != null ? proofOfShipping.getId() : null;
-    }
-
-    public String getProofOfShippingFilename() {
-        return proofOfShipping != null ? proofOfShipping.getFilename() : null;
     }
 
     public Long getProofOfShippingSizeKb() {

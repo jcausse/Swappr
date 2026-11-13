@@ -75,7 +75,6 @@
 <spring:message code="admin.catalog.models.delete.blocked" var="deleteModelBlocked"/>
 <spring:message code="admin.catalog.requests.title" var="requestsTitle"/>
 <spring:message code="admin.catalog.requests.subtitle" var="requestsSubtitle"/>
-<spring:message code="admin.catalog.requests.id" var="requestIdLabel"/>
 <spring:message code="admin.catalog.requests.type" var="requestTypeLabel"/>
 <spring:message code="admin.catalog.requests.type.newBrand" var="requestNewBrandType"/>
 <spring:message code="admin.catalog.requests.type.existingBrand" var="requestExistingBrandType"/>

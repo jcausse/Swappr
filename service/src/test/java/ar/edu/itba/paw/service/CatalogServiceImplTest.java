@@ -347,14 +347,6 @@ public class CatalogServiceImplTest {
     }
 
     @Test
-    public void testGetAllModelsDelegates() {
-        final List<Model> models = List.of(buildFakeModel(MODEL_ID, MODEL_NAME));
-        when(modelDao.getAllWithBrand()).thenReturn(models);
-
-        Assert.assertSame(models, catalogService.getAllModels());
-    }
-
-    @Test
     public void testGetAllSubcategoriesDelegates() {
         final List<Subcategory> subcategories = List.of(buildFakeSubcategory());
         when(subcategoryDao.getAll()).thenReturn(subcategories);

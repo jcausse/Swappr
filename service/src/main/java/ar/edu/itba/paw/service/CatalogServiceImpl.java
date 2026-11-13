@@ -186,11 +186,6 @@ public class CatalogServiceImpl implements CatalogService {
     }
 
     @Override
-    public List<Model> getAllModels() {
-        return modelDao.getAllWithBrand();
-    }
-
-    @Override
     public Map<Long, List<ModelOption>> getModelReplacementOptions(final Collection<Long> modelIds) {
         if (modelIds.isEmpty()) {
             return Map.of();

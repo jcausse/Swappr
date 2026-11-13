@@ -55,7 +55,7 @@ Status values: `todo`, `done`, `underspecified`, `needs bigger refactor`, `false
 | 7.3 | [Pluralization](#73-pluralization) | ✅ done |
 | 8.1 | [Offer-rejected email CTA](#81-offer-rejected-email-cta) | ✅ done |
 | 8.2 | [Pure-trade pending-payment email copy](#82-pure-trade-pending-payment-email-copy) | ✅ done |
-| 9 | [Dead code cleanup (whole section)](#9-dead-code) | 🕓 todo |
+| 9 | [Dead code cleanup (whole section)](#9-dead-code) | ✅ done |
 | 10 | [Build and style cleanup (whole section)](#10-build-and-style) | 🕓 todo |
 | 11.1 | [`ImageController` access control and caching](#111-imagecontroller-access-control-and-caching) | ✅ done |
 | 11.2 | [Listing/Image relation](#112-listingimage-relation) | 🕓 todo |
@@ -351,19 +351,13 @@ Things to fix before the final delivery. Items 1-10 were checked against `dev` (
 
 ## 9. Dead code
 
-- **Unused tag.** `tags/carousel.tag` is not used by any JSP (the landing uses `listingCarousel.tag`).
-- **Unused methods.** No reference anywhere in the repo, tests included:
-  - `fromString` in `Condition`, `ListingSort`, `ListingStatus`, `OfferRating`, `OfferStatus`, `OfferStatusGroup`, `RatingRole` and `Role`.
-  - `BrandModelRequest.getBrandOptional`, `File.getExtension`, `File.getSizeKb`, `Offer.getAcceptedAt`, `User.getEmailVerifiedAt`, `User.getSuspendedAt` and `User.getPreferredLocale`.
-  - `PermissionService.isListingCreator` (see 4.2) and `CatalogService.getAllModels` (only called from a test).
-- **Unused parameter.** `BrandModelRequestController.render(BrandModelRequestForm form)` (`:81`) never reads `form`.
-- **Unused model attribute.** `ListingController.populateModel` adds `subcategories` (`:277`), which the choose-product page does not use (it uses `subcategoryOptions`).
-- **Transitional code.** `Offer.java:110` (`// TODO: [JPA Migration Cleanup] Transitional getters for compatibility`) and `Listing.java:82` (`// TODO: Remove after creating DAO`).
-- **Unused i18n keys (52, present in both bundles).** Each one was searched literally across the whole repo and against every dynamic key prefix.
-  - Never referenced: `error.username.notfound`, `error.email.notfound`, `error.image.upload`, `field.otp`, `verify.error.userNotFound`, `listing.new.productName`, `listing.new.step1.title`, `listing.new.step2.title`, `listing.new.product.select`, `listing.detail.noImages`, `listing.detail.cannotOfferOwn`, `listing.detail.alreadyPurchased`, `listing.detail.pendingTransaction`, `profile.username`, `profileEdit.success`, `checkout.success`, `checkout.summary.seller`, `checkout.summary.category`, `offer.detail.backToOffers`, `offer.detail.buyer`, `offer.detail.listingPrice`, `offer.detail.discount`, `offer.accepted`, `offer.action.withdraw`, `offer.proofOfPayment.back`, `discovery.acceptsTrade.badge`, `pagination.previous`, `pagination.next`, `imageUpload.uploadLabel`, `imageUpload.uploadLabelMultiple`, `imageUpload.clearLabel`, `imageUpload.changeLabel`, `imageUpload.removeLabel`, `account.myOffers.table.listing`, `account.myOffers.table.seller`, `account.myOffers.table.amount`, `account.myOffers.table.status` and `admin.catalog.requests.id` (the last one also has an unused `requestIdLabel` variable in `admin/catalog.jsp:75`).
-  - Bean Validation keys for forms or fields that do not exist: `NotEmpty.loginForm.username`, `Size.loginForm.username`, `NotEmpty.loginForm.password` and `Size.loginForm.password` (there is no `loginForm`); `NotNull.listingForm.categoryId`, `NotNull.listingForm.subcategoryId`, `NotNull.listingForm.existingProductId`, `NotEmpty.listingForm.title` and `NotNull.listingForm.price` (there is no `listingForm`); `Email.userEditForm.email` and `Size.userEditForm.email` (`UserEditForm` has no email field); `UserExists.suspendUserForm.usernameOrEmail` and `UserExists.grantRoleForm.usernameOrEmail` (the field is `username`, whose keys are used).
-  - Bean Validation keys for constraints the field does not use: `NotEmpty.detailsForm.title` (the field uses `@NotBlank`) and `NotNull.checkoutForm.tradeAmount` (the field has no `@NotNull`).
-- **Unused dependencies.** `mockito-core` is declared in `persistence` and `webapp` and no test in those modules uses it. `spring-test` is declared in `webapp` and its only test does not use it. `spring-jdbc` is a compile dependency of `persistence` but only its tests use it (move it to `test`; see 11.3).
+- **Done.** Removed the unused `tags/carousel.tag`; the landing page only uses `listingCarousel.tag`.
+- Removed unused `fromString` helpers from `Condition`, `ListingSort`, `ListingStatus`, `OfferRating`, `OfferStatus`, `OfferStatusGroup`, `RatingRole` and `Role`.
+- Removed unused getters: `BrandModelRequest.getBrandOptional`, `File.getExtension`, `File.getSizeKb`, `File.isImage`, `Offer.getAcceptedAt`, `Offer.getProofOfPaymentFilename`, `Offer.getProofOfShippingFilename`, `User.getEmailVerifiedAt`, `User.getSuspendedAt` and `User.getPreferredLocale`.
+- Removed `CatalogService.getAllModels` and its test, plus the unused `subcategories` model attribute from `ListingController.populateModel`.
+- Removed 53 unused i18n keys from both bundles and the dead `admin.catalog.requests.id` lookup in `admin/catalog.jsp`.
+- Removed unused `mockito-core` from `persistence`. `mockito-core` and `spring-test` stay in `webapp` because `AuthHelperTest` and `RedirectHelperTest` use Mockito and `MockHttpServletRequest`; `spring-jdbc` stays in `webapp` because `WebConfig` uses it in main code.
+- False positives / kept: `BrandModelRequestController.render(form)` still reads `form`; the Offer compatibility getters are still used by services/tags; the `Listing` image mapping and its TODO are handled by the pending 11.2 branch.
 
 ---
 

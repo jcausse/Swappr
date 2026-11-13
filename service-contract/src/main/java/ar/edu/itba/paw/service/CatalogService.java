@@ -54,8 +54,6 @@ public interface CatalogService {
 
     Page<ModelInfo> getModels(Long brandId, Long subcategoryId, ModelSort sort, Integer page, int pageSize);
 
-    List<Model> getAllModels();
-
     Map<Long, List<ModelOption>> getModelReplacementOptions(Collection<Long> modelIds);
 
     Model createModel(String name, Long brandId, Long subcategoryId);
