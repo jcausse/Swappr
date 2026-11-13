@@ -57,7 +57,7 @@ Status values: `todo`, `done`, `underspecified`, `needs bigger refactor`, `false
 | 8.2 | [Pure-trade pending-payment email copy](#82-pure-trade-pending-payment-email-copy) | 🕓 todo |
 | 9 | [Dead code cleanup (whole section)](#9-dead-code) | 🕓 todo |
 | 10 | [Build and style cleanup (whole section)](#10-build-and-style) | 🕓 todo |
-| 11.1 | [`ImageController` access control and caching](#111-imagecontroller-access-control-and-caching) | 🕓 todo |
+| 11.1 | [`ImageController` access control and caching](#111-imagecontroller-access-control-and-caching) | ✅ done |
 | 11.2 | [Listing/Image relation](#112-listingimage-relation) | 🕓 todo |
 | 11.3 | [JDBC dependencies in test scope (partial)](#113-jdbc-dependencies-in-test-scope-partial) | 🕓 todo |
 | 11.4 | [Form `.todto()` helpers](#114-form-todto-helpers) | 🕓 todo |
@@ -384,8 +384,8 @@ These items were imported from the now-removed `doc/TODO.md` and `doc/notes/DEBT
 
 ### 11.1 `ImageController` access control and caching
 
-- `ImageController.java:16` keeps the whole controller at `permitAll()`, and `getImage` (`:23-33`) serves any image by sequential id without checking whether the image belongs to a public listing/profile. Profile pictures are therefore enumerable.
-- The response has no `Cache-Control`, `ETag` or `Last-Modified` headers. Add explicit caching (and decide whether private images need an authorization rule before serving).
+- **Done (caching only).** Access control is intentionally unchanged: this endpoint only serves public listing images and profile pictures, while proof-of-payment/shipping files use their own authenticated endpoints.
+- `getImage` now sets `Cache-Control: public, max-age=86400` and an `ETag` derived from the immutable image id. `WebRequest.checkNotModified` returns `304 Not Modified` when `If-None-Match` matches, so clients can keep the cached copy for a day and revalidate cheaply afterwards.
 
 ### 11.2 Listing/Image relation
 
