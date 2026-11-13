@@ -5,7 +5,6 @@ import lombok.*;
 import javax.persistence.*;
 import java.time.Instant;
 import java.util.HashSet;
-import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
 
@@ -104,16 +103,8 @@ public class User {
         return Optional.ofNullable(image != null ? image.getId() : null);
     }
 
-    public Optional<Instant> getEmailVerifiedAt() {
-        return Optional.ofNullable(emailVerifiedAt);
-    }
-
     public boolean isVerified() {
         return emailVerifiedAt != null;
-    }
-
-    public Optional<Instant> getSuspendedAt() {
-        return Optional.ofNullable(suspendedAt);
     }
 
     public boolean isSuspended() {
@@ -138,10 +129,6 @@ public class User {
 
     public Language getPreferredLanguageOrDefault() {
         return preferredLanguage != null ? preferredLanguage : Language.getDefault();
-    }
-
-    public Locale getPreferredLocale() {
-        return getPreferredLanguageOrDefault().toLocale();
     }
 
     public Optional<Province> getProvince() {

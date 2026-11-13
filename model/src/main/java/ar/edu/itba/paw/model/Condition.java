@@ -1,6 +1,4 @@
 package ar.edu.itba.paw.model;
-import java.util.Arrays;
-import java.util.Optional;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -15,9 +13,4 @@ public enum Condition {
     FOR_PARTS("FOR_PARTS");
 
     @Getter private final String condition;
-    public static Optional<Condition> fromString(final String condition) {
-        return Arrays.stream(Condition.values())
-            .filter(c -> c.condition.equalsIgnoreCase(condition) || c.name().equalsIgnoreCase(condition))
-            .findFirst();
-    }
 }

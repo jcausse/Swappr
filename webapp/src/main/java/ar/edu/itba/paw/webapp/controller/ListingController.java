@@ -254,7 +254,6 @@ public class ListingController {
 
         if (form.getCategoryId() != null) {
             var subcategories = catalogService.getSubcategoriesByCategory(form.getCategoryId());
-            mav.addObject("subcategories", subcategories);
             mav.addObject("subcategoryOptions", subcategories.stream()
                 .map(sub -> new SelectOption(sub.getId(), "subcategory." + sub.getName()))
                 .toList());

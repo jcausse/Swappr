@@ -94,10 +94,6 @@ public class Offer {
         return Optional.ofNullable(offeredListing);
     }
 
-    public Optional<Instant> getAcceptedAt() {
-        return Optional.ofNullable(acceptedAt);
-    }
-
     public Optional<OfferRating> getBuyerRating() {
         return Optional.ofNullable(buyerRating);
     }
@@ -106,8 +102,7 @@ public class Offer {
         return Optional.ofNullable(sellerRating);
     }
 
-    // -- Transitional getters for Service / Webapp compatibility --
-    // TODO: [JPA Migration Cleanup] Transitional getters for compatibility.
+    // -- Convenience getters for Service / Webapp compatibility --
     public Long getOfferedListingId() {
         return offeredListing != null ? offeredListing.getId() : null;
     }

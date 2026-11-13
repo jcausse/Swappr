@@ -5,7 +5,6 @@ import lombok.*;
 import javax.persistence.*;
 import java.time.Instant;
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 
 @Getter
@@ -59,10 +58,6 @@ public class BrandModelRequest {
     @Builder.Default
     @Column(name = "created_at", nullable = false)
     private Instant createdAt = Instant.now();
-
-    public Optional<Brand> getBrandOptional() {
-        return Optional.ofNullable(brand);
-    }
 
     public Long getBrandId() {
         return brand != null ? brand.getId() : null;
