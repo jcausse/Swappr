@@ -1,6 +1,7 @@
 package ar.edu.itba.paw.service.notification;
 
 import ar.edu.itba.paw.model.*;
+import ar.edu.itba.paw.model.notification.NotificationType;
 import ar.edu.itba.paw.service.dto.SiteNotificationCreationDto;
 import org.junit.Assert;
 import org.junit.Test;

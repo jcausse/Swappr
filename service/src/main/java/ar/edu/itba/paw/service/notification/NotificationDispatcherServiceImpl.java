@@ -1,7 +1,8 @@
 package ar.edu.itba.paw.service.notification;
 
 import ar.edu.itba.paw.model.Listing;
-import ar.edu.itba.paw.model.NotificationType;
+import ar.edu.itba.paw.model.notification.NotificationChannel;
+import ar.edu.itba.paw.model.notification.NotificationType;
 import ar.edu.itba.paw.model.Offer;
 import ar.edu.itba.paw.model.User;
 import ar.edu.itba.paw.model.Brand;
@@ -9,6 +10,7 @@ import ar.edu.itba.paw.model.BrandModelRequest;
 import ar.edu.itba.paw.model.Model;
 import ar.edu.itba.paw.service.EmailNotificationService;
 import ar.edu.itba.paw.service.NotificationDispatcherService;
+import ar.edu.itba.paw.service.NotificationPreferenceService;
 import ar.edu.itba.paw.service.SiteNotificationService;
 import ar.edu.itba.paw.service.dto.mail.ListingMailDto;
 import ar.edu.itba.paw.service.dto.mail.OfferMailDto;
@@ -31,6 +33,7 @@ public class NotificationDispatcherServiceImpl implements NotificationDispatcher
 
     private final SiteNotificationService siteNotificationService;
     private final EmailNotificationService emailNotificationService;
+    private final NotificationPreferenceService notificationPreferenceService;
 
     @Override
     public void notifyWelcome(@NonNull User user) {
@@ -279,10 +282,10 @@ public class NotificationDispatcherServiceImpl implements NotificationDispatcher
     }
 
     private boolean shouldSendSite(final User recipient, final NotificationType type) {
-        return recipient != null && type.supportsSite();
+        return notificationPreferenceService.isNotificationEnabled(recipient, type, NotificationChannel.SITE);
     }
 
     private boolean shouldSendEmail(final User recipient, final NotificationType type) {
-        return recipient != null && type.supportsEmail();
+        return notificationPreferenceService.isNotificationEnabled(recipient, type, NotificationChannel.EMAIL);
     }
 }

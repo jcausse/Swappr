@@ -12,7 +12,7 @@
 <c:set var="inputClass" value="${not empty classname ? classname : ''}"/>
 <c:set var="isDisabled" value="${disabled ne null ? disabled : false}"/>
 <c:set var="checkboxValue" value="${not empty value ? value : 'true'}"/>
-<c:set var="labelClassname" value="${isDisabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}"/>
+<c:set var="labelClassname" value="${isDisabled ? 'cursor-not-allowed opacity-60 ' : 'cursor-pointer '}"/>
 
 <label for="${id}" class="flex items-center gap-2 text-sm text-black/80 select-none ${labelClassname} ${inputClass}">
   <%-- Without a path the checkbox is only a UI control: it has no name, so it is never submitted --%>

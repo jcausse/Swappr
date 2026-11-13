@@ -1,6 +1,6 @@
 package ar.edu.itba.paw.service.dto;
 
-import ar.edu.itba.paw.model.NotificationType;
+import ar.edu.itba.paw.model.notification.NotificationType;
 import ar.edu.itba.paw.model.Offer;
 import ar.edu.itba.paw.model.User;
 import lombok.Builder;
