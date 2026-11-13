@@ -1,6 +1,8 @@
 package ar.edu.itba.paw.webapp.controller;
 
 import ar.edu.itba.paw.model.Brand;
+import ar.edu.itba.paw.model.BrandInfo;
+import ar.edu.itba.paw.model.ModelInfo;
 import ar.edu.itba.paw.model.BrandSort;
 import ar.edu.itba.paw.model.ListingStatus;
 import ar.edu.itba.paw.model.ModelSort;
@@ -119,7 +121,8 @@ public class AdminController {
                 .addObject("brands", brandsPage.getContent())
                 .addObject("brandsPage", brandsPage)
                 .addObject("currentSort", sort)
-                .addObject("brandReplacementOptions", catalogService.getBrandReplacementOptions())
+                .addObject("brandReplacementOptions", catalogService.getBrandReplacementOptions(
+                        brandsPage.getContent().stream().map(BrandInfo::getId).toList()))
                 .addObject("brandOptions", allBrands)
                 .addObject("editModelSubcategoryOptions", catalogService.getAllSubcategories().stream()
                         .map(subcategory -> new SelectOption(
@@ -133,7 +136,8 @@ public class AdminController {
                 .addObject("models", modelsPage.getContent())
                 .addObject("modelsPage", modelsPage)
                 .addObject("currentModelSort", modelSort)
-                .addObject("modelReplacementOptions", catalogService.getModelReplacementOptions())
+                .addObject("modelReplacementOptions", catalogService.getModelReplacementOptions(
+                        modelsPage.getContent().stream().map(ModelInfo::getId).toList()))
                 .addObject("requests", requestsPage.getContent())
                 .addObject("requestsPage", requestsPage);
     }
