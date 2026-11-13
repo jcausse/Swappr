@@ -50,11 +50,11 @@ Status values: `todo`, `done`, `underspecified`, `needs bigger refactor`, `false
 | 5.4 | [Mutable result types](#54-mutable-result-types) | 🕓 todo |
 | 6.1 | [Tests with no assertion](#61-tests-with-no-assertion) | 🕓 todo |
 | 6.2 | [Missing coverage of the brand/model request flow](#62-missing-coverage-of-the-brandmodel-request-flow) | 🕓 todo |
-| 7.1 | [Default messages that do not exist](#71-default-messages-that-do-not-exist) | 🕓 todo |
+| 7.1 | [Default messages that do not exist](#71-default-messages-that-do-not-exist) | ✅ done |
 | 7.2 | [Brand/model request validation messages](#72-brandmodel-request-validation-messages) | ✅ done |
-| 7.3 | [Pluralization](#73-pluralization) | 🕓 todo |
-| 8.1 | [Offer-rejected email CTA](#81-offer-rejected-email-cta) | 🕓 todo |
-| 8.2 | [Pure-trade pending-payment email copy](#82-pure-trade-pending-payment-email-copy) | 🕓 todo |
+| 7.3 | [Pluralization](#73-pluralization) | ✅ done |
+| 8.1 | [Offer-rejected email CTA](#81-offer-rejected-email-cta) | ✅ done |
+| 8.2 | [Pure-trade pending-payment email copy](#82-pure-trade-pending-payment-email-copy) | ✅ done |
 | 9 | [Dead code cleanup (whole section)](#9-dead-code) | 🕓 todo |
 | 10 | [Build and style cleanup (whole section)](#10-build-and-style) | 🕓 todo |
 | 11.1 | [`ImageController` access control and caching](#111-imagecontroller-access-control-and-caching) | 🕓 todo |
@@ -324,7 +324,7 @@ Things to fix before the final delivery. Items 1-10 were checked against `dev` (
 
 ### 7.1 Default messages that do not exist
 
-- `ValidBrandModelRequest.java:16` and `ValidBrandModelRequestAccept.java:16` point to `{ValidBrandModelRequest.brandModelRequestForm}` and `{ValidBrandModelRequestAccept.adminBrandModelRequestAcceptForm}`. Neither key is in the bundles. They never show today because the validators always add their own message, but the default does not resolve.
+- **Done, without adding new keys.** `ValidBrandModelRequest.java:16` and `ValidBrandModelRequestAccept.java:16` pointed to keys that do not exist. Both defaults are unreachable in practice because the validators disable the default constraint violation before adding their own messages, so the defaults now reuse the existing `typeMismatch` key instead of introducing dead bundle entries.
 
 ### 7.2 Brand/model request validation messages
 
@@ -332,7 +332,7 @@ Things to fix before the final delivery. Items 1-10 were checked against `dev` (
 
 ### 7.3 Pluralization
 
-- `messages.properties:1202`: `admin.catalog.requests.additionalOthers=+ {0} other(s)`. Use `{0,choice,1#+ 1 other|1<+ {0} others}`.
+- **Done.** `admin.catalog.requests.additionalOthers` now uses the choice format in both bundles (`+ {0,choice,1#+ 1 other|1<+ {0} others}` and the Spanish equivalent).
 
 ---
 
@@ -340,11 +340,11 @@ Things to fix before the final delivery. Items 1-10 were checked against `dev` (
 
 ### 8.1 Offer-rejected email CTA
 
-- `mail/offer-rejected.html:136`: the "Browse listings" button links to `${baseUrl}` (the home page) instead of `/listing`.
+- **Done.** The "Browse listings" button in `mail/offer-rejected.html` now links to `${baseUrl + '/listing'}` instead of the home page.
 
 ### 8.2 Pure-trade pending-payment email copy
 
-- `messages.properties:569` (and `_es`): `email.offer.pendingPayment.body.trade` asks the buyer of a pure trade (no money involved) to "arrange payment … or upload proof of payment".
+- **Done.** `email.offer.pendingPayment.body.trade` no longer asks the buyer to arrange payment or upload proof; it now asks them to arrange the exchange and delivery, which also fits a pure trade with no money involved.
 
 ---
 
