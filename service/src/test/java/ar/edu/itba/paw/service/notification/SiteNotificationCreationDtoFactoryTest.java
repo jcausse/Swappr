@@ -149,6 +149,52 @@ public class SiteNotificationCreationDtoFactoryTest {
         Assert.assertEquals("/account/my-offers?statusGroup=PENDING_PAYMENT", shippingWithTrackingDto.actionUrl());
     }
 
+    @Test
+    public void testBrandModelRequestAcceptedBuildsExpectedDto() {
+        final Brand brand = Brand.builder().id(30L).name("Acme").build();
+        final Model model = Model.builder().id(40L).name("Phone").brand(brand).build();
+        final BrandModelRequest request = BrandModelRequest.builder()
+                .id(50L)
+                .type(BrandModelRequestType.NEW_BRAND)
+                .brandName("Acme")
+                .modelName("Phone")
+                .build();
+
+        final SiteNotificationCreationDto dto =
+                SiteNotificationCreationDtoFactory.brandModelRequestAccepted(request, BUYER, brand, model);
+
+        Assert.assertSame(BUYER, dto.notificationRecipient());
+        Assert.assertEquals(NotificationType.BRAND_MODEL_REQUEST_ACCEPTED, dto.notificationType());
+        Assert.assertEquals("notification.brandModelRequest.accepted.title", dto.titleKey());
+        Assert.assertEquals("notification.brandModelRequest.accepted.body", dto.bodyKey());
+        Assert.assertEquals(List.of("Acme", "Phone"), dto.bodyArgs());
+        Assert.assertEquals("/listing/new/choose-product?modelId=40", dto.actionUrl());
+        Assert.assertEquals("notification.brandModelRequest.accepted.cta", dto.actionLabelKey());
+        Assert.assertNull(dto.offer());
+    }
+
+    @Test
+    public void testBrandModelRequestRejectedBuildsExpectedDto() {
+        final BrandModelRequest request = BrandModelRequest.builder()
+                .id(51L)
+                .type(BrandModelRequestType.NEW_BRAND)
+                .brandName("Acme")
+                .modelName("Phone")
+                .build();
+
+        final SiteNotificationCreationDto dto =
+                SiteNotificationCreationDtoFactory.brandModelRequestRejected(request, BUYER);
+
+        Assert.assertSame(BUYER, dto.notificationRecipient());
+        Assert.assertEquals(NotificationType.BRAND_MODEL_REQUEST_REJECTED, dto.notificationType());
+        Assert.assertEquals("notification.brandModelRequest.rejected.title", dto.titleKey());
+        Assert.assertEquals("notification.brandModelRequest.rejected.body", dto.bodyKey());
+        Assert.assertEquals(List.of("Acme", "Phone"), dto.bodyArgs());
+        Assert.assertEquals("/listing", dto.actionUrl());
+        Assert.assertEquals("notification.brandModelRequest.rejected.cta", dto.actionLabelKey());
+        Assert.assertNull(dto.offer());
+    }
+
     private static User buildUser(final long id, final String displayName) {
         return User.builder()
                 .id(id)

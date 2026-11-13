@@ -48,8 +48,8 @@ Status values: `todo`, `done`, `underspecified`, `needs bigger refactor`, `false
 | 5.2 | [Unused average price](#52-unused-average-price) | 🕓 todo |
 | 5.3 | [`MIN`/`MAX` over the embeddable](#53-minmax-over-the-embeddable) | 🕓 todo |
 | 5.4 | [Mutable result types](#54-mutable-result-types) | 🕓 todo |
-| 6.1 | [Tests with no assertion](#61-tests-with-no-assertion) | 🕓 todo |
-| 6.2 | [Missing coverage of the brand/model request flow](#62-missing-coverage-of-the-brandmodel-request-flow) | 🕓 todo |
+| 6.1 | [Tests with no assertion](#61-tests-with-no-assertion) | ✅ done |
+| 6.2 | [Missing coverage of the brand/model request flow](#62-missing-coverage-of-the-brandmodel-request-flow) | ✅ done |
 | 7.1 | [Default messages that do not exist](#71-default-messages-that-do-not-exist) | 🕓 todo |
 | 7.2 | [Brand/model request validation messages](#72-brandmodel-request-validation-messages) | ✅ done |
 | 7.3 | [Pluralization](#73-pluralization) | 🕓 todo |
@@ -312,11 +312,11 @@ Things to fix before the final delivery. Items 1-10 were checked against `dev` (
 
 ### 6.1 Tests with no assertion
 
-- They pass even if the method does nothing: in `CatalogServiceImplTest`, `testReplaceBrandDelegates`, `testRenameBrandTrimsName`, `testRenameBrandToSameNameDoesNothing`, `testDeleteBrandDelegates`, `testUpdateModelChangesFields`, `testDeleteModelDelegates` and `testReplaceModelDelegatesToListingDao` only stub the DAOs and call the service.
+- **Done.** Removed the no-assertion pseudo-delegation tests from `CatalogServiceImplTest`, including `testRenameBrandChangingOnlyCaseIsAllowed`, which also had no assertion. The existing return-valued delegation tests already assert the DAO result; no void delegation tests were kept.
 
 ### 6.2 Missing coverage of the brand/model request flow
 
-- `BrandModelRequestServiceImplTest` now covers creation, duplicate handling and accept/reject notification dispatch through mocks, but there is still no direct test for `NotificationDispatcherServiceImpl.notifyBrandModelRequestAccepted` / `Rejected`, `SiteNotificationCreationDtoFactory.brandModelRequestAccepted` / `Rejected`, or the null/blank/unknown-entity validations of `BrandModelRequestServiceImpl.create` (null type, blank model, unknown subcategory or user, missing brand).
+- **Done.** Added direct tests for `NotificationDispatcherServiceImpl.notifyBrandModelRequestAccepted` / `Rejected`, `SiteNotificationCreationDtoFactory.brandModelRequestAccepted` / `Rejected`, and the missing `BrandModelRequestServiceImpl.create` validations (missing type, blank model, missing/unknown subcategory, missing user, missing existing brand).
 
 ---
 

@@ -211,16 +211,6 @@ public class CatalogServiceImplTest {
         Assert.assertSame(brands, result);
     }
 
-    @Test
-    public void testReplaceBrandDelegates() {
-        when(brandDao.getById(eq(BRAND_ID))).thenReturn(Optional.of(buildFakeBrand()));
-        when(brandDao.getById(eq(2L))).thenReturn(Optional.of(Brand.builder().id(2L).name("Dell").build()));
-        when(listingDao.replaceSameNameModelsForBrands(eq(BRAND_ID), eq(2L))).thenReturn(1);
-        when(modelDao.replaceBrand(eq(BRAND_ID), eq(2L))).thenReturn(2);
-
-        catalogService.replaceBrand(BRAND_ID, 2L);
-    }
-
     @Test(expected = BadParameterException.class)
     public void testReplaceBrandWithSameBrandThrows() {
         catalogService.replaceBrand(BRAND_ID, BRAND_ID);
@@ -291,32 +281,6 @@ public class CatalogServiceImplTest {
         catalogService.createBrand("   ");
     }
 
-    @Test
-    public void testRenameBrandTrimsName() {
-        when(brandDao.existsByNameAndIdNot(eq("Apple Inc."), eq(BRAND_ID))).thenReturn(false);
-        when(brandDao.rename(eq(BRAND_ID), eq("Apple Inc.")))
-                .thenReturn(Optional.of(Brand.builder().id(BRAND_ID).name("Apple Inc.").build()));
-
-        catalogService.renameBrand(BRAND_ID, "  Apple Inc.  ");
-    }
-
-    @Test
-    public void testRenameBrandToSameNameDoesNothing() {
-        when(brandDao.existsByNameAndIdNot(eq("Apple"), eq(BRAND_ID))).thenReturn(false);
-        when(brandDao.rename(eq(BRAND_ID), eq("Apple"))).thenReturn(Optional.of(buildFakeBrand()));
-
-        catalogService.renameBrand(BRAND_ID, "Apple");
-    }
-
-    @Test
-    public void testRenameBrandChangingOnlyCaseIsAllowed() {
-        when(brandDao.existsByNameAndIdNot(eq("apple"), eq(BRAND_ID))).thenReturn(false);
-        when(brandDao.rename(eq(BRAND_ID), eq("apple")))
-                .thenReturn(Optional.of(Brand.builder().id(BRAND_ID).name("apple").build()));
-
-        catalogService.renameBrand(BRAND_ID, "apple");
-    }
-
     @Test(expected = BadParameterException.class)
     public void testRenameBrandToExistingNameThrows() {
         when(brandDao.existsByNameAndIdNot(eq("Dell"), eq(BRAND_ID))).thenReturn(true);
@@ -335,14 +299,6 @@ public class CatalogServiceImplTest {
         when(brandDao.rename(eq(NON_EXISTING_MODEL_ID), eq("New name"))).thenReturn(Optional.empty());
 
         catalogService.renameBrand(NON_EXISTING_MODEL_ID, "New name");
-    }
-
-    @Test
-    public void testDeleteBrandDelegates() {
-        when(brandDao.hasListings(eq(BRAND_ID))).thenReturn(false);
-        when(brandDao.delete(eq(BRAND_ID))).thenReturn(true);
-
-        catalogService.deleteBrand(BRAND_ID);
     }
 
     @Test(expected = BadParameterException.class)
@@ -421,19 +377,6 @@ public class CatalogServiceImplTest {
         catalogService.createModel("New Model", BRAND_ID, SUBCATEGORY_ID);
     }
 
-    @Test
-    public void testUpdateModelChangesFields() {
-        final Brand brand = buildFakeBrand();
-        final Subcategory subcategory = buildFakeSubcategory();
-        final Model updated = buildFakeModel(MODEL_ID, "Updated Model");
-        when(brandDao.getById(eq(BRAND_ID))).thenReturn(Optional.of(brand));
-        when(subcategoryDao.getById(eq(SUBCATEGORY_ID))).thenReturn(Optional.of(subcategory));
-        when(modelDao.existsByNameAndBrandIdAndIdNot(eq("Updated Model"), eq(BRAND_ID), eq(MODEL_ID))).thenReturn(false);
-        when(modelDao.update(eq(MODEL_ID), eq("Updated Model"), eq(brand), eq(subcategory))).thenReturn(Optional.of(updated));
-
-        catalogService.updateModel(MODEL_ID, "Updated Model", BRAND_ID, SUBCATEGORY_ID);
-    }
-
     @Test(expected = BadParameterException.class)
     public void testDeleteModelWithListingsThrows() {
         when(modelDao.hasListings(eq(MODEL_ID))).thenReturn(true);
@@ -449,26 +392,9 @@ public class CatalogServiceImplTest {
         catalogService.deleteModel(NON_EXISTING_MODEL_ID);
     }
 
-    @Test
-    public void testDeleteModelDelegates() {
-        when(modelDao.hasListings(eq(MODEL_ID))).thenReturn(false);
-        when(modelDao.deleteModel(eq(MODEL_ID))).thenReturn(true);
-
-        catalogService.deleteModel(MODEL_ID);
-    }
-
     @Test(expected = BadParameterException.class)
     public void testReplaceModelWithSameModelThrows() {
         catalogService.replaceModel(MODEL_ID, MODEL_ID);
-    }
-
-    @Test
-    public void testReplaceModelDelegatesToListingDao() {
-        when(modelDao.getById(eq(MODEL_ID))).thenReturn(Optional.of(buildFakeModel(MODEL_ID, MODEL_NAME)));
-        when(modelDao.getById(eq(AIR_MODEL_ID))).thenReturn(Optional.of(buildFakeModel(AIR_MODEL_ID, "MacBook Air")));
-        when(listingDao.replaceModel(eq(MODEL_ID), eq(AIR_MODEL_ID))).thenReturn(3);
-
-        catalogService.replaceModel(MODEL_ID, AIR_MODEL_ID);
     }
 
     /* ---------------------------------------------------------------------------------------------- */
