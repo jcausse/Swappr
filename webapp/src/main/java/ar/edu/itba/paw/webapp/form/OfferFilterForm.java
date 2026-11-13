@@ -26,7 +26,6 @@ public class OfferFilterForm {
     }
 
     public OfferFilterDto toDto(Long sellerId, Long buyerId, int pageSize) {
-        // REVIEW: exactly one of sellerId/buyerId and pageSize are supplied by the controller, not the form.
         return OfferFilterDto.builder()
                 .sellerId(sellerId)
                 .buyerId(buyerId)

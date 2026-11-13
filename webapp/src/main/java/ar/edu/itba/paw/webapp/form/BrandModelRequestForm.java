@@ -44,7 +44,6 @@ public class BrandModelRequestForm {
     }
 
     public BrandModelRequestCreationDto toDto(Long requesterId) {
-        // REVIEW: requesterId comes from the authenticated user, not the form.
         return new BrandModelRequestCreationDto(
                 requesterId,
                 type,

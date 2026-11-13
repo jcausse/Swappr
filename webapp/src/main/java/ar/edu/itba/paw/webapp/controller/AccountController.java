@@ -50,6 +50,7 @@ public class AccountController {
     private static final Logger LOGGER = LoggerFactory.getLogger(AccountController.class);
 
     private static final int ACCOUNT_LISTINGS_PAGE_SIZE = 5;
+    private static final int ACCOUNT_OFFERS_PAGE_SIZE = 5;
 
     private final ListingService listingService;
     private final OfferService offerService;
@@ -67,11 +68,7 @@ public class AccountController {
     public ModelAndView listings(@CurrentUser User currentUser, @ModelAttribute("filterForm") ListingFilterForm filterForm) {
         LOGGER.debug("User {} accessing account listings", currentUser.getId());
 
-        final var filter = filterForm.toDto(
-            currentUser.getId(),
-            filterForm.getStatus(),
-            ACCOUNT_LISTINGS_PAGE_SIZE
-        );
+        final var filter = filterForm.toDto(currentUser.getId(), ACCOUNT_LISTINGS_PAGE_SIZE);
 
         final var listingPage = listingService.search(filter);
         final var listings = listingPage.getContent();
@@ -97,7 +94,7 @@ public class AccountController {
     public ModelAndView incomingOffers(@CurrentUser User currentUser, @ModelAttribute("filterForm") OfferFilterForm filterForm) {
         LOGGER.debug("User {} accessing incoming offers", currentUser.getId());
 
-        final var filter = filterForm.toDto(currentUser.getId(), null, 5);
+        final var filter = filterForm.toDto(currentUser.getId(), null, ACCOUNT_OFFERS_PAGE_SIZE);
         final var offerPage = offerService.get(filter);
 
         final var statusGroupOptions = Arrays.stream(OfferStatusGroup.values())
@@ -118,7 +115,7 @@ public class AccountController {
     public ModelAndView myOffers(@CurrentUser User currentUser, @ModelAttribute("filterForm") OfferFilterForm filterForm) {
         LOGGER.debug("User {} accessing my offers", currentUser.getId());
 
-        final var filter = filterForm.toDto(null, currentUser.getId(), 5);
+        final var filter = filterForm.toDto(null, currentUser.getId(), ACCOUNT_OFFERS_PAGE_SIZE);
         final var offerPage = offerService.get(filter);
 
         final var statusGroupOptions = Arrays.stream(OfferStatusGroup.values())

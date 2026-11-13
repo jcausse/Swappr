@@ -75,7 +75,6 @@ public class ListingDetailsForm {
     }
 
     public ListingCreationDto toCreationDto(Long creatorId) {
-        // REVIEW: creatorId comes from the authenticated user, not the form.
         return new ListingCreationDto(
                 title,
                 price,
@@ -91,7 +90,6 @@ public class ListingDetailsForm {
     }
 
     public ListingUpdateDto toUpdateDto(Long listingId) {
-        // REVIEW: listingId comes from the path, not the form.
         return new ListingUpdateDto(
                 listingId,
                 title,

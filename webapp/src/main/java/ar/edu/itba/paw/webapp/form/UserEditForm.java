@@ -63,7 +63,6 @@ public class UserEditForm {
     }
 
     public UserEditDto toDto(User user) {
-        // REVIEW: user comes from the authenticated principal, not the form.
         return UserEditDto.builder()
                 .user(user)
                 .newDisplayName(displayName)

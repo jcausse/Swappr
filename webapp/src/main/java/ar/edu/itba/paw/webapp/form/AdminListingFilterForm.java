@@ -18,7 +18,6 @@ public class AdminListingFilterForm {
     private ListingStatus status;
 
     public ListingFilterDto toDto(int page, int pageSize) {
-        // REVIEW: page and pageSize come from the controller, not the form.
         return ListingFilterDto.builder()
                 .query(query)
                 .status(status)

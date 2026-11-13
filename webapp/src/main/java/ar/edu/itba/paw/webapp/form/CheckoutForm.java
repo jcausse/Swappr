@@ -46,7 +46,6 @@ public class CheckoutForm {
     private String message;
 
     public OfferCreationDto toOfferDto(Long buyerId) {
-        // REVIEW: buyerId comes from the authenticated user, not the form.
         return new OfferCreationDto(
                 listingId,
                 buyerId,
@@ -59,7 +58,6 @@ public class CheckoutForm {
     }
 
     public ListingFilterDto toTradeListingsFilterDto(Long creatorId, int pageSize) {
-        // REVIEW: creatorId, the ACTIVE status and pageSize come from the controller, not the form.
         return ListingFilterDto.builder()
                 .creatorId(creatorId)
                 .status(ListingStatus.ACTIVE)

@@ -39,8 +39,11 @@ public class ListingFilterForm {
         return page == null || page < 1 ? 1 : page;
     }
 
+    public ListingFilterDto toDto(Long creatorId, int pageSize) {
+        return toDto(creatorId, getStatus(), pageSize);
+    }
+
     public ListingFilterDto toDto(Long creatorId, ListingStatus status, int pageSize) {
-        // REVIEW: creatorId, status and pageSize are supplied by each controller, not the form.
         return ListingFilterDto.builder()
                 .categoryId(categoryId)
                 .subcategoryId(subcategoryId)

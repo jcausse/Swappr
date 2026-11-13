@@ -14,7 +14,6 @@ public class AdminOfferFilterForm {
     private OfferStatusGroup statusGroup;
 
     public OfferFilterDto toDto(int page, int pageSize) {
-        // REVIEW: page and pageSize come from the controller, not the form.
         return OfferFilterDto.builder()
                 .statusGroup(statusGroup)
                 .page(page)
