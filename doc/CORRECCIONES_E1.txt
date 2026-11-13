@@ -59,7 +59,8 @@
 [-] Resuelven asociaciones con queries extra o inserts uno por uno en lugar de un JOIN o un batch. Por ejemplo, ListingJdbcDao getById (imágenes en una segunda query) y ListingJdbcDao.create.
   -- IRRELEVANTE con la migración a JPA, pero hay que ver de no tener el mismo problema en los DAO nuevos
 
-[ ] Mezclan DDL con datos de seed en las mismas migraciones, y el schema de tests quedó desactualizado respecto de los DAOs (le faltan users_roles y suspended_at).
+[X] Mezclan DDL con datos de seed en las mismas migraciones, y el schema de tests quedó desactualizado respecto de los DAOs (le faltan users_roles y suspended_at).
+  -- RESUELTO no podemos tocar las migrations anteriores, pero lo dejamos de hacer
 
 [X] Arman las opciones traducidas de los «select» en Java en varios controllers. Esas copias ya divergieron entre sí, cuando la vista lo resuelve Con <spring:message>. Por ejemplo, ListingController.discovery y AccountController.listings.
   -- RESUELTO: PR https://bitbucket.org/itba/paw-2026b-08/pull-requests/88
@@ -73,7 +74,8 @@
 [X] la constante "_OTHER_" está en tres lugares
   -- RESUELTO: PR https://bitbucket.org/itba/paw-2026b-08/pull-requests/106
 
-[ ] y las migraciones de test son una copia a mano de las de producción.
+[?] y las migraciones de test son una copia a mano de las de producción.
+  -- ???????
 
 [X] Dejan código sin uso en services y DAOs. Por ejemplo, ProductServiceImpl.getByCategory, UserServiceImpl.updateEmail y ListingJdbcDao .DELETE_BY_ID.
   -- RESUELTO: PR https://bitbucket.org/itba/paw-2026b-08/pull-requests/100

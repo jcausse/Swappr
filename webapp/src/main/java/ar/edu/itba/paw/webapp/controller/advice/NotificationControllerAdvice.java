@@ -1,7 +1,7 @@
 package ar.edu.itba.paw.webapp.controller.advice;
 
 import ar.edu.itba.paw.model.Page;
-import ar.edu.itba.paw.model.SiteNotification;
+import ar.edu.itba.paw.model.notification.SiteNotification;
 import ar.edu.itba.paw.service.SiteNotificationService;
 import ar.edu.itba.paw.webapp.auth.AuthHelper;
 import lombok.RequiredArgsConstructor;

@@ -1,10 +1,10 @@
 package ar.edu.itba.paw.persistence;
 
-import ar.edu.itba.paw.model.NotificationType;
+import ar.edu.itba.paw.model.notification.NotificationType;
 import ar.edu.itba.paw.model.Offer;
 import ar.edu.itba.paw.model.Page;
-import ar.edu.itba.paw.model.SiteNotification;
-import ar.edu.itba.paw.model.SiteNotificationFilter;
+import ar.edu.itba.paw.model.notification.SiteNotification;
+import ar.edu.itba.paw.model.notification.SiteNotificationFilter;
 import ar.edu.itba.paw.model.User;
 
 import java.time.Instant;

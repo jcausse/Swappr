@@ -1,7 +1,11 @@
 package ar.edu.itba.paw.service.notification;
 
 import ar.edu.itba.paw.model.*;
+import ar.edu.itba.paw.model.notification.NotificationChannel;
+import ar.edu.itba.paw.model.notification.NotificationType;
+import ar.edu.itba.paw.model.notification.SiteNotification;
 import ar.edu.itba.paw.service.EmailNotificationService;
+import ar.edu.itba.paw.service.NotificationPreferenceService;
 import ar.edu.itba.paw.service.SiteNotificationService;
 import ar.edu.itba.paw.service.dto.SiteNotificationCreationDto;
 import ar.edu.itba.paw.service.dto.mail.ListingMailDto;
@@ -35,13 +39,24 @@ public class NotificationDispatcherServiceImplTest {
     @Mock
     private EmailNotificationService emailNotificationService;
 
+    @Mock
+    private NotificationPreferenceService notificationPreferenceService;
+
     private NotificationDispatcherServiceImpl dispatcher;
 
     @Before
     public void setUp() {
+        lenient().when(notificationPreferenceService.isNotificationEnabled(
+                any(User.class), any(NotificationType.class), any(NotificationChannel.class)
+        )).thenAnswer(inv -> {
+            final NotificationType type = inv.getArgument(1);
+            final NotificationChannel channel = inv.getArgument(2);
+            return type != null && type.supportsChannel(channel);
+        });
         dispatcher = new NotificationDispatcherServiceImpl(
                 siteNotificationService,
-                emailNotificationService
+                emailNotificationService,
+                notificationPreferenceService
         );
     }
 
@@ -130,7 +145,7 @@ public class NotificationDispatcherServiceImplTest {
         // Assert
         Assert.assertEquals(2, siteCaptor.getAllValues().size());
 
-        final SiteNotificationCreationDto withCashDto = siteCaptor.getAllValues().get(0);
+        final SiteNotificationCreationDto withCashDto = siteCaptor.getAllValues().getFirst();
         Assert.assertEquals("notification.newOffer.title", withCashDto.titleKey());
         Assert.assertEquals("notification.newOffer.body.tradeWithCash", withCashDto.bodyKey());
         Assert.assertEquals(
@@ -434,7 +449,7 @@ public class NotificationDispatcherServiceImplTest {
         // Assert
         Assert.assertEquals(3, siteCaptor.getAllValues().size());
 
-        final SiteNotificationCreationDto rejectedDto = siteCaptor.getAllValues().get(0);
+        final SiteNotificationCreationDto rejectedDto = siteCaptor.getAllValues().getFirst();
         Assert.assertEquals(NotificationType.OFFER_REJECTED, rejectedDto.notificationType());
         Assert.assertEquals("notification.offerRejected.body", rejectedDto.bodyKey());
         Assert.assertEquals(List.of("190.00", "Desk Monitor"), rejectedDto.bodyArgs());
@@ -513,6 +528,102 @@ public class NotificationDispatcherServiceImplTest {
         Assert.assertEquals("333444", verificationOtpCaptor.getValue());
         Assert.assertEquals(1, suspendedCaptor.getAllValues().size());
         Assert.assertEquals(1, unsuspendedCaptor.getAllValues().size());
+    }
+
+    @Test
+    public void testNotifyNewOfferRespectsEmailOnlyPreference() {
+        final User seller = buildUser(10L, "Seller Ana", Language.ENGLISH);
+        final User buyer = buildUser(20L, "Buyer Bob", Language.ENGLISH);
+        final Listing listing = buildListing(100L, "Camera", seller);
+        final Offer offer = Offer.builder()
+                .id(600L)
+                .listing(listing)
+                .buyer(buyer)
+                .amount(new BigDecimal("150.00"))
+                .isFullPrice(false)
+                .status(OfferStatus.PENDING)
+                .createdAt(Instant.now())
+                .build();
+
+        when(notificationPreferenceService.isNotificationEnabled(
+                seller, NotificationType.NEW_OFFER, NotificationChannel.SITE)).thenReturn(false);
+        when(notificationPreferenceService.isNotificationEnabled(
+                seller, NotificationType.NEW_OFFER, NotificationChannel.EMAIL)).thenReturn(true);
+
+        final ArgumentCaptor<SiteNotificationCreationDto> siteCaptor =
+                ArgumentCaptor.forClass(SiteNotificationCreationDto.class);
+        final ArgumentCaptor<OfferMailDto> mailCaptor = ArgumentCaptor.forClass(OfferMailDto.class);
+        lenient().when(siteNotificationService.create(siteCaptor.capture())).thenReturn(new SiteNotification());
+        doNothing().when(emailNotificationService).sendNewOfferEmail(mailCaptor.capture());
+
+        dispatcher.notifyNewOffer(offer);
+
+        Assert.assertTrue(siteCaptor.getAllValues().isEmpty());
+        Assert.assertEquals(1, mailCaptor.getAllValues().size());
+    }
+
+    @Test
+    public void testNotifyNewOfferRespectsSiteOnlyPreference() {
+        final User seller = buildUser(10L, "Seller Ana", Language.ENGLISH);
+        final User buyer = buildUser(20L, "Buyer Bob", Language.ENGLISH);
+        final Listing listing = buildListing(100L, "Camera", seller);
+        final Offer offer = Offer.builder()
+                .id(601L)
+                .listing(listing)
+                .buyer(buyer)
+                .amount(new BigDecimal("150.00"))
+                .isFullPrice(false)
+                .status(OfferStatus.PENDING)
+                .createdAt(Instant.now())
+                .build();
+
+        when(notificationPreferenceService.isNotificationEnabled(
+                seller, NotificationType.NEW_OFFER, NotificationChannel.SITE)).thenReturn(true);
+        when(notificationPreferenceService.isNotificationEnabled(
+                seller, NotificationType.NEW_OFFER, NotificationChannel.EMAIL)).thenReturn(false);
+
+        final ArgumentCaptor<SiteNotificationCreationDto> siteCaptor =
+                ArgumentCaptor.forClass(SiteNotificationCreationDto.class);
+        final ArgumentCaptor<OfferMailDto> mailCaptor = ArgumentCaptor.forClass(OfferMailDto.class);
+        when(siteNotificationService.create(siteCaptor.capture())).thenReturn(new SiteNotification());
+        lenient().doNothing().when(emailNotificationService).sendNewOfferEmail(mailCaptor.capture());
+
+        dispatcher.notifyNewOffer(offer);
+
+        Assert.assertEquals(1, siteCaptor.getAllValues().size());
+        Assert.assertTrue(mailCaptor.getAllValues().isEmpty());
+    }
+
+    @Test
+    public void testNotifyNewOfferRespectsDisabledPreference() {
+        final User seller = buildUser(10L, "Seller Ana", Language.ENGLISH);
+        final User buyer = buildUser(20L, "Buyer Bob", Language.ENGLISH);
+        final Listing listing = buildListing(100L, "Camera", seller);
+        final Offer offer = Offer.builder()
+                .id(602L)
+                .listing(listing)
+                .buyer(buyer)
+                .amount(new BigDecimal("150.00"))
+                .isFullPrice(false)
+                .status(OfferStatus.PENDING)
+                .createdAt(Instant.now())
+                .build();
+
+        when(notificationPreferenceService.isNotificationEnabled(
+                seller, NotificationType.NEW_OFFER, NotificationChannel.SITE)).thenReturn(false);
+        when(notificationPreferenceService.isNotificationEnabled(
+                seller, NotificationType.NEW_OFFER, NotificationChannel.EMAIL)).thenReturn(false);
+
+        final ArgumentCaptor<SiteNotificationCreationDto> siteCaptor =
+                ArgumentCaptor.forClass(SiteNotificationCreationDto.class);
+        final ArgumentCaptor<OfferMailDto> mailCaptor = ArgumentCaptor.forClass(OfferMailDto.class);
+        lenient().when(siteNotificationService.create(siteCaptor.capture())).thenReturn(new SiteNotification());
+        lenient().doNothing().when(emailNotificationService).sendNewOfferEmail(mailCaptor.capture());
+
+        dispatcher.notifyNewOffer(offer);
+
+        Assert.assertTrue(siteCaptor.getAllValues().isEmpty());
+        Assert.assertTrue(mailCaptor.getAllValues().isEmpty());
     }
 
     /* ---------------------------------------------------------------------------------------------- */
