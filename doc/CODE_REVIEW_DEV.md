@@ -46,7 +46,7 @@ Status values: `todo`, `done`, `underspecified`, `needs bigger refactor`, `false
 | 4.10 | [Replacement dialogs build N² options on every request](#410-replacement-dialogs-build-n-options-on-every-request) | 🕓 todo |
 | 5.1 | [Pagination without a tiebreaker](#51-pagination-without-a-tiebreaker) | 🕓 todo |
 | 5.2 | [Unused average price](#52-unused-average-price) | 🕓 todo |
-| 5.3 | [`MIN`/`MAX` over the embeddable](#53-minmax-over-the-embeddable) | 🕓 todo |
+| 5.3 | [`MIN`/`MAX` over the embeddable](#53-minmax-over-the-embeddable) | ✅ done |
 | 5.4 | [Mutable result types](#54-mutable-result-types) | ✅ done |
 | 6.1 | [Tests with no assertion](#61-tests-with-no-assertion) | ✅ done |
 | 6.2 | [Missing coverage of the brand/model request flow](#62-missing-coverage-of-the-brandmodel-request-flow) | ✅ done |
@@ -300,7 +300,7 @@ Things to fix before the final delivery. Items 1-10 were checked against `dev` (
 
 ### 5.3 `MIN`/`MAX` over the embeddable
 
-- `ModelJpaDao.java:260` uses `MIN(l.price)` / `MAX(l.price)`. Use `l.price.amount`, as the second summary query already does at `:317`.
+- **Verified done (already applied with 11.6).** Both summary queries now aggregate `l.price.amount`. Aggregating the `Price` embeddable was ambiguous: JPQL aggregates are scalar operations, so relying on Hibernate to treat the component as its single amount column was provider-specific and could compare/select the component as a whole rather than the amount. Using `l.price.amount` makes the scalar intent explicit.
 
 ### 5.4 Mutable result types
 
