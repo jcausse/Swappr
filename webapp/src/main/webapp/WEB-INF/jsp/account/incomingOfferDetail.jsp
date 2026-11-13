@@ -74,7 +74,7 @@
             <account:offerHint role="seller" status="${offer.status.name()}" free="${offer.forFreeListing}" classname="mt-2"/>
         </div>
 
-        <c:if test="${offer.hasOtherOffers and offer.status.name() == 'PENDING'}">
+        <c:if test="${offer.hasOtherOffers and offer.isPending()}">
             <div class="p-3 rounded-lg bg-amber-50 border border-amber-200 mt-2 flex flex-row gap-2 text-amber-800 items-center">
                 <paw:icon name="triangle-alert" />
                 <spring:message code="${offer.hasBetterOffers ? 'offer.warning.betterOffers' : 'offer.warning.otherOffers'}" var="warningMsg"/>
@@ -157,7 +157,7 @@
         </c:if>
 
         <!-- Proof of payment/shipping for pending payment state -->
-        <c:if test="${offer.status.name() == 'PENDING_PAYMENT' and (offer.proofOfPaymentId != null or offer.proofOfShippingId != null or not empty offer.trackingNumber)}">
+        <c:if test="${offer.isPendingPayment() and (offer.proofOfPaymentId != null or offer.proofOfShippingId != null or not empty offer.trackingNumber)}">
             <paw:divider />
             <spring:message code="offer.detail.proofOfPayment" var="proofLabel"/>
             <div class="flex flex-col gap-2">
@@ -174,7 +174,7 @@
         <paw:divider />
 
         <c:choose>
-            <c:when test="${offer.status.name() == 'PENDING'}">
+            <c:when test="${offer.isPending()}">
                 <div class="flex flex-row gap-4">
                     <spring:message code="offer.detail.accept" var="acceptLabel"/>
                     <form action="<c:url value='/offer/${offer.id}/accept'/>" method="POST" class="flex-1">
@@ -187,7 +187,7 @@
                     </form>
                 </div>
             </c:when>
-            <c:when test="${offer.status.name() == 'PENDING_PAYMENT'}">
+            <c:when test="${offer.isPendingPayment()}">
                 <spring:message code="${offer.forFreeListing ? 'offer.detail.confirmDelivery' : 'offer.detail.confirmPayment'}" var="confirmLabel"/>
                 <form action="<c:url value='/offer/${offer.id}/confirm-payment'/>" method="POST" class="w-full mb-2">
                     <paw:button type="submit" variant="default" size="lg" classname="w-full" text="${confirmLabel}"/>

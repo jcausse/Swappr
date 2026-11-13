@@ -148,7 +148,7 @@
                                     <spring:message code="admin.offers.viewListing" var="viewListingBtnText"/>
                                     <paw:linkButton href="${listingViewUrl}" text="${viewListingBtnText}" variant="outline" size="sm" icon="external-link"/>
 
-                                    <c:if test="${offer.status.name() == 'PENDING' || offer.status.name() == 'PENDING_PAYMENT'}">
+                                    <c:if test="${offer.canBeCanceledByAdmin()}">
                                         <c:url value="/admin/offers" var="takedownOfferRedirectUrl">
                                             <c:param name="page" value="${offersPage.page}"/>
                                             <c:if test="${not empty filterForm.statusGroup}">
