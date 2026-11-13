@@ -59,7 +59,7 @@ Status values: `todo`, `done`, `underspecified`, `needs bigger refactor`, `false
 | 10 | [Build and style cleanup (whole section)](#10-build-and-style) | 🕓 todo |
 | 11.1 | [`ImageController` access control and caching](#111-imagecontroller-access-control-and-caching) | ✅ done |
 | 11.2 | [Listing/Image relation](#112-listingimage-relation) | 🕓 todo |
-| 11.3 | [JDBC dependencies in test scope (partial)](#113-jdbc-dependencies-in-test-scope-partial) | 🕓 todo |
+| 11.3 | [JDBC dependencies in test scope](#113-jdbc-dependencies-in-test-scope) | ✅ done |
 | 11.4 | [Form `.todto()` helpers](#114-form-todto-helpers) | 🕓 todo |
 | 11.5 | [Prefer JPQL over `createNativeQuery`](#115-prefer-jpql-over-createnativequery) | 🕓 todo |
 | 11.6 | [Avoid `Object[]` row mapping for non-entity models](#116-avoid-object-row-mapping-for-non-entity-models) | ✅ done |
@@ -391,10 +391,10 @@ These items were imported from the now-removed `doc/TODO.md` and `doc/notes/DEBT
 
 - `Listing.java:68-75` still maps `@OneToMany @JoinTable List<Image>`; there is no `ListingImage` entity. The `coverImageId` formula (`:77`) fixes the cover N+1, but the requested intermediate entity with a lazy `Image` was never modelled.
 
-### 11.3 JDBC dependencies in test scope (partial)
+### 11.3 JDBC dependencies in test scope
 
-- HSQLDB and the test libraries are already test-scoped through the parent POM. `spring-jdbc` is still a compile dependency in `persistence/pom.xml:24-27`, where only the DAO tests use it, so it should move to `test`.
-- `spring-jdbc` is also compile in `webapp/pom.xml:41-44`, but there `WebConfig.dataSource()` uses `SimpleDriverDataSource` in main code. Moving it requires either keeping the dependency or refactoring the datasource creation, so this is not a pure POM change.
+- **Done.** `spring-jdbc` is now test-scoped in `persistence`, where only the DAO tests use it.
+- `webapp` keeps `spring-jdbc` as a compile dependency because `WebConfig.dataSource()` uses `SimpleDriverDataSource` in main code; it is not a test-only dependency there.
 
 ### 11.4 Form `.todto()` helpers
 
