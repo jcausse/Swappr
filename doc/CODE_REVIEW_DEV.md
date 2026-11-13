@@ -42,7 +42,7 @@ Status values: `todo`, `done`, `underspecified`, `needs bigger refactor`, `false
 | 4.6 | [Business rules decided in the views](#46-business-rules-decided-in-the-views) | ✅ done |
 | 4.7 | [Categories queried on every request](#47-categories-queried-on-every-request) | 🕓 todo |
 | 4.8 | [Smaller layering issues](#48-smaller-layering-issues) | ✅ done |
-| 4.9 | [Duplicated code](#49-duplicated-code) | 🕓 todo |
+| 4.9 | [Duplicated code](#49-duplicated-code) | ✅ done |
 | 4.10 | [Replacement dialogs build N² options on every request](#410-replacement-dialogs-build-n-options-on-every-request) | 🕓 todo |
 | 5.1 | [Pagination without a tiebreaker](#51-pagination-without-a-tiebreaker) | 🕓 todo |
 | 5.2 | [Unused average price](#52-unused-average-price) | 🕓 todo |
@@ -281,6 +281,7 @@ Things to fix before the final delivery. Items 1-10 were checked against `dev` (
 - `BrandModelRequestValidator.isValid` (`webapp/…/form/validation/BrandModelRequestValidator.java:12`) and `BrandModelRequestAcceptValidator.isValid` (`BrandModelRequestAcceptValidator.java:13`) have identical bodies (a `diff` only shows the parameter type). The two forms also repeat the same fields and annotations. Use a small interface implemented by both forms and a single validator.
 - `ModelJpaDao` maps rows to `ModelListingInfo` twice (`persistence/…/ModelJpaDao.java:259` and `:312`).
 - `ListingController` adds `priceSummary` in three handlers (`:310`, `:366`, `:408`).
+- **Done.** `ListingController` builds the details view in one helper. The `ModelJpaDao` mapping was already removed by 11.6 (constructor projections). Both request forms implement `BrandModelRequestFields`, and the brand rule both validators repeated now lives once in `BrandModelRequestBrandRule`.
 
 ### 4.10 Replacement dialogs build N² options on every request
 
