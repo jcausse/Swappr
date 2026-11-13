@@ -39,6 +39,9 @@ public class ListingCancellationServiceImpl implements ListingCancellationServic
     @Transactional
     public void cancelByAdmin(Long id) {
         LOGGER.info("Canceling listing id={} by Admin", id);
+        if (listingDao.getById(id).isEmpty()) {
+            throw NotFoundException.createFor("Listing with ID " + id);
+        }
         offerService.rejectPendingOffersForListing(id, null);
         if (!listingDao.cancel(id)) {
             throw NotFoundException.createFor("Listing with ID " + id);

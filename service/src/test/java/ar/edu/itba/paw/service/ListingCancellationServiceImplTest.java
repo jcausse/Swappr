@@ -61,7 +61,7 @@ public class ListingCancellationServiceImplTest {
     @Test(expected = NotFoundException.class)
     public void testCancelByAdminNonExistingListingThrows() {
         // Arrange
-        when(listingDao.cancel(eq(NON_EXISTING_ID))).thenReturn(false);
+        when(listingDao.getById(eq(NON_EXISTING_ID))).thenReturn(Optional.empty());
 
         // Act
         listingCancellationService.cancelByAdmin(NON_EXISTING_ID);
