@@ -28,6 +28,7 @@ public class AdminServiceImpl implements AdminService {
     private static final Logger LOGGER = LoggerFactory.getLogger(AdminServiceImpl.class);
 
     private final ListingService listingService;
+    private final ListingCancellationService listingCancellationService;
     private final OfferService offerService;
     private final UserService userService;
 
@@ -35,7 +36,7 @@ public class AdminServiceImpl implements AdminService {
     @Transactional
     public void takeDownListing(@NonNull Long listingId) {
         LOGGER.info("Admin taking down listing id={}", listingId);
-        listingService.cancelByAdmin(listingId);
+        listingCancellationService.cancelByAdmin(listingId);
     }
 
     @Override
@@ -89,7 +90,7 @@ public class AdminServiceImpl implements AdminService {
             );
             for (Listing listing : activeListings.getContent()) {
                 try {
-                    listingService.cancelByAdmin(listing.getId());
+                    listingCancellationService.cancelByAdmin(listing.getId());
                 } catch (Exception e) {
                     LOGGER.warn("Failed to cancel listing {} during suspension of user {}: {}",
                             listing.getId(), user.getId(), e.getMessage());
