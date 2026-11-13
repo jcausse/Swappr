@@ -42,11 +42,11 @@ Status values: `todo`, `done`, `underspecified`, `needs bigger refactor`, `false
 | 4.6 | [Business rules decided in the views](#46-business-rules-decided-in-the-views) | ✅ done |
 | 4.7 | [Categories queried on every request](#47-categories-queried-on-every-request) | 🕓 todo |
 | 4.8 | [Smaller layering issues](#48-smaller-layering-issues) | ✅ done |
-| 4.9 | [Duplicated code](#49-duplicated-code) | 🕓 todo |
+| 4.9 | [Duplicated code](#49-duplicated-code) | ✅ done |
 | 4.10 | [Replacement dialogs build N² options on every request](#410-replacement-dialogs-build-n-options-on-every-request) | ✅ done |
 | 5.1 | [Pagination without a tiebreaker](#51-pagination-without-a-tiebreaker) | 🕓 todo |
 | 5.2 | [Unused average price](#52-unused-average-price) | 🕓 todo |
-| 5.3 | [`MIN`/`MAX` over the embeddable](#53-minmax-over-the-embeddable) | 🕓 todo |
+| 5.3 | [`MIN`/`MAX` over the embeddable](#53-minmax-over-the-embeddable) | ✅ done |
 | 5.4 | [Mutable result types](#54-mutable-result-types) | 🕓 todo |
 | 6.1 | [Tests with no assertion](#61-tests-with-no-assertion) | ✅ done |
 | 6.2 | [Missing coverage of the brand/model request flow](#62-missing-coverage-of-the-brandmodel-request-flow) | ✅ done |
@@ -281,6 +281,7 @@ Things to fix before the final delivery. Items 1-10 were checked against `dev` (
 - `BrandModelRequestValidator.isValid` (`webapp/…/form/validation/BrandModelRequestValidator.java:12`) and `BrandModelRequestAcceptValidator.isValid` (`BrandModelRequestAcceptValidator.java:13`) have identical bodies (a `diff` only shows the parameter type). The two forms also repeat the same fields and annotations. Use a small interface implemented by both forms and a single validator.
 - `ModelJpaDao` maps rows to `ModelListingInfo` twice (`persistence/…/ModelJpaDao.java:259` and `:312`).
 - `ListingController` adds `priceSummary` in three handlers (`:310`, `:366`, `:408`).
+- **Done.** `ListingController` builds the details view in one helper. The `ModelJpaDao` mapping was already removed by 11.6 (constructor projections). Both request forms implement `BrandModelRequestFields`, and the brand rule both validators repeated now lives once in `BrandModelRequestBrandRule`.
 
 ### 4.10 Replacement dialogs build N² options on every request
 
@@ -300,7 +301,7 @@ Things to fix before the final delivery. Items 1-10 were checked against `dev` (
 
 ### 5.3 `MIN`/`MAX` over the embeddable
 
-- `ModelJpaDao.java:260` uses `MIN(l.price)` / `MAX(l.price)`. Use `l.price.amount`, as the second summary query already does at `:317`.
+- **Verified done (already applied with 11.6).** Both summary queries now aggregate `l.price.amount`. Aggregating the `Price` embeddable was ambiguous: JPQL aggregates are scalar operations, so relying on Hibernate to treat the component as its single amount column was provider-specific and could compare/select the component as a whole rather than the amount. Using `l.price.amount` makes the scalar intent explicit.
 
 ### 5.4 Mutable result types
 

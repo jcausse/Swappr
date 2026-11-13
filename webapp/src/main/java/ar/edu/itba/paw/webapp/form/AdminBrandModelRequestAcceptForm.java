@@ -15,7 +15,7 @@ import javax.validation.constraints.Size;
 @Getter
 @Setter
 @ValidBrandModelRequestAccept
-public class AdminBrandModelRequestAcceptForm {
+public class AdminBrandModelRequestAcceptForm implements BrandModelRequestFields {
 
     @NotNull
     private BrandModelRequestType type;

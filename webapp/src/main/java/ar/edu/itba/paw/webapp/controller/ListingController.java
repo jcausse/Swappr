@@ -284,13 +284,7 @@ public class ListingController {
         form.setModelId(model.getId());
         form.setYear(year);
 
-        var mav = new ModelAndView("listing/new/details");
-        mav.addObject("model", model);
-        mav.addObject("conditionOptions", buildConditionOptions());
-        mav.addObject("priceSummary", catalogService.getListingInfoSummaryForModel(model.getId(), null).orElse(null));
-        mav.addObject("actionUrl", "/listing/new/details");
-        mav.addObject("edit", false);
-        return mav;
+        return detailsView(model, null);
     }
 
     @PostMapping("/new/details")
@@ -303,7 +297,7 @@ public class ListingController {
         LOGGER.info("User {} submitted listing creation for model {}", currentUser.getId(), form.getModelId());
         if (bindingResult.hasErrors()) {
             LOGGER.debug("Validation failed for listing creation for model {}", form.getModelId());
-            return detailsWithErrors(form, null);
+            return detailsView(catalogService.getModelById(form.getModelId()), null);
         }
 
         listingService.create(form.toCreationDto(currentUser.getId()));
@@ -329,14 +323,8 @@ public class ListingController {
         form.setAcceptsShipping(listing.isAcceptsShipping());
         form.setDescription(listing.getDescription());
 
-        var mav = new ModelAndView("listing/new/details");
-        mav.addObject("conditionOptions", buildConditionOptions());
-        mav.addObject("model", listing.getModel());
-        mav.addObject("priceSummary", catalogService.getListingInfoSummaryForModel(listing.getModel().getId(), id).orElse(null));
-        mav.addObject("actionUrl", "/listing/" + id + "/edit");
-        mav.addObject("edit", true);
-        mav.addObject("existingImageIds", listing.getImageIds());
-        return mav;
+        return detailsView(listing.getModel(), id)
+            .addObject("existingImageIds", listing.getImageIds());
     }
 
     @PostMapping("/{id}/edit")
@@ -357,18 +345,20 @@ public class ListingController {
         return new ModelAndView("redirect:/account/listings");
     }
 
-    private ModelAndView detailsWithErrors(ListingDetailsForm form, Long excludedListingId) {
-        var model = catalogService.getModelById(form.getModelId());
+    // Shared by the create and edit pages (GET and POST with errors). editedListingId is null when creating.
+    private ModelAndView detailsView(final Model model, final Long editedListingId) {
+        final boolean edit = editedListingId != null;
         return new ModelAndView("listing/new/details")
-                .addObject("model", model)
-                .addObject("conditionOptions", buildConditionOptions())
-                .addObject("priceSummary", catalogService.getListingInfoSummaryForModel(model.getId(), excludedListingId).orElse(null));
+            .addObject("model", model)
+            .addObject("conditionOptions", buildConditionOptions())
+            .addObject("priceSummary",
+                catalogService.getListingInfoSummaryForModel(model.getId(), editedListingId).orElse(null))
+            .addObject("actionUrl", edit ? "/listing/" + editedListingId + "/edit" : "/listing/new/details")
+            .addObject("edit", edit);
     }
 
     private ModelAndView editDetailsWithErrors(final Long listingId, final ListingDetailsForm form) {
-        return detailsWithErrors(form, listingId)
-            .addObject("actionUrl", "/listing/" + listingId + "/edit")
-            .addObject("edit", true)
+        return detailsView(catalogService.getModelById(form.getModelId()), listingId)
             .addObject("existingImageIds", listingService.getById(listingId).getImageIds());
     }
 
