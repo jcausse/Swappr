@@ -44,8 +44,27 @@ Status values: `todo`, `done`, `underspecified`, `needs bigger refactor`, `false
 | 4.8 | [Smaller layering issues](#48-smaller-layering-issues) | 🕓 todo |
 | 4.9 | [Duplicated code](#49-duplicated-code) | 🕓 todo |
 | 4.10 | [Replacement dialogs build N² options on every request](#410-replacement-dialogs-build-n-options-on-every-request) | 🕓 todo |
+| 5.1 | [Pagination without a tiebreaker](#51-pagination-without-a-tiebreaker) | 🕓 todo |
+| 5.2 | [Unused average price](#52-unused-average-price) | 🕓 todo |
+| 5.3 | [`MIN`/`MAX` over the embeddable](#53-minmax-over-the-embeddable) | 🕓 todo |
+| 5.4 | [Mutable result types](#54-mutable-result-types) | 🕓 todo |
+| 6.1 | [Tests with no assertion](#61-tests-with-no-assertion) | 🕓 todo |
+| 6.2 | [Missing coverage of the brand/model request flow](#62-missing-coverage-of-the-brandmodel-request-flow) | 🕓 todo |
+| 7.1 | [Default messages that do not exist](#71-default-messages-that-do-not-exist) | 🕓 todo |
+| 7.2 | [Brand/model request validation messages](#72-brandmodel-request-validation-messages) | ✅ done |
+| 7.3 | [Pluralization](#73-pluralization) | 🕓 todo |
+| 8.1 | [Offer-rejected email CTA](#81-offer-rejected-email-cta) | 🕓 todo |
+| 8.2 | [Pure-trade pending-payment email copy](#82-pure-trade-pending-payment-email-copy) | 🕓 todo |
+| 9 | [Dead code cleanup (whole section)](#9-dead-code) | 🕓 todo |
+| 10 | [Build and style cleanup (whole section)](#10-build-and-style) | 🕓 todo |
+| 11.1 | [`ImageController` access control and caching](#111-imagecontroller-access-control-and-caching) | 🕓 todo |
+| 11.2 | [Listing/Image relation](#112-listingimage-relation) | 🕓 todo |
+| 11.3 | [JDBC dependencies in test scope (partial)](#113-jdbc-dependencies-in-test-scope-partial) | 🕓 todo |
+| 11.4 | [Form `.todto()` helpers](#114-form-todto-helpers) | 🕓 todo |
+| 11.5 | [Prefer JPQL over `createNativeQuery`](#115-prefer-jpql-over-createnativequery) | 🕓 todo |
+| 11.6 | [Avoid `Object[]` row mapping for non-entity models](#116-avoid-object-row-mapping-for-non-entity-models) | 🕓 todo |
 
-Things to fix before the final delivery. Every item below was checked against the current code of `dev` (`a80c04fd`, 2026-11-11). Nothing here is a guess: each one points to the file and line where it happens.
+Things to fix before the final delivery. Items 1-10 were checked against `dev` (`a80c04fd`, 2026-11-11); section 11 was checked against `dev` (`a385aa63`, 2026-11-13). Nothing here is a guess: each one points to the file and line where it happens.
 
 - **Reproduced** means it was executed and observed (a throwaway test or the running app). Everything else was confirmed by reading the code of `dev`.
 - The full build (`mvn clean install`) passes on `dev`. None of these are caught by the build.
@@ -271,32 +290,61 @@ Things to fix before the final delivery. Every item below was checked against th
 
 ## 5. Persistence
 
-- **Pagination without a tiebreaker.** `OfferJpaDao.java:91` (`ORDER BY o.createdAt DESC`) and `RatingJpaDao.java:58` (`ORDER BY r.createdAt DESC`). Add `, o.id DESC` / `, r.id DESC`, otherwise rows can repeat or disappear between pages.
-- **Unused average price.** `avgPrice` is computed in both summary queries (`ModelJpaDao.java:266`, `:319`) through a `Double`, and no view or service reads it (only a test sets it). Remove it.
-- **`MIN`/`MAX` over the embeddable.** `ModelJpaDao.java:247` uses `MIN(l.price)` / `MAX(l.price)`. Use `l.price.amount`.
-- **Mutable result types.** `ModelListingInfo` and `ModelListingInfoSummary` are `@Setter` + `@NoArgsConstructor` without `equals`/`hashCode`/`toString`, the setters are never used, and `listingCount` is a boxed `Long`. Make them immutable (`@Value @Builder`, `long`).
+### 5.1 Pagination without a tiebreaker
+
+- `OfferJpaDao.java:92` (`ORDER BY o.createdAt DESC`) and `RatingJpaDao.java:58` (`ORDER BY r.createdAt DESC`). Add `, o.id DESC` / `, r.id DESC`, otherwise rows can repeat or disappear between pages.
+
+### 5.2 Unused average price
+
+- `avgPrice` is computed in both summary queries (`ModelJpaDao.java:260`, `:317`) through a `Double` (`:279`, `:338`), and no view or service reads it (only a test sets it). Remove it.
+
+### 5.3 `MIN`/`MAX` over the embeddable
+
+- `ModelJpaDao.java:260` uses `MIN(l.price)` / `MAX(l.price)`. Use `l.price.amount`, as the second summary query already does at `:317`.
+
+### 5.4 Mutable result types
+
+- `ModelListingInfo` and `ModelListingInfoSummary` are `@Setter` + `@NoArgsConstructor` without `equals`/`hashCode`/`toString`, the setters are never used, and `listingCount` is a boxed `Long`. Make them immutable (`@Value @Builder`, `long`).
 
 ---
 
 ## 6. Tests
 
-- **Tests with no assertion.** They pass even if the method does nothing: in `CatalogServiceImplTest`, `testReplaceBrandDelegates`, `testRenameBrandTrimsName`, `testRenameBrandToSameNameDoesNothing`, `testDeleteBrandDelegates`, `testUpdateModelChangesFields`, `testDeleteModelDelegates` and `testReplaceModelDelegatesToListingDao` only stub the DAOs and call the service.
-- **Missing coverage of the brand/model request flow.** No test covers `NotificationDispatcherServiceImpl.notifyBrandModelRequestAccepted` / `Rejected`, `SiteNotificationCreationDtoFactory.brandModelRequestAccepted` / `Rejected`, or the validations of `BrandModelRequestServiceImpl.create` (null type, blank model, unknown subcategory or user, missing brand).
+### 6.1 Tests with no assertion
+
+- They pass even if the method does nothing: in `CatalogServiceImplTest`, `testReplaceBrandDelegates`, `testRenameBrandTrimsName`, `testRenameBrandToSameNameDoesNothing`, `testDeleteBrandDelegates`, `testUpdateModelChangesFields`, `testDeleteModelDelegates` and `testReplaceModelDelegatesToListingDao` only stub the DAOs and call the service.
+
+### 6.2 Missing coverage of the brand/model request flow
+
+- `BrandModelRequestServiceImplTest` now covers creation, duplicate handling and accept/reject notification dispatch through mocks, but there is still no direct test for `NotificationDispatcherServiceImpl.notifyBrandModelRequestAccepted` / `Rejected`, `SiteNotificationCreationDtoFactory.brandModelRequestAccepted` / `Rejected`, or the null/blank/unknown-entity validations of `BrandModelRequestServiceImpl.create` (null type, blank model, unknown subcategory or user, missing brand).
 
 ---
 
 ## 7. i18n
 
-- **Default messages that do not exist.** `ValidBrandModelRequest.java:16` and `ValidBrandModelRequestAccept.java:16` point to `{ValidBrandModelRequest.brandModelRequestForm}` and `{ValidBrandModelRequestAccept.adminBrandModelRequestAcceptForm}`. Neither key is in the bundles. They never show today because the validators always add their own message, but the default does not resolve.
-- **Validation messages missing for the brand/model request form.** The form is bound as `requestForm` (`BrandModelRequestController.java:38`, `:54`) and has `@NotNull` on `type`, `categoryId` and `subcategoryId`, `@NotBlank` + `@Size` on `modelName` and `@Size` on `newBrandName` (`BrandModelRequestForm`), but there is no `*.requestForm.*` key in either bundle. Those errors show the generic Hibernate Validator default instead of a project message. Add `NotNull.requestForm.type`, `NotNull.requestForm.categoryId`, `NotNull.requestForm.subcategoryId`, `NotBlank.requestForm.modelName`, `Size.requestForm.modelName` and `Size.requestForm.newBrandName` to both bundles.
-- **Pluralization.** `messages.properties:1190`: `admin.catalog.requests.additionalOthers=+ {0} other(s)`. Use `{0,choice,1#+ 1 other|1<+ {0} others}`.
+### 7.1 Default messages that do not exist
+
+- `ValidBrandModelRequest.java:16` and `ValidBrandModelRequestAccept.java:16` point to `{ValidBrandModelRequest.brandModelRequestForm}` and `{ValidBrandModelRequestAccept.adminBrandModelRequestAcceptForm}`. Neither key is in the bundles. They never show today because the validators always add their own message, but the default does not resolve.
+
+### 7.2 Brand/model request validation messages
+
+- **Done.** Conditional field validation now lives in `BrandModelRequestValidator`, which emits `error.catalogRequest.*` keys (`typeRequired`, `categoryRequired`, `subcategoryRequired`, `modelRequired`, `modelTooLong`, `newBrandRequired`, `newBrandTooLong`, `existingBrandRequired`). The form no longer carries the field constraints that used to fall back to generic Hibernate Validator messages.
+
+### 7.3 Pluralization
+
+- `messages.properties:1202`: `admin.catalog.requests.additionalOthers=+ {0} other(s)`. Use `{0,choice,1#+ 1 other|1<+ {0} others}`.
 
 ---
 
 ## 8. Mail
 
+### 8.1 Offer-rejected email CTA
+
 - `mail/offer-rejected.html:136`: the "Browse listings" button links to `${baseUrl}` (the home page) instead of `/listing`.
-- `messages.properties:568` (and `_es`): `email.offer.pendingPayment.body.trade` asks the buyer of a pure trade (no money involved) to "arrange payment … or upload proof of payment".
+
+### 8.2 Pure-trade pending-payment email copy
+
+- `messages.properties:569` (and `_es`): `email.offer.pendingPayment.body.trade` asks the buyer of a pure trade (no money involved) to "arrange payment … or upload proof of payment".
 
 ---
 
@@ -314,7 +362,7 @@ Things to fix before the final delivery. Every item below was checked against th
   - Never referenced: `error.username.notfound`, `error.email.notfound`, `error.image.upload`, `field.otp`, `verify.error.userNotFound`, `listing.new.productName`, `listing.new.step1.title`, `listing.new.step2.title`, `listing.new.product.select`, `listing.detail.noImages`, `listing.detail.cannotOfferOwn`, `listing.detail.alreadyPurchased`, `listing.detail.pendingTransaction`, `profile.username`, `profileEdit.success`, `checkout.success`, `checkout.summary.seller`, `checkout.summary.category`, `offer.detail.backToOffers`, `offer.detail.buyer`, `offer.detail.listingPrice`, `offer.detail.discount`, `offer.accepted`, `offer.action.withdraw`, `offer.proofOfPayment.back`, `discovery.acceptsTrade.badge`, `pagination.previous`, `pagination.next`, `imageUpload.uploadLabel`, `imageUpload.uploadLabelMultiple`, `imageUpload.clearLabel`, `imageUpload.changeLabel`, `imageUpload.removeLabel`, `account.myOffers.table.listing`, `account.myOffers.table.seller`, `account.myOffers.table.amount`, `account.myOffers.table.status` and `admin.catalog.requests.id` (the last one also has an unused `requestIdLabel` variable in `admin/catalog.jsp:75`).
   - Bean Validation keys for forms or fields that do not exist: `NotEmpty.loginForm.username`, `Size.loginForm.username`, `NotEmpty.loginForm.password` and `Size.loginForm.password` (there is no `loginForm`); `NotNull.listingForm.categoryId`, `NotNull.listingForm.subcategoryId`, `NotNull.listingForm.existingProductId`, `NotEmpty.listingForm.title` and `NotNull.listingForm.price` (there is no `listingForm`); `Email.userEditForm.email` and `Size.userEditForm.email` (`UserEditForm` has no email field); `UserExists.suspendUserForm.usernameOrEmail` and `UserExists.grantRoleForm.usernameOrEmail` (the field is `username`, whose keys are used).
   - Bean Validation keys for constraints the field does not use: `NotEmpty.detailsForm.title` (the field uses `@NotBlank`) and `NotNull.checkoutForm.tradeAmount` (the field has no `@NotNull`).
-- **Unused dependencies.** `mockito-core` is declared in `persistence` and `webapp` and no test in those modules uses it. `spring-test` is declared in `webapp` and its only test does not use it. `spring-jdbc` is a compile dependency of `persistence` but only its tests use it (move it to `test`, as `doc/TODO.md` already says).
+- **Unused dependencies.** `mockito-core` is declared in `persistence` and `webapp` and no test in those modules uses it. `spring-test` is declared in `webapp` and its only test does not use it. `spring-jdbc` is a compile dependency of `persistence` but only its tests use it (move it to `test`; see 11.3).
 
 ---
 
@@ -327,3 +375,47 @@ Things to fix before the final delivery. Every item below was checked against th
   - `UserController` (`ar.edu.itba.paw.model.*`), `OfferController` (`org.springframework.web.bind.annotation.*`) and `ValidProofOfShippingUploadForm` (`java.lang.annotation.*`).
   - In tests: `import static org.mockito.Mockito.*` in `ImageServiceImplTest`, `ListingServiceImplTest`, `OfferServiceImplTest`, `OneTimePasswordServiceImplTest`, `ProvinceServiceImplTest` and `UserServiceImplTest`, and `ar.edu.itba.paw.model.*` in `NotificationDispatcherServiceImplTest`, `SiteNotificationCreationDtoFactoryTest` and `SiteNotificationServiceImplTest`.
 - **Tabs instead of 4 spaces.** `PermissionServiceImpl.java` (38 lines), `WebPermissionService.java` (17), `AccountController.java` (11), `persistence/src/test/…/TestConfig.java` (9), `PermissionService.java` (8), `OfferServiceImpl.java` (4) and `OfferServiceImplTest.java` (1).
+
+---
+
+## 11. Old TODO items still pending
+
+These items were imported from the now-removed `doc/TODO.md` and `doc/notes/DEBT.txt`, and checked against `dev` (`a385aa63`, 2026-11-13).
+
+### 11.1 `ImageController` access control and caching
+
+- `ImageController.java:16` keeps the whole controller at `permitAll()`, and `getImage` (`:23-33`) serves any image by sequential id without checking whether the image belongs to a public listing/profile. Profile pictures are therefore enumerable.
+- The response has no `Cache-Control`, `ETag` or `Last-Modified` headers. Add explicit caching (and decide whether private images need an authorization rule before serving).
+
+### 11.2 Listing/Image relation
+
+- `Listing.java:68-75` still maps `@OneToMany @JoinTable List<Image>`; there is no `ListingImage` entity. The `coverImageId` formula (`:77`) fixes the cover N+1, but the requested intermediate entity with a lazy `Image` was never modelled.
+
+### 11.3 JDBC dependencies in test scope (partial)
+
+- HSQLDB and the test libraries are already test-scoped through the parent POM. `spring-jdbc` is still a compile dependency in `persistence/pom.xml:24-27`, where only the DAO tests use it, so it should move to `test`.
+- `spring-jdbc` is also compile in `webapp/pom.xml:41-44`, but there `WebConfig.dataSource()` uses `SimpleDriverDataSource` in main code. Moving it requires either keeping the dependency or refactoring the datasource creation, so this is not a pure POM change.
+
+### 11.4 Form `.todto()` helpers
+
+- No form exposes `toDto()`/`todto()`; controllers still instantiate DTOs inline (`CheckoutController` builds `OfferCreationDto`, `ListingController` builds `ListingCreationDto`/`ListingUpdateDto`, `UserController` builds `UserCreationDto`/`UserEditDto`, etc.). Add `toDto()` methods to the forms that map to a service DTO to keep that mapping in one place.
+
+### 11.5 Prefer JPQL over `createNativeQuery`
+
+- Audit the five native call sites and keep only the ones that cannot be expressed as typed JPQL:
+  - `ModelJpaDao.java:230` (native count) and `:238` (native model-id page) in `getListingInfoSummary`. The ID query is part of the mandated 1+1 model, but the count can likely use JPQL with the same filters.
+  - `ModelJpaDao.java:289` (`replaceBrand`) deletes old same-name models through a native `DELETE ... WHERE EXISTS`. This can likely be a JPQL bulk delete.
+  - `ListingJpaDao.java:224` (`replaceSameNameModelsForBrands`) uses a native `UPDATE ... SET ... = (correlated subquery)`. Rewrite if JPQL supports the update, otherwise document why it must stay native.
+  - `SiteNotificationJpaDao.java:137` and `BrandModelRequestJpaDao.java:74` are native ID queries for the 1+1 pagination model. These are intentional under `AGENTS.md`; do not replace them with fetch-join entity queries.
+
+### 11.6 Avoid `Object[]` row mapping for non-entity models
+
+- `BrandJpaDao.getWithStats` (`:69-79`) and `ModelJpaDao.getWithInfo` (`:104-119`) build `BrandInfo`/`ModelInfo` field by field, and both compute `hasListings` from `count > 0`. Store the count in the model (`listingCount`/`modelCount`-style field) and expose `hasListings()` as a derived getter, then let Hibernate/JPQL project into the model directly.
+- `ModelJpaDao.getListingInfoSummary` (`:265-279`) and `getListingInfoSummaryForModel` (`:322-338`) also map `Object[]` rows into `ModelListingInfo` manually. A constructor expression/DTO projection, or small model adjustments, would remove the casting.
+- `OfferJpaDao.countByStatus` (`:188`) and `populateTransientFlags` (`:285-308`) are the other `Object[]` consumers; `populateTransientFlags` is already covered by 1.7.
+
+---
+
+## Notes
+
+- **`ON DELETE` review (untracked note).** PostgreSQL has no `ON INSERT`, and the repository contains no such statements. `ON DELETE` is inconsistent across migrations: some foreign keys specify an action (`V10`, `V21`, `V24`, `V25`, `V33`, `V34`), while others do not (`listings.creator_id`, `offers.listing_id`, `offers.buyer_id`, the `ratings` foreign keys, etc.). This is a potential data-integrity/cleanup issue, not an actionable item for this review.
