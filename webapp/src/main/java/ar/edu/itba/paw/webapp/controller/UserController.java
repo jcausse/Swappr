@@ -10,7 +10,7 @@ import ar.edu.itba.paw.service.dto.UserCreationDto;
 import ar.edu.itba.paw.service.dto.UserEditDto;
 import ar.edu.itba.paw.webapp.auth.AuthHelper;
 import ar.edu.itba.paw.webapp.auth.CurrentUser;
-import ar.edu.itba.paw.webapp.exception.UserNotFoundException;
+import ar.edu.itba.paw.service.exception.UserNotFoundException;
 import ar.edu.itba.paw.webapp.form.RatingFilterForm;
 import ar.edu.itba.paw.webapp.form.StringSelectOption;
 import ar.edu.itba.paw.webapp.form.SelectOption;
