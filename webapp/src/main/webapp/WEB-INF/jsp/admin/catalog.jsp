@@ -341,6 +341,7 @@
                         placeholder="${modelFilterAllLabel}"
                         items="${modelFilterSubcategoryOptions}"
                         translateLabels="true"
+                        disabled="${empty modelFilterForm.filterCategoryId}"
                     />
                 </div>
                 <paw:button text="${modelFilterApplyLabel}" type="submit" variant="default" role="default" icon="search" classname="w-full sm:w-auto"/>
@@ -402,7 +403,9 @@
                                 </td>
                                 <td class="py-3 pr-4 font-medium"><c:out value="${model.name}"/></td>
                                 <td class="py-3 pr-4 text-black/70"><c:out value="${model.brandName}"/></td>
-                                <td class="py-3 pr-4 text-black/70"><c:out value="${model.subcategoryName}"/></td>
+                                <td class="py-3 pr-4 text-black/70">
+                                    <spring:message code="subcategory.${model.subcategoryName}"/>
+                                </td>
                                 <td class="py-3">
                                     <div class="flex flex-col items-end gap-1">
                                         <div class="flex items-center justify-end gap-2">
@@ -628,7 +631,7 @@
                                 <td class="py-3 pr-4 font-medium"><c:out value="${request.requestedBrandName}"/></td>
                                 <td class="py-3 pr-4 text-black/70"><c:out value="${request.modelName}"/></td>
                                 <td class="py-3 pr-4 text-black/70">
-                                    <c:out value="${request.subcategory.category.name}"/> / <c:out value="${request.subcategory.name}"/>
+                                    <spring:message code="subcategory.${request.subcategory.name}"/>
                                 </td>
                                 <td class="py-3 pr-4">
                                     <paw:user user="${request.requester}" variant="compact"/>
@@ -754,9 +757,8 @@
                     id="editModelSubcategoryId"
                     path="subcategoryId"
                     label="${modelSubcategoryLabel}"
-                    items="${subcategoryOptions}"
-                    itemLabel="name"
-                    itemValue="id"
+                    items="${editModelSubcategoryOptions}"
+                    translateLabels="true"
                 />
             </div>
         </paw:formDialog>

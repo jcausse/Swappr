@@ -124,10 +124,9 @@ public class AdminController {
                 .addObject("currentSort", sort)
                 .addObject("brandReplacementOptions", catalogService.getBrandReplacementOptions())
                 .addObject("brandOptions", allBrands)
-                .addObject("subcategoryOptions", catalogService.getAllSubcategories().stream()
+                .addObject("editModelSubcategoryOptions", catalogService.getAllSubcategories().stream()
                         .map(subcategory -> new SelectOption(
-                                subcategory.getId(),
-                                subcategory.getCategory().getName() + " / " + subcategory.getName()))
+                                subcategory.getId(), "subcategory." + subcategory.getName()))
                         .toList())
                 .addObject("categoryOptions", catalogService.getAllCategories().stream()
                         .map(category -> new SelectOption(category.getId(), "category." + category.getName()))

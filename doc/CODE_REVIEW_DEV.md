@@ -26,7 +26,7 @@ Status values: `todo`, `done`, `underspecified`, `needs bigger refactor`, `false
 | 3.3 | [Replacing/editing a model can move listings across subcategories](#33-replacing-or-editing-a-model-can-move-listings-to-another-subcategory) | ❌ false positive |
 | 3.4 | [Brand/model names compared case-sensitively on rename/create/edit](#34-brand-and-model-names-are-still-compared-case-sensitively-when-renaming-a-brand-and-creating-or-editing-a-model) | ✅ done |
 | 3.5 | [Price summary includes free listings and the listing being edited](#35-the-price-summary-in-the-listing-form-includes-free-listings-and-the-listing-being-edited) | ✅ done |
-| 3.6 | [Admin catalog shows raw subcategory codes](#36-admin-catalog-shows-raw-subcategory-codes) | 🕓 todo |
+| 3.6 | [Admin catalog shows raw subcategory codes](#36-admin-catalog-shows-raw-subcategory-codes) | ✅ done |
 | 3.7 | ["Already exists" page breaks names with commas and does not escape](#37-brandmodel-already-exists-page-breaks-names-with-commas-and-does-not-escape-them--reproduced) | ✅ done |
 | 3.8 | [Price range "max" printed unformatted](#38-the-max-of-the-price-range-is-printed-unformatted) | ❌ false positive |
 | 3.9 | [Takedown redirects built without URL-encoding](#39-takedown-redirects-in-the-admin-are-built-without-url-encoding) | ✅ done |
