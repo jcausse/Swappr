@@ -353,7 +353,7 @@ Things to fix before the final delivery. Items 1-10 were checked against `dev` (
 
 - **Done.** Removed the unused `tags/carousel.tag`; the landing page only uses `listingCarousel.tag`.
 - Removed unused `fromString` helpers from `Condition`, `ListingSort`, `ListingStatus`, `OfferRating`, `OfferStatus`, `OfferStatusGroup`, `RatingRole` and `Role`.
-- Removed unused getters: `BrandModelRequest.getBrandOptional`, `File.getExtension`, `File.getSizeKb`, `File.isImage`, `Offer.getAcceptedAt`, `Offer.getProofOfPaymentFilename`, `Offer.getProofOfShippingFilename`, `User.getEmailVerifiedAt`, `User.getSuspendedAt` and `User.getPreferredLocale`.
+- Removed unused getters: `BrandModelRequest.getBrandOptional`, `File.getExtension`, `File.getSizeKb`, `File.isImage`, `Offer.getAcceptedAt`, `User.getEmailVerifiedAt`, `User.getSuspendedAt` and `User.getPreferredLocale`. `Offer.getProofOfPaymentFilename` / `getProofOfShippingFilename` are kept because the proof upload tags render them via JSP EL.
 - Removed `CatalogService.getAllModels` and its test, plus the unused `subcategories` model attribute from `ListingController.populateModel`.
 - Removed 53 unused i18n keys from both bundles and the dead `admin.catalog.requests.id` lookup in `admin/catalog.jsp`.
 - Removed unused `mockito-core` from `persistence`. `mockito-core` and `spring-test` stay in `webapp` because `AuthHelperTest` and `RedirectHelperTest` use Mockito and `MockHttpServletRequest`; `spring-jdbc` stays in `webapp` because `WebConfig` uses it in main code.

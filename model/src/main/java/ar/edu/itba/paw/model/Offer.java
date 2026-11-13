@@ -111,6 +111,10 @@ public class Offer {
         return proofOfPayment != null ? proofOfPayment.getId() : null;
     }
 
+    public String getProofOfPaymentFilename() {
+        return proofOfPayment != null ? proofOfPayment.getFilename() : null;
+    }
+
     public Long getProofOfPaymentSizeKb() {
         if (proofOfPayment == null || proofOfPayment.getSize() <= 0) return 0L;
         return proofOfPayment.getSize() / 1024;
@@ -130,6 +134,10 @@ public class Offer {
 
     public Long getProofOfShippingId() {
         return proofOfShipping != null ? proofOfShipping.getId() : null;
+    }
+
+    public String getProofOfShippingFilename() {
+        return proofOfShipping != null ? proofOfShipping.getFilename() : null;
     }
 
     public Long getProofOfShippingSizeKb() {
