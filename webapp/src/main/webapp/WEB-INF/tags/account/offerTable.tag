@@ -65,12 +65,12 @@
                     </td>
                     <td class="py-1">
                         <c:choose>
-                            <c:when test="${offer.status.name() == 'ACCEPTED' and not myRating.isPresent()}">
+                            <c:when test="${offer.canBeRatedBy(currentUser.get())}">
                                 <c:url value="/account/rate/${offer.id}" var="rateUrl"/>
                                 <spring:message code="${user == 'seller' ? 'account.offerTable.rateSeller' : 'account.offerTable.rateBuyer'}" var="rateLabel"/>
                                 <paw:linkButton href="${rateUrl}" variant="outline" icon="star-plus" text="${rateLabel}" />
                             </c:when>
-                            <c:when test="${offer.status.name() == 'ACCEPTED' and myRating.isPresent()}">
+                            <c:when test="${offer.isAccepted() and myRating.isPresent()}">
                                 <div class="flex flex-row justify-start">
                                     <c:choose>
                                         <c:when test="${myRating.get().name() == 'POSITIVE'}">

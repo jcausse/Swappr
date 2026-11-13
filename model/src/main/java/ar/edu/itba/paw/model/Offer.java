@@ -174,6 +174,10 @@ public class Offer {
         return status == OfferStatus.ACCEPTED;
     }
 
+    public boolean canBeCanceledByAdmin() {
+        return isPending() || isPendingPayment();
+    }
+
     public boolean isForFreeListing() {
         return listing != null && listing.isFree();
     }

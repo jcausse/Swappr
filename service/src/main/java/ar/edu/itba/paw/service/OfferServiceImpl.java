@@ -591,12 +591,14 @@ public class OfferServiceImpl implements OfferService {
         final Offer offer = offerDao.getById(offerId)
             .orElseThrow(() -> NotFoundException.createFor("Offer with ID " + offerId));
 
+        if (!offer.canBeCanceledByAdmin()) {
+            LOGGER.warn("Cannot cancel offer {} in status {}", offerId, offer.getStatus());
+            throw new BadParameterException("Offer cannot be canceled in its current state");
+        }
+
         /* Reset listing status to ACTIVE if the current offer is holding it PENDING_TRANSACTION */
         if (offer.isPendingPayment()) {
             listingService.updateStatus(offer.getListing().getId(), ListingStatus.ACTIVE);
-        } else if (!offer.isPending()) {
-            LOGGER.warn("Cannot cancel offer {} in status {}", offerId, offer.getStatus());
-            throw new BadParameterException("Offer cannot be canceled in its current state");
         }
 
         /* If there is an offered listing, reset it to ACTIVE */
