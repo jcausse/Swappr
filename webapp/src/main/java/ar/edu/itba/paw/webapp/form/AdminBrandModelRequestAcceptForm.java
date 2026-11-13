@@ -1,6 +1,7 @@
 package ar.edu.itba.paw.webapp.form;
 
 import ar.edu.itba.paw.model.BrandModelRequestType;
+import ar.edu.itba.paw.service.dto.BrandModelRequestAcceptanceDto;
 import ar.edu.itba.paw.webapp.form.validation.ValidBrandModelRequestAccept;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -27,4 +28,8 @@ public class AdminBrandModelRequestAcceptForm {
     @NotBlank
     @Size(max = 100)
     private String modelName;
+
+    public BrandModelRequestAcceptanceDto toDto() {
+        return new BrandModelRequestAcceptanceDto(type, brandId, newBrandName, modelName);
+    }
 }

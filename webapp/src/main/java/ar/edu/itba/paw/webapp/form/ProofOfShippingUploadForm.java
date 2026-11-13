@@ -22,7 +22,7 @@ public class ProofOfShippingUploadForm {
     @ValidFile(optional = true)
     private MultipartFile file;
 
-    public FileDto getFileDto() {
+    public FileDto toDto() {
         if (this.getFile() == null || this.getFile().isEmpty()) return new FileDto();
         try {
             return new FileDto(

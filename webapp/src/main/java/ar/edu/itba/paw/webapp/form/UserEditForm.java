@@ -1,7 +1,9 @@
 package ar.edu.itba.paw.webapp.form;
 
 import ar.edu.itba.paw.model.Language;
+import ar.edu.itba.paw.model.User;
 import ar.edu.itba.paw.service.dto.ImageData;
+import ar.edu.itba.paw.service.dto.UserEditDto;
 import ar.edu.itba.paw.webapp.form.validation.EmptyOrSize;
 import ar.edu.itba.paw.webapp.form.validation.FieldMatch;
 import ar.edu.itba.paw.webapp.form.validation.ValidFile;
@@ -58,5 +60,18 @@ public class UserEditForm {
             rte.initCause(e);
             throw rte;
         }
+    }
+
+    public UserEditDto toDto(User user) {
+        return UserEditDto.builder()
+                .user(user)
+                .newDisplayName(displayName)
+                .newPassword(password)
+                .newImageData(getProfilePicture().orElse(null))
+                .updateLocationAndLanguage(true)
+                .newProvinceId(provinceId)
+                .newLocationDetail(locationDetail)
+                .newPreferredLanguage(preferredLanguage)
+                .build();
     }
 }

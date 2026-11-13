@@ -18,7 +18,7 @@ public class ProofOfPaymentUploadForm {
     @ValidFile
     private MultipartFile file;
 
-    public FileDto getFileDto() {
+    public FileDto toDto() {
         try {
             return new FileDto(
                 this.getFile().getBytes(),
