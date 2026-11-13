@@ -62,7 +62,7 @@ public class OfferServiceImplTest {
     private static final FileDto FILE_DTO_PDF = new FileDto(DATA, FILENAME_PDF, PDF);
     private static final FileDto FILE_DTO_PNG = new FileDto(DATA, FILENAME_PNG, PNG);
     private static final FileDto FILE_DTO_PNG_EMPTY = new FileDto(new byte[0], FILENAME_PNG, PNG);
-	private static final FileDto FILE_DTO_TXT = new FileDto(DATA, "notes.txt", "text/plain");
+    private static final FileDto FILE_DTO_TXT = new FileDto(DATA, "notes.txt", "text/plain");
 
     private static final int PAGE_SIZE = 10;
 

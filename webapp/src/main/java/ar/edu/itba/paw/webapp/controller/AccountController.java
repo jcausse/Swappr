@@ -59,7 +59,7 @@ public class AccountController {
     @PreAuthorize("isAuthenticated()")
     public ModelAndView index(@CurrentUser User currentUser) {
         LOGGER.debug("User {} accessing account index", currentUser.getId());
-		return new ModelAndView("account/index")
+        return new ModelAndView("account/index")
                 .addObject("pendingOffersCount", offerService.getPendingOffersCount(currentUser));
     }
 
@@ -81,7 +81,7 @@ public class AccountController {
             .map(s -> new StringSelectOption(s.name(), "listing.sort." + s.getKey()))
             .toList();
 
-		return new ModelAndView("account/listings")
+        return new ModelAndView("account/listings")
                 .addObject("listingPage", listingPage)
                 .addObject("listings", listings)
                 .addObject("statusOptions", statusOptions)
@@ -101,8 +101,8 @@ public class AccountController {
             .map(s -> new StringSelectOption(s.name(), "offer.statusGroup." + s.getStatus()))
             .toList();
 
-		var offerCountByStatus = getOfferCountByStatus(currentUser, true);
-		return new ModelAndView("account/incomingOffers")
+        var offerCountByStatus = getOfferCountByStatus(currentUser, true);
+        return new ModelAndView("account/incomingOffers")
                 .addObject("offerPage", offerPage)
                 .addObject("offers", offerPage.getContent())
                 .addObject("statusGroupOptions", statusGroupOptions)
@@ -122,7 +122,7 @@ public class AccountController {
             .map(s -> new StringSelectOption(s.name(), "offer.statusGroup." + s.getStatus()))
             .toList();
 
-		return new ModelAndView("account/myOffers")
+        return new ModelAndView("account/myOffers")
                 .addObject("offerPage", offerPage)
                 .addObject("offers", offerPage.getContent())
                 .addObject("statusGroupOptions", statusGroupOptions)
@@ -135,12 +135,12 @@ public class AccountController {
                 .collect(Collectors.toMap(e -> e.getKey().name(), Map.Entry::getValue));
     }
 
-	@GetMapping("/incoming-offers/{offerId}")
+    @GetMapping("/incoming-offers/{offerId}")
     @PreAuthorize("@webPermissionService.canManageOfferAsSeller(authentication, #offerId)")
     public ModelAndView incomingOfferDetail(@PathVariable Long offerId, @CurrentUser User currentUser) {
         LOGGER.debug("User {} viewing incoming offer {}", currentUser.getId(), offerId);
 
-		return new ModelAndView("account/incomingOfferDetail")
+        return new ModelAndView("account/incomingOfferDetail")
                 .addObject("offer", offerService.getById(offerId).orElseThrow(() -> NotFoundException.createFor("Offer")))
                 .addObject("pendingOffersCount", offerService.getPendingOffersCount(currentUser));
     }
@@ -159,7 +159,7 @@ public class AccountController {
         return new ModelAndView("account/proofOfPaymentUpload")
             .addObject("offer", offer)
             .addObject("proofOfPaymentUploadForm", new ProofOfPaymentUploadForm())
-		    .addObject("pendingOffersCount", offerService.getPendingOffersCount(currentUser));
+            .addObject("pendingOffersCount", offerService.getPendingOffersCount(currentUser));
     }
 
     @PostMapping("/my-offers/{offerId}/payment")
@@ -248,15 +248,15 @@ public class AccountController {
         return getResource(file);
     }
 
-	private ResponseEntity<Resource> getResource(final File file) {
-		final ByteArrayResource resource = new ByteArrayResource(file.getData());
+    private ResponseEntity<Resource> getResource(final File file) {
+        final ByteArrayResource resource = new ByteArrayResource(file.getData());
 
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(file.getContentType().orElse("application/octet-stream")))
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getFilename() + "\"")
                 .contentLength(file.getData().length)
                 .body(resource);
-	}
+    }
 
     @GetMapping("/rate/{offerId}")
     @PreAuthorize("@webPermissionService.canAccessOffer(authentication, #offerId)")
@@ -271,7 +271,7 @@ public class AccountController {
 
         return new ModelAndView("account/rate")
             .addObject("offer", offer)
-    		.addObject("pendingOffersCount", offerService.getPendingOffersCount(currentUser));
+            .addObject("pendingOffersCount", offerService.getPendingOffersCount(currentUser));
     }
 
     @PostMapping("/rate/{offerId}")
@@ -286,7 +286,7 @@ public class AccountController {
         if (bindingResult.hasErrors()) {
             return new ModelAndView("account/rate")
                 .addObject("offer", offer)
-    			.addObject("pendingOffersCount", offerService.getPendingOffersCount(currentUser));
+                .addObject("pendingOffersCount", offerService.getPendingOffersCount(currentUser));
         }
 
         offerService.rate(offer, currentUser, rateForm.getRating(), rateForm.getReviewText());
