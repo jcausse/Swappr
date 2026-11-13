@@ -95,6 +95,7 @@ public class ListingController {
             .toList());
 
         var categories = catalogService.getAllCategories();
+        mav.addObject("categories", categories);
         mav.addObject("categoryOptions", categories.stream()
             .map(cat -> new SelectOption(cat.getId(), "category." + cat.getName()))
             .toList());
