@@ -2,30 +2,40 @@ package ar.edu.itba.paw.model;
 
 import java.math.BigDecimal;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.Value;
 
-@NoArgsConstructor
-@AllArgsConstructor
-@Getter
-@Setter
-@Builder
+@Value
 public class ModelListingInfo {
-    private Brand brand;
-    private Model model;
-    private Long listingCount;
-    private Condition condition;
-    private Price minPrice;
-    private Price maxPrice;
+    Brand brand;
+    Model model;
+    long listingCount;
+    Condition condition;
+    Price minPrice;
+    Price maxPrice;
+
+    @Builder
+    public ModelListingInfo(
+            Brand brand,
+            Model model,
+            long listingCount,
+            Condition condition,
+            Price minPrice,
+            Price maxPrice
+    ) {
+        this.brand = brand;
+        this.model = model;
+        this.listingCount = listingCount;
+        this.condition = condition;
+        this.minPrice = minPrice;
+        this.maxPrice = maxPrice;
+    }
 
     public ModelListingInfo(
             Brand brand,
             Model model,
             Condition condition,
-            Long listingCount,
+            long listingCount,
             BigDecimal minPrice,
             BigDecimal maxPrice
     ) {

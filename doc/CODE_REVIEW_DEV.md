@@ -47,7 +47,7 @@ Status values: `todo`, `done`, `underspecified`, `needs bigger refactor`, `false
 | 5.1 | [Pagination without a tiebreaker](#51-pagination-without-a-tiebreaker) | ✅ done |
 | 5.2 | [Unused average price](#52-unused-average-price) | ✅ done |
 | 5.3 | [`MIN`/`MAX` over the embeddable](#53-minmax-over-the-embeddable) | ✅ done |
-| 5.4 | [Mutable result types](#54-mutable-result-types) | 🕓 todo |
+| 5.4 | [Mutable result types](#54-mutable-result-types) | ✅ done |
 | 6.1 | [Tests with no assertion](#61-tests-with-no-assertion) | ✅ done |
 | 6.2 | [Missing coverage of the brand/model request flow](#62-missing-coverage-of-the-brandmodel-request-flow) | ✅ done |
 | 7.1 | [Default messages that do not exist](#71-default-messages-that-do-not-exist) | ✅ done |
@@ -305,7 +305,7 @@ Things to fix before the final delivery. Items 1-10 were checked against `dev` (
 
 ### 5.4 Mutable result types
 
-- `ModelListingInfo` and `ModelListingInfoSummary` are `@Setter` + `@NoArgsConstructor` without `equals`/`hashCode`/`toString`, the setters are never used, and `listingCount` is a boxed `Long`. Make them immutable (`@Value @Builder`, `long`).
+- **Done.** `ModelListingInfo` and `ModelListingInfoSummary` are now immutable `@Value` types with builders, `listingCount` is a primitive `long`, and the summary defensively copies its list. A broader pass found the other result types already immutable (`Page`, `ListingFilter`/`OfferFilter`/`RatingFilter`, `BrandInfo`/`ModelInfo`, records); `FileDto` is mutable by design as an upload input and is not a query result.
 
 ---
 
