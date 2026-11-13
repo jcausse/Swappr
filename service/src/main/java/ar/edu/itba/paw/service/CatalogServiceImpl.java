@@ -18,6 +18,9 @@ import ar.edu.itba.paw.persistence.ModelDao;
 import ar.edu.itba.paw.persistence.SubcategoryDao;
 import ar.edu.itba.paw.service.dto.ModelOption;
 import ar.edu.itba.paw.service.exception.BadParameterException;
+import ar.edu.itba.paw.service.exception.BrandAlreadyExistsException;
+import ar.edu.itba.paw.service.exception.CatalogEntityInUseException;
+import ar.edu.itba.paw.service.exception.ModelAlreadyExistsException;
 import ar.edu.itba.paw.service.exception.NotFoundException;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -103,7 +106,7 @@ public class CatalogServiceImpl implements CatalogService {
             throw BadParameterException.create("name", "Brand name is required");
         }
         if (brandDao.getByName(trimmedName).isPresent()) {
-            throw BadParameterException.create("name", "Brand name already exists");
+            throw new BrandAlreadyExistsException(trimmedName);
         }
         return brandDao.create(trimmedName);
     }
@@ -116,7 +119,7 @@ public class CatalogServiceImpl implements CatalogService {
             throw BadParameterException.create("name", "Brand name is required");
         }
         if (brandDao.existsByNameAndIdNot(trimmedName, id)) {
-            throw BadParameterException.create("name", "Brand name already exists");
+            throw new BrandAlreadyExistsException(trimmedName);
         }
         brandDao.rename(id, trimmedName)
             .orElseThrow(() -> NotFoundException.createFor("Brand with ID " + id));
@@ -126,7 +129,7 @@ public class CatalogServiceImpl implements CatalogService {
     @Transactional
     public void deleteBrand(Long id) {
         if (brandDao.hasListings(id)) {
-            throw BadParameterException.create("brand", "Brand has listings");
+            throw new CatalogEntityInUseException("Brand with ID " + id + " has listings");
         }
         if (!brandDao.delete(id)) {
             throw NotFoundException.createFor("Brand with ID " + id);
@@ -217,7 +220,7 @@ public class CatalogServiceImpl implements CatalogService {
         final Subcategory subcategory = subcategoryDao.getById(subcategoryId)
             .orElseThrow(() -> NotFoundException.createFor("Subcategory with ID " + subcategoryId));
         if (modelDao.existsByNameAndBrandId(trimmedName, brandId)) {
-            throw BadParameterException.create("name", "Model name already exists for this brand");
+            throw ModelAlreadyExistsException.createFor(brand.getName(), trimmedName);
         }
         return modelDao.create(trimmedName, brand, subcategory);
     }
@@ -234,7 +237,7 @@ public class CatalogServiceImpl implements CatalogService {
         final Subcategory subcategory = subcategoryDao.getById(subcategoryId)
             .orElseThrow(() -> NotFoundException.createFor("Subcategory with ID " + subcategoryId));
         if (modelDao.existsByNameAndBrandIdAndIdNot(trimmedName, brandId, id)) {
-            throw BadParameterException.create("name", "Model name already exists for this brand");
+            throw ModelAlreadyExistsException.createFor(brand.getName(), trimmedName);
         }
         modelDao.update(id, trimmedName, brand, subcategory)
             .orElseThrow(() -> NotFoundException.createFor("Model with ID " + id));
@@ -244,7 +247,7 @@ public class CatalogServiceImpl implements CatalogService {
     @Transactional
     public void deleteModel(Long id) {
         if (modelDao.hasListings(id)) {
-            throw BadParameterException.create("model", "Model has listings");
+            throw new CatalogEntityInUseException("Model with ID " + id + " has listings");
         }
         if (!modelDao.deleteModel(id)) {
             throw NotFoundException.createFor("Model with ID " + id);

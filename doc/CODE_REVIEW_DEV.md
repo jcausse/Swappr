@@ -30,7 +30,7 @@ Status values: `todo`, `done`, `underspecified`, `needs bigger refactor`, `false
 | 3.7 | ["Already exists" page breaks names with commas and does not escape](#37-brandmodel-already-exists-page-breaks-names-with-commas-and-does-not-escape-them--reproduced) | ✅ done |
 | 3.8 | [Price range "max" printed unformatted](#38-the-max-of-the-price-range-is-printed-unformatted) | ❌ false positive |
 | 3.9 | [Takedown redirects built without URL-encoding](#39-takedown-redirects-in-the-admin-are-built-without-url-encoding) | ✅ done |
-| 3.10 | [Admin catalog actions lose page, sort and filters; generic errors](#310-admin-catalog-actions-lose-page-sort-and-filters-and-report-generic-errors) | ⚠️ needs bigger refactor |
+| 3.10 | [Admin catalog actions lose page, sort and filters; generic errors](#310-admin-catalog-actions-lose-page-sort-and-filters-and-report-generic-errors) | ✅ done |
 | 3.11 | [Duplicate-request redirect empties the form](#311-the-duplicate-request-redirect-empties-the-form) | ❌ false positive |
 | 3.12 | [Brand/model requests table `colspan` out of date](#312-brandmodel-requests-table-colspan-out-of-date) | ✅ done |
 | 3.13 | [Changing category wipes the request form fields](#313-changing-the-category-in-the-brandmodel-request-form-wipes-what-the-user-typed) | ✅ done |
@@ -218,8 +218,9 @@ Things to fix before the final delivery. Items 1-10 were checked against `dev` (
 
 ### 3.10 Admin catalog actions lose page, sort and filters, and report generic errors
 
-- All 35 redirects in `AdminController` go to a bare `/admin/catalog?error=…|success=…`, so after any action the admin is back on page 1 with the default sort.
-- Any `BadParameterException` maps to one code per action (for example `requestInvalid`, `AdminController.java:146` and `:158`), so different causes show the same message.
+- **Done.** The catalog page now builds a single canonical return URL (`catalogReturnUrl`) with its current page, sort, model page/sort, request page and model filters, and passes it through a hidden `redirect` field on every catalog form and dialog. Each POST redirects via `RedirectHelper.resolvePath` + `RedirectHelper.appendQueryParam`, so page/sort/filter state survives success and error outcomes.
+- Error specificity: `CatalogServiceImpl` now throws `BrandAlreadyExistsException`, `ModelAlreadyExistsException` and `CatalogEntityInUseException` (all `BadParameterException` subclasses) instead of generic `BadParameterException`s. The controller maps the brand/model name conflicts to `brandNameTaken` / `modelNameTaken`, including in the brand/model request acceptance flow, which previously reported everything as `requestInvalid`.
+- Defensive catches for exceptions that cannot happen through the UI (for example a missing model on delete, or deleting a brand/model that has listings, or a self-replacement) were removed from `AdminController`; those now fall through to the global error screen. The obsolete `brandNotFound`, `brandHasListings`, `brandReplaceSame`, `modelNotFound`, `modelHasListings` and `modelReplaceSame` message keys were deleted.
 
 ### 3.11 The duplicate-request redirect empties the form
 
