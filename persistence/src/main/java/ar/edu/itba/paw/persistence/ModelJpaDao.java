@@ -216,9 +216,23 @@ public class ModelJpaDao implements ModelDao {
         }
         where.append(")");
 
-        final var countQuery = em.createNativeQuery("SELECT COUNT(*) FROM models m" + where);
-        bindParams(countQuery, params);
-        final long totalCount = ((Number) countQuery.getSingleResult()).longValue();
+        final var countWhere = new StringBuilder(
+                " WHERE m.subcategory.id = :subcategoryId"
+                + " AND EXISTS (SELECT l.id FROM Listing l WHERE l.model = m AND l.status = :status");
+        if (fromYear != null) countWhere.append(" AND l.year >= :fromYear");
+        if (toYear != null) countWhere.append(" AND l.year <= :toYear");
+        countWhere.append(")");
+        if (brandId != null) countWhere.append(" AND m.brand.id = :brandId");
+        if (modelId != null) countWhere.append(" AND m.id = :modelId");
+
+        final var countQuery = em.createQuery("SELECT COUNT(m) FROM Model m" + countWhere, Long.class)
+                .setParameter("subcategoryId", subcategoryId)
+                .setParameter("status", ListingStatus.ACTIVE);
+        if (fromYear != null) countQuery.setParameter("fromYear", fromYear);
+        if (toYear != null) countQuery.setParameter("toYear", toYear);
+        if (brandId != null) countQuery.setParameter("brandId", brandId);
+        if (modelId != null) countQuery.setParameter("modelId", modelId);
+        final long totalCount = countQuery.getSingleResult();
 
         if (totalCount == 0) {
             return new Page<>(List.of(), page, pageSize, 0);
@@ -266,16 +280,16 @@ public class ModelJpaDao implements ModelDao {
 
     @Override
     public int replaceBrand(Long fromBrandId, Long toBrandId) {
-        em.createNativeQuery(
-                "DELETE FROM models old_model"
-                + " WHERE old_model.brand_id = ?1"
+        em.createQuery(
+                "DELETE FROM Model oldModel"
+                + " WHERE oldModel.brand.id = :fromBrandId"
                 + "   AND EXISTS ("
-                + "     SELECT 1 FROM models new_model"
-                + "     WHERE new_model.brand_id = ?2"
-                + "       AND new_model.model_name = old_model.model_name"
+                + "     SELECT newModel.id FROM Model newModel"
+                + "     WHERE newModel.brand.id = :toBrandId"
+                + "       AND newModel.name = oldModel.name"
                 + "   )")
-                .setParameter(1, fromBrandId)
-                .setParameter(2, toBrandId)
+                .setParameter("fromBrandId", fromBrandId)
+                .setParameter("toBrandId", toBrandId)
                 .executeUpdate();
 
         final Brand from = em.getReference(Brand.class, fromBrandId);
