@@ -37,7 +37,7 @@ Status values: `todo`, `done`, `underspecified`, `needs bigger refactor`, `false
 | 4.1 | [Circular service dependency broken with `@Lazy`](#41-circular-dependency-between-services-broken-with-lazy) | ✅ done |
 | 4.2 | [`PermissionServiceImpl` write transactions for read-only checks; unused methods](#42-permissionserviceimpl-write-transactions-for-read-only-checks-and-methods-exposed-for-nothing) | 🕓 todo |
 | 4.3 | [Authorization failures thrown as `BadParameterException`](#43-authorization-failures-thrown-as-badparameterexception) | ✅ done |
-| 4.4 | [Domain exception in the web module](#44-domain-exception-in-the-web-module) | 🕓 todo |
+| 4.4 | [Domain exception in the web module](#44-domain-exception-in-the-web-module) | ✅ done |
 | 4.5 | [A public model method returns `null`](#45-a-public-model-method-returns-null) | ✅ done |
 | 4.6 | [Business rules decided in the views](#46-business-rules-decided-in-the-views) | ✅ done |
 | 4.7 | [Categories queried on every request](#47-categories-queried-on-every-request) | 🕓 todo |
