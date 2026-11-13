@@ -90,7 +90,7 @@ public class OfferJpaDao implements OfferDao {
         }
 
         final TypedQuery<Offer> query = em.createQuery(
-                "FROM Offer o" + whereClause + " ORDER BY o.createdAt DESC", Offer.class);
+                "FROM Offer o" + whereClause + " ORDER BY o.createdAt DESC, o.id DESC", Offer.class);
         params.forEach(query::setParameter);
         query.setFirstResult((page - 1) * pageSize);
         query.setMaxResults(pageSize);

@@ -42,10 +42,10 @@ Status values: `todo`, `done`, `underspecified`, `needs bigger refactor`, `false
 | 4.6 | [Business rules decided in the views](#46-business-rules-decided-in-the-views) | ✅ done |
 | 4.7 | [Categories queried on every request](#47-categories-queried-on-every-request) | 🕓 todo |
 | 4.8 | [Smaller layering issues](#48-smaller-layering-issues) | ✅ done |
-| 4.9 | [Duplicated code](#49-duplicated-code) | 🕓 todo |
-| 4.10 | [Replacement dialogs build N² options on every request](#410-replacement-dialogs-build-n-options-on-every-request) | 🕓 todo |
-| 5.1 | [Pagination without a tiebreaker](#51-pagination-without-a-tiebreaker) | 🕓 todo |
-| 5.2 | [Unused average price](#52-unused-average-price) | 🕓 todo |
+| 4.9 | [Duplicated code](#49-duplicated-code) | ✅ done |
+| 4.10 | [Replacement dialogs build N² options on every request](#410-replacement-dialogs-build-n-options-on-every-request) | ✅ done |
+| 5.1 | [Pagination without a tiebreaker](#51-pagination-without-a-tiebreaker) | ✅ done |
+| 5.2 | [Unused average price](#52-unused-average-price) | ✅ done |
 | 5.3 | [`MIN`/`MAX` over the embeddable](#53-minmax-over-the-embeddable) | ✅ done |
 | 5.4 | [Mutable result types](#54-mutable-result-types) | ✅ done |
 | 6.1 | [Tests with no assertion](#61-tests-with-no-assertion) | ✅ done |
@@ -60,7 +60,7 @@ Status values: `todo`, `done`, `underspecified`, `needs bigger refactor`, `false
 | 11.1 | [`ImageController` access control and caching](#111-imagecontroller-access-control-and-caching) | ✅ done |
 | 11.2 | [Listing/Image relation](#112-listingimage-relation) | 🕓 todo |
 | 11.3 | [JDBC dependencies in test scope](#113-jdbc-dependencies-in-test-scope) | ✅ done |
-| 11.4 | [Form `.todto()` helpers](#114-form-todto-helpers) | 🕓 todo |
+| 11.4 | [Form `.todto()` helpers](#114-form-todto-helpers) | ✅ done |
 | 11.5 | [Prefer JPQL over `createNativeQuery`](#115-prefer-jpql-over-createnativequery) | ✅ done |
 | 11.6 | [Avoid `Object[]` row mapping for non-entity models](#116-avoid-object-row-mapping-for-non-entity-models) | ✅ done |
 
@@ -281,6 +281,7 @@ Things to fix before the final delivery. Items 1-10 were checked against `dev` (
 - `BrandModelRequestValidator.isValid` (`webapp/…/form/validation/BrandModelRequestValidator.java:12`) and `BrandModelRequestAcceptValidator.isValid` (`BrandModelRequestAcceptValidator.java:13`) have identical bodies (a `diff` only shows the parameter type). The two forms also repeat the same fields and annotations. Use a small interface implemented by both forms and a single validator.
 - `ModelJpaDao` maps rows to `ModelListingInfo` twice (`persistence/…/ModelJpaDao.java:259` and `:312`).
 - `ListingController` adds `priceSummary` in three handlers (`:310`, `:366`, `:408`).
+- **Done.** `ListingController` builds the details view in one helper. The `ModelJpaDao` mapping was already removed by 11.6 (constructor projections). Both request forms implement `BrandModelRequestFields`, and the brand rule both validators repeated now lives once in `BrandModelRequestBrandRule`.
 
 ### 4.10 Replacement dialogs build N² options on every request
 
@@ -292,11 +293,11 @@ Things to fix before the final delivery. Items 1-10 were checked against `dev` (
 
 ### 5.1 Pagination without a tiebreaker
 
-- `OfferJpaDao.java:92` (`ORDER BY o.createdAt DESC`) and `RatingJpaDao.java:58` (`ORDER BY r.createdAt DESC`). Add `, o.id DESC` / `, r.id DESC`, otherwise rows can repeat or disappear between pages.
+- **Done.** Offer and rating searches now order by `createdAt DESC, id DESC`, so rows cannot repeat or disappear between pages when timestamps tie.
 
 ### 5.2 Unused average price
 
-- `avgPrice` is computed in both summary queries (`ModelJpaDao.java:260`, `:317`) through a `Double` (`:279`, `:338`), and no view or service reads it (only a test sets it). Remove it.
+- **Done.** Removed `avgPrice` from `ModelListingInfo` and dropped the `AVG(l.price.amount)` aggregate from both summary queries.
 
 ### 5.3 `MIN`/`MAX` over the embeddable
 

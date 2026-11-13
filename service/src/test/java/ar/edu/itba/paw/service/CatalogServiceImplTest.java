@@ -30,6 +30,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.eq;
@@ -237,7 +238,7 @@ public class CatalogServiceImplTest {
         final Brand dell = Brand.builder().id(2L).name("Dell").build();
         when(brandDao.getAll()).thenReturn(List.of(apple, dell));
 
-        final var options = catalogService.getBrandReplacementOptions();
+        final var options = catalogService.getBrandReplacementOptions(List.of(BRAND_ID, 2L));
 
         Assert.assertEquals(List.of(dell), options.get(BRAND_ID));
         Assert.assertEquals(List.of(apple), options.get(2L));
@@ -249,13 +250,28 @@ public class CatalogServiceImplTest {
         final Model air = buildFakeModel(AIR_MODEL_ID, "MacBook Air");
         when(modelDao.getAllWithBrand()).thenReturn(List.of(pro, air));
 
-        final var options = catalogService.getModelReplacementOptions();
+        final var options = catalogService.getModelReplacementOptions(List.of(MODEL_ID, AIR_MODEL_ID));
 
         Assert.assertEquals(1, options.get(MODEL_ID).size());
         Assert.assertEquals(AIR_MODEL_ID, (long) options.get(MODEL_ID).get(0).getId());
         Assert.assertEquals("Apple — MacBook Air", options.get(MODEL_ID).get(0).getLabel());
         Assert.assertEquals(1, options.get(AIR_MODEL_ID).size());
         Assert.assertEquals(MODEL_ID, (long) options.get(AIR_MODEL_ID).get(0).getId());
+    }
+
+    @Test
+    public void testGetBrandReplacementOptionsOnlyForRequestedBrands() {
+        final Brand dell = Brand.builder().id(2L).name("Dell").build();
+        when(brandDao.getAll()).thenReturn(List.of(buildFakeBrand(), dell));
+
+        final var options = catalogService.getBrandReplacementOptions(List.of(2L));
+
+        Assert.assertEquals(Set.of(2L), options.keySet());
+    }
+
+    @Test
+    public void testGetModelReplacementOptionsEmptyWithoutModels() {
+        Assert.assertTrue(catalogService.getModelReplacementOptions(List.of()).isEmpty());
     }
 
     @Test
@@ -487,7 +503,6 @@ public class CatalogServiceImplTest {
             .listingCount(1L)
             .minPrice(new Price(BigDecimal.TEN))
             .maxPrice(new Price(BigDecimal.TEN))
-            .avgPrice(new Price(BigDecimal.TEN))
             .build();
     }
 }
