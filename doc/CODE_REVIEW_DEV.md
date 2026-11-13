@@ -56,7 +56,7 @@ Status values: `todo`, `done`, `underspecified`, `needs bigger refactor`, `false
 | 8.1 | [Offer-rejected email CTA](#81-offer-rejected-email-cta) | ✅ done |
 | 8.2 | [Pure-trade pending-payment email copy](#82-pure-trade-pending-payment-email-copy) | ✅ done |
 | 9 | [Dead code cleanup (whole section)](#9-dead-code) | ✅ done |
-| 10 | [Build and style cleanup (whole section)](#10-build-and-style) | 🕓 todo |
+| 10 | [Build and style cleanup (whole section)](#10-build-and-style) | ✅ done |
 | 11.1 | [`ImageController` access control and caching](#111-imagecontroller-access-control-and-caching) | ✅ done |
 | 11.2 | [Listing/Image relation](#112-listingimage-relation) | 🕓 todo |
 | 11.3 | [JDBC dependencies in test scope](#113-jdbc-dependencies-in-test-scope) | ✅ done |
