@@ -1,6 +1,7 @@
 package ar.edu.itba.paw.webapp.form;
 
 import ar.edu.itba.paw.service.dto.ImageData;
+import ar.edu.itba.paw.service.dto.UserCreationDto;
 import ar.edu.itba.paw.webapp.form.validation.FieldMatch;
 import ar.edu.itba.paw.webapp.form.validation.UniqueEmail;
 import ar.edu.itba.paw.webapp.form.validation.UniqueUsername;
@@ -67,5 +68,15 @@ public class UserForm {
             rte.initCause(e);
             throw rte;
         }
+    }
+
+    public UserCreationDto toDto() {
+        return new UserCreationDto(
+                username,
+                displayName,
+                email,
+                password,
+                getProfilePicture().orElse(null)
+        );
     }
 }

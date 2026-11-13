@@ -119,6 +119,10 @@ public class Listing {
         return status == ListingStatus.CANCELED;
     }
 
+    public boolean canBeCanceledByAdmin() {
+        return status != ListingStatus.CANCELED && status != ListingStatus.SOLD;
+    }
+
     public static boolean isValidYear(final int year) {
         return year >= MIN_YEAR && year <= Year.now().getValue();
     }

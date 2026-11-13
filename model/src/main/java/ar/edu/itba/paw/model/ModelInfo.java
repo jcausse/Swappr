@@ -12,5 +12,27 @@ public class ModelInfo {
     String brandName;
     Long subcategoryId;
     String subcategoryName;
-    boolean hasListings;
+    long listingCount;
+
+    public ModelInfo(
+            Long id,
+            String name,
+            Long brandId,
+            String brandName,
+            Long subcategoryId,
+            String subcategoryName,
+            long listingCount
+    ) {
+        this.id = id;
+        this.name = name;
+        this.brandId = brandId;
+        this.brandName = brandName;
+        this.subcategoryId = subcategoryId;
+        this.subcategoryName = subcategoryName;
+        this.listingCount = listingCount;
+    }
+
+    public boolean isHasListings() {
+        return listingCount > 0;
+    }
 }

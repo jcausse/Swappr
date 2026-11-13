@@ -35,34 +35,34 @@ Status values: `todo`, `done`, `underspecified`, `needs bigger refactor`, `false
 | 3.12 | [Brand/model requests table `colspan` out of date](#312-brandmodel-requests-table-colspan-out-of-date) | ✅ done |
 | 3.13 | [Changing category wipes the request form fields](#313-changing-the-category-in-the-brandmodel-request-form-wipes-what-the-user-typed) | ✅ done |
 | 4.1 | [Circular service dependency broken with `@Lazy`](#41-circular-dependency-between-services-broken-with-lazy) | ✅ done |
-| 4.2 | [`PermissionServiceImpl` write transactions for read-only checks; unused methods](#42-permissionserviceimpl-write-transactions-for-read-only-checks-and-methods-exposed-for-nothing) | 🕓 todo |
-| 4.3 | [Authorization failures thrown as `BadParameterException`](#43-authorization-failures-thrown-as-badparameterexception) | 🕓 todo |
-| 4.4 | [Domain exception in the web module](#44-domain-exception-in-the-web-module) | 🕓 todo |
-| 4.5 | [A public model method returns `null`](#45-a-public-model-method-returns-null) | 🕓 todo |
-| 4.6 | [Business rules decided in the views](#46-business-rules-decided-in-the-views) | 🕓 todo |
+| 4.2 | [`PermissionServiceImpl` write transactions for read-only checks; unused methods](#42-permissionserviceimpl-write-transactions-for-read-only-checks-and-methods-exposed-for-nothing) | ✅ done |
+| 4.3 | [Authorization failures thrown as `BadParameterException`](#43-authorization-failures-thrown-as-badparameterexception) | ✅ done |
+| 4.4 | [Domain exception in the web module](#44-domain-exception-in-the-web-module) | ✅ done |
+| 4.5 | [A public model method returns `null`](#45-a-public-model-method-returns-null) | ✅ done |
+| 4.6 | [Business rules decided in the views](#46-business-rules-decided-in-the-views) | ✅ done |
 | 4.7 | [Categories queried on every request](#47-categories-queried-on-every-request) | 🕓 todo |
-| 4.8 | [Smaller layering issues](#48-smaller-layering-issues) | 🕓 todo |
+| 4.8 | [Smaller layering issues](#48-smaller-layering-issues) | ✅ done |
 | 4.9 | [Duplicated code](#49-duplicated-code) | 🕓 todo |
 | 4.10 | [Replacement dialogs build N² options on every request](#410-replacement-dialogs-build-n-options-on-every-request) | 🕓 todo |
 | 5.1 | [Pagination without a tiebreaker](#51-pagination-without-a-tiebreaker) | 🕓 todo |
 | 5.2 | [Unused average price](#52-unused-average-price) | 🕓 todo |
 | 5.3 | [`MIN`/`MAX` over the embeddable](#53-minmax-over-the-embeddable) | 🕓 todo |
 | 5.4 | [Mutable result types](#54-mutable-result-types) | 🕓 todo |
-| 6.1 | [Tests with no assertion](#61-tests-with-no-assertion) | 🕓 todo |
-| 6.2 | [Missing coverage of the brand/model request flow](#62-missing-coverage-of-the-brandmodel-request-flow) | 🕓 todo |
-| 7.1 | [Default messages that do not exist](#71-default-messages-that-do-not-exist) | 🕓 todo |
+| 6.1 | [Tests with no assertion](#61-tests-with-no-assertion) | ✅ done |
+| 6.2 | [Missing coverage of the brand/model request flow](#62-missing-coverage-of-the-brandmodel-request-flow) | ✅ done |
+| 7.1 | [Default messages that do not exist](#71-default-messages-that-do-not-exist) | ✅ done |
 | 7.2 | [Brand/model request validation messages](#72-brandmodel-request-validation-messages) | ✅ done |
-| 7.3 | [Pluralization](#73-pluralization) | 🕓 todo |
-| 8.1 | [Offer-rejected email CTA](#81-offer-rejected-email-cta) | 🕓 todo |
-| 8.2 | [Pure-trade pending-payment email copy](#82-pure-trade-pending-payment-email-copy) | 🕓 todo |
+| 7.3 | [Pluralization](#73-pluralization) | ✅ done |
+| 8.1 | [Offer-rejected email CTA](#81-offer-rejected-email-cta) | ✅ done |
+| 8.2 | [Pure-trade pending-payment email copy](#82-pure-trade-pending-payment-email-copy) | ✅ done |
 | 9 | [Dead code cleanup (whole section)](#9-dead-code) | 🕓 todo |
 | 10 | [Build and style cleanup (whole section)](#10-build-and-style) | 🕓 todo |
-| 11.1 | [`ImageController` access control and caching](#111-imagecontroller-access-control-and-caching) | 🕓 todo |
+| 11.1 | [`ImageController` access control and caching](#111-imagecontroller-access-control-and-caching) | ✅ done |
 | 11.2 | [Listing/Image relation](#112-listingimage-relation) | 🕓 todo |
-| 11.3 | [JDBC dependencies in test scope (partial)](#113-jdbc-dependencies-in-test-scope-partial) | 🕓 todo |
+| 11.3 | [JDBC dependencies in test scope](#113-jdbc-dependencies-in-test-scope) | ✅ done |
 | 11.4 | [Form `.todto()` helpers](#114-form-todto-helpers) | 🕓 todo |
 | 11.5 | [Prefer JPQL over `createNativeQuery`](#115-prefer-jpql-over-createnativequery) | ✅ done |
-| 11.6 | [Avoid `Object[]` row mapping for non-entity models](#116-avoid-object-row-mapping-for-non-entity-models) | 🕓 todo |
+| 11.6 | [Avoid `Object[]` row mapping for non-entity models](#116-avoid-object-row-mapping-for-non-entity-models) | ✅ done |
 
 Things to fix before the final delivery. Items 1-10 were checked against `dev` (`a80c04fd`, 2026-11-11); section 11 was checked against `dev` (`a385aa63`, 2026-11-13). Nothing here is a guess: each one points to the file and line where it happens.
 
@@ -312,11 +312,11 @@ Things to fix before the final delivery. Items 1-10 were checked against `dev` (
 
 ### 6.1 Tests with no assertion
 
-- They pass even if the method does nothing: in `CatalogServiceImplTest`, `testReplaceBrandDelegates`, `testRenameBrandTrimsName`, `testRenameBrandToSameNameDoesNothing`, `testDeleteBrandDelegates`, `testUpdateModelChangesFields`, `testDeleteModelDelegates` and `testReplaceModelDelegatesToListingDao` only stub the DAOs and call the service.
+- **Done.** Removed the no-assertion pseudo-delegation tests from `CatalogServiceImplTest`, including `testRenameBrandChangingOnlyCaseIsAllowed`, which also had no assertion. The existing return-valued delegation tests already assert the DAO result; no void delegation tests were kept.
 
 ### 6.2 Missing coverage of the brand/model request flow
 
-- `BrandModelRequestServiceImplTest` now covers creation, duplicate handling and accept/reject notification dispatch through mocks, but there is still no direct test for `NotificationDispatcherServiceImpl.notifyBrandModelRequestAccepted` / `Rejected`, `SiteNotificationCreationDtoFactory.brandModelRequestAccepted` / `Rejected`, or the null/blank/unknown-entity validations of `BrandModelRequestServiceImpl.create` (null type, blank model, unknown subcategory or user, missing brand).
+- **Done.** Added direct tests for `NotificationDispatcherServiceImpl.notifyBrandModelRequestAccepted` / `Rejected`, `SiteNotificationCreationDtoFactory.brandModelRequestAccepted` / `Rejected`, and the missing `BrandModelRequestServiceImpl.create` validations (missing type, blank model, missing/unknown subcategory, missing user, missing existing brand).
 
 ---
 
@@ -324,7 +324,7 @@ Things to fix before the final delivery. Items 1-10 were checked against `dev` (
 
 ### 7.1 Default messages that do not exist
 
-- `ValidBrandModelRequest.java:16` and `ValidBrandModelRequestAccept.java:16` point to `{ValidBrandModelRequest.brandModelRequestForm}` and `{ValidBrandModelRequestAccept.adminBrandModelRequestAcceptForm}`. Neither key is in the bundles. They never show today because the validators always add their own message, but the default does not resolve.
+- **Done, without adding new keys.** `ValidBrandModelRequest.java:16` and `ValidBrandModelRequestAccept.java:16` pointed to keys that do not exist. Both defaults are unreachable in practice because the validators disable the default constraint violation before adding their own messages, so the defaults now reuse the existing `typeMismatch` key instead of introducing dead bundle entries.
 
 ### 7.2 Brand/model request validation messages
 
@@ -332,7 +332,7 @@ Things to fix before the final delivery. Items 1-10 were checked against `dev` (
 
 ### 7.3 Pluralization
 
-- `messages.properties:1202`: `admin.catalog.requests.additionalOthers=+ {0} other(s)`. Use `{0,choice,1#+ 1 other|1<+ {0} others}`.
+- **Done.** `admin.catalog.requests.additionalOthers` now uses the choice format in both bundles (`+ {0,choice,1#+ 1 other|1<+ {0} others}` and the Spanish equivalent).
 
 ---
 
@@ -340,11 +340,11 @@ Things to fix before the final delivery. Items 1-10 were checked against `dev` (
 
 ### 8.1 Offer-rejected email CTA
 
-- `mail/offer-rejected.html:136`: the "Browse listings" button links to `${baseUrl}` (the home page) instead of `/listing`.
+- **Done.** The "Browse listings" button in `mail/offer-rejected.html` now links to `${baseUrl + '/listing'}` instead of the home page.
 
 ### 8.2 Pure-trade pending-payment email copy
 
-- `messages.properties:569` (and `_es`): `email.offer.pendingPayment.body.trade` asks the buyer of a pure trade (no money involved) to "arrange payment … or upload proof of payment".
+- **Done.** `email.offer.pendingPayment.body.trade` no longer asks the buyer to arrange payment or upload proof; it now asks them to arrange the exchange and delivery, which also fits a pure trade with no money involved.
 
 ---
 
@@ -384,17 +384,17 @@ These items were imported from the now-removed `doc/TODO.md` and `doc/notes/DEBT
 
 ### 11.1 `ImageController` access control and caching
 
-- `ImageController.java:16` keeps the whole controller at `permitAll()`, and `getImage` (`:23-33`) serves any image by sequential id without checking whether the image belongs to a public listing/profile. Profile pictures are therefore enumerable.
-- The response has no `Cache-Control`, `ETag` or `Last-Modified` headers. Add explicit caching (and decide whether private images need an authorization rule before serving).
+- **Done (caching only).** Access control is intentionally unchanged: this endpoint only serves public listing images and profile pictures, while proof-of-payment/shipping files use their own authenticated endpoints.
+- `getImage` now sets `Cache-Control: public, max-age=86400` and an `ETag` derived from the immutable image id. `WebRequest.checkNotModified` returns `304 Not Modified` when `If-None-Match` matches, so clients can keep the cached copy for a day and revalidate cheaply afterwards.
 
 ### 11.2 Listing/Image relation
 
 - `Listing.java:68-75` still maps `@OneToMany @JoinTable List<Image>`; there is no `ListingImage` entity. The `coverImageId` formula (`:77`) fixes the cover N+1, but the requested intermediate entity with a lazy `Image` was never modelled.
 
-### 11.3 JDBC dependencies in test scope (partial)
+### 11.3 JDBC dependencies in test scope
 
-- HSQLDB and the test libraries are already test-scoped through the parent POM. `spring-jdbc` is still a compile dependency in `persistence/pom.xml:24-27`, where only the DAO tests use it, so it should move to `test`.
-- `spring-jdbc` is also compile in `webapp/pom.xml:41-44`, but there `WebConfig.dataSource()` uses `SimpleDriverDataSource` in main code. Moving it requires either keeping the dependency or refactoring the datasource creation, so this is not a pure POM change.
+- **Done.** `spring-jdbc` is now test-scoped in `persistence`, where only the DAO tests use it.
+- `webapp` keeps `spring-jdbc` as a compile dependency because `WebConfig.dataSource()` uses `SimpleDriverDataSource` in main code; it is not a test-only dependency there.
 
 ### 11.4 Form `.todto()` helpers
 

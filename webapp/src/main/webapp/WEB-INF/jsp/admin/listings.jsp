@@ -126,7 +126,7 @@
                                     <spring:message code="admin.listings.view" var="viewListingText"/>
                                     <paw:linkButton href="${listingViewUrl}" text="${viewListingText}" variant="outline" size="sm" icon="external-link"/>
 
-                                    <c:if test="${listing.status.name() ne 'CANCELED' and listing.status.name() ne 'SOLD'}">
+                                    <c:if test="${listing.canBeCanceledByAdmin()}">
                                         <c:url value="/admin/listings" var="takedownRedirectUrl">
                                             <c:param name="page" value="${listingsPage.page}"/>
                                             <c:if test="${not empty filterForm.query}">

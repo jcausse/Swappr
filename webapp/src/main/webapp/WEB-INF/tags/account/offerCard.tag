@@ -102,7 +102,7 @@
         <paw:banner text="${warningMsg}" icon="triangle-alert" role="warning" />
     </c:if>
 
-    <c:if test="${offer.status.name() == 'PENDING_PAYMENT'}">
+    <c:if test="${offer.isPendingPayment()}">
         <c:choose>
             <c:when test="${user == 'buyer'}">
                 <spring:message code="offer.contactInfo.buyerEmail" var="buyerEmailLabel"/>

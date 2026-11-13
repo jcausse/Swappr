@@ -9,8 +9,10 @@ import ar.edu.itba.paw.model.User;
 import ar.edu.itba.paw.persistence.BrandModelRequestDao;
 import ar.edu.itba.paw.service.dto.BrandModelRequestAcceptanceDto;
 import ar.edu.itba.paw.service.dto.BrandModelRequestCreationDto;
+import ar.edu.itba.paw.service.exception.BadParameterException;
 import ar.edu.itba.paw.service.exception.BrandModelRequestAlreadyExistsException;
 import ar.edu.itba.paw.service.exception.ModelAlreadyExistsException;
+import ar.edu.itba.paw.service.exception.NotFoundException;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -322,6 +324,90 @@ public class BrandModelRequestServiceImplTest {
         Assert.assertSame(existingRequest, result);
         Assert.assertEquals(Long.valueOf(REQUEST_ID), attachedRequestId.get());
         Assert.assertEquals(Long.valueOf(REQUESTER_ID), attachedUserId.get());
+    }
+
+    /* ---------------------------------------------------------------------------------------------- */
+    /* create: validation                                                                              */
+    /* ---------------------------------------------------------------------------------------------- */
+
+    @Test(expected = BadParameterException.class)
+    public void testCreateFailsWhenTypeIsMissing() {
+        service.create(new BrandModelRequestCreationDto(
+            REQUESTER_ID,
+            null,
+            SUBCATEGORY_ID,
+            null,
+            BRAND_NAME,
+            MODEL_NAME
+        ));
+    }
+
+    @Test(expected = BadParameterException.class)
+    public void testCreateFailsWhenModelNameIsBlank() {
+        service.create(new BrandModelRequestCreationDto(
+            REQUESTER_ID,
+            BrandModelRequestType.EXISTING_BRAND,
+            SUBCATEGORY_ID,
+            BRAND_ID,
+            null,
+            "   "
+        ));
+    }
+
+    @Test(expected = BadParameterException.class)
+    public void testCreateFailsWhenSubcategoryIsMissing() {
+        service.create(new BrandModelRequestCreationDto(
+            REQUESTER_ID,
+            BrandModelRequestType.EXISTING_BRAND,
+            null,
+            BRAND_ID,
+            null,
+            MODEL_NAME
+        ));
+    }
+
+    @Test(expected = NotFoundException.class)
+    public void testCreateFailsWhenSubcategoryDoesNotExist() {
+        when(catalogService.getSubcategoryById(SUBCATEGORY_ID))
+            .thenThrow(NotFoundException.createFor("Subcategory"));
+
+        service.create(new BrandModelRequestCreationDto(
+            REQUESTER_ID,
+            BrandModelRequestType.EXISTING_BRAND,
+            SUBCATEGORY_ID,
+            BRAND_ID,
+            null,
+            MODEL_NAME
+        ));
+    }
+
+    @Test(expected = NotFoundException.class)
+    public void testCreateFailsWhenRequesterDoesNotExist() {
+        when(catalogService.getSubcategoryById(SUBCATEGORY_ID)).thenReturn(buildSubcategory());
+        when(userService.getById(REQUESTER_ID)).thenReturn(Optional.empty());
+
+        service.create(new BrandModelRequestCreationDto(
+            REQUESTER_ID,
+            BrandModelRequestType.EXISTING_BRAND,
+            SUBCATEGORY_ID,
+            BRAND_ID,
+            null,
+            MODEL_NAME
+        ));
+    }
+
+    @Test(expected = BadParameterException.class)
+    public void testCreateFailsWhenExistingBrandIdIsMissing() {
+        stubCommonCatalog();
+
+        service.create(new BrandModelRequestCreationDto(
+            REQUESTER_ID,
+            BrandModelRequestType.EXISTING_BRAND,
+            SUBCATEGORY_ID,
+            null,
+            null,
+            MODEL_NAME
+        ));
     }
 
     /* ---------------------------------------------------------------------------------------------- */

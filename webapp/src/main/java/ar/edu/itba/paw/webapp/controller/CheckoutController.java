@@ -15,12 +15,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
 import ar.edu.itba.paw.model.Listing;
-import ar.edu.itba.paw.model.ListingStatus;
 import ar.edu.itba.paw.model.User;
 import ar.edu.itba.paw.service.ListingService;
 import ar.edu.itba.paw.service.OfferService;
-import ar.edu.itba.paw.service.dto.ListingFilterDto;
-import ar.edu.itba.paw.service.dto.OfferCreationDto;
 import ar.edu.itba.paw.webapp.auth.CurrentUser;
 import ar.edu.itba.paw.webapp.form.CheckoutForm;
 import lombok.RequiredArgsConstructor;
@@ -63,15 +60,7 @@ public class CheckoutController {
             return withUserListings(listing, currentUser, form);
         }
 
-        offerService.create(new OfferCreationDto(
-            form.getListingId(),
-            currentUser.getId(),
-            form.getOfferType(),
-            form.getCustomAmount(),
-            form.getTradeAmount(),
-            form.getMessage(),
-            form.getOfferedListingId()
-        ));
+        offerService.create(form.toOfferDto(currentUser.getId()));
         LOGGER.info("User {} submitted {} offer for listing {}", currentUser.getId(), form.getOfferType(), form.getListingId());
 
         return new ModelAndView("redirect:/listing/" + form.getListingId());
@@ -79,12 +68,7 @@ public class CheckoutController {
 
     private ModelAndView withUserListings(Listing listing, User currentUser, CheckoutForm form) {
         if (listing.isAcceptsTrade()) {
-            var filter = ListingFilterDto.builder()
-                .creatorId(currentUser.getId())
-                .status(ListingStatus.ACTIVE)
-                .page(form.getPage())
-                .pageSize(TRADE_LISTINGS_PAGE_SIZE)
-                .build();
+            var filter = form.toTradeListingsFilterDto(currentUser.getId(), TRADE_LISTINGS_PAGE_SIZE);
             var userListingsPage = listingService.search(filter);
             return new ModelAndView("checkout/index")
                     .addObject("listing", listing)

@@ -42,7 +42,7 @@
                                 <spring:message code="offer.viewOfferedListing" var="viewOfferedListingLabel"/>
                                 <paw:linkButton href="${offeredListingUrl}" variant="ghost" icon="eye" text="${viewOfferedListingLabel}" classname="w-full justify-start" />
                             </c:if>
-                            <c:if test="${offer.status.name() == 'PENDING_PAYMENT'}">
+                            <c:if test="${offer.isPendingPayment()}">
                                 <c:if test="${not offer.forFreeListing}">
                                     <c:url value="/account/my-offers/${offer.id}/shipping" var="shippingUrl"/>
                                     <spring:message code="offer.proofOfShipping.uploadLabel" var="shippingLabel"/>
@@ -53,7 +53,7 @@
                                     <paw:button type="submit" variant="ghost" icon="check" text="${confirmLabel}" classname="w-full justify-start" />
                                 </form>
                             </c:if>
-                            <c:if test="${offer.status.name() == 'PENDING'}">
+                            <c:if test="${offer.isPending()}">
                                 <spring:message code="offer.action.accept" var="acceptLabel"/>
                                 <form action="<c:url value='/offer/${offer.id}/accept'/>" method="POST">
                                     <paw:button type="submit" variant="ghost" icon="check" text="${acceptLabel}" classname="w-full justify-start" />

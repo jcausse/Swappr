@@ -1,6 +1,9 @@
 package ar.edu.itba.paw.webapp.form;
 
+import ar.edu.itba.paw.model.ListingStatus;
 import ar.edu.itba.paw.model.OfferType;
+import ar.edu.itba.paw.service.dto.ListingFilterDto;
+import ar.edu.itba.paw.service.dto.OfferCreationDto;
 import ar.edu.itba.paw.webapp.form.validation.ValidCheckout;
 import java.math.BigDecimal;
 import javax.validation.constraints.DecimalMin;
@@ -41,4 +44,25 @@ public class CheckoutForm {
 
     @Size(max = 1000)
     private String message;
+
+    public OfferCreationDto toOfferDto(Long buyerId) {
+        return new OfferCreationDto(
+                listingId,
+                buyerId,
+                offerType,
+                customAmount,
+                tradeAmount,
+                message,
+                offeredListingId
+        );
+    }
+
+    public ListingFilterDto toTradeListingsFilterDto(Long creatorId, int pageSize) {
+        return ListingFilterDto.builder()
+                .creatorId(creatorId)
+                .status(ListingStatus.ACTIVE)
+                .page(getPage())
+                .pageSize(pageSize)
+                .build();
+    }
 }
