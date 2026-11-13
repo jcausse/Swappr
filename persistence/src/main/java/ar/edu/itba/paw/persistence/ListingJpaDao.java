@@ -1,7 +1,6 @@
 package ar.edu.itba.paw.persistence;
 
 import ar.edu.itba.paw.model.Condition;
-import ar.edu.itba.paw.model.Image;
 import ar.edu.itba.paw.model.Listing;
 import ar.edu.itba.paw.model.ListingFilter;
 import ar.edu.itba.paw.model.ListingSort;
@@ -22,7 +21,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Repository
 public class ListingJpaDao implements ListingDao {
@@ -50,9 +48,7 @@ public class ListingJpaDao implements ListingDao {
     ) {
         final User creatorRef = em.getReference(User.class, creator.getId());
         final Model modelRef = em.getReference(Model.class, model.getId());
-        final List<Image> images = imageIds != null
-                ? imageIds.stream().map(id -> em.getReference(Image.class, id)).collect(Collectors.toCollection(ArrayList::new))
-                : new ArrayList<>();
+        final List<Long> initialImageIds = imageIds != null ? new ArrayList<>(imageIds) : new ArrayList<>();
 
         final Listing listing = Listing.builder()
                 .title(title)
@@ -65,7 +61,7 @@ public class ListingJpaDao implements ListingDao {
                 .acceptsShipping(acceptsShipping)
                 .description(description)
                 .status(ListingStatus.ACTIVE)
-                .images(images)
+                .imageIds(initialImageIds)
                 .build();
         em.persist(listing);
         return listing;
@@ -296,8 +292,6 @@ public class ListingJpaDao implements ListingDao {
             return;
         }
         
-        listing.setImages(imageIds.stream()
-            .map(imageId -> em.getReference(Image.class, imageId))
-            .collect(Collectors.toCollection(ArrayList::new)));
+        listing.setImageIds(imageIds != null ? new ArrayList<>(imageIds) : new ArrayList<>());
     }
 }

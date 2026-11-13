@@ -58,7 +58,7 @@ Status values: `todo`, `done`, `underspecified`, `needs bigger refactor`, `false
 | 9 | [Dead code cleanup (whole section)](#9-dead-code) | 🕓 todo |
 | 10 | [Build and style cleanup (whole section)](#10-build-and-style) | 🕓 todo |
 | 11.1 | [`ImageController` access control and caching](#111-imagecontroller-access-control-and-caching) | 🕓 todo |
-| 11.2 | [Listing/Image relation](#112-listingimage-relation) | 🕓 todo |
+| 11.2 | [Listing/Image relation](#112-listingimage-relation) | ✅ done |
 | 11.3 | [JDBC dependencies in test scope (partial)](#113-jdbc-dependencies-in-test-scope-partial) | 🕓 todo |
 | 11.4 | [Form `.todto()` helpers](#114-form-todto-helpers) | 🕓 todo |
 | 11.5 | [Prefer JPQL over `createNativeQuery`](#115-prefer-jpql-over-createnativequery) | 🕓 todo |
@@ -389,7 +389,7 @@ These items were imported from the now-removed `doc/TODO.md` and `doc/notes/DEBT
 
 ### 11.2 Listing/Image relation
 
-- `Listing.java:68-75` still maps `@OneToMany @JoinTable List<Image>`; there is no `ListingImage` entity. The `coverImageId` formula (`:77`) fixes the cover N+1, but the requested intermediate entity with a lazy `Image` was never modelled.
+- **Done.** `Listing.images` (`List<Image>`) was replaced with an `@ElementCollection List<Long> imageIds` mapped to `listing_images` with `@OrderColumn`. The DAO now stores image IDs directly, so reading a listing never loads `Image` entities or their bytes; `coverImageId` still handles cards. No migration was needed.
 
 ### 11.3 JDBC dependencies in test scope (partial)
 
