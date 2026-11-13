@@ -44,6 +44,7 @@
 <spring:message code="admin.catalog.models.replace" var="replaceModelLabel"/>
 <spring:message code="admin.catalog.models.delete" var="deleteModelLabel"/>
 <spring:message code="admin.catalog.models.filter.brand" var="modelFilterBrandLabel"/>
+<spring:message code="admin.catalog.models.filter.category" var="modelFilterCategoryLabel"/>
 <spring:message code="admin.catalog.models.filter.subcategory" var="modelFilterSubcategoryLabel"/>
 <spring:message code="admin.catalog.models.filter.all" var="modelFilterAllLabel"/>
 <spring:message code="admin.catalog.models.filter.apply" var="modelFilterApplyLabel"/>
@@ -53,6 +54,8 @@
 <spring:message code="admin.catalog.models.create.namePlaceholder" var="createModelNamePlaceholder"/>
 <spring:message code="admin.catalog.models.create.brandLabel" var="createModelBrandLabel"/>
 <spring:message code="admin.catalog.models.create.brandPlaceholder" var="createModelBrandPlaceholder"/>
+<spring:message code="admin.catalog.models.create.categoryLabel" var="createModelCategoryLabel"/>
+<spring:message code="admin.catalog.models.create.categoryPlaceholder" var="createModelCategoryPlaceholder"/>
 <spring:message code="admin.catalog.models.create.subcategoryLabel" var="createModelSubcategoryLabel"/>
 <spring:message code="admin.catalog.models.create.subcategoryPlaceholder" var="createModelSubcategoryPlaceholder"/>
 <spring:message code="admin.catalog.models.create.submit" var="createModelSubmit"/>
@@ -250,13 +253,14 @@
                 cancelText="${renameBrandCancel}"
                 formAction="${renameBrandUrl}"
             >
-                <paw:input
-                    id="brandName-${brand.id}"
-                    name="name"
-                    value="${brand.name}"
-                    label="${brandNameLabel}"
-                    variant="outline"
-                />
+                <div class="flex flex-col gap-3 text-black">
+                    <paw:input
+                        id="brandName-${brand.id}"
+                        name="name"
+                        value="${brand.name}"
+                        label="${brandNameLabel}"
+                    />
+                </div>
             </paw:formDialog>
 
             <paw:formDialog
@@ -300,6 +304,7 @@
             <c:set var="modelNameNextSort" value="${currentModelSort.key eq 'name' and currentModelSort.ascending ? 'NAME_DESC' : 'NAME_ASC'}"/>
 
             <form:form
+                id="modelFilterForm"
                 modelAttribute="modelFilterForm"
                 action="${catalogUrl}"
                 method="get"
@@ -308,9 +313,10 @@
                 <input type="hidden" name="page" value="${brandsPage.page}"/>
                 <input type="hidden" name="sort" value="${currentSort.name()}"/>
                 <input type="hidden" name="modelSort" value="${currentModelSort.name()}"/>
+                <form:hidden path="isAutoSubmit"/>
                 <div class="flex-1 w-full">
                     <paw:formSelect
-                        path="brandId"
+                        path="filterBrandId"
                         label="${modelFilterBrandLabel}"
                         placeholder="${modelFilterAllLabel}"
                         items="${brandOptions}"
@@ -320,12 +326,23 @@
                 </div>
                 <div class="flex-1 w-full">
                     <paw:formSelect
-                        path="subcategoryId"
+                        id="modelFilterCategoryId"
+                        path="filterCategoryId"
+                        label="${modelFilterCategoryLabel}"
+                        placeholder="${modelFilterAllLabel}"
+                        items="${categoryOptions}"
+                        translateLabels="true"
+                    />
+                </div>
+                <div class="flex-1 w-full">
+                    <paw:formSelect
+                        id="modelFilterSubcategoryId"
+                        path="filterSubcategoryId"
                         label="${modelFilterSubcategoryLabel}"
                         placeholder="${modelFilterAllLabel}"
-                        items="${subcategoryOptions}"
-                        itemLabel="name"
-                        itemValue="id"
+                        items="${modelFilterSubcategoryOptions}"
+                        translateLabels="true"
+                        disabled="${empty modelFilterForm.filterCategoryId}"
                     />
                 </div>
                 <paw:button text="${modelFilterApplyLabel}" type="submit" variant="default" role="default" icon="search" classname="w-full sm:w-auto"/>
@@ -343,8 +360,8 @@
                         <tr class="border-b border-black/10 text-left text-xs uppercase tracking-wide text-black/50">
                             <th class="py-2 pr-4 font-medium">
                                 <c:url value="/admin/catalog" var="modelIdSortUrl">
-                                    <c:if test="${not empty modelFilterForm.brandId}"><c:param name="brandId" value="${modelFilterForm.brandId}"/></c:if>
-                                    <c:if test="${not empty modelFilterForm.subcategoryId}"><c:param name="subcategoryId" value="${modelFilterForm.subcategoryId}"/></c:if>
+                                    <c:if test="${not empty modelFilterForm.filterBrandId}"><c:param name="filterBrandId" value="${modelFilterForm.filterBrandId}"/></c:if>
+                                    <c:if test="${not empty modelFilterForm.filterSubcategoryId}"><c:param name="filterSubcategoryId" value="${modelFilterForm.filterSubcategoryId}"/></c:if>
                                     <c:param name="page" value="${brandsPage.page}"/>
                                     <c:param name="sort" value="${currentSort.name()}"/>
                                     <c:param name="modelSort" value="${modelIdNextSort}"/>
@@ -356,8 +373,8 @@
                             </th>
                             <th class="py-2 pr-4 font-medium">
                                 <c:url value="/admin/catalog" var="modelNameSortUrl">
-                                    <c:if test="${not empty modelFilterForm.brandId}"><c:param name="brandId" value="${modelFilterForm.brandId}"/></c:if>
-                                    <c:if test="${not empty modelFilterForm.subcategoryId}"><c:param name="subcategoryId" value="${modelFilterForm.subcategoryId}"/></c:if>
+                                    <c:if test="${not empty modelFilterForm.filterBrandId}"><c:param name="filterBrandId" value="${modelFilterForm.filterBrandId}"/></c:if>
+                                    <c:if test="${not empty modelFilterForm.filterSubcategoryId}"><c:param name="filterSubcategoryId" value="${modelFilterForm.filterSubcategoryId}"/></c:if>
                                     <c:param name="page" value="${brandsPage.page}"/>
                                     <c:param name="sort" value="${currentSort.name()}"/>
                                     <c:param name="modelSort" value="${modelNameNextSort}"/>
@@ -387,7 +404,9 @@
                                 </td>
                                 <td class="py-3 pr-4 font-medium"><c:out value="${model.name}"/></td>
                                 <td class="py-3 pr-4 text-black/70"><c:out value="${model.brandName}"/></td>
-                                <td class="py-3 pr-4 text-black/70"><c:out value="${model.subcategoryName}"/></td>
+                                <td class="py-3 pr-4 text-black/70">
+                                    <spring:message code="subcategory.${model.subcategoryName}"/>
+                                </td>
                                 <td class="py-3">
                                     <div class="flex flex-col items-end gap-1">
                                         <div class="flex items-center justify-end gap-2">
@@ -456,6 +475,40 @@
 
             <div class="mt-4 flex flex-col gap-2">
                 <h3 class="text-sm font-semibold"><c:out value="${createModelTitle}"/></h3>
+                <form:form
+                    id="createModelFilterForm"
+                    modelAttribute="createModelFilterForm"
+                    action="${catalogUrl}"
+                    method="get"
+                    class="flex flex-col sm:flex-row gap-3 items-end"
+                >
+                    <form:hidden path="isAutoSubmit"/>
+                    <input type="hidden" name="page" value="${brandsPage.page}"/>
+                    <input type="hidden" name="sort" value="${currentSort.name()}"/>
+                    <input type="hidden" name="modelPage" value="${modelsPage.page}"/>
+                    <input type="hidden" name="modelSort" value="${currentModelSort.name()}"/>
+                    <input type="hidden" name="requestPage" value="${requestsPage.page}"/>
+                    <c:if test="${not empty modelFilterForm.filterBrandId}">
+                        <input type="hidden" name="filterBrandId" value="${modelFilterForm.filterBrandId}"/>
+                    </c:if>
+                    <c:if test="${not empty modelFilterForm.filterCategoryId}">
+                        <input type="hidden" name="filterCategoryId" value="${modelFilterForm.filterCategoryId}"/>
+                    </c:if>
+                    <c:if test="${not empty modelFilterForm.filterSubcategoryId}">
+                        <input type="hidden" name="filterSubcategoryId" value="${modelFilterForm.filterSubcategoryId}"/>
+                    </c:if>
+                    <div class="flex-1 w-full">
+                        <paw:formSelect
+                            id="createModelFilterCategoryId"
+                            path="categoryId"
+                            label="${createModelCategoryLabel}"
+                            placeholder="${createModelCategoryPlaceholder}"
+                            items="${categoryOptions}"
+                            translateLabels="true"
+                            variant="outline"
+                        />
+                    </div>
+                </form:form>
                 <c:url value="/admin/catalog/models" var="createModelUrl"/>
                 <form:form
                     modelAttribute="createModelForm"
@@ -469,6 +522,7 @@
                             label="${createModelNameLabel}"
                             placeholder="${createModelNamePlaceholder}"
                             variant="outline"
+                            disabled="${empty createModelFilterForm.categoryId}"
                         />
                         <paw:formSelect
                             path="brandId"
@@ -477,14 +531,17 @@
                             items="${brandOptions}"
                             itemLabel="name"
                             itemValue="id"
+                            variant="outline"
+                            disabled="${empty createModelFilterForm.categoryId}"
                         />
                         <paw:formSelect
                             path="subcategoryId"
                             label="${createModelSubcategoryLabel}"
                             placeholder="${createModelSubcategoryPlaceholder}"
-                            items="${subcategoryOptions}"
-                            itemLabel="name"
-                            itemValue="id"
+                            items="${createModelSubcategoryOptions}"
+                            translateLabels="true"
+                            variant="outline"
+                            disabled="${empty createModelFilterForm.categoryId}"
                         />
                         <paw:button
                             text="${createModelSubmit}"
@@ -493,6 +550,7 @@
                             role="default"
                             icon="plus"
                             classname="w-full"
+                            disabled="${empty createModelFilterForm.categoryId}"
                         />
                     </div>
                 </form:form>
@@ -577,7 +635,7 @@
                                 <td class="py-3 pr-4 font-medium"><c:out value="${request.requestedBrandName}"/></td>
                                 <td class="py-3 pr-4 text-black/70"><c:out value="${request.modelName}"/></td>
                                 <td class="py-3 pr-4 text-black/70">
-                                    <c:out value="${request.subcategory.category.name}"/> / <c:out value="${request.subcategory.name}"/>
+                                    <spring:message code="subcategory.${request.subcategory.name}"/>
                                 </td>
                                 <td class="py-3 pr-4">
                                     <paw:user user="${request.requester}" variant="compact"/>
@@ -641,7 +699,7 @@
             formAction="${catalogUrl}"
             modelAttribute="acceptRequestForm"
         >
-            <div class="flex flex-col gap-3">
+            <div class="flex flex-col gap-3 text-black">
                 <div class="flex flex-col gap-2">
                     <span class="text-xs text-black/70 font-medium"><c:out value="${acceptRequestTypeLabel}"/></span>
                     <div class="flex flex-col sm:flex-row gap-2">
@@ -654,7 +712,6 @@
                         id="acceptRequestNewBrandName"
                         path="newBrandName"
                         label="${acceptRequestNewBrandLabel}"
-                        variant="outline"
                     />
                 </div>
                 <div id="acceptExistingBrandFields" class="flex flex-col gap-3">
@@ -671,7 +728,6 @@
                     id="acceptRequestModelName"
                     path="modelName"
                     label="${acceptRequestModelLabel}"
-                    variant="outline"
                 />
             </div>
         </paw:formDialog>
@@ -684,12 +740,11 @@
             formAction="${catalogUrl}"
             modelAttribute="editModelForm"
         >
-            <div class="flex flex-col gap-3">
+            <div class="flex flex-col gap-3 text-black">
                 <paw:formInput
                     id="editModelName"
                     path="name"
                     label="${modelNameLabel}"
-                    variant="outline"
                 />
                 <paw:formSelect
                     id="editModelBrandId"
@@ -703,9 +758,8 @@
                     id="editModelSubcategoryId"
                     path="subcategoryId"
                     label="${modelSubcategoryLabel}"
-                    items="${subcategoryOptions}"
-                    itemLabel="name"
-                    itemValue="id"
+                    items="${editModelSubcategoryOptions}"
+                    translateLabels="true"
                 />
             </div>
         </paw:formDialog>
@@ -761,6 +815,34 @@
                 }
                 if (existingRadio) {
                     existingRadio.addEventListener('change', updateAcceptRequestFields);
+                }
+
+                var filterForm = document.getElementById('modelFilterForm');
+                var filterCategory = document.getElementById('modelFilterCategoryId');
+                var filterSubcategory = document.getElementById('modelFilterSubcategoryId');
+                if (filterForm && filterCategory) {
+                    filterCategory.addEventListener('change', function () {
+                        if (filterSubcategory) {
+                            filterSubcategory.value = '';
+                        }
+                        var autoSubmit = filterForm.querySelector('input[name="isAutoSubmit"]');
+                        if (autoSubmit) {
+                            autoSubmit.value = 'true';
+                        }
+                        filterForm.submit();
+                    });
+                }
+
+                var createModelFilterForm = document.getElementById('createModelFilterForm');
+                var createModelFilterCategory = document.getElementById('createModelFilterCategoryId');
+                if (createModelFilterForm && createModelFilterCategory) {
+                    createModelFilterCategory.addEventListener('change', function () {
+                        var autoSubmit = createModelFilterForm.querySelector('input[name="isAutoSubmit"]');
+                        if (autoSubmit) {
+                            autoSubmit.value = 'true';
+                        }
+                        createModelFilterForm.submit();
+                    });
                 }
             });
         </script>

@@ -22,6 +22,7 @@ import ar.edu.itba.paw.service.exception.SelfSuspendException;
 import ar.edu.itba.paw.webapp.auth.CurrentUser;
 import ar.edu.itba.paw.webapp.form.AdminBrandModelRequestAcceptForm;
 import ar.edu.itba.paw.webapp.form.AdminCreateBrandForm;
+import ar.edu.itba.paw.webapp.form.AdminCreateModelFilterForm;
 import ar.edu.itba.paw.webapp.form.AdminGrantRoleForm;
 import ar.edu.itba.paw.webapp.form.AdminListingFilterForm;
 import ar.edu.itba.paw.webapp.form.AdminModelFilterForm;
@@ -102,15 +103,18 @@ public class AdminController {
             @ModelAttribute("createBrandForm") AdminCreateBrandForm createBrandForm,
             @ModelAttribute("replaceBrandForm") AdminReplaceBrandForm replaceBrandForm,
             @ModelAttribute("modelFilterForm") AdminModelFilterForm modelFilterForm,
+            @ModelAttribute("createModelFilterForm") AdminCreateModelFilterForm createModelFilterForm,
             @ModelAttribute("createModelForm") AdminModelForm createModelForm,
             @ModelAttribute("editModelForm") AdminModelForm editModelForm,
             @ModelAttribute("replaceModelForm") AdminReplaceModelForm replaceModelForm,
             @ModelAttribute("acceptRequestForm") AdminBrandModelRequestAcceptForm acceptRequestForm
     ) {
         LOGGER.debug("Admin {} accessed catalog management page: brandPage={}, modelPage={}, requestPage={}", currentUser.getUsername(), page, modelPage, requestPage);
+        modelFilterForm.setIsAutoSubmit(false);
+        createModelFilterForm.setIsAutoSubmit(false);
         final var brandsPage = catalogService.getBrands(sort, page, BRAND_PAGE_SIZE);
         final var modelsPage = catalogService.getModels(
-                modelFilterForm.getBrandId(), modelFilterForm.getSubcategoryId(),
+                modelFilterForm.getFilterBrandId(), modelFilterForm.getFilterSubcategoryId(),
                 modelSort, modelPage, MODEL_PAGE_SIZE);
         final var requestsPage = brandModelRequestService.getRequests(requestPage, REQUEST_PAGE_SIZE);
         final List<Brand> allBrands = catalogService.getAllBrands();
@@ -120,17 +124,31 @@ public class AdminController {
                 .addObject("currentSort", sort)
                 .addObject("brandReplacementOptions", catalogService.getBrandReplacementOptions())
                 .addObject("brandOptions", allBrands)
-                .addObject("subcategoryOptions", catalogService.getAllSubcategories().stream()
+                .addObject("editModelSubcategoryOptions", catalogService.getAllSubcategories().stream()
                         .map(subcategory -> new SelectOption(
-                                subcategory.getId(),
-                                subcategory.getCategory().getName() + " / " + subcategory.getName()))
+                                subcategory.getId(), "subcategory." + subcategory.getName()))
                         .toList())
+                .addObject("categoryOptions", catalogService.getAllCategories().stream()
+                        .map(category -> new SelectOption(category.getId(), "category." + category.getName()))
+                        .toList())
+                .addObject("modelFilterSubcategoryOptions", subcategoryOptions(modelFilterForm.getFilterCategoryId()))
+                .addObject("createModelSubcategoryOptions", subcategoryOptions(createModelFilterForm.getCategoryId()))
                 .addObject("models", modelsPage.getContent())
                 .addObject("modelsPage", modelsPage)
                 .addObject("currentModelSort", modelSort)
                 .addObject("modelReplacementOptions", catalogService.getModelReplacementOptions())
                 .addObject("requests", requestsPage.getContent())
                 .addObject("requestsPage", requestsPage);
+    }
+
+    private List<SelectOption> subcategoryOptions(Long categoryId) {
+        if (categoryId == null) {
+            return List.of();
+        }
+        return catalogService.getSubcategoriesByCategory(categoryId).stream()
+                .map(subcategory -> new SelectOption(
+                        subcategory.getId(), "subcategory." + subcategory.getName()))
+                .toList();
     }
 
     @PostMapping("/catalog/requests/{id}/accept")
