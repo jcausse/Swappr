@@ -1,6 +1,17 @@
 package ar.edu.itba.paw.service.notification;
 
-import ar.edu.itba.paw.model.*;
+import ar.edu.itba.paw.model.Brand;
+import ar.edu.itba.paw.model.BrandModelRequest;
+import ar.edu.itba.paw.model.BrandModelRequestType;
+import ar.edu.itba.paw.model.Condition;
+import ar.edu.itba.paw.model.Language;
+import ar.edu.itba.paw.model.Listing;
+import ar.edu.itba.paw.model.ListingStatus;
+import ar.edu.itba.paw.model.Model;
+import ar.edu.itba.paw.model.Offer;
+import ar.edu.itba.paw.model.OfferStatus;
+import ar.edu.itba.paw.model.Price;
+import ar.edu.itba.paw.model.User;
 import ar.edu.itba.paw.model.notification.NotificationChannel;
 import ar.edu.itba.paw.model.notification.NotificationType;
 import ar.edu.itba.paw.model.notification.SiteNotification;
