@@ -440,7 +440,7 @@ public class OfferServiceImplTest {
     /* withdraw                                                                                        */
     /* ---------------------------------------------------------------------------------------------- */
 
-    @Test(expected = BadParameterException.class)
+    @Test(expected = ForbiddenException.class)
     public void testWithdrawByNonBuyerThrows() {
         // Arrange
         givenOffer(buildFakeOffer(OfferStatus.PENDING));
@@ -495,7 +495,7 @@ public class OfferServiceImplTest {
         Assert.assertEquals(OFFER_ID, (long) result.getId());
     }
 
-    @Test(expected = BadParameterException.class)
+    @Test(expected = ForbiddenException.class)
     public void testUploadProofOfPaymentByNonBuyerThrows() {
         // Arrange
         givenOffer(buildFakeOffer(OfferStatus.PENDING_PAYMENT));
@@ -544,7 +544,7 @@ public class OfferServiceImplTest {
         offerService.uploadProofOfShipping(OFFER_ID, SELLER_ID, null, null);
     }
 
-    @Test(expected = BadParameterException.class)
+    @Test(expected = ForbiddenException.class)
     public void testUploadProofOfShippingByNonSellerThrows() {
         // Arrange
         givenOffer(buildFakeOffer(OfferStatus.PENDING_PAYMENT));
@@ -566,7 +566,7 @@ public class OfferServiceImplTest {
     /* confirmPayment                                                                                  */
     /* ---------------------------------------------------------------------------------------------- */
 
-    @Test(expected = BadParameterException.class)
+    @Test(expected = ForbiddenException.class)
     public void testConfirmPaymentByNonSellerThrows() {
         // Arrange
         givenOffer(buildFakeOffer(OfferStatus.PENDING_PAYMENT));
