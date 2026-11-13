@@ -4,6 +4,7 @@ import ar.edu.itba.paw.service.UserService;
 import ar.edu.itba.paw.service.enumeration.OneTimePasswordVerificationResult;
 import ar.edu.itba.paw.webapp.auth.AuthHelper;
 import ar.edu.itba.paw.webapp.form.EmailVerificationForm;
+import ar.edu.itba.paw.webapp.form.ResendVerificationForm;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -16,11 +17,10 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 
 @RequiredArgsConstructor
 @Controller
@@ -68,15 +68,18 @@ public class EmailVerificationController {
     }
 
     @PostMapping("/verify/resend")
-    public ModelAndView resendVerificationCode(@RequestParam("usernameOrEmail") String usernameOrEmail) {
-        if (usernameOrEmail != null && !usernameOrEmail.isBlank()) {            // TODO: Usar Bean Validation
-            LOGGER.info("Requested resend of verification email for {}", usernameOrEmail);
-            userService.resendVerificationEmail(usernameOrEmail);
-            return new ModelAndView("redirect:/verify?email=" +
-                            URLEncoder.encode(usernameOrEmail.trim(), StandardCharsets.UTF_8) +
-                            "&resent=true"
-            );
+    public ModelAndView resendVerificationCode(
+            @Valid @ModelAttribute("resendVerificationForm") ResendVerificationForm form,
+            BindingResult errors,
+            RedirectAttributes redirectAttributes
+    ) {
+        if (errors.hasErrors()) {
+            return new ModelAndView("redirect:/verify");
         }
+        LOGGER.info("Requested resend of verification email for {}", form.getUsernameOrEmail());
+        userService.resendVerificationEmail(form.getUsernameOrEmail());
+        redirectAttributes.addAttribute("email", form.getUsernameOrEmail().trim());
+        redirectAttributes.addAttribute("resent", true);
         return new ModelAndView("redirect:/verify");
     }
 }

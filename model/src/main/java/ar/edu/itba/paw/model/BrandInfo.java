@@ -9,5 +9,16 @@ public class BrandInfo {
     Long id;
     String name;
     long modelCount;
-    boolean hasListings;
+    long listingCount;
+
+    public BrandInfo(Long id, String name, long modelCount, long listingCount) {
+        this.id = id;
+        this.name = name;
+        this.modelCount = modelCount;
+        this.listingCount = listingCount;
+    }
+
+    public boolean isHasListings() {
+        return listingCount > 0;
+    }
 }
