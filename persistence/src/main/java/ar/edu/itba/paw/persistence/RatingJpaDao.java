@@ -55,7 +55,7 @@ public class RatingJpaDao implements RatingDao {
         }
 
         final TypedQuery<Rating> query = em.createQuery(
-                "FROM Rating r" + whereClause + " ORDER BY r.createdAt DESC", Rating.class);
+                "FROM Rating r" + whereClause + " ORDER BY r.createdAt DESC, r.id DESC", Rating.class);
         params.forEach(query::setParameter);
         query.setFirstResult((page - 1) * pageSize);
         query.setMaxResults(pageSize);

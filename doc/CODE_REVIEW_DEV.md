@@ -44,7 +44,7 @@ Status values: `todo`, `done`, `underspecified`, `needs bigger refactor`, `false
 | 4.8 | [Smaller layering issues](#48-smaller-layering-issues) | ✅ done |
 | 4.9 | [Duplicated code](#49-duplicated-code) | ✅ done |
 | 4.10 | [Replacement dialogs build N² options on every request](#410-replacement-dialogs-build-n-options-on-every-request) | ✅ done |
-| 5.1 | [Pagination without a tiebreaker](#51-pagination-without-a-tiebreaker) | 🕓 todo |
+| 5.1 | [Pagination without a tiebreaker](#51-pagination-without-a-tiebreaker) | ✅ done |
 | 5.2 | [Unused average price](#52-unused-average-price) | ✅ done |
 | 5.3 | [`MIN`/`MAX` over the embeddable](#53-minmax-over-the-embeddable) | ✅ done |
 | 5.4 | [Mutable result types](#54-mutable-result-types) | 🕓 todo |
@@ -293,7 +293,7 @@ Things to fix before the final delivery. Items 1-10 were checked against `dev` (
 
 ### 5.1 Pagination without a tiebreaker
 
-- `OfferJpaDao.java:92` (`ORDER BY o.createdAt DESC`) and `RatingJpaDao.java:58` (`ORDER BY r.createdAt DESC`). Add `, o.id DESC` / `, r.id DESC`, otherwise rows can repeat or disappear between pages.
+- **Done.** Offer and rating searches now order by `createdAt DESC, id DESC`, so rows cannot repeat or disappear between pages when timestamps tie.
 
 ### 5.2 Unused average price
 
