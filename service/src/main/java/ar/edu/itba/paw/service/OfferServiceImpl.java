@@ -233,8 +233,7 @@ public class OfferServiceImpl implements OfferService {
         // Notify seller about pending transaction
         notificationDispatcherService.notifyPendingTransaction(offer);
 
-        // FIXME double query
-        return offerDao.getById(offerId).orElseThrow();
+        return offer;
     }
 
     @Override
@@ -269,8 +268,7 @@ public class OfferServiceImpl implements OfferService {
         // Notify buyer about offer rejection
         notificationDispatcherService.notifyOfferRejected(offer);
 
-        // FIXME double query
-        return offerDao.getById(offerId).orElseThrow();
+        return offer;
     }
 
     @Override
@@ -302,8 +300,7 @@ public class OfferServiceImpl implements OfferService {
         // Notify seller about offer withdrawal
         notificationDispatcherService.notifyOfferWithdrawn(offer);
 
-        // FIXME double query
-        return offerDao.getById(offerId).orElseThrow();
+        return offer;
     }
 
     @Override

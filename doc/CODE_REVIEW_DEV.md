@@ -41,7 +41,7 @@ Status values: `todo`, `done`, `underspecified`, `needs bigger refactor`, `false
 | 4.5 | [A public model method returns `null`](#45-a-public-model-method-returns-null) | 🕓 todo |
 | 4.6 | [Business rules decided in the views](#46-business-rules-decided-in-the-views) | 🕓 todo |
 | 4.7 | [Categories queried on every request](#47-categories-queried-on-every-request) | 🕓 todo |
-| 4.8 | [Smaller layering issues](#48-smaller-layering-issues) | 🕓 todo |
+| 4.8 | [Smaller layering issues](#48-smaller-layering-issues) | ✅ done |
 | 4.9 | [Duplicated code](#49-duplicated-code) | 🕓 todo |
 | 4.10 | [Replacement dialogs build N² options on every request](#410-replacement-dialogs-build-n-options-on-every-request) | 🕓 todo |
 | 5.1 | [Pagination without a tiebreaker](#51-pagination-without-a-tiebreaker) | 🕓 todo |
