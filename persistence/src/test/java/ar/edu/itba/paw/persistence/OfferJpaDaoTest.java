@@ -11,6 +11,7 @@ import ar.edu.itba.paw.model.Offer;
 import ar.edu.itba.paw.model.OfferFilter;
 import ar.edu.itba.paw.model.OfferRating;
 import ar.edu.itba.paw.model.OfferStatus;
+import ar.edu.itba.paw.model.OfferStatusGroup;
 import ar.edu.itba.paw.model.Page;
 import ar.edu.itba.paw.model.Price;
 import ar.edu.itba.paw.model.Subcategory;
@@ -34,6 +35,7 @@ import javax.sql.DataSource;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -671,6 +673,32 @@ public class OfferJpaDaoTest {
 
         // Assert
         Assert.assertEquals(0, count);
+    }
+
+    /* ---------------------------------------------------------------------------------------------- */
+    /* countByStatus                                                                                   */
+    /* ---------------------------------------------------------------------------------------------- */
+
+    @Test
+    public void testCountByStatusGroupsIncomingOffers() {
+        // Act
+        final Map<OfferStatusGroup, Long> counts = offerDao.countByStatus(buildFakeUser(SELLER_ID), true);
+
+        // Assert
+        Assert.assertEquals(2L, (long) counts.get(OfferStatusGroup.PENDING));
+        Assert.assertNull(counts.get(OfferStatusGroup.PENDING_PAYMENT));
+        Assert.assertNull(counts.get(OfferStatusGroup.RESOLVED));
+    }
+
+    @Test
+    public void testCountByStatusGroupsBuyerOffers() {
+        // Act
+        final Map<OfferStatusGroup, Long> counts = offerDao.countByStatus(buildFakeUser(SELLER_ID), false);
+
+        // Assert
+        Assert.assertEquals(1L, (long) counts.get(OfferStatusGroup.PENDING));
+        Assert.assertEquals(1L, (long) counts.get(OfferStatusGroup.PENDING_PAYMENT));
+        Assert.assertEquals(2L, (long) counts.get(OfferStatusGroup.RESOLVED));
     }
 
     /* ---------------------------------------------------------------------------------------------- */
