@@ -182,8 +182,8 @@ public class CatalogServiceImplTest {
     @Test
     public void testGetBrandsDelegatesToDao() {
         final Page<BrandInfo> brandsPage = new Page<>(List.of(
-                BrandInfo.builder().id(1L).name("Apple").modelCount(2L).hasListings(true).build(),
-                BrandInfo.builder().id(2L).name("Dell").modelCount(0L).hasListings(false).build()), 2, 10, 12);
+                BrandInfo.builder().id(1L).name("Apple").modelCount(2L).listingCount(1L).build(),
+                BrandInfo.builder().id(2L).name("Dell").modelCount(0L).listingCount(0L).build()), 2, 10, 12);
         when(brandDao.getWithStats(eq(BrandSort.BRAND_ASC), eq(2), eq(10))).thenReturn(brandsPage);
 
         final Page<BrandInfo> result = catalogService.getBrands(BrandSort.BRAND_ASC, 2, 10);
