@@ -626,6 +626,70 @@ public class NotificationDispatcherServiceImplTest {
         Assert.assertTrue(mailCaptor.getAllValues().isEmpty());
     }
 
+    @Test
+    public void testNotifyBrandModelRequestAcceptedDispatchesSiteAndEmail() {
+        final User requester = buildUser(10L, "Requester", Language.ENGLISH);
+        final Brand brand = Brand.builder().id(30L).name("Acme").build();
+        final Model model = Model.builder().id(40L).name("Phone").brand(brand).build();
+        final BrandModelRequest request = BrandModelRequest.builder()
+                .id(50L)
+                .type(BrandModelRequestType.NEW_BRAND)
+                .brandName("Acme")
+                .modelName("Phone")
+                .requester(requester)
+                .build();
+
+        final ArgumentCaptor<SiteNotificationCreationDto> siteCaptor =
+                ArgumentCaptor.forClass(SiteNotificationCreationDto.class);
+        final ArgumentCaptor<UserMailDto> mailCaptor = ArgumentCaptor.forClass(UserMailDto.class);
+        when(siteNotificationService.create(siteCaptor.capture())).thenReturn(new SiteNotification());
+        doNothing().when(emailNotificationService)
+                .sendBrandModelRequestAcceptedEmail(mailCaptor.capture(), eq("Acme"), eq("Phone"), eq(40L));
+
+        dispatcher.notifyBrandModelRequestAccepted(request, List.of(requester), brand, model);
+
+        Assert.assertEquals(1, siteCaptor.getAllValues().size());
+        final SiteNotificationCreationDto siteDto = siteCaptor.getValue();
+        Assert.assertSame(requester, siteDto.notificationRecipient());
+        Assert.assertEquals(NotificationType.BRAND_MODEL_REQUEST_ACCEPTED, siteDto.notificationType());
+        Assert.assertEquals("/listing/new/choose-product?modelId=40", siteDto.actionUrl());
+        Assert.assertEquals(List.of("Acme", "Phone"), siteDto.bodyArgs());
+
+        Assert.assertEquals(1, mailCaptor.getAllValues().size());
+        Assert.assertEquals(requester.getEmail(), mailCaptor.getValue().getEmail());
+    }
+
+    @Test
+    public void testNotifyBrandModelRequestRejectedDispatchesSiteAndEmail() {
+        final User requester = buildUser(10L, "Requester", Language.ENGLISH);
+        final BrandModelRequest request = BrandModelRequest.builder()
+                .id(51L)
+                .type(BrandModelRequestType.NEW_BRAND)
+                .brandName("Acme")
+                .modelName("Phone")
+                .requester(requester)
+                .build();
+
+        final ArgumentCaptor<SiteNotificationCreationDto> siteCaptor =
+                ArgumentCaptor.forClass(SiteNotificationCreationDto.class);
+        final ArgumentCaptor<UserMailDto> mailCaptor = ArgumentCaptor.forClass(UserMailDto.class);
+        when(siteNotificationService.create(siteCaptor.capture())).thenReturn(new SiteNotification());
+        doNothing().when(emailNotificationService)
+                .sendBrandModelRequestRejectedEmail(mailCaptor.capture(), eq("Acme"), eq("Phone"));
+
+        dispatcher.notifyBrandModelRequestRejected(request, List.of(requester));
+
+        Assert.assertEquals(1, siteCaptor.getAllValues().size());
+        final SiteNotificationCreationDto siteDto = siteCaptor.getValue();
+        Assert.assertSame(requester, siteDto.notificationRecipient());
+        Assert.assertEquals(NotificationType.BRAND_MODEL_REQUEST_REJECTED, siteDto.notificationType());
+        Assert.assertEquals("/listing", siteDto.actionUrl());
+        Assert.assertEquals(List.of("Acme", "Phone"), siteDto.bodyArgs());
+
+        Assert.assertEquals(1, mailCaptor.getAllValues().size());
+        Assert.assertEquals(requester.getEmail(), mailCaptor.getValue().getEmail());
+    }
+
     /* ---------------------------------------------------------------------------------------------- */
     /* Fixtures                                                                                       */
     /* ---------------------------------------------------------------------------------------------- */
