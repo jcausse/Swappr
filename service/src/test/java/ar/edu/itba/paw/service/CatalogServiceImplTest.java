@@ -31,6 +31,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.when;
 
@@ -307,6 +308,15 @@ public class CatalogServiceImplTest {
         catalogService.renameBrand(BRAND_ID, "Apple");
     }
 
+    @Test
+    public void testRenameBrandChangingOnlyCaseIsAllowed() {
+        when(brandDao.existsByNameAndIdNot(eq("apple"), eq(BRAND_ID))).thenReturn(false);
+        when(brandDao.rename(eq(BRAND_ID), eq("apple")))
+                .thenReturn(Optional.of(Brand.builder().id(BRAND_ID).name("apple").build()));
+
+        catalogService.renameBrand(BRAND_ID, "apple");
+    }
+
     @Test(expected = BadParameterException.class)
     public void testRenameBrandToExistingNameThrows() {
         when(brandDao.existsByNameAndIdNot(eq("Dell"), eq(BRAND_ID))).thenReturn(true);
@@ -523,9 +533,9 @@ public class CatalogServiceImplTest {
             .model(model)
             .listingInfoByCondition(List.of(likeNew, good))
             .build();
-        when(modelDao.getListingInfoSummaryForModel(eq(MODEL_ID))).thenReturn(Optional.of(summary));
+        when(modelDao.getListingInfoSummaryForModel(eq(MODEL_ID), isNull())).thenReturn(Optional.of(summary));
 
-        final Optional<ModelListingInfoSummary> result = catalogService.getListingInfoSummaryForModel(MODEL_ID);
+        final Optional<ModelListingInfoSummary> result = catalogService.getListingInfoSummaryForModel(MODEL_ID, null);
 
         Assert.assertTrue(result.isPresent());
         Assert.assertEquals(
@@ -538,9 +548,9 @@ public class CatalogServiceImplTest {
 
     @Test
     public void testGetListingInfoSummaryForModelEmpty() {
-        when(modelDao.getListingInfoSummaryForModel(eq(MODEL_ID))).thenReturn(Optional.empty());
+        when(modelDao.getListingInfoSummaryForModel(eq(MODEL_ID), isNull())).thenReturn(Optional.empty());
 
-        Assert.assertTrue(catalogService.getListingInfoSummaryForModel(MODEL_ID).isEmpty());
+        Assert.assertTrue(catalogService.getListingInfoSummaryForModel(MODEL_ID, null).isEmpty());
     }
 
     private ModelListingInfo buildListingInfo(final Model model, final Condition condition) {

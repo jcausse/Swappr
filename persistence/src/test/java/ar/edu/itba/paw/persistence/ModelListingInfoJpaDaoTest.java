@@ -57,7 +57,7 @@ public class ModelListingInfoJpaDaoTest {
     @Test
     public void testGetListingInfoSummaryForModelAggregatesActiveListingsByCondition() {
         final Optional<ModelListingInfoSummary> maybeSummary =
-                modelDao.getListingInfoSummaryForModel(MACBOOK_MODEL_ID);
+                modelDao.getListingInfoSummaryForModel(MACBOOK_MODEL_ID, null);
 
         Assert.assertTrue(maybeSummary.isPresent());
         final ModelListingInfoSummary summary = maybeSummary.get();
@@ -90,16 +90,30 @@ public class ModelListingInfoJpaDaoTest {
     }
 
     @Test
+    public void testGetListingInfoSummaryForModelExcludesListingBeingEdited() {
+        final Optional<ModelListingInfoSummary> maybeSummary =
+                modelDao.getListingInfoSummaryForModel(MACBOOK_MODEL_ID, 1L);
+
+        Assert.assertTrue(maybeSummary.isPresent());
+        final ModelListingInfoSummary summary = maybeSummary.get();
+        Assert.assertEquals(1, summary.getListingInfoByCondition().size());
+        final ModelListingInfo info = summary.getListingInfoByCondition().getFirst();
+        Assert.assertEquals(Condition.EXCELLENT, info.getCondition());
+        Assert.assertEquals(1L, (long) info.getListingCount());
+        Assert.assertEquals(0, new BigDecimal("2000.00").compareTo(info.getMinPrice().getAmount()));
+    }
+
+    @Test
     public void testGetListingInfoSummaryForModelEmptyWhenModelHasNoActiveListings() {
         jdbcTemplate.update(
                 "INSERT INTO models (model_id, model_name, brand_id, subcategory_id) VALUES (?, ?, ?, ?)",
                 EMPTY_MODEL_ID, "No Listings", APPLE_BRAND_ID, LAPTOPS_SUBCATEGORY_ID);
 
-        Assert.assertTrue(modelDao.getListingInfoSummaryForModel(EMPTY_MODEL_ID).isEmpty());
+        Assert.assertTrue(modelDao.getListingInfoSummaryForModel(EMPTY_MODEL_ID, null).isEmpty());
     }
 
     @Test
     public void testGetListingInfoSummaryForModelEmptyWhenModelDoesNotExist() {
-        Assert.assertTrue(modelDao.getListingInfoSummaryForModel(NON_EXISTING_MODEL_ID).isEmpty());
+        Assert.assertTrue(modelDao.getListingInfoSummaryForModel(NON_EXISTING_MODEL_ID, null).isEmpty());
     }
 }

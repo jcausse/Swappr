@@ -309,7 +309,7 @@ public class ListingController {
         var mav = new ModelAndView("listing/new/details");
         mav.addObject("model", model);
         mav.addObject("conditionOptions", buildConditionOptions());
-        mav.addObject("priceSummary", catalogService.getListingInfoSummaryForModel(model.getId()).orElse(null));
+        mav.addObject("priceSummary", catalogService.getListingInfoSummaryForModel(model.getId(), null).orElse(null));
         mav.addObject("actionUrl", "/listing/new/details");
         mav.addObject("edit", false);
         return mav;
@@ -325,7 +325,7 @@ public class ListingController {
         LOGGER.info("User {} submitted listing creation for model {}", currentUser.getId(), form.getModelId());
         if (bindingResult.hasErrors()) {
             LOGGER.debug("Validation failed for listing creation for model {}", form.getModelId());
-            return detailsWithErrors(form);
+            return detailsWithErrors(form, null);
         }
 
         listingService.create(new ListingCreationDto(
@@ -365,7 +365,7 @@ public class ListingController {
         var mav = new ModelAndView("listing/new/details");
         mav.addObject("conditionOptions", buildConditionOptions());
         mav.addObject("model", listing.getModel());
-        mav.addObject("priceSummary", catalogService.getListingInfoSummaryForModel(listing.getModel().getId()).orElse(null));
+        mav.addObject("priceSummary", catalogService.getListingInfoSummaryForModel(listing.getModel().getId(), id).orElse(null));
         mav.addObject("actionUrl", "/listing/" + id + "/edit");
         mav.addObject("edit", true);
         mav.addObject("existingImageIds", listing.getImageIds());
@@ -402,16 +402,16 @@ public class ListingController {
         return new ModelAndView("redirect:/account/listings");
     }
 
-    private ModelAndView detailsWithErrors(ListingDetailsForm form) {
+    private ModelAndView detailsWithErrors(ListingDetailsForm form, Long excludedListingId) {
         var model = catalogService.getModelById(form.getModelId());
         return new ModelAndView("listing/new/details")
                 .addObject("model", model)
                 .addObject("conditionOptions", buildConditionOptions())
-                .addObject("priceSummary", catalogService.getListingInfoSummaryForModel(model.getId()).orElse(null));
+                .addObject("priceSummary", catalogService.getListingInfoSummaryForModel(model.getId(), excludedListingId).orElse(null));
     }
 
     private ModelAndView editDetailsWithErrors(final Long listingId, final ListingDetailsForm form) {
-        return detailsWithErrors(form)
+        return detailsWithErrors(form, listingId)
             .addObject("actionUrl", "/listing/" + listingId + "/edit")
             .addObject("edit", true)
             .addObject("existingImageIds", listingService.getById(listingId).getImageIds());

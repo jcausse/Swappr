@@ -5,7 +5,6 @@
 <%@ taglib prefix="paw" tagdir="/WEB-INF/tags" %>
 
 <c:url value="/catalog-requests" var="requestUrl"/>
-<c:url value="/catalog-requests/new" var="requestFormUrl"/>
 <c:url value="/listing/new/choose-product" var="chooseProductUrl"/>
 
 <spring:message code="catalogRequest.title" var="requestTitle"/>
@@ -36,6 +35,7 @@
         <paw:divider />
 
         <form:form id="catalogRequestForm" modelAttribute="requestForm" action="${requestUrl}" method="post" class="flex flex-col gap-4 mt-4">
+            <form:hidden path="isAutoSubmit"/>
             <c:if test="${not empty formError}">
                 <div class="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
                     <spring:message code="${formError}"/>
@@ -112,15 +112,18 @@
             var existingBrandFields = document.getElementById('existingBrandFields');
             var newBrandRadio = document.getElementById('requestTypeNew');
             var existingBrandRadio = document.getElementById('requestTypeExisting');
+            var isAutoSubmitInput = document.getElementById('isAutoSubmit');
+            var requestForm = document.getElementById('catalogRequestForm');
+
+            function submitForm() {
+                if (isAutoSubmitInput) {
+                    isAutoSubmitInput.value = 'true';
+                }
+                requestForm.submit();
+            }
 
             if (categorySelect) {
-                categorySelect.addEventListener('change', function () {
-                    var url = '${requestFormUrl}';
-                    if (categorySelect.value) {
-                        url += '?categoryId=' + encodeURIComponent(categorySelect.value);
-                    }
-                    window.location.href = url;
-                });
+                categorySelect.addEventListener('change', submitForm);
             }
 
             function updateFields() {
