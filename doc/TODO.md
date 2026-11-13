@@ -10,10 +10,6 @@
 
 - [ ] Revisar los `ON DELETE` y `ON INSERT`.
 
-- [ ] Resolver los `TODO`.
-
-- [ ] Mover todo Spring Security a `@PreAuthorize`.
-
 ## Fixes
 
 - [ ] `Bad Request` con formato numérico en checkout. Sotuyo probó hacer una oferta de menor valor utilizando el mismo formato numérico que se muestra en el precio y le dio un `400`.
@@ -21,7 +17,3 @@
 ## Minor Changes
 
 - [ ] Hacer que los _forms_ tengan un `.todto()` para evitar instanciar todo el tiempo los DTOs para pasar a los servicios.
-
-- [ ] La validación de imágenes `@ValidFile` en el _listing_ create pierde el parámetro _productId_ en el redirect.
-
-- [ ] Los checkboxes en `new listing form` tienen color default, usar accent color o hacer un `form:checkbox`.
