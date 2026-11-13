@@ -45,7 +45,7 @@ Status values: `todo`, `done`, `underspecified`, `needs bigger refactor`, `false
 | 4.9 | [Duplicated code](#49-duplicated-code) | 🕓 todo |
 | 4.10 | [Replacement dialogs build N² options on every request](#410-replacement-dialogs-build-n-options-on-every-request) | 🕓 todo |
 | 5.1 | [Pagination without a tiebreaker](#51-pagination-without-a-tiebreaker) | 🕓 todo |
-| 5.2 | [Unused average price](#52-unused-average-price) | 🕓 todo |
+| 5.2 | [Unused average price](#52-unused-average-price) | ✅ done |
 | 5.3 | [`MIN`/`MAX` over the embeddable](#53-minmax-over-the-embeddable) | 🕓 todo |
 | 5.4 | [Mutable result types](#54-mutable-result-types) | 🕓 todo |
 | 6.1 | [Tests with no assertion](#61-tests-with-no-assertion) | ✅ done |
@@ -296,7 +296,7 @@ Things to fix before the final delivery. Items 1-10 were checked against `dev` (
 
 ### 5.2 Unused average price
 
-- `avgPrice` is computed in both summary queries (`ModelJpaDao.java:260`, `:317`) through a `Double` (`:279`, `:338`), and no view or service reads it (only a test sets it). Remove it.
+- **Done.** Removed `avgPrice` from `ModelListingInfo` and dropped the `AVG(l.price.amount)` aggregate from both summary queries.
 
 ### 5.3 `MIN`/`MAX` over the embeddable
 

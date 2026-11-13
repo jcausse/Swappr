@@ -20,7 +20,6 @@ public class ModelListingInfo {
     private Condition condition;
     private Price minPrice;
     private Price maxPrice;
-    private Price avgPrice;
 
     public ModelListingInfo(
             Brand brand,
@@ -28,8 +27,7 @@ public class ModelListingInfo {
             Condition condition,
             Long listingCount,
             BigDecimal minPrice,
-            BigDecimal maxPrice,
-            Double avgPrice
+            BigDecimal maxPrice
     ) {
         this.brand = brand;
         this.model = model;
@@ -37,6 +35,5 @@ public class ModelListingInfo {
         this.listingCount = listingCount;
         this.minPrice = new Price(minPrice);
         this.maxPrice = new Price(maxPrice);
-        this.avgPrice = avgPrice != null ? new Price(BigDecimal.valueOf(avgPrice)) : null;
     }
 }
