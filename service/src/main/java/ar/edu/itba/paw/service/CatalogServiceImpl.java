@@ -25,6 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -66,12 +67,15 @@ public class CatalogServiceImpl implements CatalogService {
     }
 
     @Override
-    public Map<Long, List<Brand>> getBrandReplacementOptions() {
+    public Map<Long, List<Brand>> getBrandReplacementOptions(final Collection<Long> brandIds) {
+        if (brandIds.isEmpty()) {
+            return Map.of();
+        }
         final List<Brand> brands = brandDao.getAll();
         final Map<Long, List<Brand>> options = new HashMap<>();
-        for (final Brand brand : brands) {
-            options.put(brand.getId(), brands.stream()
-                .filter(candidate -> !candidate.getId().equals(brand.getId()))
+        for (final Long brandId : brandIds) {
+            options.put(brandId, brands.stream()
+                .filter(candidate -> !candidate.getId().equals(brandId))
                 .toList());
         }
         return options;
@@ -187,16 +191,20 @@ public class CatalogServiceImpl implements CatalogService {
     }
 
     @Override
-    public Map<Long, List<ModelOption>> getModelReplacementOptions() {
-        final List<Model> models = modelDao.getAllWithBrand();
+    public Map<Long, List<ModelOption>> getModelReplacementOptions(final Collection<Long> modelIds) {
+        if (modelIds.isEmpty()) {
+            return Map.of();
+        }
+        final List<ModelOption> allOptions = modelDao.getAllWithBrand().stream()
+            .map(candidate -> ModelOption.builder()
+                .id(candidate.getId())
+                .label(candidate.getBrand().getName() + " — " + candidate.getName())
+                .build())
+            .toList();
         final Map<Long, List<ModelOption>> options = new HashMap<>();
-        for (final Model model : models) {
-            options.put(model.getId(), models.stream()
-                .filter(candidate -> !candidate.getId().equals(model.getId()))
-                .map(candidate -> ModelOption.builder()
-                    .id(candidate.getId())
-                    .label(candidate.getBrand().getName() + " — " + candidate.getName())
-                    .build())
+        for (final Long modelId : modelIds) {
+            options.put(modelId, allOptions.stream()
+                .filter(option -> !option.getId().equals(modelId))
                 .toList());
         }
         return options;
