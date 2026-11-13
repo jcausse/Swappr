@@ -68,5 +68,5 @@ public interface CatalogService {
     Page<ModelListingInfoSummary> getListingInfoSummary(Long brandId, Long modelId, Integer fromYear, Integer toYear,
             Long subcategoryId, Integer page, int pageSize);
 
-    Optional<ModelListingInfoSummary> getListingInfoSummaryForModel(Long modelId);
+    Optional<ModelListingInfoSummary> getListingInfoSummaryForModel(Long modelId, Long excludedListingId);
 }

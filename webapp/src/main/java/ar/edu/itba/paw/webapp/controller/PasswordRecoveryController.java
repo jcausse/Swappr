@@ -11,6 +11,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
 import ar.edu.itba.paw.service.PasswordRecoveryService;
@@ -19,6 +20,9 @@ import ar.edu.itba.paw.webapp.auth.AuthHelper;
 import ar.edu.itba.paw.webapp.form.PasswordRecoveryRequestForm;
 import ar.edu.itba.paw.webapp.form.PasswordRecoveryVerificationForm;
 import lombok.RequiredArgsConstructor;
+
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 @RequiredArgsConstructor
 @Controller
@@ -32,10 +36,17 @@ public class PasswordRecoveryController {
 
     @GetMapping("/recovery/request")
     public ModelAndView passwordRecoveryRequestGET(
-            @ModelAttribute("passwordRecoveryRequestForm") PasswordRecoveryRequestForm form
+            @ModelAttribute("passwordRecoveryRequestForm") PasswordRecoveryRequestForm form,
+            @RequestParam(value = "codeSent", defaultValue = "false") boolean codeSent,
+            @RequestParam(value = "usernameOrEmail", required = false) String usernameOrEmail
     ) {
         LOGGER.debug("Accessing password recovery request form");
-        return new ModelAndView("recovery/request");
+        final ModelAndView mav = new ModelAndView("recovery/request");
+        if (codeSent) {
+            mav.addObject("codeSent", true)
+                    .addObject("usernameOrEmail", usernameOrEmail);
+        }
+        return mav;
     }
 
     @PostMapping("/recovery/request")
@@ -51,9 +62,8 @@ public class PasswordRecoveryController {
         LOGGER.info("Password recovery requested for {}", form.getUsernameOrEmail());
         passwordRecoveryService.startAndSendRecoveryEmail(form.getUsernameOrEmail());
 
-        return new ModelAndView("recovery/request")
-                .addObject("codeSent", true)
-                .addObject("usernameOrEmail", form.getUsernameOrEmail());
+        return new ModelAndView("redirect:/recovery/request?codeSent=true&usernameOrEmail="
+                + URLEncoder.encode(form.getUsernameOrEmail(), StandardCharsets.UTF_8));
     }
 
     @GetMapping("/recovery/verification")
