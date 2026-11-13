@@ -262,7 +262,7 @@ public class ModelJpaDao implements ModelDao {
         final var query = em.createQuery(
                 "SELECT new ar.edu.itba.paw.model.ModelListingInfo("
                 + "b, m, l.condition, COUNT(l.condition),"
-                + " MIN(l.price.amount), MAX(l.price.amount), AVG(l.price.amount))"
+                + " MIN(l.price.amount), MAX(l.price.amount))"
                 + " FROM Listing l JOIN l.model m JOIN m.brand b"
                 + " WHERE m.id IN :modelIds AND l.status = :status" + yearWhere
                 + " GROUP BY b, m, l.condition"
@@ -310,7 +310,7 @@ public class ModelJpaDao implements ModelDao {
         final var query = em.createQuery(
                 "SELECT new ar.edu.itba.paw.model.ModelListingInfo("
                 + "b, m, l.condition, COUNT(l),"
-                + " MIN(l.price.amount), MAX(l.price.amount), AVG(l.price.amount))"
+                + " MIN(l.price.amount), MAX(l.price.amount))"
                 + " FROM Listing l JOIN l.model m JOIN m.brand b"
                 + " WHERE m.id = :modelId AND l.status = :status" + excludedClause
                 + " GROUP BY b, m, l.condition"

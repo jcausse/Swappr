@@ -503,7 +503,6 @@ public class CatalogServiceImplTest {
             .listingCount(1L)
             .minPrice(new Price(BigDecimal.TEN))
             .maxPrice(new Price(BigDecimal.TEN))
-            .avgPrice(new Price(BigDecimal.TEN))
             .build();
     }
 }
