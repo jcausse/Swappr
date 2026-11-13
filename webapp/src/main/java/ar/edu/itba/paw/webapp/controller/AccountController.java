@@ -31,8 +31,6 @@ import ar.edu.itba.paw.model.OfferStatusGroup;
 import ar.edu.itba.paw.model.User;
 import ar.edu.itba.paw.service.ListingService;
 import ar.edu.itba.paw.service.OfferService;
-import ar.edu.itba.paw.service.dto.ListingFilterDto;
-import ar.edu.itba.paw.service.dto.OfferFilterDto;
 import ar.edu.itba.paw.service.exception.BadParameterException;
 import ar.edu.itba.paw.service.exception.NotFoundException;
 import ar.edu.itba.paw.webapp.auth.CurrentUser;
@@ -69,14 +67,11 @@ public class AccountController {
     public ModelAndView listings(@CurrentUser User currentUser, @ModelAttribute("filterForm") ListingFilterForm filterForm) {
         LOGGER.debug("User {} accessing account listings", currentUser.getId());
 
-        final var filter = ListingFilterDto.builder()
-            .query(filterForm.getQuery())
-            .sort(filterForm.getSort())
-            .creatorId(currentUser.getId())
-            .status(filterForm.getStatus())
-            .page(filterForm.getPage())
-            .pageSize(ACCOUNT_LISTINGS_PAGE_SIZE)
-            .build();
+        final var filter = filterForm.toDto(
+            currentUser.getId(),
+            filterForm.getStatus(),
+            ACCOUNT_LISTINGS_PAGE_SIZE
+        );
 
         final var listingPage = listingService.search(filter);
         final var listings = listingPage.getContent();
@@ -102,12 +97,7 @@ public class AccountController {
     public ModelAndView incomingOffers(@CurrentUser User currentUser, @ModelAttribute("filterForm") OfferFilterForm filterForm) {
         LOGGER.debug("User {} accessing incoming offers", currentUser.getId());
 
-        final var filter = OfferFilterDto.builder()
-            .sellerId(currentUser.getId())
-            .statusGroup(filterForm.getStatusGroup())
-            .page(filterForm.getPage())
-            .pageSize(5)
-            .build();
+        final var filter = filterForm.toDto(currentUser.getId(), null, 5);
         final var offerPage = offerService.get(filter);
 
         final var statusGroupOptions = Arrays.stream(OfferStatusGroup.values())
@@ -128,12 +118,7 @@ public class AccountController {
     public ModelAndView myOffers(@CurrentUser User currentUser, @ModelAttribute("filterForm") OfferFilterForm filterForm) {
         LOGGER.debug("User {} accessing my offers", currentUser.getId());
 
-        final var filter = OfferFilterDto.builder()
-            .buyerId(currentUser.getId())
-            .statusGroup(filterForm.getStatusGroup())
-            .page(filterForm.getPage())
-            .pageSize(5)
-            .build();
+        final var filter = filterForm.toDto(null, currentUser.getId(), 5);
         final var offerPage = offerService.get(filter);
 
         final var statusGroupOptions = Arrays.stream(OfferStatusGroup.values())
@@ -196,7 +181,7 @@ public class AccountController {
         offerService.uploadProofOfPayment(
                 offerId,
                 currentUser.getId(),
-                form.getFileDto()
+                form.toDto()
         );
         LOGGER.info("User {} uploaded proof of payment for offer {}", currentUser.getId(), offerId);
 
@@ -236,7 +221,7 @@ public class AccountController {
         offerService.uploadProofOfShipping(
                 offerId,
                 currentUser.getId(),
-                form.getFileDto(),
+                form.toDto(),
                 form.getTrackingNumber()
         );
         LOGGER.info("User {} uploaded proof of shipping for offer {}", currentUser.getId(), offerId);

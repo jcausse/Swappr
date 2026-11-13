@@ -2,6 +2,8 @@ package ar.edu.itba.paw.webapp.form;
 
 import ar.edu.itba.paw.model.Condition;
 import ar.edu.itba.paw.service.dto.ImageData;
+import ar.edu.itba.paw.service.dto.ListingCreationDto;
+import ar.edu.itba.paw.service.dto.ListingUpdateDto;
 import ar.edu.itba.paw.webapp.form.validation.ValidFile;
 
 import java.io.IOException;
@@ -70,5 +72,38 @@ public class ListingDetailsForm {
             }
         }
         return imageDataList;
+    }
+
+    public ListingCreationDto toCreationDto(Long creatorId) {
+        // REVIEW: creatorId comes from the authenticated user, not the form.
+        return new ListingCreationDto(
+                title,
+                price,
+                creatorId,
+                modelId,
+                year,
+                condition,
+                acceptsTrade,
+                acceptsShipping,
+                description,
+                getImages()
+        );
+    }
+
+    public ListingUpdateDto toUpdateDto(Long listingId) {
+        // REVIEW: listingId comes from the path, not the form.
+        return new ListingUpdateDto(
+                listingId,
+                title,
+                price,
+                modelId,
+                year,
+                condition,
+                acceptsTrade,
+                acceptsShipping,
+                description,
+                getImages(),
+                removedImageIds
+        );
     }
 }

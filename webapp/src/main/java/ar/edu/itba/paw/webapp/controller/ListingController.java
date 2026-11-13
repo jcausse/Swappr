@@ -29,9 +29,6 @@ import ar.edu.itba.paw.service.ListingCancellationService;
 import ar.edu.itba.paw.service.ListingService;
 import ar.edu.itba.paw.service.OfferService;
 import ar.edu.itba.paw.service.ProvinceService;
-import ar.edu.itba.paw.service.dto.ListingCreationDto;
-import ar.edu.itba.paw.service.dto.ListingFilterDto;
-import ar.edu.itba.paw.service.dto.ListingUpdateDto;
 import ar.edu.itba.paw.webapp.auth.CurrentUser;
 import ar.edu.itba.paw.webapp.form.ChooseProductForm;
 import ar.edu.itba.paw.webapp.form.ListingDetailsForm;
@@ -62,26 +59,7 @@ public class ListingController {
     @PreAuthorize("permitAll()")
     public ModelAndView discovery(@ModelAttribute("filterForm") ListingFilterForm filterForm) {
         LOGGER.debug("Accessing discovery page with query '{}', category {}", filterForm.getQuery(), filterForm.getCategoryId());
-        final var filter = ListingFilterDto.builder()
-            .categoryId(filterForm.getCategoryId())
-            .subcategoryId(filterForm.getSubcategoryId())
-            .minPrice(filterForm.getMinPrice())
-            .maxPrice(filterForm.getMaxPrice())
-            .condition(filterForm.getCondition())
-            .acceptsTrade(filterForm.getAcceptsTrade())
-            .onlyFree(filterForm.getOnlyFree())
-            .query(filterForm.getQuery())
-            .sort(filterForm.getSort())
-            .status(ListingStatus.ACTIVE)
-            .page(filterForm.getPage())
-            .pageSize(DISCOVERY_PAGE_SIZE)
-            .provinceId(filterForm.getProvinceId())
-            .acceptsShipping(filterForm.getAcceptsShipping())
-            .brandId(filterForm.getBrandId())
-            .modelId(filterForm.getModelId())
-            .yearMin(filterForm.getYearMin())
-            .yearMax(filterForm.getYearMax())
-            .build();
+        final var filter = filterForm.toDto(null, ListingStatus.ACTIVE, DISCOVERY_PAGE_SIZE);
 
         final var listingPage = listingService.search(filter);
 
@@ -328,18 +306,7 @@ public class ListingController {
             return detailsWithErrors(form, null);
         }
 
-        listingService.create(new ListingCreationDto(
-                form.getTitle(),
-                form.getPrice(),
-                currentUser.getId(),
-                form.getModelId(),
-                form.getYear(),
-                form.getCondition(),
-                form.isAcceptsTrade(),
-                form.isAcceptsShipping(),
-                form.getDescription(),
-                form.getImages()
-        ));
+        listingService.create(form.toCreationDto(currentUser.getId()));
         return new ModelAndView("redirect:/account/listings");
     }
 
@@ -386,19 +353,7 @@ public class ListingController {
             return editDetailsWithErrors(id, form);
         }
 
-        listingService.update(new ListingUpdateDto(
-            id,
-            form.getTitle(),
-            form.getPrice(),
-            form.getModelId(),
-            form.getYear(),
-            form.getCondition(),
-            form.isAcceptsTrade(),
-            form.isAcceptsShipping(),
-            form.getDescription(),
-            form.getImages(),
-            form.getRemovedImageIds()
-        ), currentUser.getId());
+        listingService.update(form.toUpdateDto(id), currentUser.getId());
         return new ModelAndView("redirect:/account/listings");
     }
 

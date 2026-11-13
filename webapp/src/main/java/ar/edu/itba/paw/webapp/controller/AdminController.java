@@ -13,9 +13,6 @@ import ar.edu.itba.paw.service.CatalogService;
 import ar.edu.itba.paw.service.ListingService;
 import ar.edu.itba.paw.service.OfferService;
 import ar.edu.itba.paw.service.UserService;
-import ar.edu.itba.paw.service.dto.BrandModelRequestAcceptanceDto;
-import ar.edu.itba.paw.service.dto.ListingFilterDto;
-import ar.edu.itba.paw.service.dto.OfferFilterDto;
 import ar.edu.itba.paw.service.exception.BadParameterException;
 import ar.edu.itba.paw.service.exception.NotFoundException;
 import ar.edu.itba.paw.service.exception.SelfSuspendException;
@@ -165,12 +162,7 @@ public class AdminController {
         }
 
         try {
-            brandModelRequestService.accept(id, new BrandModelRequestAcceptanceDto(
-                    form.getType(),
-                    form.getBrandId(),
-                    form.getNewBrandName(),
-                    form.getModelName()
-            ));
+            brandModelRequestService.accept(id, form.toDto());
         } catch (BadParameterException e) {
             LOGGER.warn("Brand/model request {} could not be accepted: {}", id, e.getMessage());
             return new ModelAndView("redirect:/admin/catalog?error=requestInvalid");
@@ -392,12 +384,7 @@ public class AdminController {
     ) {
         LOGGER.debug("Admin {} accessed listings page: page={}, query={}, status={}", currentUser.getUsername(), page, filterForm.getQuery(), filterForm.getStatus());
         ModelAndView mav = new ModelAndView("admin/listings");
-        var filter = ListingFilterDto.builder()
-                .query(filterForm.getQuery())
-                .status(filterForm.getStatus())
-                .page(page)
-                .pageSize(DEFAULT_PAGE_SIZE)
-                .build();
+        var filter = filterForm.toDto(page, DEFAULT_PAGE_SIZE);
         mav.addObject("listingsPage", listingService.search(filter));
         mav.addObject("statusOptions", Arrays.stream(ListingStatus.values())
                 .map(status -> new StringSelectOption(status.name(), "listing.status." + status.name()))
@@ -469,11 +456,7 @@ public class AdminController {
     ) {
         LOGGER.debug("Admin {} accessed offers page: page={}, statusGroup={}", currentUser.getUsername(), page, filterForm.getStatusGroup());
         ModelAndView mav = new ModelAndView("admin/offers");
-        var filter = OfferFilterDto.builder()
-                .statusGroup(filterForm.getStatusGroup())
-                .page(page)
-                .pageSize(DEFAULT_PAGE_SIZE)
-                .build();
+        var filter = filterForm.toDto(page, DEFAULT_PAGE_SIZE);
         mav.addObject("offersPage", offerService.get(filter));
         mav.addObject("statusGroupOptions", Arrays.stream(OfferStatusGroup.values())
                 .map(statusGroup -> new StringSelectOption(statusGroup.name(), "offer.statusGroup." + statusGroup.getStatus()))
