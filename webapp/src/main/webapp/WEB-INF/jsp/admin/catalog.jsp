@@ -253,13 +253,14 @@
                 cancelText="${renameBrandCancel}"
                 formAction="${renameBrandUrl}"
             >
-                <paw:input
-                    id="brandName-${brand.id}"
-                    name="name"
-                    value="${brand.name}"
-                    label="${brandNameLabel}"
-                    variant="outline"
-                />
+                <div class="flex flex-col gap-3 text-black">
+                    <paw:input
+                        id="brandName-${brand.id}"
+                        name="name"
+                        value="${brand.name}"
+                        label="${brandNameLabel}"
+                    />
+                </div>
             </paw:formDialog>
 
             <paw:formDialog
@@ -504,6 +505,7 @@
                             placeholder="${createModelCategoryPlaceholder}"
                             items="${categoryOptions}"
                             translateLabels="true"
+                            variant="outline"
                         />
                     </div>
                 </form:form>
@@ -529,6 +531,7 @@
                             items="${brandOptions}"
                             itemLabel="name"
                             itemValue="id"
+                            variant="outline"
                             disabled="${empty createModelFilterForm.categoryId}"
                         />
                         <paw:formSelect
@@ -537,6 +540,7 @@
                             placeholder="${createModelSubcategoryPlaceholder}"
                             items="${createModelSubcategoryOptions}"
                             translateLabels="true"
+                            variant="outline"
                             disabled="${empty createModelFilterForm.categoryId}"
                         />
                         <paw:button
@@ -695,7 +699,7 @@
             formAction="${catalogUrl}"
             modelAttribute="acceptRequestForm"
         >
-            <div class="flex flex-col gap-3">
+            <div class="flex flex-col gap-3 text-black">
                 <div class="flex flex-col gap-2">
                     <span class="text-xs text-black/70 font-medium"><c:out value="${acceptRequestTypeLabel}"/></span>
                     <div class="flex flex-col sm:flex-row gap-2">
@@ -708,7 +712,6 @@
                         id="acceptRequestNewBrandName"
                         path="newBrandName"
                         label="${acceptRequestNewBrandLabel}"
-                        variant="outline"
                     />
                 </div>
                 <div id="acceptExistingBrandFields" class="flex flex-col gap-3">
@@ -725,7 +728,6 @@
                     id="acceptRequestModelName"
                     path="modelName"
                     label="${acceptRequestModelLabel}"
-                    variant="outline"
                 />
             </div>
         </paw:formDialog>
@@ -738,12 +740,11 @@
             formAction="${catalogUrl}"
             modelAttribute="editModelForm"
         >
-            <div class="flex flex-col gap-3">
+            <div class="flex flex-col gap-3 text-black">
                 <paw:formInput
                     id="editModelName"
                     path="name"
                     label="${modelNameLabel}"
-                    variant="outline"
                 />
                 <paw:formSelect
                     id="editModelBrandId"
