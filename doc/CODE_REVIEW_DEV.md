@@ -58,7 +58,7 @@ Status values: `todo`, `done`, `underspecified`, `needs bigger refactor`, `false
 | 9 | [Dead code cleanup (whole section)](#9-dead-code) | ✅ done |
 | 10 | [Build and style cleanup (whole section)](#10-build-and-style) | ✅ done |
 | 11.1 | [`ImageController` access control and caching](#111-imagecontroller-access-control-and-caching) | ✅ done |
-| 11.2 | [Listing/Image relation](#112-listingimage-relation) | 🕓 todo |
+| 11.2 | [Listing/Image relation](#112-listingimage-relation) | ✅ done |
 | 11.3 | [JDBC dependencies in test scope](#113-jdbc-dependencies-in-test-scope) | ✅ done |
 | 11.4 | [Form `.todto()` helpers](#114-form-todto-helpers) | ✅ done |
 | 11.5 | [Prefer JPQL over `createNativeQuery`](#115-prefer-jpql-over-createnativequery) | ✅ done |
