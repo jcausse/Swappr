@@ -71,7 +71,7 @@
                         <c:when test="${listing.isSoldForDisplay()}">
                             <paw:banner text="${soldMsg}" icon="info" role="secondary" classname="mb-4" />
                         </c:when>
-                        <c:when test="${listing.isCreator(currentUser)}">
+                        <c:when test="${not empty currentUser and currentUser.isPresent() and listing.isCreator(currentUser.get())}">
                             <spring:message code="listing.detail.edit" var="editLabel"/>
                             <c:url value="/listing/${listing.id}/edit" var="editUrl"/>
                             <paw:linkButton href="${editUrl}" size="lg" classname="w-full" variant="outline" text="${editLabel}"/>
