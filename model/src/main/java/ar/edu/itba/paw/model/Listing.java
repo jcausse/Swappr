@@ -20,16 +20,15 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
+import javax.persistence.ElementCollection;
+import javax.persistence.CollectionTable;
 import javax.persistence.OrderColumn;
 import javax.persistence.Table;
 import java.time.Instant;
 import java.time.Year;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Getter
 @Setter
@@ -106,14 +105,6 @@ public class Listing {
 
     // -------------------------------------------------------------------------------------------------
 
-    public boolean isAcceptsTrade() {
-        return Boolean.TRUE.equals(acceptsTrade);
-    }
-
-    public boolean isAcceptsShipping() {
-        return Boolean.TRUE.equals(acceptsShipping);
-    }
-
     public boolean isActive() {
         return status == ListingStatus.ACTIVE;
     }
@@ -150,10 +141,6 @@ public class Listing {
 
     public boolean isCreator(User user) {
         return user != null && isCreator(user.getId());
-    }
-
-    public boolean isCreator(Optional<User> maybeUser) {
-        return maybeUser.map(this::isCreator).orElse(false);
     }
 
     public Brand getBrand() {
