@@ -105,15 +105,22 @@ public class OfferServiceImpl implements OfferService {
     private void populateTransientFlags(List<Offer> offers) {
         if (offers == null || offers.isEmpty()) return;
 
-        // Fetch the pending-offer comparison counts for every offer in one aggregate query
-        final List<Long> offerIds = offers.stream().map(Offer::getId).toList();
-        final Map<Long, OfferPendingCount> counts = offerDao.getPendingCounts(offerIds);
+        // Fetch the pending-offer aggregate counts for every involved listing in one query
+        final List<Long> listingIds = offers.stream()
+                .map(offer -> offer.getListing().getId())
+                .distinct()
+                .toList();
+        final Map<Long, OfferPendingCount> counts = offerDao.getPendingCounts(listingIds);
 
-        // Translate the raw counts into the transient display flags
+        // Translate the raw aggregates into the transient display flags
         for (Offer offer : offers) {
-            final OfferPendingCount count = counts.get(offer.getId());
-            offer.setHasOtherOffers(count != null && count.otherCount() > 0);
-            offer.setHasBetterOffers(count != null && count.betterCount() > 0);
+            final OfferPendingCount count = counts.get(offer.getListing().getId());
+            final long pendingCount = count == null ? 0 : count.count();
+            final boolean hasOtherOffers = offer.isPending() ? pendingCount > 1 : pendingCount > 0;
+            final boolean hasBetterOffers = count != null && count.maxAmount() != null
+                    && count.maxAmount().compareTo(offer.getAmount()) > 0;
+            offer.setHasOtherOffers(hasOtherOffers);
+            offer.setHasBetterOffers(hasBetterOffers);
         }
     }
 

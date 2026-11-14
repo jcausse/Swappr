@@ -69,7 +69,7 @@ Status values: `todo`, `done`, `underspecified`, `needs bigger refactor`, `false
 | 12.4 | [`WebConfig` injects `@Lazy CatalogService` in its constructor](#124-webconfig-injects-lazy-catalogservice-in-its-constructor) | 🕓 todo |
 | 12.5 | [Small test gaps in `CategoriesInterceptorTest` and `OfferJpaDaoTest`](#125-small-test-coverage-gaps-in-categoriesinterceptortest-and-offerjpadaotest) | 🕓 todo |
 | 12.6 | [`CategoriesInterceptor.rendersView` does not skip `forward:` view names](#126-categoriesinterceptorrendersview-does-not-skip-forward-view-names) | 🕓 todo |
-| 12.7 | [Remove `p.amount > o.amount` comparison from `OfferJpaDao.getPendingCounts` (important)](#127-remove-pamount--oamount-comparison-from-offerjpadaogetpendingcounts-important) | 🕓 todo |
+| 12.7 | [Remove `p.amount > o.amount` comparison from `OfferJpaDao.getPendingCounts` (important)](#127-remove-pamount--oamount-comparison-from-offerjpadaogetpendingcounts-important) | ✅ done |
 
 Things to fix before the final delivery. Items 1-10 were checked against `dev` (`a80c04fd`, 2026-11-11); section 11 was checked against `dev` (`a385aa63`, 2026-11-13); section 12 was added against `dev` (`ea1b01a1`, 2026-11-14). Nothing here is a guess: each one points to the file and line where it happens.
 

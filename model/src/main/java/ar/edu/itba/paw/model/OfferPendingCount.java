@@ -1,3 +1,5 @@
 package ar.edu.itba.paw.model;
 
-public record OfferPendingCount(Long offerId, long otherCount, long betterCount) {}
+import java.math.BigDecimal;
+
+public record OfferPendingCount(Long listingId, long count, BigDecimal maxAmount) {}

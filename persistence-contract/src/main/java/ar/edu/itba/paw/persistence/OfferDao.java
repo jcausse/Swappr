@@ -25,7 +25,7 @@ public interface OfferDao {
 
     Page<Offer> search(OfferFilter filter);
 
-    Map<Long, OfferPendingCount> getPendingCounts(Collection<Long> offerIds);
+    Map<Long, OfferPendingCount> getPendingCounts(Collection<Long> listingIds);
 
     Offer create(Long listingId, User buyer, BigDecimal amount, Boolean isFullPrice, OfferStatus status, String message, Instant createdAt, Long offeredListingId);
 

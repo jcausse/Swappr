@@ -229,8 +229,8 @@ public class OfferServiceImplTest {
         final Offer offer = buildFakeOffer(OfferStatus.PENDING);
         when(offerDao.search(any(OfferFilter.class)))
             .thenReturn(new Page<>(List.of(offer), 1, PAGE_SIZE, 1));
-        when(offerDao.getPendingCounts(eq(List.of(OFFER_ID))))
-            .thenReturn(Map.of(OFFER_ID, new OfferPendingCount(OFFER_ID, 1, 1)));
+        when(offerDao.getPendingCounts(eq(List.of(LISTING_ID))))
+            .thenReturn(Map.of(LISTING_ID, new OfferPendingCount(LISTING_ID, 2, new BigDecimal("1500.00"))));
 
         // Act
         final Page<Offer> page = offerService.get(buildFilterDto(), true);
@@ -248,7 +248,7 @@ public class OfferServiceImplTest {
         when(offerDao.search(any(OfferFilter.class)))
             .thenReturn(new Page<>(List.of(offer), 1, PAGE_SIZE, 1));
         lenient().when(offerDao.getPendingCounts(any()))
-            .thenReturn(Map.of(OFFER_ID, new OfferPendingCount(OFFER_ID, 1, 1)));
+            .thenReturn(Map.of(LISTING_ID, new OfferPendingCount(LISTING_ID, 2, new BigDecimal("1500.00"))));
 
         // Act
         final Page<Offer> page = offerService.get(buildFilterDto(), false);
@@ -264,8 +264,8 @@ public class OfferServiceImplTest {
         // Arrange
         final Offer offer = buildFakeOffer(OfferStatus.PENDING);
         givenOffer(offer);
-        when(offerDao.getPendingCounts(eq(List.of(OFFER_ID))))
-            .thenReturn(Map.of(OFFER_ID, new OfferPendingCount(OFFER_ID, 1, 0)));
+        when(offerDao.getPendingCounts(eq(List.of(LISTING_ID))))
+            .thenReturn(Map.of(LISTING_ID, new OfferPendingCount(LISTING_ID, 2, AMOUNT)));
 
         // Act
         final Offer result = offerService.getById(OFFER_ID).orElseThrow();
