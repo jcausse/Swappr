@@ -97,7 +97,7 @@
         </div>
     </div>
 
-    <c:if test="${offer.hasOtherOffers && user == 'buyer'}">
+    <c:if test="${offer.hasOtherOffers && offer.isPending() && user == 'buyer'}">
         <spring:message code="${offer.hasBetterOffers ? 'offer.warning.betterOffers' : 'offer.warning.otherOffers'}" var="warningMsg"/>
         <paw:banner text="${warningMsg}" icon="triangle-alert" role="warning" />
     </c:if>

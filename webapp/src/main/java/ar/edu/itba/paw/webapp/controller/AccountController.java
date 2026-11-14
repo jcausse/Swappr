@@ -95,7 +95,7 @@ public class AccountController {
         LOGGER.debug("User {} accessing incoming offers", currentUser.getId());
 
         final var filter = filterForm.toDto(currentUser.getId(), null, ACCOUNT_OFFERS_PAGE_SIZE);
-        final var offerPage = offerService.get(filter, true);
+        final var offerPage = offerService.get(filter, filter.statusGroup() == OfferStatusGroup.PENDING);
 
         final var statusGroupOptions = Arrays.stream(OfferStatusGroup.values())
             .map(s -> new StringSelectOption(s.name(), "offer.statusGroup." + s.getStatus()))
