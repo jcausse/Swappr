@@ -268,7 +268,7 @@ public class OfferServiceImplTest {
             .thenReturn(Map.of(OFFER_ID, new OfferPendingCount(OFFER_ID, 1, 0)));
 
         // Act
-        final Offer result = offerService.getById(OFFER_ID).orElseThrow();
+        final Offer result = offerService.getById(OFFER_ID, true).orElseThrow();
 
         // Assert
         Assert.assertTrue(result.isHasOtherOffers());
