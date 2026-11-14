@@ -5,9 +5,12 @@ import ar.edu.itba.paw.model.File;
 import ar.edu.itba.paw.model.Listing;
 import ar.edu.itba.paw.model.ListingStatus;
 import ar.edu.itba.paw.model.Offer;
+import ar.edu.itba.paw.model.OfferFilter;
+import ar.edu.itba.paw.model.OfferPendingCount;
 import ar.edu.itba.paw.model.OfferRating;
 import ar.edu.itba.paw.model.OfferStatus;
 import ar.edu.itba.paw.model.OfferType;
+import ar.edu.itba.paw.model.Page;
 import ar.edu.itba.paw.model.Price;
 import ar.edu.itba.paw.model.User;
 import ar.edu.itba.paw.persistence.FileDao;
@@ -15,6 +18,7 @@ import ar.edu.itba.paw.persistence.OfferDao;
 import ar.edu.itba.paw.persistence.UserDao;
 import ar.edu.itba.paw.service.dto.FileDto;
 import ar.edu.itba.paw.service.dto.OfferCreationDto;
+import ar.edu.itba.paw.service.dto.OfferFilterDto;
 import ar.edu.itba.paw.service.exception.BadParameterException;
 import ar.edu.itba.paw.service.exception.ForbiddenException;
 import ar.edu.itba.paw.service.exception.NotFoundException;
@@ -29,11 +33,13 @@ import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.isNull;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -171,6 +177,14 @@ public class OfferServiceImplTest {
         when(offerDao.getById(eq(OFFER_ID))).thenReturn(Optional.of(offer));
     }
 
+    private static OfferFilterDto buildFilterDto() {
+        return OfferFilterDto.builder()
+            .sellerId(SELLER_ID)
+            .page(1)
+            .pageSize(PAGE_SIZE)
+            .build();
+    }
+
     /* ---------------------------------------------------------------------------------------------- */
     /* getByListingAndBuyer                                                                            */
     /* ---------------------------------------------------------------------------------------------- */
@@ -206,7 +220,59 @@ public class OfferServiceImplTest {
     @Test(expected = NullPointerException.class)
     public void testGetNullDtoThrows() {
         // Act
-        offerService.get(null);
+        offerService.get(null, false);
+    }
+
+    @Test
+    public void testGetPopulatesTransientFlagsWhenRequested() {
+        // Arrange
+        final Offer offer = buildFakeOffer(OfferStatus.PENDING);
+        when(offerDao.search(any(OfferFilter.class)))
+            .thenReturn(new Page<>(List.of(offer), 1, PAGE_SIZE, 1));
+        when(offerDao.getPendingCounts(eq(List.of(OFFER_ID))))
+            .thenReturn(Map.of(OFFER_ID, new OfferPendingCount(OFFER_ID, 1, 1)));
+
+        // Act
+        final Page<Offer> page = offerService.get(buildFilterDto(), true);
+
+        // Assert
+        final Offer result = page.getContent().getFirst();
+        Assert.assertTrue(result.isHasOtherOffers());
+        Assert.assertTrue(result.isHasBetterOffers());
+    }
+
+    @Test
+    public void testGetDoesNotPopulateTransientFlagsWhenNotRequested() {
+        // Arrange
+        final Offer offer = buildFakeOffer(OfferStatus.PENDING);
+        when(offerDao.search(any(OfferFilter.class)))
+            .thenReturn(new Page<>(List.of(offer), 1, PAGE_SIZE, 1));
+        lenient().when(offerDao.getPendingCounts(any()))
+            .thenReturn(Map.of(OFFER_ID, new OfferPendingCount(OFFER_ID, 1, 1)));
+
+        // Act
+        final Page<Offer> page = offerService.get(buildFilterDto(), false);
+
+        // Assert
+        final Offer result = page.getContent().getFirst();
+        Assert.assertFalse(result.isHasOtherOffers());
+        Assert.assertFalse(result.isHasBetterOffers());
+    }
+
+    @Test
+    public void testGetByIdPopulatesTransientFlags() {
+        // Arrange
+        final Offer offer = buildFakeOffer(OfferStatus.PENDING);
+        givenOffer(offer);
+        when(offerDao.getPendingCounts(eq(List.of(OFFER_ID))))
+            .thenReturn(Map.of(OFFER_ID, new OfferPendingCount(OFFER_ID, 1, 0)));
+
+        // Act
+        final Offer result = offerService.getById(OFFER_ID).orElseThrow();
+
+        // Assert
+        Assert.assertTrue(result.isHasOtherOffers());
+        Assert.assertFalse(result.isHasBetterOffers());
     }
 
     /* ---------------------------------------------------------------------------------------------- */

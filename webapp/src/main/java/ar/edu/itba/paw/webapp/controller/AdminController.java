@@ -495,7 +495,7 @@ public class AdminController {
         LOGGER.debug("Admin {} accessed offers page: page={}, statusGroup={}", currentUser.getUsername(), page, filterForm.getStatusGroup());
         ModelAndView mav = new ModelAndView("admin/offers");
         var filter = filterForm.toDto(page, DEFAULT_PAGE_SIZE);
-        mav.addObject("offersPage", offerService.get(filter));
+        mav.addObject("offersPage", offerService.get(filter, false));
         mav.addObject("statusGroupOptions", Arrays.stream(OfferStatusGroup.values())
                 .map(statusGroup -> new StringSelectOption(statusGroup.name(), "offer.statusGroup." + statusGroup.getStatus()))
                 .toList());

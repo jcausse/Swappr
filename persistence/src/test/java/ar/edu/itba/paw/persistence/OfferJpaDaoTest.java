@@ -9,6 +9,7 @@ import ar.edu.itba.paw.model.ListingStatus;
 import ar.edu.itba.paw.model.Model;
 import ar.edu.itba.paw.model.Offer;
 import ar.edu.itba.paw.model.OfferFilter;
+import ar.edu.itba.paw.model.OfferPendingCount;
 import ar.edu.itba.paw.model.OfferRating;
 import ar.edu.itba.paw.model.OfferStatus;
 import ar.edu.itba.paw.model.OfferStatusGroup;
@@ -299,34 +300,39 @@ public class OfferJpaDaoTest {
         Assert.assertTrue(offer.getListing().getImageIds().isEmpty());
     }
 
+    /* ---------------------------------------------------------------------------------------------- */
+    /* getPendingCounts                                                                                */
+    /* ---------------------------------------------------------------------------------------------- */
+
     @Test
-    public void testGetByIdLowerOfferHasOtherAndBetterOffers() {
+    public void testGetPendingCountsForListingWithSeveralPendingOffers() {
         // Act
-        final Offer offer = offerDao.getById(LOW_OFFER_ID).orElseThrow();
+        final Map<Long, OfferPendingCount> counts =
+            offerDao.getPendingCounts(List.of(LOW_OFFER_ID, FULL_PRICE_OFFER_ID));
 
         // Assert
-        Assert.assertTrue(offer.isHasOtherOffers());
-        Assert.assertTrue(offer.isHasBetterOffers());
+        Assert.assertEquals(2, counts.size());
+        Assert.assertEquals(1L, counts.get(LOW_OFFER_ID).otherCount());
+        Assert.assertEquals(1L, counts.get(LOW_OFFER_ID).betterCount());
+        Assert.assertEquals(1L, counts.get(FULL_PRICE_OFFER_ID).otherCount());
+        Assert.assertEquals(0L, counts.get(FULL_PRICE_OFFER_ID).betterCount());
     }
 
     @Test
-    public void testGetByIdHighestOfferHasOtherButNoBetterOffers() {
-        // Act
-        final Offer offer = offerDao.getById(FULL_PRICE_OFFER_ID).orElseThrow();
-
-        // Assert
-        Assert.assertTrue(offer.isHasOtherOffers());
-        Assert.assertFalse(offer.isHasBetterOffers());
-    }
-
-    @Test
-    public void testGetByIdOnlyCountsPendingOffersAsOtherOffers() {
+    public void testGetPendingCountsIgnoresNonPendingOffers() {
         // Act (listing 4 also has a rejected and a pending_payment offer, which must be ignored)
-        final Offer offer = offerDao.getById(GAMING_OFFER_ID).orElseThrow();
+        final Map<Long, OfferPendingCount> counts = offerDao.getPendingCounts(List.of(GAMING_OFFER_ID));
 
         // Assert
-        Assert.assertFalse(offer.isHasOtherOffers());
-        Assert.assertFalse(offer.isHasBetterOffers());
+        Assert.assertEquals(1, counts.size());
+        Assert.assertEquals(0L, counts.get(GAMING_OFFER_ID).otherCount());
+        Assert.assertEquals(0L, counts.get(GAMING_OFFER_ID).betterCount());
+    }
+
+    @Test
+    public void testGetPendingCountsWithNoIdsReturnsEmpty() {
+        // Act / Assert
+        Assert.assertTrue(offerDao.getPendingCounts(List.of()).isEmpty());
     }
 
     /* ---------------------------------------------------------------------------------------------- */
@@ -494,7 +500,6 @@ public class OfferJpaDaoTest {
         Assert.assertEquals("Is it unlocked?", offer.getMessage());
         Assert.assertEquals(NEW_OFFER_CREATED_AT, offer.getCreatedAt());
         Assert.assertEquals(Optional.empty(), offer.getOfferedListing());
-        Assert.assertFalse(offer.isHasOtherOffers());
     }
 
     @Test
