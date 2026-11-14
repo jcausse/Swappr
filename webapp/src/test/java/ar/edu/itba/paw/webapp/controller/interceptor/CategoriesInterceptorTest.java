@@ -63,4 +63,25 @@ public class CategoriesInterceptorTest {
 
         Assert.assertFalse(mav.getModel().containsKey("categories"));
     }
+
+    @Test
+    public void testPostHandleSkipsNullModelAndView() {
+        RuntimeException thrown = null;
+        try {
+            interceptor().postHandle(null, null, null, null);
+        } catch (RuntimeException e) {
+            thrown = e;
+        }
+
+        Assert.assertNull(thrown);
+    }
+
+    @Test
+    public void testPostHandleSkipsModelAndViewWithoutView() {
+        final ModelAndView mav = new ModelAndView();
+
+        interceptor().postHandle(null, null, null, mav);
+
+        Assert.assertFalse(mav.getModel().containsKey("categories"));
+    }
 }
