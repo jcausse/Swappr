@@ -105,14 +105,17 @@ public class OfferServiceImpl implements OfferService {
     private void populateTransientFlags(List<Offer> offers) {
         if (offers == null || offers.isEmpty()) return;
 
-        // Fetch the pending-offer aggregate counts for every involved listing in one query
+        // Fetch the pending-offer aggregate counts for every involved listing in one query.
+        // offer.getListing() is a lazy Hibernate proxy, but reading its id does NOT initialize it
+        // or hit the listings table: the FK id is already known to the proxy. This is what keeps
+        // this a single aggregate query instead of an N+1 over listings.
         final List<Long> listingIds = offers.stream()
                 .map(offer -> offer.getListing().getId())
                 .distinct()
                 .toList();
         final Map<Long, OfferPendingCount> counts = offerDao.getPendingCounts(listingIds);
 
-        // Translate the raw aggregates into the transient display flags
+        // Translate the raw aggregates into the transient display flags (same proxy-id access, no fetch)
         for (Offer offer : offers) {
             final OfferPendingCount count = counts.get(offer.getListing().getId());
             final long pendingCount = count == null ? 0 : count.count();
