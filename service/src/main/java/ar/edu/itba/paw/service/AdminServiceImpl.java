@@ -109,7 +109,8 @@ public class AdminServiceImpl implements AdminService {
                                 .statusGroup(group)
                                 .page(1)
                                 .pageSize(1000)
-                                .build()
+                                .build(),
+                        false
                 );
                 for (Offer offer : buyerOffers.getContent()) {
                     try {
@@ -133,7 +134,8 @@ public class AdminServiceImpl implements AdminService {
                             .statusGroup(OfferStatusGroup.PENDING_PAYMENT)
                             .page(1)
                             .pageSize(1000)
-                            .build()
+                            .build(),
+                    false
             );
             for (Offer offer : sellerPendingPaymentOffers.getContent()) {
                 try {

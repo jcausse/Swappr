@@ -21,7 +21,7 @@ public interface OfferService {
 
     Optional<Offer> getByListingAndBuyer(Listing listing, User buyer);
 
-    Page<Offer> get(OfferFilterDto filter);
+    Page<Offer> get(OfferFilterDto filter, boolean populateTransientFlags);
 
     Offer create(OfferCreationDto dto);
 

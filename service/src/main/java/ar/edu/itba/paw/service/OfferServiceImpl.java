@@ -4,6 +4,7 @@ import ar.edu.itba.paw.model.Listing;
 import ar.edu.itba.paw.model.ListingStatus;
 import ar.edu.itba.paw.model.Offer;
 import ar.edu.itba.paw.model.OfferFilter;
+import ar.edu.itba.paw.model.OfferPendingCount;
 import ar.edu.itba.paw.model.OfferStatus;
 import ar.edu.itba.paw.model.OfferStatusGroup;
 import ar.edu.itba.paw.model.OfferType;
@@ -67,7 +68,9 @@ public class OfferServiceImpl implements OfferService {
 
     @Override
     public Optional<Offer> getById(Long id) {
-        return offerDao.getById(id);
+        final Optional<Offer> offer = offerDao.getById(id);
+        offer.ifPresent(this::populateTransientFlags);
+        return offer;
     }
 
     @Override
@@ -77,7 +80,7 @@ public class OfferServiceImpl implements OfferService {
     }
 
     @Override
-    public Page<Offer> get(OfferFilterDto dto) {
+    public Page<Offer> get(OfferFilterDto dto, boolean populateTransientFlags) {
         Objects.requireNonNull(dto, "OfferFilterDto cannot be null");
 
         final var filter = OfferFilter.builder()
@@ -88,7 +91,30 @@ public class OfferServiceImpl implements OfferService {
             .status(resolveStatusGroup(dto.statusGroup()))
             .build();
 
-        return offerDao.search(filter);
+        final Page<Offer> page = offerDao.search(filter);
+        if (populateTransientFlags) {
+            populateTransientFlags(page.getContent());
+        }
+        return page;
+    }
+
+    private void populateTransientFlags(Offer offer) {
+        populateTransientFlags(List.of(offer));
+    }
+
+    private void populateTransientFlags(List<Offer> offers) {
+        if (offers == null || offers.isEmpty()) return;
+
+        // Fetch the pending-offer comparison counts for every offer in one aggregate query
+        final List<Long> offerIds = offers.stream().map(Offer::getId).toList();
+        final Map<Long, OfferPendingCount> counts = offerDao.getPendingCounts(offerIds);
+
+        // Translate the raw counts into the transient display flags
+        for (Offer offer : offers) {
+            final OfferPendingCount count = counts.get(offer.getId());
+            offer.setHasOtherOffers(count != null && count.otherCount() > 0);
+            offer.setHasBetterOffers(count != null && count.betterCount() > 0);
+        }
     }
 
     private static int sanitizePage(final Integer page) {
