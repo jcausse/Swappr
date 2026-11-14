@@ -63,12 +63,12 @@ Status values: `todo`, `done`, `underspecified`, `needs bigger refactor`, `false
 | 11.4 | [Form `.todto()` helpers](#114-form-todto-helpers) | ✅ done |
 | 11.5 | [Prefer JPQL over `createNativeQuery`](#115-prefer-jpql-over-createnativequery) | ✅ done |
 | 11.6 | [Avoid `Object[]` row mapping for non-entity models](#116-avoid-object-row-mapping-for-non-entity-models) | ✅ done |
-| 12.1 | [`OfferServiceImpl.getById` runs `getPendingCounts` on `@PreAuthorize` checks (important)](#121-offerserviceimplgetbyid-runs-getpendingcounts-on-every-preauthorize-check-important) | 🕓 todo |
-| 12.2 | [3 controllers query `getAllCategories()` twice per rendered request](#122-3-controllers-still-query-getallcategories-twice-per-rendered-request) | 🕓 todo |
-| 12.3 | [`incomingOffers` computes transient flags for non-pending tabs](#123-accountcontrollerincomingoffers-computes-transient-flags-for-non-pending-tabs) | 🕓 todo |
-| 12.4 | [`WebConfig` injects `@Lazy CatalogService` in its constructor](#124-webconfig-injects-lazy-catalogservice-in-its-constructor) | 🕓 todo |
-| 12.5 | [Small test gaps in `CategoriesInterceptorTest` and `OfferJpaDaoTest`](#125-small-test-coverage-gaps-in-categoriesinterceptortest-and-offerjpadaotest) | 🕓 todo |
-| 12.6 | [`CategoriesInterceptor.rendersView` does not skip `forward:` view names](#126-categoriesinterceptorrendersview-does-not-skip-forward-view-names) | 🕓 todo |
+| 12.1 | [`OfferServiceImpl.getById` runs `getPendingCounts` on `@PreAuthorize` checks (important)](#121-offerserviceimplgetbyid-runs-getpendingcounts-on-every-preauthorize-check-important) | ✅ done |
+| 12.2 | [3 controllers query `getAllCategories()` twice per rendered request](#122-3-controllers-still-query-getallcategories-twice-per-rendered-request) | ✅ done |
+| 12.3 | [`incomingOffers` computes transient flags for non-pending tabs](#123-accountcontrollerincomingoffers-computes-transient-flags-for-non-pending-tabs) | ✅ done |
+| 12.4 | [`WebConfig` injects `@Lazy CatalogService` in its constructor](#124-webconfig-injects-lazy-catalogservice-in-its-constructor) | ✅ done |
+| 12.5 | [Small test gaps in `CategoriesInterceptorTest` and `OfferJpaDaoTest`](#125-small-test-coverage-gaps-in-categoriesinterceptortest-and-offerjpadaotest) | ✅ done |
+| 12.6 | [`CategoriesInterceptor.rendersView` does not skip `forward:` view names](#126-categoriesinterceptorrendersview-does-not-skip-forward-view-names) | ✅ done |
 | 12.7 | [Remove `p.amount > o.amount` comparison from `OfferJpaDao.getPendingCounts` (important)](#127-remove-pamount--oamount-comparison-from-offerjpadaogetpendingcounts-important) | ✅ done |
 
 Things to fix before the final delivery. Items 1-10 were checked against `dev` (`a80c04fd`, 2026-11-11); section 11 was checked against `dev` (`a385aa63`, 2026-11-13); section 12 was added against `dev` (`ea1b01a1`, 2026-11-14). Nothing here is a guess: each one points to the file and line where it happens.

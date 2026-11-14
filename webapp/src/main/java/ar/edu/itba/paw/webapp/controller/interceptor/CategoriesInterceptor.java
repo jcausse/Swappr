@@ -17,6 +17,7 @@ public class CategoriesInterceptor implements HandlerInterceptor {
 
     private static final String CATEGORIES_ATTRIBUTE = "categories";
     private static final String REDIRECT_PREFIX = "redirect:";
+    private static final String FORWARD_PREFIX = "forward:";
 
     private final CatalogService catalogService;
 
@@ -38,7 +39,10 @@ public class CategoriesInterceptor implements HandlerInterceptor {
             return false;
         }
         if (modelAndView.isReference()) {
-            return modelAndView.getViewName() != null && !modelAndView.getViewName().startsWith(REDIRECT_PREFIX);
+            final String viewName = modelAndView.getViewName();
+            return viewName != null
+                    && !viewName.startsWith(REDIRECT_PREFIX)
+                    && !viewName.startsWith(FORWARD_PREFIX);
         }
         return !(modelAndView.getView() instanceof RedirectView);
     }

@@ -120,6 +120,7 @@ public class AdminController {
                 modelSort, modelPage, MODEL_PAGE_SIZE);
         final var requestsPage = brandModelRequestService.getRequests(requestPage, REQUEST_PAGE_SIZE);
         final List<Brand> allBrands = catalogService.getAllBrands();
+        final var categories = catalogService.getAllCategories();
         return new ModelAndView("admin/catalog")
                 .addObject("brands", brandsPage.getContent())
                 .addObject("brandsPage", brandsPage)
@@ -131,7 +132,8 @@ public class AdminController {
                         .map(subcategory -> new SelectOption(
                                 subcategory.getId(), "subcategory." + subcategory.getName()))
                         .toList())
-                .addObject("categoryOptions", catalogService.getAllCategories().stream()
+                .addObject("categories", categories)
+                .addObject("categoryOptions", categories.stream()
                         .map(category -> new SelectOption(category.getId(), "category." + category.getName()))
                         .toList())
                 .addObject("modelFilterSubcategoryOptions", subcategoryOptions(modelFilterForm.getFilterCategoryId()))

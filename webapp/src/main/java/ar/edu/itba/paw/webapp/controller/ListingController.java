@@ -249,7 +249,9 @@ public class ListingController {
     }
 
     private void populateModel(ModelAndView mav, ChooseProductForm form) {
-        mav.addObject("categoryOptions", catalogService.getAllCategories().stream()
+        var categories = catalogService.getAllCategories();
+        mav.addObject("categories", categories);
+        mav.addObject("categoryOptions", categories.stream()
             .map(cat -> new SelectOption(cat.getId(), "category." + cat.getName()))
             .toList());
 
