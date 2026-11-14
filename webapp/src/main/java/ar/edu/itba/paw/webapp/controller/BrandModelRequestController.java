@@ -58,13 +58,6 @@ public class BrandModelRequestController {
             BindingResult errors,
             @CurrentUser User currentUser
     ) {
-        final boolean isAutoSubmit = Boolean.TRUE.equals(form.getIsAutoSubmit());
-        form.setIsAutoSubmit(false);
-        if (isAutoSubmit) {
-            form.setSubcategoryId(null);
-            return render(form);
-        }
-
         if (errors.hasErrors()) {
             return render(form);
         }
@@ -86,6 +79,15 @@ public class BrandModelRequestController {
         }
 
         return new ModelAndView("redirect:/catalog-requests/success");
+    }
+
+    // Changing the category re-renders the form with the new subcategories and keeps what the user typed.
+    // It is not a submission, so the form is not validated.
+    @PostMapping(params = "categoryChanged")
+    @PreAuthorize("isAuthenticated()")
+    public ModelAndView changeCategory(@ModelAttribute("requestForm") BrandModelRequestForm form) {
+        form.setSubcategoryId(null);
+        return render(form);
     }
 
     @GetMapping("/success")

@@ -65,6 +65,7 @@ are no longer maintained; this file keeps only what future reviews need.
 
 - `ON DELETE` behavior is inconsistent across migrations (some FKs have an action, many do not). This
   is a data-integrity/cleanup concern, not an actionable review item yet.
+- Brand/model request validation: unconditional checks are field constraints on the forms (`NotNull.requestForm.*`, `NotBlank.requestForm.modelName`, `Size.requestForm.*`); only the rule that depends on the request type (existing brand needs `brandId`, new brand needs `newBrandName`) is class-level, in the single `@ValidBrandModelRequest` validator shared by both forms through `BrandModelRequestFields`. The category reload of the request form is a separate handler (`categoryChanged` param) without `@Valid`; do not reintroduce a bypass flag.
 - `Listing` maps images as an `@ElementCollection List<Long> imageIds` over `listing_images` (no
   `Image` association or `ListingImage` entity); covers come from the `coverImageId` formula.
 - The only remaining native queries are the ID queries required by the 1+1 pagination rule
