@@ -1,6 +1,5 @@
 package ar.edu.itba.paw.webapp.form.validation;
 
-import ar.edu.itba.paw.model.BrandModelRequestType;
 import ar.edu.itba.paw.webapp.form.BrandModelRequestForm;
 
 import javax.validation.ConstraintValidator;
@@ -48,14 +47,7 @@ public class BrandModelRequestValidator implements ConstraintValidator<ValidBran
             valid = false;
         }
 
-        if (form.getType() == BrandModelRequestType.EXISTING_BRAND && form.getBrandId() == null) {
-            addViolation(context, "brandId", "error.catalogRequest.existingBrandRequired");
-            valid = false;
-        }
-
-        if (form.getType() == BrandModelRequestType.NEW_BRAND
-                && (form.getNewBrandName() == null || form.getNewBrandName().isBlank())) {
-            addViolation(context, "newBrandName", "error.catalogRequest.newBrandRequired");
+        if (!BrandModelRequestBrandRule.isValid(form, context)) {
             valid = false;
         }
 

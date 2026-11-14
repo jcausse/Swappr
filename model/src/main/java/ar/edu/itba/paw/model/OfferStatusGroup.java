@@ -5,7 +5,6 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 @RequiredArgsConstructor
 public enum OfferStatusGroup {
@@ -15,12 +14,6 @@ public enum OfferStatusGroup {
 
     @Getter
     private final String status;
-
-    public static Optional<OfferStatusGroup> fromString(final String status) {
-        return Arrays.stream(OfferStatusGroup.values())
-                .filter(s -> s.status.equalsIgnoreCase(status) || s.name().equalsIgnoreCase(status))
-                .findFirst();
-    }
 
     public static OfferStatusGroup fromStatus(final OfferStatus status) {
         return Arrays.stream(OfferStatusGroup.values())

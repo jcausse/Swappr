@@ -29,9 +29,6 @@ import ar.edu.itba.paw.service.ListingCancellationService;
 import ar.edu.itba.paw.service.ListingService;
 import ar.edu.itba.paw.service.OfferService;
 import ar.edu.itba.paw.service.ProvinceService;
-import ar.edu.itba.paw.service.dto.ListingCreationDto;
-import ar.edu.itba.paw.service.dto.ListingFilterDto;
-import ar.edu.itba.paw.service.dto.ListingUpdateDto;
 import ar.edu.itba.paw.webapp.auth.CurrentUser;
 import ar.edu.itba.paw.webapp.form.ChooseProductForm;
 import ar.edu.itba.paw.webapp.form.ListingDetailsForm;
@@ -62,26 +59,7 @@ public class ListingController {
     @PreAuthorize("permitAll()")
     public ModelAndView discovery(@ModelAttribute("filterForm") ListingFilterForm filterForm) {
         LOGGER.debug("Accessing discovery page with query '{}', category {}", filterForm.getQuery(), filterForm.getCategoryId());
-        final var filter = ListingFilterDto.builder()
-            .categoryId(filterForm.getCategoryId())
-            .subcategoryId(filterForm.getSubcategoryId())
-            .minPrice(filterForm.getMinPrice())
-            .maxPrice(filterForm.getMaxPrice())
-            .condition(filterForm.getCondition())
-            .acceptsTrade(filterForm.getAcceptsTrade())
-            .onlyFree(filterForm.getOnlyFree())
-            .query(filterForm.getQuery())
-            .sort(filterForm.getSort())
-            .status(ListingStatus.ACTIVE)
-            .page(filterForm.getPage())
-            .pageSize(DISCOVERY_PAGE_SIZE)
-            .provinceId(filterForm.getProvinceId())
-            .acceptsShipping(filterForm.getAcceptsShipping())
-            .brandId(filterForm.getBrandId())
-            .modelId(filterForm.getModelId())
-            .yearMin(filterForm.getYearMin())
-            .yearMax(filterForm.getYearMax())
-            .build();
+        final var filter = filterForm.toDto(null, ListingStatus.ACTIVE, DISCOVERY_PAGE_SIZE);
 
         final var listingPage = listingService.search(filter);
 
@@ -277,7 +255,6 @@ public class ListingController {
 
         if (form.getCategoryId() != null) {
             var subcategories = catalogService.getSubcategoriesByCategory(form.getCategoryId());
-            mav.addObject("subcategories", subcategories);
             mav.addObject("subcategoryOptions", subcategories.stream()
                 .map(sub -> new SelectOption(sub.getId(), "subcategory." + sub.getName()))
                 .toList());
@@ -307,13 +284,7 @@ public class ListingController {
         form.setModelId(model.getId());
         form.setYear(year);
 
-        var mav = new ModelAndView("listing/new/details");
-        mav.addObject("model", model);
-        mav.addObject("conditionOptions", buildConditionOptions());
-        mav.addObject("priceSummary", catalogService.getListingInfoSummaryForModel(model.getId(), null).orElse(null));
-        mav.addObject("actionUrl", "/listing/new/details");
-        mav.addObject("edit", false);
-        return mav;
+        return detailsView(model, null);
     }
 
     @PostMapping("/new/details")
@@ -326,21 +297,10 @@ public class ListingController {
         LOGGER.info("User {} submitted listing creation for model {}", currentUser.getId(), form.getModelId());
         if (bindingResult.hasErrors()) {
             LOGGER.debug("Validation failed for listing creation for model {}", form.getModelId());
-            return detailsWithErrors(form, null);
+            return detailsView(catalogService.getModelById(form.getModelId()), null);
         }
 
-        listingService.create(new ListingCreationDto(
-                form.getTitle(),
-                form.getPrice(),
-                currentUser.getId(),
-                form.getModelId(),
-                form.getYear(),
-                form.getCondition(),
-                form.isAcceptsTrade(),
-                form.isAcceptsShipping(),
-                form.getDescription(),
-                form.getImages()
-        ));
+        listingService.create(form.toCreationDto(currentUser.getId()));
         return new ModelAndView("redirect:/account/listings");
     }
 
@@ -363,14 +323,8 @@ public class ListingController {
         form.setAcceptsShipping(listing.isAcceptsShipping());
         form.setDescription(listing.getDescription());
 
-        var mav = new ModelAndView("listing/new/details");
-        mav.addObject("conditionOptions", buildConditionOptions());
-        mav.addObject("model", listing.getModel());
-        mav.addObject("priceSummary", catalogService.getListingInfoSummaryForModel(listing.getModel().getId(), id).orElse(null));
-        mav.addObject("actionUrl", "/listing/" + id + "/edit");
-        mav.addObject("edit", true);
-        mav.addObject("existingImageIds", listing.getImageIds());
-        return mav;
+        return detailsView(listing.getModel(), id)
+            .addObject("existingImageIds", listing.getImageIds());
     }
 
     @PostMapping("/{id}/edit")
@@ -387,34 +341,24 @@ public class ListingController {
             return editDetailsWithErrors(id, form);
         }
 
-        listingService.update(new ListingUpdateDto(
-            id,
-            form.getTitle(),
-            form.getPrice(),
-            form.getModelId(),
-            form.getYear(),
-            form.getCondition(),
-            form.isAcceptsTrade(),
-            form.isAcceptsShipping(),
-            form.getDescription(),
-            form.getImages(),
-            form.getRemovedImageIds()
-        ), currentUser.getId());
+        listingService.update(form.toUpdateDto(id), currentUser.getId());
         return new ModelAndView("redirect:/account/listings");
     }
 
-    private ModelAndView detailsWithErrors(ListingDetailsForm form, Long excludedListingId) {
-        var model = catalogService.getModelById(form.getModelId());
+    // Shared by the create and edit pages (GET and POST with errors). editedListingId is null when creating.
+    private ModelAndView detailsView(final Model model, final Long editedListingId) {
+        final boolean edit = editedListingId != null;
         return new ModelAndView("listing/new/details")
-                .addObject("model", model)
-                .addObject("conditionOptions", buildConditionOptions())
-                .addObject("priceSummary", catalogService.getListingInfoSummaryForModel(model.getId(), excludedListingId).orElse(null));
+            .addObject("model", model)
+            .addObject("conditionOptions", buildConditionOptions())
+            .addObject("priceSummary",
+                catalogService.getListingInfoSummaryForModel(model.getId(), editedListingId).orElse(null))
+            .addObject("actionUrl", edit ? "/listing/" + editedListingId + "/edit" : "/listing/new/details")
+            .addObject("edit", edit);
     }
 
     private ModelAndView editDetailsWithErrors(final Long listingId, final ListingDetailsForm form) {
-        return detailsWithErrors(form, listingId)
-            .addObject("actionUrl", "/listing/" + listingId + "/edit")
-            .addObject("edit", true)
+        return detailsView(catalogService.getModelById(form.getModelId()), listingId)
             .addObject("existingImageIds", listingService.getById(listingId).getImageIds());
     }
 

@@ -60,23 +60,17 @@ public class BrandJpaDao implements BrandDao {
                 ? "b.id " + direction
                 : "b.name " + direction + ", b.id " + direction;
         final List<BrandInfo> content = em.createQuery(
-                "SELECT b.id, b.name, COUNT(DISTINCT m.id), COUNT(DISTINCT l.id)"
+                "SELECT new ar.edu.itba.paw.model.BrandInfo("
+                + "b.id, b.name, COUNT(DISTINCT m.id), COUNT(DISTINCT l.id))"
                 + " FROM Brand b"
                 + " LEFT JOIN Model m ON m.brand.id = b.id"
                 + " LEFT JOIN Listing l ON l.model.id = m.id"
                 + " GROUP BY b.id, b.name"
                 + " ORDER BY " + orderBy,
-                Object[].class)
+                BrandInfo.class)
                 .setFirstResult((page - 1) * pageSize)
                 .setMaxResults(pageSize)
-                .getResultStream()
-                .map(row -> BrandInfo.builder()
-                        .id((Long) row[0])
-                        .name((String) row[1])
-                        .modelCount(((Number) row[2]).longValue())
-                        .hasListings(((Number) row[3]).longValue() > 0)
-                        .build())
-                .toList();
+                .getResultList();
 
         return new Page<>(content, page, pageSize, totalCount);
     }

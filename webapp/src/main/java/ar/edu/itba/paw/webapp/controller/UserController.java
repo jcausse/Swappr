@@ -1,16 +1,21 @@
 package ar.edu.itba.paw.webapp.controller;
 
-import ar.edu.itba.paw.model.*;
+import ar.edu.itba.paw.model.Language;
+import ar.edu.itba.paw.model.ListingSort;
+import ar.edu.itba.paw.model.ListingStatus;
+import ar.edu.itba.paw.model.OfferRating;
+import ar.edu.itba.paw.model.Province;
+import ar.edu.itba.paw.model.RatingFilter;
+import ar.edu.itba.paw.model.RatingRole;
+import ar.edu.itba.paw.model.User;
 import ar.edu.itba.paw.service.ListingService;
 import ar.edu.itba.paw.service.RatingService;
 import ar.edu.itba.paw.service.ProvinceService;
 import ar.edu.itba.paw.service.UserService;
 import ar.edu.itba.paw.service.dto.ListingFilterDto;
-import ar.edu.itba.paw.service.dto.UserCreationDto;
-import ar.edu.itba.paw.service.dto.UserEditDto;
 import ar.edu.itba.paw.webapp.auth.AuthHelper;
 import ar.edu.itba.paw.webapp.auth.CurrentUser;
-import ar.edu.itba.paw.webapp.exception.UserNotFoundException;
+import ar.edu.itba.paw.service.exception.UserNotFoundException;
 import ar.edu.itba.paw.webapp.form.RatingFilterForm;
 import ar.edu.itba.paw.webapp.form.StringSelectOption;
 import ar.edu.itba.paw.webapp.form.SelectOption;
@@ -169,16 +174,7 @@ public class UserController {
         // One service call does the whole profile update (display name, password, image, location,
         // language) in a single transaction. Persisting the language also updates the website locale,
         // since the LocaleResolver reads it from the refreshed authenticated principal below.
-        final User updatedUser = userService.update(UserEditDto.builder()
-            .user(currentUser)
-            .newDisplayName(form.getDisplayName())
-            .newPassword(form.getPassword())
-            .newImageData(form.getProfilePicture().orElse(null))
-            .updateLocationAndLanguage(true)
-            .newProvinceId(form.getProvinceId())
-            .newLocationDetail(form.getLocationDetail())
-            .newPreferredLanguage(form.getPreferredLanguage())
-            .build());
+        final User updatedUser = userService.update(form.toDto(currentUser));
 
         authHelper.update(updatedUser);
 
@@ -205,13 +201,7 @@ public class UserController {
         LOGGER.info("User registration submitted: {}", form.getUsername());
         LOGGER.debug("Registering new user with username: {}", form.getUsername());
 
-        final User created = userService.create(new UserCreationDto(
-            form.getUsername(),
-            form.getDisplayName(),
-            form.getEmail(),
-            form.getPassword(),
-            form.getProfilePicture().orElse(null)
-        ));
+        final User created = userService.create(form.toDto());
 
         return new ModelAndView("redirect:/verify?email=" + URLEncoder.encode(created.getEmail(), StandardCharsets.UTF_8));
     }

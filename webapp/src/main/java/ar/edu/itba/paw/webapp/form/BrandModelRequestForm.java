@@ -1,6 +1,7 @@
 package ar.edu.itba.paw.webapp.form;
 
 import ar.edu.itba.paw.model.BrandModelRequestType;
+import ar.edu.itba.paw.service.dto.BrandModelRequestCreationDto;
 import ar.edu.itba.paw.webapp.form.validation.ValidBrandModelRequest;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,7 +12,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @ValidBrandModelRequest
-public class BrandModelRequestForm {
+public class BrandModelRequestForm implements BrandModelRequestFields {
 
     private BrandModelRequestType type = BrandModelRequestType.NEW_BRAND;
 
@@ -40,5 +41,16 @@ public class BrandModelRequestForm {
         if (brandId != null) {
             this.type = BrandModelRequestType.EXISTING_BRAND;
         }
+    }
+
+    public BrandModelRequestCreationDto toDto(Long requesterId) {
+        return new BrandModelRequestCreationDto(
+                requesterId,
+                type,
+                subcategoryId,
+                brandId,
+                newBrandName,
+                modelName
+        );
     }
 }

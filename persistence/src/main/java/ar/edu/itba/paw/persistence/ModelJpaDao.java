@@ -9,14 +9,12 @@ import ar.edu.itba.paw.model.ModelListingInfo;
 import ar.edu.itba.paw.model.ModelSort;
 import ar.edu.itba.paw.model.ModelListingInfoSummary;
 import ar.edu.itba.paw.model.Page;
-import ar.edu.itba.paw.model.Price;
 import ar.edu.itba.paw.model.Subcategory;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -95,29 +93,20 @@ public class ModelJpaDao implements ModelDao {
                 ? "m.id " + direction
                 : "m.name " + direction + ", m.id " + direction;
         final var query = em.createQuery(
-                "SELECT m.id, m.name, b.id, b.name, s.id, s.name, COUNT(DISTINCT l.id)"
+                "SELECT new ar.edu.itba.paw.model.ModelInfo("
+                + "m.id, m.name, b.id, b.name, s.id, s.name, COUNT(DISTINCT l.id))"
                 + " FROM Model m JOIN m.brand b JOIN m.subcategory s"
                 + " LEFT JOIN Listing l ON l.model.id = m.id"
                 + where
                 + " GROUP BY m.id, m.name, b.id, b.name, s.id, s.name"
                 + " ORDER BY " + orderBy,
-                Object[].class);
+                ModelInfo.class);
         if (brandId != null) query.setParameter("brandId", brandId);
         if (subcategoryId != null) query.setParameter("subcategoryId", subcategoryId);
         query.setFirstResult((page - 1) * pageSize);
         query.setMaxResults(pageSize);
 
-        final List<ModelInfo> content = query.getResultStream()
-                .map(row -> ModelInfo.builder()
-                        .id((Long) row[0])
-                        .name((String) row[1])
-                        .brandId((Long) row[2])
-                        .brandName((String) row[3])
-                        .subcategoryId((Long) row[4])
-                        .subcategoryName((String) row[5])
-                        .hasListings(((Number) row[6]).longValue() > 0)
-                        .build())
-                .toList();
+        final List<ModelInfo> content = query.getResultList();
 
         return new Page<>(content, page, pageSize, totalCount);
     }
@@ -227,9 +216,23 @@ public class ModelJpaDao implements ModelDao {
         }
         where.append(")");
 
-        final var countQuery = em.createNativeQuery("SELECT COUNT(*) FROM models m" + where);
-        bindParams(countQuery, params);
-        final long totalCount = ((Number) countQuery.getSingleResult()).longValue();
+        final var countWhere = new StringBuilder(
+                " WHERE m.subcategory.id = :subcategoryId"
+                + " AND EXISTS (SELECT l.id FROM Listing l WHERE l.model = m AND l.status = :status");
+        if (fromYear != null) countWhere.append(" AND l.year >= :fromYear");
+        if (toYear != null) countWhere.append(" AND l.year <= :toYear");
+        countWhere.append(")");
+        if (brandId != null) countWhere.append(" AND m.brand.id = :brandId");
+        if (modelId != null) countWhere.append(" AND m.id = :modelId");
+
+        final var countQuery = em.createQuery("SELECT COUNT(m) FROM Model m" + countWhere, Long.class)
+                .setParameter("subcategoryId", subcategoryId)
+                .setParameter("status", ListingStatus.ACTIVE);
+        if (fromYear != null) countQuery.setParameter("fromYear", fromYear);
+        if (toYear != null) countQuery.setParameter("toYear", toYear);
+        if (brandId != null) countQuery.setParameter("brandId", brandId);
+        if (modelId != null) countQuery.setParameter("modelId", modelId);
+        final long totalCount = countQuery.getSingleResult();
 
         if (totalCount == 0) {
             return new Page<>(List.of(), page, pageSize, 0);
@@ -257,45 +260,36 @@ public class ModelJpaDao implements ModelDao {
         if (toYear != null) yearWhere.append(" AND l.year <= :yearTo");
 
         final var query = em.createQuery(
-                "SELECT b, m, l.condition, COUNT(l.condition), MIN(l.price), MAX(l.price), AVG(l.price)"
+                "SELECT new ar.edu.itba.paw.model.ModelListingInfo("
+                + "b, m, l.condition, COUNT(l.condition),"
+                + " MIN(l.price.amount), MAX(l.price.amount))"
                 + " FROM Listing l JOIN l.model m JOIN m.brand b"
                 + " WHERE m.id IN :modelIds AND l.status = :status" + yearWhere
                 + " GROUP BY b, m, l.condition"
                 + " ORDER BY b.name, m.name," + CONDITION_ORDER_CASE,
-                Object[].class)
+                ModelListingInfo.class)
                 .setParameter("modelIds", modelIds)
                 .setParameter("status", ListingStatus.ACTIVE);
         if (fromYear != null) query.setParameter("yearFrom", fromYear);
         if (toYear != null) query.setParameter("yearTo", toYear);
 
-        final List<ModelListingInfo> content = query.getResultStream()
-                .map((fields) -> ModelListingInfo.builder()
-                    .brand((Brand) fields[0])
-                    .model((Model) fields[1])
-                    .condition((Condition) fields[2])
-                    .listingCount((Long) fields[3])
-                    .minPrice((Price) fields[4])
-                    .maxPrice((Price) fields[5])
-                    .avgPrice(new Price(new BigDecimal((Double) fields[6])))
-                    .build()
-                )
-                .toList();
+        final List<ModelListingInfo> content = query.getResultList();
 
         return new Page<>(content, page, pageSize, totalCount);
     }
 
     @Override
     public int replaceBrand(Long fromBrandId, Long toBrandId) {
-        em.createNativeQuery(
-                "DELETE FROM models old_model"
-                + " WHERE old_model.brand_id = ?1"
+        em.createQuery(
+                "DELETE FROM Model oldModel"
+                + " WHERE oldModel.brand.id = :fromBrandId"
                 + "   AND EXISTS ("
-                + "     SELECT 1 FROM models new_model"
-                + "     WHERE new_model.brand_id = ?2"
-                + "       AND new_model.model_name = old_model.model_name"
+                + "     SELECT newModel.id FROM Model newModel"
+                + "     WHERE newModel.brand.id = :toBrandId"
+                + "       AND newModel.name = oldModel.name"
                 + "   )")
-                .setParameter(1, fromBrandId)
-                .setParameter(2, toBrandId)
+                .setParameter("fromBrandId", fromBrandId)
+                .setParameter("toBrandId", toBrandId)
                 .executeUpdate();
 
         final Brand from = em.getReference(Brand.class, fromBrandId);
@@ -314,31 +308,21 @@ public class ModelJpaDao implements ModelDao {
 
         final String excludedClause = excludedListingId != null ? " AND l.id <> :excludedListingId" : "";
         final var query = em.createQuery(
-                "SELECT l.condition, COUNT(l), MIN(l.price.amount), MAX(l.price.amount), AVG(l.price.amount)"
-                + " FROM Listing l"
-                + " WHERE l.model.id = :modelId AND l.status = :status" + excludedClause
-                + " GROUP BY l.condition"
+                "SELECT new ar.edu.itba.paw.model.ModelListingInfo("
+                + "b, m, l.condition, COUNT(l),"
+                + " MIN(l.price.amount), MAX(l.price.amount))"
+                + " FROM Listing l JOIN l.model m JOIN m.brand b"
+                + " WHERE m.id = :modelId AND l.status = :status" + excludedClause
+                + " GROUP BY b, m, l.condition"
                 + " ORDER BY" + CONDITION_ORDER_CASE,
-                Object[].class)
+                ModelListingInfo.class)
                 .setParameter("modelId", modelId)
                 .setParameter("status", ListingStatus.ACTIVE);
         if (excludedListingId != null) {
             query.setParameter("excludedListingId", excludedListingId);
         }
 
-        final List<ModelListingInfo> infos = query.getResultList()
-                .stream()
-                .map((fields) -> ModelListingInfo.builder()
-                    .brand(model.getBrand())
-                    .model(model)
-                    .condition((Condition) fields[0])
-                    .listingCount((Long) fields[1])
-                    .minPrice(new Price((BigDecimal) fields[2]))
-                    .maxPrice(new Price((BigDecimal) fields[3]))
-                    .avgPrice(new Price(BigDecimal.valueOf((Double) fields[4])))
-                    .build()
-                )
-                .toList();
+        final List<ModelListingInfo> infos = query.getResultList();
 
         if (infos.isEmpty()) {
             return Optional.empty();

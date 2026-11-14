@@ -1,13 +1,33 @@
 package ar.edu.itba.paw.model;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 import org.hibernate.annotations.Formula;
 
-import javax.persistence.*;
+import javax.persistence.AttributeOverride;
+import javax.persistence.Column;
+import javax.persistence.Embedded;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.OrderColumn;
+import javax.persistence.Table;
 import java.time.Instant;
 import java.time.Year;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -16,7 +36,7 @@ import java.util.Optional;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@ToString(exclude = {"images", "creator", "model"})
+@ToString(exclude = {"imageIds", "creator", "model"})
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Entity
 @Table(name = "listings")
@@ -65,14 +85,15 @@ public class Listing {
     @Column(name = "accepts_shipping", nullable = false)
     private boolean acceptsShipping;
 
-    @OneToMany
-    @JoinTable(
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(
         name = "listing_images",
-        joinColumns = @JoinColumn(name = "listing_id"),
-        inverseJoinColumns = @JoinColumn(name = "image_id")
+        joinColumns = @JoinColumn(name = "listing_id")
     )
+    @Column(name = "image_id", nullable = false)
     @OrderColumn(name = "display_order")
-    private List<Image> images = new ArrayList<>();
+    @Builder.Default
+    private List<Long> imageIds = new ArrayList<>();
 
     @Formula("(SELECT li.image_id FROM listing_images li WHERE li.listing_id = listing_id AND li.display_order = 0)")
     private Long coverImageId;
@@ -84,14 +105,6 @@ public class Listing {
     private Instant recentPendingOfferAt;
 
     // -------------------------------------------------------------------------------------------------
-
-    // TODO: Remove after creating DAO
-    public List<Long> getImageIds() {
-        if (images == null) {
-            return Collections.emptyList();
-        }
-        return images.stream().map(Image::getId).toList();
-    }
 
     public boolean isAcceptsTrade() {
         return Boolean.TRUE.equals(acceptsTrade);
@@ -117,6 +130,10 @@ public class Listing {
 
     public boolean isCanceled() {
         return status == ListingStatus.CANCELED;
+    }
+
+    public boolean canBeCanceledByAdmin() {
+        return status != ListingStatus.CANCELED && status != ListingStatus.SOLD;
     }
 
     public static boolean isValidYear(final int year) {

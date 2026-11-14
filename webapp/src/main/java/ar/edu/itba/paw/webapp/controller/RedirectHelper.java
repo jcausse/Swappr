@@ -7,7 +7,12 @@ import org.slf4j.LoggerFactory;
 import javax.servlet.http.HttpServletRequest;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
@@ -148,6 +153,42 @@ public final class RedirectHelper {
     }
 
     /**
+     * Adds or replaces a single query parameter on a validated context-relative {@code path[?query]} target,
+     * encoding both the parameter name and value. An existing parameter with the same name is removed first, so the
+     * returned target never contains duplicate values for {@code name}.
+     */
+    public static String appendQueryParam(final String path, final String name, final String value) {
+        Objects.requireNonNull(path, "path must not be null");
+        Objects.requireNonNull(name, "name must not be null");
+        Objects.requireNonNull(value, "value must not be null");
+
+        final URI uri;
+        try {
+            uri = new URI(path.trim());
+        } catch (URISyntaxException e) {
+            throw new IllegalArgumentException("Invalid path syntax: " + path, e);
+        }
+
+        final String rawPath = Optional.ofNullable(uri.getRawPath()).orElse("");
+        final String rawQuery = uri.getRawQuery();
+        final List<String> params = new ArrayList<>();
+        if (rawQuery != null && !rawQuery.isEmpty()) {
+            for (final String pair : rawQuery.split("&")) {
+                if (pair.isEmpty()) {
+                    continue;
+                }
+                final int separatorIdx = pair.indexOf('=');
+                final String rawName = separatorIdx >= 0 ? pair.substring(0, separatorIdx) : pair;
+                if (!decode(rawName).equals(name)) {
+                    params.add(pair);
+                }
+            }
+        }
+        params.add(encode(name) + "=" + encode(value));
+        return rawPath + "?" + String.join("&", params);
+    }
+
+    /**
      * Builds a path predicate that matches any path equal to one of {@code prefixes} or nested beneath it on a {@code '/'}
      * boundary (e.g. prefix {@code "/admin"} matches {@code "/admin"} and {@code "/admin/offers"}, but not
      * {@code "/admin-evil"}).
@@ -157,6 +198,18 @@ public final class RedirectHelper {
         return path -> path != null && Arrays.stream(prefixes)
                 .filter(Objects::nonNull)
                 .anyMatch(prefix -> matchesPrefix(path, prefix));
+    }
+
+    private static String encode(final String value) {
+        return URLEncoder.encode(value, StandardCharsets.UTF_8);
+    }
+
+    private static String decode(final String value) {
+        try {
+            return URLDecoder.decode(value, StandardCharsets.UTF_8);
+        } catch (IllegalArgumentException e) {
+            return value;
+        }
     }
 
     private static boolean isSameOrigin(final URI refererUri, final HttpServletRequest request) {

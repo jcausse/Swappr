@@ -31,7 +31,10 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.isNull;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class OfferServiceImplTest {
@@ -62,7 +65,7 @@ public class OfferServiceImplTest {
     private static final FileDto FILE_DTO_PDF = new FileDto(DATA, FILENAME_PDF, PDF);
     private static final FileDto FILE_DTO_PNG = new FileDto(DATA, FILENAME_PNG, PNG);
     private static final FileDto FILE_DTO_PNG_EMPTY = new FileDto(new byte[0], FILENAME_PNG, PNG);
-	private static final FileDto FILE_DTO_TXT = new FileDto(DATA, "notes.txt", "text/plain");
+    private static final FileDto FILE_DTO_TXT = new FileDto(DATA, "notes.txt", "text/plain");
 
     private static final int PAGE_SIZE = 10;
 
@@ -440,7 +443,7 @@ public class OfferServiceImplTest {
     /* withdraw                                                                                        */
     /* ---------------------------------------------------------------------------------------------- */
 
-    @Test(expected = BadParameterException.class)
+    @Test(expected = ForbiddenException.class)
     public void testWithdrawByNonBuyerThrows() {
         // Arrange
         givenOffer(buildFakeOffer(OfferStatus.PENDING));
@@ -495,7 +498,7 @@ public class OfferServiceImplTest {
         Assert.assertEquals(OFFER_ID, (long) result.getId());
     }
 
-    @Test(expected = BadParameterException.class)
+    @Test(expected = ForbiddenException.class)
     public void testUploadProofOfPaymentByNonBuyerThrows() {
         // Arrange
         givenOffer(buildFakeOffer(OfferStatus.PENDING_PAYMENT));
@@ -544,7 +547,7 @@ public class OfferServiceImplTest {
         offerService.uploadProofOfShipping(OFFER_ID, SELLER_ID, null, null);
     }
 
-    @Test(expected = BadParameterException.class)
+    @Test(expected = ForbiddenException.class)
     public void testUploadProofOfShippingByNonSellerThrows() {
         // Arrange
         givenOffer(buildFakeOffer(OfferStatus.PENDING_PAYMENT));
@@ -566,7 +569,7 @@ public class OfferServiceImplTest {
     /* confirmPayment                                                                                  */
     /* ---------------------------------------------------------------------------------------------- */
 
-    @Test(expected = BadParameterException.class)
+    @Test(expected = ForbiddenException.class)
     public void testConfirmPaymentByNonSellerThrows() {
         // Arrange
         givenOffer(buildFakeOffer(OfferStatus.PENDING_PAYMENT));

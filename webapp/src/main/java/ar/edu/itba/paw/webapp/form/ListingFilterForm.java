@@ -3,6 +3,7 @@ package ar.edu.itba.paw.webapp.form;
 import ar.edu.itba.paw.model.Condition;
 import ar.edu.itba.paw.model.ListingSort;
 import ar.edu.itba.paw.model.ListingStatus;
+import ar.edu.itba.paw.service.dto.ListingFilterDto;
 
 import java.math.BigDecimal;
 import javax.validation.constraints.Min;
@@ -36,5 +37,33 @@ public class ListingFilterForm {
 
     public Integer getPage() {
         return page == null || page < 1 ? 1 : page;
+    }
+
+    public ListingFilterDto toDto(Long creatorId, int pageSize) {
+        return toDto(creatorId, getStatus(), pageSize);
+    }
+
+    public ListingFilterDto toDto(Long creatorId, ListingStatus status, int pageSize) {
+        return ListingFilterDto.builder()
+                .categoryId(categoryId)
+                .subcategoryId(subcategoryId)
+                .minPrice(minPrice)
+                .maxPrice(maxPrice)
+                .condition(condition)
+                .acceptsTrade(acceptsTrade)
+                .onlyFree(onlyFree)
+                .query(query)
+                .sort(sort)
+                .creatorId(creatorId)
+                .status(status)
+                .page(getPage())
+                .pageSize(pageSize)
+                .provinceId(provinceId)
+                .acceptsShipping(acceptsShipping)
+                .brandId(brandId)
+                .modelId(modelId)
+                .yearMin(yearMin)
+                .yearMax(yearMax)
+                .build();
     }
 }

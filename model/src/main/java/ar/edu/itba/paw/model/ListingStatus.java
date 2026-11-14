@@ -1,7 +1,5 @@
 package ar.edu.itba.paw.model;
 
-import java.util.Arrays;
-import java.util.Optional;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -14,10 +12,4 @@ public enum ListingStatus {
     CANCELED("CANCELED");
 
     @Getter private final String status;
-
-    public static Optional<ListingStatus> fromString(final String status) {
-        return Arrays.stream(ListingStatus.values())
-            .filter(s -> s.status.equalsIgnoreCase(status) || s.name().equalsIgnoreCase(status))
-            .findFirst();
-    }
 }

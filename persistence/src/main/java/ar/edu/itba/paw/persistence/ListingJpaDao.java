@@ -1,7 +1,6 @@
 package ar.edu.itba.paw.persistence;
 
 import ar.edu.itba.paw.model.Condition;
-import ar.edu.itba.paw.model.Image;
 import ar.edu.itba.paw.model.Listing;
 import ar.edu.itba.paw.model.ListingFilter;
 import ar.edu.itba.paw.model.ListingSort;
@@ -22,7 +21,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Repository
 public class ListingJpaDao implements ListingDao {
@@ -50,9 +48,7 @@ public class ListingJpaDao implements ListingDao {
     ) {
         final User creatorRef = em.getReference(User.class, creator.getId());
         final Model modelRef = em.getReference(Model.class, model.getId());
-        final List<Image> images = imageIds != null
-                ? imageIds.stream().map(id -> em.getReference(Image.class, id)).collect(Collectors.toCollection(ArrayList::new))
-                : new ArrayList<>();
+        final List<Long> initialImageIds = imageIds != null ? new ArrayList<>(imageIds) : new ArrayList<>();
 
         final Listing listing = Listing.builder()
                 .title(title)
@@ -65,7 +61,7 @@ public class ListingJpaDao implements ListingDao {
                 .acceptsShipping(acceptsShipping)
                 .description(description)
                 .status(ListingStatus.ACTIVE)
-                .images(images)
+                .imageIds(initialImageIds)
                 .build();
         em.persist(listing);
         return listing;
@@ -221,25 +217,21 @@ public class ListingJpaDao implements ListingDao {
 
     @Override
     public int replaceSameNameModelsForBrands(Long fromBrandId, Long toBrandId) {
-        return em.createNativeQuery(
-                "UPDATE listings SET model_id = ("
-                + "SELECT new_model.model_id"
-                + " FROM models old_model"
-                + " INNER JOIN models new_model"
-                + "   ON new_model.brand_id = ?2"
-                + "  AND new_model.model_name = old_model.model_name"
-                + " WHERE old_model.model_id = listings.model_id"
-                + "   AND old_model.brand_id = ?1"
-                + ") WHERE model_id IN ("
-                + "SELECT old_model.model_id"
-                + " FROM models old_model"
-                + " INNER JOIN models new_model"
-                + "   ON new_model.brand_id = ?2"
-                + "  AND new_model.model_name = old_model.model_name"
-                + " WHERE old_model.brand_id = ?1"
+        return em.createQuery(
+                "UPDATE Listing l SET l.model = ("
+                + "SELECT newModel FROM Model oldModel, Model newModel"
+                + " WHERE oldModel.id = l.model.id"
+                + "   AND oldModel.brand.id = :fromBrandId"
+                + "   AND newModel.brand.id = :toBrandId"
+                + "   AND newModel.name = oldModel.name"
+                + ") WHERE l.model.id IN ("
+                + "SELECT oldModel.id FROM Model oldModel, Model newModel"
+                + " WHERE oldModel.brand.id = :fromBrandId"
+                + "   AND newModel.brand.id = :toBrandId"
+                + "   AND newModel.name = oldModel.name"
                 + ")")
-                .setParameter(1, fromBrandId)
-                .setParameter(2, toBrandId)
+                .setParameter("fromBrandId", fromBrandId)
+                .setParameter("toBrandId", toBrandId)
                 .executeUpdate();
     }
 
@@ -296,8 +288,6 @@ public class ListingJpaDao implements ListingDao {
             return;
         }
         
-        listing.setImages(imageIds.stream()
-            .map(imageId -> em.getReference(Image.class, imageId))
-            .collect(Collectors.toCollection(ArrayList::new)));
+        listing.setImageIds(imageIds != null ? new ArrayList<>(imageIds) : new ArrayList<>());
     }
 }

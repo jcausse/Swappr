@@ -233,8 +233,7 @@ public class OfferServiceImpl implements OfferService {
         // Notify seller about pending transaction
         notificationDispatcherService.notifyPendingTransaction(offer);
 
-        // FIXME double query
-        return offerDao.getById(offerId).orElseThrow();
+        return offer;
     }
 
     @Override
@@ -269,8 +268,7 @@ public class OfferServiceImpl implements OfferService {
         // Notify buyer about offer rejection
         notificationDispatcherService.notifyOfferRejected(offer);
 
-        // FIXME double query
-        return offerDao.getById(offerId).orElseThrow();
+        return offer;
     }
 
     @Override
@@ -282,7 +280,7 @@ public class OfferServiceImpl implements OfferService {
 
         if (!offer.isBuyer(currentUserId)) {
             LOGGER.warn("User {} unauthorized to withdraw offer {}", currentUserId, offerId);
-            throw new BadParameterException("Not authorized to withdraw this offer");
+            throw new ForbiddenException("Not authorized to withdraw this offer");
         }
 
         if (!offer.isPending()) {
@@ -302,8 +300,7 @@ public class OfferServiceImpl implements OfferService {
         // Notify seller about offer withdrawal
         notificationDispatcherService.notifyOfferWithdrawn(offer);
 
-        // FIXME double query
-        return offerDao.getById(offerId).orElseThrow();
+        return offer;
     }
 
     @Override
@@ -341,7 +338,7 @@ public class OfferServiceImpl implements OfferService {
 
         if (!offer.isBuyer(buyerId)) {
             LOGGER.warn("User {} unauthorized to upload proof of payment for offer {}", buyerId, offerId);
-            throw new BadParameterException("Only the buyer can upload proof of payment");
+            throw new ForbiddenException("Only the buyer can upload proof of payment");
         }
 
         if (!offer.canUploadDocuments()) {
@@ -388,10 +385,9 @@ public class OfferServiceImpl implements OfferService {
             throw new BadParameterException("Free-listing offers have no payment or shipping step");
         }
 
-        // TODO remove this validation after implementing preatuhorize
         if (!offer.isSeller(sellerId)) {
             LOGGER.warn("User {} unauthorized to upload proof of shipping for offer {}", sellerId, offerId);
-            throw new BadParameterException("Only the seller can upload proof of shipping");
+            throw new ForbiddenException("Only the seller can upload proof of shipping");
         }
 
         if (!offer.canUploadDocuments()) {
@@ -445,7 +441,7 @@ public class OfferServiceImpl implements OfferService {
 
         if (!offer.isSeller(sellerId)) {
             LOGGER.warn("User {} unauthorized to confirm payment for offer {}", sellerId, offerId);
-            throw new BadParameterException("Only the seller can confirm payment");
+            throw new ForbiddenException("Only the seller can confirm payment");
         }
 
         if (!offer.isPendingPayment()) {
@@ -500,7 +496,7 @@ public class OfferServiceImpl implements OfferService {
 
     @Override
     public Map<OfferStatusGroup, Long> getOfferCountByStatus(User currentUser, Boolean incoming) {
-		return offerDao.countByStatus(currentUser, incoming);
+        return offerDao.countByStatus(currentUser, incoming);
     }
 
     @Override
@@ -516,10 +512,10 @@ public class OfferServiceImpl implements OfferService {
             throw new BadParameterException("Only accepted offers can be rated");
         }
 
-		final var buyer = offer.getBuyer();
-		final var seller = offer.getListing().getCreator();
+        final var buyer = offer.getBuyer();
+        final var seller = offer.getListing().getCreator();
 
-		final boolean isBuyer = offer.isBuyer(currentUser);
+        final boolean isBuyer = offer.isBuyer(currentUser);
 
         if (!offer.isParticipant(currentUser)) {
             throw new ForbiddenException("You did not participate in this offer");
@@ -595,12 +591,14 @@ public class OfferServiceImpl implements OfferService {
         final Offer offer = offerDao.getById(offerId)
             .orElseThrow(() -> NotFoundException.createFor("Offer with ID " + offerId));
 
+        if (!offer.canBeCanceledByAdmin()) {
+            LOGGER.warn("Cannot cancel offer {} in status {}", offerId, offer.getStatus());
+            throw new BadParameterException("Offer cannot be canceled in its current state");
+        }
+
         /* Reset listing status to ACTIVE if the current offer is holding it PENDING_TRANSACTION */
         if (offer.isPendingPayment()) {
             listingService.updateStatus(offer.getListing().getId(), ListingStatus.ACTIVE);
-        } else if (!offer.isPending()) {
-            LOGGER.warn("Cannot cancel offer {} in status {}", offerId, offer.getStatus());
-            throw new BadParameterException("Offer cannot be canceled in its current state");
         }
 
         /* If there is an offered listing, reset it to ACTIVE */

@@ -103,7 +103,7 @@
 
                                 <div class="flex flex-row gap-1 self-end">
                                     <paw:linkButton variant="outline" href="${listingUrl}" icon="eye" />
-                                    <c:if test="${listing.status.name() == 'ACTIVE'}">
+                                    <c:if test="${listing.isActive()}">
                                         <c:url value="/listing/${listing.id}/edit" var="editListingUrl"/>
                                         <paw:linkButton variant="outline" href="${editListingUrl}" icon="pencil" />
 
