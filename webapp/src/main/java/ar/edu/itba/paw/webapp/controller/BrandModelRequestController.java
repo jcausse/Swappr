@@ -95,8 +95,10 @@ public class BrandModelRequestController {
     }
 
     private ModelAndView render(BrandModelRequestForm form) {
+        final var categories = catalogService.getAllCategories();
         final ModelAndView mav = new ModelAndView("catalogRequest/new")
-                .addObject("categoryOptions", catalogService.getAllCategories().stream()
+                .addObject("categories", categories)
+                .addObject("categoryOptions", categories.stream()
                         .map(category -> new SelectOption(category.getId(), "category." + category.getName()))
                         .toList())
                 .addObject("brandOptions", catalogService.getAllBrands());
