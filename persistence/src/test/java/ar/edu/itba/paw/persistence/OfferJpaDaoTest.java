@@ -958,6 +958,20 @@ public class OfferJpaDaoTest {
     }
 
     @Test
+    public void testGetAcceptedUnratedBeforeFetchesListing() {
+        // Arrange (nothing cached, so only the query itself can load the listings)
+        em.clear();
+
+        // Act
+        final List<Offer> offers = offerDao.getAcceptedUnratedBefore(Instant.parse("2027-01-01T00:00:00Z"));
+
+        // Assert
+        Assert.assertFalse(offers.isEmpty());
+        final var persistenceUnitUtil = em.getEntityManagerFactory().getPersistenceUnitUtil();
+        Assert.assertTrue(offers.stream().allMatch(offer -> persistenceUnitUtil.isLoaded(offer.getListing())));
+    }
+
+    @Test
     public void testGetAcceptedUnratedBeforeIgnoresNonAcceptedOffers() {
         // Arrange (pending offer 1 gets an accepted_at but keeps its status)
         jdbcTemplate.update("UPDATE offers SET accepted_at = ? WHERE offer_id = ?",
