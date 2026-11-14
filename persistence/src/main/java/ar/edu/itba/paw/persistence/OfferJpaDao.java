@@ -40,14 +40,13 @@ public class OfferJpaDao implements OfferDao {
 
     @Override
     public Optional<Offer> getByListingAndBuyer(Listing listing, User buyer) {
-        final List<Offer> result = em.createQuery(
+        return em.createQuery(
                 "FROM Offer o WHERE o.listing.id = :listingId AND o.buyer.id = :buyerId AND o.status IN (:statuses) ORDER BY o.id DESC",
                 Offer.class)
                 .setParameter("listingId", listing.getId())
                 .setParameter("buyerId", buyer.getId())
                 .setParameter("statuses", List.of(OfferStatus.PENDING, OfferStatus.PENDING_PAYMENT))
-                .getResultList();
-        return result.isEmpty() ? Optional.empty() : Optional.of(result.getFirst());
+                .getResultList().stream().findFirst();
     }
 
     @Override
@@ -273,12 +272,11 @@ public class OfferJpaDao implements OfferDao {
 
     @Override
     public List<Offer> getAcceptedUnratedBefore(Instant cutoff) {
-        final List<Offer> offers = em.createQuery(
+        return em.createQuery(
                 "FROM Offer o WHERE o.status = :status AND o.acceptedAt IS NOT NULL AND o.acceptedAt < :cutoff AND (o.sellerRating IS NULL OR o.buyerRating IS NULL)",
                 Offer.class)
                 .setParameter("status", OfferStatus.ACCEPTED)
                 .setParameter("cutoff", cutoff)
                 .getResultList();
-        return offers;
     }
 }

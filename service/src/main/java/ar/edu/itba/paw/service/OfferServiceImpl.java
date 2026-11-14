@@ -69,7 +69,7 @@ public class OfferServiceImpl implements OfferService {
     @Override
     public Optional<Offer> getById(Long id) {
         final Optional<Offer> offer = offerDao.getById(id);
-        offer.ifPresent(o -> populateTransientFlags(List.of(o)));
+        offer.ifPresent(this::populateTransientFlags);
         return offer;
     }
 
@@ -96,6 +96,10 @@ public class OfferServiceImpl implements OfferService {
             populateTransientFlags(page.getContent());
         }
         return page;
+    }
+
+    private void populateTransientFlags(Offer offer) {
+        populateTransientFlags(List.of(offer));
     }
 
     private void populateTransientFlags(List<Offer> offers) {
