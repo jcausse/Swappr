@@ -17,7 +17,7 @@ import java.util.Optional;
 
 public interface OfferService {
 
-    Optional<Offer> getById(Long id);
+    Optional<Offer> getById(Long id, boolean populateTransientFlags);
 
     Optional<Offer> getByListingAndBuyer(Listing listing, User buyer);
 

@@ -43,7 +43,7 @@ public class PermissionServiceImplTest {
             .listing(Listing.builder().id(1L).creator(SELLER).build())
             .buyer(BUYER)
             .build();
-        when(offerService.getById(eq(OFFER_ID))).thenReturn(Optional.of(offer));
+        when(offerService.getById(eq(OFFER_ID), eq(false))).thenReturn(Optional.of(offer));
     }
 
     @Test
@@ -69,7 +69,7 @@ public class PermissionServiceImplTest {
 
     @Test
     public void testCanAccessOfferDeniesMissingOffer() {
-        when(offerService.getById(eq(NON_EXISTING_OFFER_ID))).thenReturn(Optional.empty());
+        when(offerService.getById(eq(NON_EXISTING_OFFER_ID), eq(false))).thenReturn(Optional.empty());
 
         Assert.assertFalse(permissionService.canAccessOffer(SELLER, NON_EXISTING_OFFER_ID));
     }

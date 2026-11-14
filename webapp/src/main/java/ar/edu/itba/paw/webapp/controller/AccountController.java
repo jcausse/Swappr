@@ -141,7 +141,7 @@ public class AccountController {
         LOGGER.debug("User {} viewing incoming offer {}", currentUser.getId(), offerId);
 
         return new ModelAndView("account/incomingOfferDetail")
-                .addObject("offer", offerService.getById(offerId).orElseThrow(() -> NotFoundException.createFor("Offer")))
+                .addObject("offer", offerService.getById(offerId, true).orElseThrow(() -> NotFoundException.createFor("Offer")))
                 .addObject("pendingOffersCount", offerService.getPendingOffersCount(currentUser));
     }
 
@@ -149,7 +149,7 @@ public class AccountController {
     @PreAuthorize("@webPermissionService.canManageOfferAsBuyer(authentication, #offerId)")
     public ModelAndView showProofOfPaymentUpload(@PathVariable Long offerId, @CurrentUser User currentUser) {
         LOGGER.debug("User {} accessing proof of payment upload for offer {}", currentUser.getId(), offerId);
-        final Offer offer = offerService.getById(offerId)
+        final Offer offer = offerService.getById(offerId, false)
                 .orElseThrow(() -> NotFoundException.createFor("Offer"));
 
         if (!offer.canUploadDocuments()) {
@@ -171,7 +171,7 @@ public class AccountController {
         if (bindingResult.hasErrors()) {
             LOGGER.debug("Validation failed for proof of payment upload on offer {}", offerId);
             return new ModelAndView("account/proofOfPaymentUpload")
-                .addObject("offer", offerService.getById(offerId).orElseThrow(() -> NotFoundException.createFor("Offer")))
+                .addObject("offer", offerService.getById(offerId, false).orElseThrow(() -> NotFoundException.createFor("Offer")))
                 .addObject("pendingOffersCount", offerService.getPendingOffersCount(currentUser));
         }
 
@@ -189,7 +189,7 @@ public class AccountController {
     @PreAuthorize("@webPermissionService.canManageOfferAsSeller(authentication, #offerId)")
     public ModelAndView showProofOfShippingUpload(@PathVariable Long offerId, @CurrentUser User currentUser) {
         LOGGER.debug("User {} accessing proof of shipping upload for offer {}", currentUser.getId(), offerId);
-        final Offer offer = offerService.getById(offerId)
+        final Offer offer = offerService.getById(offerId, false)
                 .orElseThrow(() -> NotFoundException.createFor("Offer"));
 
         if (!offer.canUploadDocuments()) {
@@ -211,7 +211,7 @@ public class AccountController {
         if (bindingResult.hasErrors()) {
             LOGGER.debug("Validation failed for proof of shipping upload on offer {}", offerId);
             return new ModelAndView("account/proofOfShippingUpload")
-                .addObject("offer", offerService.getById(offerId).orElseThrow(() -> NotFoundException.createFor("Offer")))
+                .addObject("offer", offerService.getById(offerId, false).orElseThrow(() -> NotFoundException.createFor("Offer")))
                 .addObject("pendingOffersCount", offerService.getPendingOffersCount(currentUser));
         }
 
@@ -262,7 +262,7 @@ public class AccountController {
     @PreAuthorize("@webPermissionService.canAccessOffer(authentication, #offerId)")
     public ModelAndView showRateForm(@PathVariable Long offerId, @CurrentUser User currentUser,
                                       @ModelAttribute("rateForm") RateForm rateForm) {
-        final Offer offer = offerService.getById(offerId)
+        final Offer offer = offerService.getById(offerId, false)
                 .orElseThrow(() -> NotFoundException.createFor("Offer"));
 
         if (!offer.canBeRatedBy(currentUser)) {
@@ -280,7 +280,7 @@ public class AccountController {
                                         @CurrentUser User currentUser,
                                         @Valid @ModelAttribute("rateForm") RateForm rateForm,
                                         BindingResult bindingResult) {
-        final Offer offer = offerService.getById(offerId)
+        final Offer offer = offerService.getById(offerId, false)
                 .orElseThrow(() -> NotFoundException.createFor("Offer"));
 
         if (bindingResult.hasErrors()) {
