@@ -2,6 +2,7 @@ package ar.edu.itba.paw.webapp.config;
 
 import org.flywaydb.core.Flyway;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -64,14 +65,14 @@ public class WebConfig implements WebMvcConfigurer {
 
     private final Environment env;
     private final CurrentUserArgumentResolver currentUserArgumentResolver;
-    private final CatalogService catalogService;
+    private final ObjectProvider<CategoriesInterceptor> categoriesInterceptorProvider;
 
     @Autowired
     public WebConfig(Environment env, @Lazy CurrentUserArgumentResolver currentUserArgumentResolver,
-                     @Lazy CatalogService catalogService) {
+                     ObjectProvider<CategoriesInterceptor> categoriesInterceptorProvider) {
         this.env = env;
         this.currentUserArgumentResolver = currentUserArgumentResolver;
-        this.catalogService = catalogService;
+        this.categoriesInterceptorProvider = categoriesInterceptorProvider;
     }
 
     /* --------------------------------------------------------------- */
@@ -130,10 +131,15 @@ public class WebConfig implements WebMvcConfigurer {
         return interceptor;
     }
 
+    @Bean
+    public CategoriesInterceptor categoriesInterceptor(final CatalogService catalogService) {
+        return new CategoriesInterceptor(catalogService);
+    }
+
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(localeChangeInterceptor());
-        registry.addInterceptor(new CategoriesInterceptor(catalogService));
+        registry.addInterceptor(categoriesInterceptorProvider.getObject());
     }
 
     @Bean

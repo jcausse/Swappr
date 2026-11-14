@@ -67,9 +67,11 @@ public class OfferServiceImpl implements OfferService {
     }
 
     @Override
-    public Optional<Offer> getById(Long id) {
+    public Optional<Offer> getById(Long id, boolean populateTransientFlags) {
         final Optional<Offer> offer = offerDao.getById(id);
-        offer.ifPresent(this::populateTransientFlags);
+        if (populateTransientFlags) {
+            offer.ifPresent(this::populateTransientFlags);
+        }
         return offer;
     }
 

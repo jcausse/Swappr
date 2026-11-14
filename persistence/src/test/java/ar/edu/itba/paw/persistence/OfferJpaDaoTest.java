@@ -335,6 +335,30 @@ public class OfferJpaDaoTest {
         Assert.assertTrue(offerDao.getPendingCounts(List.of()).isEmpty());
     }
 
+    @Test
+    public void testGetPendingCountsWithNullIdsReturnsEmpty() {
+        // Act / Assert
+        Assert.assertTrue(offerDao.getPendingCounts(null).isEmpty());
+    }
+
+    @Test
+    public void testGetPendingCountsTreatsEqualAmountOffersAsNotBetter() {
+        // Arrange (offer 2 drops to the same amount as offer 1, so neither is better than the other)
+        jdbcTemplate.update("UPDATE offers SET amount = ? WHERE offer_id = ?",
+            new BigDecimal("1400.00"), FULL_PRICE_OFFER_ID);
+
+        // Act
+        final Map<Long, OfferPendingCount> counts =
+            offerDao.getPendingCounts(List.of(LOW_OFFER_ID, FULL_PRICE_OFFER_ID));
+
+        // Assert
+        Assert.assertEquals(2, counts.size());
+        Assert.assertEquals(1L, counts.get(LOW_OFFER_ID).otherCount());
+        Assert.assertEquals(0L, counts.get(LOW_OFFER_ID).betterCount());
+        Assert.assertEquals(1L, counts.get(FULL_PRICE_OFFER_ID).otherCount());
+        Assert.assertEquals(0L, counts.get(FULL_PRICE_OFFER_ID).betterCount());
+    }
+
     /* ---------------------------------------------------------------------------------------------- */
     /* getByListingAndBuyer                                                                            */
     /* ---------------------------------------------------------------------------------------------- */

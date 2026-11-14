@@ -23,21 +23,21 @@ public class PermissionServiceImpl implements PermissionService {
 
     @Override
     public boolean canManageOfferAsSeller(User user, long offerId) {
-        return offerService.getById(offerId)
+        return offerService.getById(offerId, false)
                 .map(offer -> offer.isSeller(user))
                 .orElse(false);
     }
 
     @Override
     public boolean canManageOfferAsBuyer(User user, long offerId) {
-        return offerService.getById(offerId)
+        return offerService.getById(offerId, false)
                 .map(offer -> offer.isBuyer(user))
                 .orElse(false);
     }
 
     @Override
     public boolean canAccessOffer(User user, long offerId) {
-        return offerService.getById(offerId)
+        return offerService.getById(offerId, false)
                 .map(offer -> offer.isSeller(user) || offer.isBuyer(user))
                 .orElse(false);
     }
