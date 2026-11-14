@@ -73,6 +73,7 @@ public class CategoriesInterceptorTest {
         Assert.assertFalse(mav.getModel().containsKey("categories"));
     }
 
+    @Test
     public void testPostHandleSkipsNullModelAndView() {
         RuntimeException thrown = null;
         try {
