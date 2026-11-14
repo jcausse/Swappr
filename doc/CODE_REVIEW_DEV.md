@@ -63,8 +63,15 @@ Status values: `todo`, `done`, `underspecified`, `needs bigger refactor`, `false
 | 11.4 | [Form `.todto()` helpers](#114-form-todto-helpers) | ✅ done |
 | 11.5 | [Prefer JPQL over `createNativeQuery`](#115-prefer-jpql-over-createnativequery) | ✅ done |
 | 11.6 | [Avoid `Object[]` row mapping for non-entity models](#116-avoid-object-row-mapping-for-non-entity-models) | ✅ done |
+| 12.1 | [`OfferServiceImpl.getById` runs `getPendingCounts` on `@PreAuthorize` checks (important)](#121-offerserviceimplgetbyid-runs-getpendingcounts-on-every-preauthorize-check-important) | 🕓 todo |
+| 12.2 | [3 controllers query `getAllCategories()` twice per rendered request](#122-3-controllers-still-query-getallcategories-twice-per-rendered-request) | 🕓 todo |
+| 12.3 | [`incomingOffers` computes transient flags for non-pending tabs](#123-accountcontrollerincomingoffers-computes-transient-flags-for-non-pending-tabs) | 🕓 todo |
+| 12.4 | [`WebConfig` injects `@Lazy CatalogService` in its constructor](#124-webconfig-injects-lazy-catalogservice-in-its-constructor) | 🕓 todo |
+| 12.5 | [Small test gaps in `CategoriesInterceptorTest` and `OfferJpaDaoTest`](#125-small-test-coverage-gaps-in-categoriesinterceptortest-and-offerjpadaotest) | 🕓 todo |
+| 12.6 | [`CategoriesInterceptor.rendersView` does not skip `forward:` view names](#126-categoriesinterceptorrendersview-does-not-skip-forward-view-names) | 🕓 todo |
+| 12.7 | [Remove `p.amount > o.amount` comparison from `OfferJpaDao.getPendingCounts` (important)](#127-remove-pamount--oamount-comparison-from-offerjpadaogetpendingcounts-important) | 🕓 todo |
 
-Things to fix before the final delivery. Items 1-10 were checked against `dev` (`a80c04fd`, 2026-11-11); section 11 was checked against `dev` (`a385aa63`, 2026-11-13). Nothing here is a guess: each one points to the file and line where it happens.
+Things to fix before the final delivery. Items 1-10 were checked against `dev` (`a80c04fd`, 2026-11-11); section 11 was checked against `dev` (`a385aa63`, 2026-11-13); section 12 was added against `dev` (`ea1b01a1`, 2026-11-14). Nothing here is a guess: each one points to the file and line where it happens.
 
 - **Reproduced** means it was executed and observed (a throwaway test or the running app). Everything else was confirmed by reading the code of `dev`.
 - The full build (`mvn clean install`) passes on `dev`. None of these are caught by the build.
@@ -410,6 +417,50 @@ These items were imported from the now-removed `doc/TODO.md` and `doc/notes/DEBT
 - `BrandJpaDao.getWithStats` (`:69-79`) and `ModelJpaDao.getWithInfo` (`:104-119`) build `BrandInfo`/`ModelInfo` field by field, and both compute `hasListings` from `count > 0`. Store the count in the model (`listingCount`/`modelCount`-style field) and expose `hasListings()` as a derived getter, then let Hibernate/JPQL project into the model directly.
 - `ModelJpaDao.getListingInfoSummary` (`:265-279`) and `getListingInfoSummaryForModel` (`:322-338`) also map `Object[]` rows into `ModelListingInfo` manually. A constructor expression/DTO projection, or small model adjustments, would remove the casting.
 - `OfferJpaDao.countByStatus` (`:188`) and `populateTransientFlags` (`:285-308`) are the other `Object[]` consumers; `populateTransientFlags` is already covered by 1.7.
+
+---
+
+## 12. Follow-ups from code-review fixes
+
+These follow-ups were identified when reviewing the 4.7 and 1.7 fixes against `dev` (`ea1b01a1`, 2026-11-14).
+
+### 12.1 `OfferServiceImpl.getById` runs `getPendingCounts` on every `@PreAuthorize` check (important)
+
+- `PermissionServiceImpl.canManageOfferAsSeller`, `canManageOfferAsBuyer` and `canAccessOffer` (`service/…/PermissionServiceImpl.java:25-43`) call `offerService.getById(offerId)` inside `@PreAuthorize` on every offer action and page (`accept`, `reject`, `withdraw`, `confirm-payment`, payment/shipping uploads, rating, `incomingOfferDetail`).
+- Because `OfferServiceImpl.getById` (`service/…/OfferServiceImpl.java:70-74`) always runs `populateTransientFlags`, every authorized offer endpoint triggers an extra `offerDao.getPendingCounts` JPQL query even when the flags are unused, and `AccountController.incomingOfferDetail` (`webapp/…/controller/AccountController.java:144`) executes it twice in the same request (JPQL queries are not L1-cached).
+- Fix: expose an opt-in flag or separate method (e.g. `getById(Long id, boolean populateTransientFlags)` or `getByIdWithFlags(Long id)`) and pass `false` in `PermissionServiceImpl` and non-detail callers.
+
+### 12.2 3 controllers still query `getAllCategories()` twice per rendered request
+
+- `ListingController.populateModel` (`webapp/…/controller/ListingController.java:252`), `AdminController.catalog` (`AdminController.java:134`) and `BrandModelRequestController.render` (`BrandModelRequestController.java:99`) call `catalogService.getAllCategories()` to build `categoryOptions` without placing `"categories"` in the `ModelAndView`, so `CategoriesInterceptor` queries `getAllCategories()` a second time on those rendered views.
+- Fix: add the fetched `categories` list to the model (matching `ListingController.discovery` at `:75-79`) so `CategoriesInterceptor` skips the duplicate query.
+
+### 12.3 `AccountController.incomingOffers` computes transient flags for non-pending tabs
+
+- `AccountController.incomingOffers` (`webapp/…/controller/AccountController.java:98`) passes `populateTransientFlags = true` for every `statusGroup` tab, including `RESOLVED` (where `tags/account/offerTable.tag` never reads `hasOtherOffers`/`hasBetterOffers`) and `PENDING_PAYMENT`.
+- Additionally, `tags/account/offerCard.tag:100` checks `${offer.hasOtherOffers && user == 'buyer'}` without checking `offer.isPending()` (unlike `jsp/account/incomingOfferDetail.jsp:77`).
+- Fix: pass `true` only when `filter.statusGroup()` is `PENDING` (or `null`), and guard the banner in `offerCard.tag` with `offer.isPending()`.
+
+### 12.4 `WebConfig` injects `@Lazy CatalogService` in its constructor
+
+- `WebConfig` (`webapp/…/config/WebConfig.java:70-75`) injects `@Lazy CatalogService` in its constructor to break the bean-creation cycle with `@Bean`s declared on `WebConfig` (such as `entityManagerFactory()`).
+- Fix: register `CategoriesInterceptor` via a `@Bean` factory method `categoriesInterceptor(CatalogService)` (similar to `localeResolver(UserService, AuthHelper)` at `:122`) so `CatalogService` is not constructor-injected with `@Lazy`.
+
+### 12.5 Small test coverage gaps in `CategoriesInterceptorTest` and `OfferJpaDaoTest`
+
+- `CategoriesInterceptorTest` (`webapp/…/interceptor/CategoriesInterceptorTest.java`) does not cover `modelAndView == null` (the `ResponseEntity`/`@ResponseBody`/static-resource path) or `new ModelAndView()` (`!hasView()`).
+- `OfferJpaDaoTest` (`persistence/…/OfferJpaDaoTest.java:307-336`) does not cover equal-amount pending offers (`betterCount == 0` on a tie) or `null` input for `getPendingCounts`.
+
+### 12.6 `CategoriesInterceptor.rendersView` does not skip `forward:` view names
+
+- `CategoriesInterceptor.rendersView` (`webapp/…/interceptor/CategoriesInterceptor.java:36-44`) only excludes `"redirect:"` view names and `RedirectView`. No controller currently returns `"forward:..."`, so it is harmless today, but excluding `"forward:"` prevents querying categories twice if a handler ever forwards internally.
+
+### 12.7 Remove `p.amount > o.amount` comparison from `OfferJpaDao.getPendingCounts` (important)
+
+- **Important (graded 1.7 follow-up):** `OfferJpaDao.getPendingCounts` (`persistence/…/OfferJpaDao.java:95-109`) still embeds the offer-to-offer comparison `p.amount > o.amount` inside JPQL to compute `betterCount`. Even though `OfferServiceImpl` decides the final booleans, a strict reviewer may still consider "what makes one offer better than another" to be business logic inside the DAO query.
+- **Equally efficient pure-service alternative:** Replace the two correlated subqueries per offer with a single `GROUP BY o.listing.id` query over `listingIds` (obtainable from `offer.getListing().getId()` on the lazy proxy without hitting `listings`):
+  - DAO returns `(listingId, COUNT(o), MAX(o.amount))` for `status = PENDING` (`GROUP BY o.listing.id`), doing only pure aggregation with zero offer-to-offer comparison.
+  - `OfferServiceImpl.populateTransientFlags` computes `hasOtherOffers = (offer.isPending() ? count - 1 : count) > 0` and `hasBetterOffers = maxAmount != null && maxAmount.compareTo(offer.getAmount()) > 0` (mathematically equivalent because `o.amount > o.amount` is always false, so a strictly higher pending offer exists iff `MAX(pending.amount) > o.amount`).
 
 ---
 
