@@ -1,6 +1,16 @@
 package ar.edu.itba.paw.service.notification;
 
-import ar.edu.itba.paw.model.*;
+import ar.edu.itba.paw.model.Brand;
+import ar.edu.itba.paw.model.BrandModelRequest;
+import ar.edu.itba.paw.model.BrandModelRequestType;
+import ar.edu.itba.paw.model.Condition;
+import ar.edu.itba.paw.model.Listing;
+import ar.edu.itba.paw.model.ListingStatus;
+import ar.edu.itba.paw.model.Model;
+import ar.edu.itba.paw.model.Offer;
+import ar.edu.itba.paw.model.OfferStatus;
+import ar.edu.itba.paw.model.Price;
+import ar.edu.itba.paw.model.User;
 import ar.edu.itba.paw.model.notification.NotificationType;
 import ar.edu.itba.paw.service.dto.SiteNotificationCreationDto;
 import org.junit.Assert;
@@ -147,6 +157,52 @@ public class SiteNotificationCreationDtoFactoryTest {
         Assert.assertEquals("notification.proofOfShippingUploaded.body.tracking", shippingWithTrackingDto.bodyKey());
         Assert.assertEquals(List.of("Seller Ana", "MacBook Pro 14", "AR-12345"), shippingWithTrackingDto.bodyArgs());
         Assert.assertEquals("/account/my-offers?statusGroup=PENDING_PAYMENT", shippingWithTrackingDto.actionUrl());
+    }
+
+    @Test
+    public void testBrandModelRequestAcceptedBuildsExpectedDto() {
+        final Brand brand = Brand.builder().id(30L).name("Acme").build();
+        final Model model = Model.builder().id(40L).name("Phone").brand(brand).build();
+        final BrandModelRequest request = BrandModelRequest.builder()
+                .id(50L)
+                .type(BrandModelRequestType.NEW_BRAND)
+                .brandName("Acme")
+                .modelName("Phone")
+                .build();
+
+        final SiteNotificationCreationDto dto =
+                SiteNotificationCreationDtoFactory.brandModelRequestAccepted(request, BUYER, brand, model);
+
+        Assert.assertSame(BUYER, dto.notificationRecipient());
+        Assert.assertEquals(NotificationType.BRAND_MODEL_REQUEST_ACCEPTED, dto.notificationType());
+        Assert.assertEquals("notification.brandModelRequest.accepted.title", dto.titleKey());
+        Assert.assertEquals("notification.brandModelRequest.accepted.body", dto.bodyKey());
+        Assert.assertEquals(List.of("Acme", "Phone"), dto.bodyArgs());
+        Assert.assertEquals("/listing/new/choose-product?modelId=40", dto.actionUrl());
+        Assert.assertEquals("notification.brandModelRequest.accepted.cta", dto.actionLabelKey());
+        Assert.assertNull(dto.offer());
+    }
+
+    @Test
+    public void testBrandModelRequestRejectedBuildsExpectedDto() {
+        final BrandModelRequest request = BrandModelRequest.builder()
+                .id(51L)
+                .type(BrandModelRequestType.NEW_BRAND)
+                .brandName("Acme")
+                .modelName("Phone")
+                .build();
+
+        final SiteNotificationCreationDto dto =
+                SiteNotificationCreationDtoFactory.brandModelRequestRejected(request, BUYER);
+
+        Assert.assertSame(BUYER, dto.notificationRecipient());
+        Assert.assertEquals(NotificationType.BRAND_MODEL_REQUEST_REJECTED, dto.notificationType());
+        Assert.assertEquals("notification.brandModelRequest.rejected.title", dto.titleKey());
+        Assert.assertEquals("notification.brandModelRequest.rejected.body", dto.bodyKey());
+        Assert.assertEquals(List.of("Acme", "Phone"), dto.bodyArgs());
+        Assert.assertEquals("/listing", dto.actionUrl());
+        Assert.assertEquals("notification.brandModelRequest.rejected.cta", dto.actionLabelKey());
+        Assert.assertNull(dto.offer());
     }
 
     private static User buildUser(final long id, final String displayName) {

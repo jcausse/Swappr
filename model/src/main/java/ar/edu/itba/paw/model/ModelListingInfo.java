@@ -1,22 +1,49 @@
 package ar.edu.itba.paw.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import java.math.BigDecimal;
 
-@NoArgsConstructor
-@AllArgsConstructor
-@Getter
-@Setter
-@Builder
+import lombok.Builder;
+import lombok.Value;
+
+@Value
 public class ModelListingInfo {
-    private Brand brand;
-    private Model model;
-    private Long listingCount;
-    private Condition condition;
-    private Price minPrice;
-    private Price maxPrice;
-    private Price avgPrice;
+    Brand brand;
+    Model model;
+    long listingCount;
+    Condition condition;
+    Price minPrice;
+    Price maxPrice;
+
+    @Builder
+    public ModelListingInfo(
+            Brand brand,
+            Model model,
+            long listingCount,
+            Condition condition,
+            Price minPrice,
+            Price maxPrice
+    ) {
+        this.brand = brand;
+        this.model = model;
+        this.listingCount = listingCount;
+        this.condition = condition;
+        this.minPrice = minPrice;
+        this.maxPrice = maxPrice;
+    }
+
+    public ModelListingInfo(
+            Brand brand,
+            Model model,
+            Condition condition,
+            long listingCount,
+            BigDecimal minPrice,
+            BigDecimal maxPrice
+    ) {
+        this.brand = brand;
+        this.model = model;
+        this.condition = condition;
+        this.listingCount = listingCount;
+        this.minPrice = new Price(minPrice);
+        this.maxPrice = new Price(maxPrice);
+    }
 }

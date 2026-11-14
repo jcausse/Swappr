@@ -2,19 +2,25 @@ package ar.edu.itba.paw.model;
 
 import java.util.List;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.Value;
 
-@NoArgsConstructor
-@AllArgsConstructor
-@Getter
-@Setter
-@Builder
+@Value
 public class ModelListingInfoSummary {
-    private Brand brand;
-    private Model model;
-    private List<ModelListingInfo> listingInfoByCondition;
+    Brand brand;
+    Model model;
+    List<ModelListingInfo> listingInfoByCondition;
+
+    @Builder
+    public ModelListingInfoSummary(
+            Brand brand,
+            Model model,
+            List<ModelListingInfo> listingInfoByCondition
+    ) {
+        this.brand = brand;
+        this.model = model;
+        this.listingInfoByCondition = listingInfoByCondition == null
+                ? List.of()
+                : List.copyOf(listingInfoByCondition);
+    }
 }

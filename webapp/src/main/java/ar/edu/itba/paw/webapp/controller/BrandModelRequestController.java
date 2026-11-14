@@ -3,7 +3,6 @@ package ar.edu.itba.paw.webapp.controller;
 import ar.edu.itba.paw.model.User;
 import ar.edu.itba.paw.service.BrandModelRequestService;
 import ar.edu.itba.paw.service.CatalogService;
-import ar.edu.itba.paw.service.dto.BrandModelRequestCreationDto;
 import ar.edu.itba.paw.service.exception.BrandModelRequestAlreadyExistsException;
 import ar.edu.itba.paw.service.exception.ModelAlreadyExistsException;
 import ar.edu.itba.paw.webapp.auth.CurrentUser;
@@ -72,14 +71,7 @@ public class BrandModelRequestController {
 
         LOGGER.info("User {} requested a new brand/model ({})", currentUser.getId(), form.getModelName());
         try {
-            brandModelRequestService.create(new BrandModelRequestCreationDto(
-                    currentUser.getId(),
-                    form.getType(),
-                    form.getSubcategoryId(),
-                    form.getBrandId(),
-                    form.getNewBrandName(),
-                    form.getModelName()
-            ));
+            brandModelRequestService.create(form.toDto(currentUser.getId()));
         } catch (ModelAlreadyExistsException ex) {
             LOGGER.warn("Model '{}' already exists for brand '{}'", ex.getModelName(), ex.getBrandName());
             final ModelAndView mav = new ModelAndView("error/modelAlreadyExists")

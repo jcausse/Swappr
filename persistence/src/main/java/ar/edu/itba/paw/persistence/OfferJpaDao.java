@@ -6,6 +6,7 @@ import ar.edu.itba.paw.model.Offer;
 import ar.edu.itba.paw.model.OfferFilter;
 import ar.edu.itba.paw.model.OfferRating;
 import ar.edu.itba.paw.model.OfferStatus;
+import ar.edu.itba.paw.model.OfferStatusCount;
 import ar.edu.itba.paw.model.OfferStatusGroup;
 import ar.edu.itba.paw.model.Page;
 import ar.edu.itba.paw.model.User;
@@ -89,7 +90,7 @@ public class OfferJpaDao implements OfferDao {
         }
 
         final TypedQuery<Offer> query = em.createQuery(
-                "FROM Offer o" + whereClause + " ORDER BY o.createdAt DESC", Offer.class);
+                "FROM Offer o" + whereClause + " ORDER BY o.createdAt DESC, o.id DESC", Offer.class);
         params.forEach(query::setParameter);
         query.setFirstResult((page - 1) * pageSize);
         query.setMaxResults(pageSize);
@@ -180,21 +181,21 @@ public class OfferJpaDao implements OfferDao {
                   + " = :userId"
                   + " AND (NOT (o.status IN (:resolvedStatuses)) OR (o.status = :acceptedStatus AND " + (incoming ? "o.buyerRating" : "o.sellerRating") + " IS NULL))";
 
-        var query = "SELECT COUNT(o) AS offerCount, o.status FROM Offer o"
+        var query = "SELECT new ar.edu.itba.paw.model.OfferStatusCount(o.status, COUNT(o)) FROM Offer o"
                   + where
                   + " GROUP BY o.status";
 
         Map<OfferStatusGroup, Long> results = new EnumMap<>(OfferStatusGroup.class);
-        em.createQuery(query, Object[].class)
+        em.createQuery(query, OfferStatusCount.class)
                 .setParameter("userId", currentUser.getId())
                 .setParameter("resolvedStatuses", OfferStatusGroup.RESOLVED.toStatusList())
                 .setParameter("acceptedStatus", OfferStatus.ACCEPTED)
                 .getResultStream()
-                .forEach((result) -> {
-                    var count = (Long)result[0];
-                    var group = OfferStatusGroup.fromStatus((OfferStatus)result[1]);
-                    results.merge(group, count, Long::sum);
-                });
+                .forEach((result) -> results.merge(
+                        OfferStatusGroup.fromStatus(result.status()),
+                        result.count(),
+                        Long::sum
+                ));
 
         return results;
     }

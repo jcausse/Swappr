@@ -26,15 +26,15 @@ public class TestConfig {
 
     private static final String MIGRATIONS_PATTERN = "classpath*:db/migration-hsqldb/*.sql";
 
-	@Bean
-	public DataSource dataSource() {
-		final SimpleDriverDataSource dataSource = new SimpleDriverDataSource();
-		dataSource.setDriverClass(org.hsqldb.jdbc.JDBCDriver.class);
-		dataSource.setUrl("jdbc:hsqldb:mem:paw_" + UUID.randomUUID() + ";sql.syntax_pgs=true");                                  
-		dataSource.setUsername("sa");                                                             
-		dataSource.setPassword("");
-		return dataSource;
-	}
+    @Bean
+    public DataSource dataSource() {
+        final SimpleDriverDataSource dataSource = new SimpleDriverDataSource();
+        dataSource.setDriverClass(org.hsqldb.jdbc.JDBCDriver.class);
+        dataSource.setUrl("jdbc:hsqldb:mem:paw_" + UUID.randomUUID() + ";sql.syntax_pgs=true");                                  
+        dataSource.setUsername("sa");                                                             
+        dataSource.setPassword("");
+        return dataSource;
+    }
 
     @Bean
     public org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean entityManagerFactory(DataSource dataSource) {

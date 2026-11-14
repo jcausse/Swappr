@@ -496,7 +496,7 @@ public class OfferServiceImpl implements OfferService {
 
     @Override
     public Map<OfferStatusGroup, Long> getOfferCountByStatus(User currentUser, Boolean incoming) {
-		return offerDao.countByStatus(currentUser, incoming);
+        return offerDao.countByStatus(currentUser, incoming);
     }
 
     @Override
@@ -512,10 +512,10 @@ public class OfferServiceImpl implements OfferService {
             throw new BadParameterException("Only accepted offers can be rated");
         }
 
-		final var buyer = offer.getBuyer();
-		final var seller = offer.getListing().getCreator();
+        final var buyer = offer.getBuyer();
+        final var seller = offer.getListing().getCreator();
 
-		final boolean isBuyer = offer.isBuyer(currentUser);
+        final boolean isBuyer = offer.isBuyer(currentUser);
 
         if (!offer.isParticipant(currentUser)) {
             throw new ForbiddenException("You did not participate in this offer");

@@ -1,8 +1,26 @@
 package ar.edu.itba.paw.model;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
+import javax.persistence.Transient;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Optional;
@@ -94,10 +112,6 @@ public class Offer {
         return Optional.ofNullable(offeredListing);
     }
 
-    public Optional<Instant> getAcceptedAt() {
-        return Optional.ofNullable(acceptedAt);
-    }
-
     public Optional<OfferRating> getBuyerRating() {
         return Optional.ofNullable(buyerRating);
     }
@@ -106,8 +120,7 @@ public class Offer {
         return Optional.ofNullable(sellerRating);
     }
 
-    // -- Transitional getters for Service / Webapp compatibility --
-    // TODO: [JPA Migration Cleanup] Transitional getters for compatibility.
+    // -- Convenience getters for Service / Webapp compatibility --
     public Long getOfferedListingId() {
         return offeredListing != null ? offeredListing.getId() : null;
     }

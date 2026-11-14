@@ -1,11 +1,29 @@
 package ar.edu.itba.paw.model;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
-import javax.persistence.*;
+import javax.persistence.CollectionTable;
+import javax.persistence.Column;
+import javax.persistence.ElementCollection;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
 import java.time.Instant;
 import java.util.HashSet;
-import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
 
@@ -104,16 +122,8 @@ public class User {
         return Optional.ofNullable(image != null ? image.getId() : null);
     }
 
-    public Optional<Instant> getEmailVerifiedAt() {
-        return Optional.ofNullable(emailVerifiedAt);
-    }
-
     public boolean isVerified() {
         return emailVerifiedAt != null;
-    }
-
-    public Optional<Instant> getSuspendedAt() {
-        return Optional.ofNullable(suspendedAt);
     }
 
     public boolean isSuspended() {
@@ -138,10 +148,6 @@ public class User {
 
     public Language getPreferredLanguageOrDefault() {
         return preferredLanguage != null ? preferredLanguage : Language.getDefault();
-    }
-
-    public Locale getPreferredLocale() {
-        return getPreferredLanguageOrDefault().toLocale();
     }
 
     public Optional<Province> getProvince() {

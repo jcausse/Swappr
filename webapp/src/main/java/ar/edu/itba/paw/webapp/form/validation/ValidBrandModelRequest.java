@@ -13,7 +13,7 @@ import java.lang.annotation.Target;
 @Target({ElementType.TYPE, ElementType.ANNOTATION_TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ValidBrandModelRequest {
-    String message() default "{ValidBrandModelRequest.brandModelRequestForm}";
+    String message() default "{typeMismatch}";
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {};
 }

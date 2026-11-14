@@ -1,6 +1,9 @@
 package ar.edu.itba.paw.service.notification;
 
-import ar.edu.itba.paw.model.*;
+import ar.edu.itba.paw.model.Offer;
+import ar.edu.itba.paw.model.OfferStatus;
+import ar.edu.itba.paw.model.Page;
+import ar.edu.itba.paw.model.User;
 import ar.edu.itba.paw.model.notification.NotificationType;
 import ar.edu.itba.paw.model.notification.SiteNotification;
 import ar.edu.itba.paw.model.notification.SiteNotificationFilter;
