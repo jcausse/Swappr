@@ -172,6 +172,19 @@ public class OfferJpaDao implements OfferDao {
     }
 
     @Override
+    public int rejectAllForParticipant(Long userId) {
+        return em.createQuery(
+                        "UPDATE Offer o SET o.status = :rejected"
+                        + " WHERE o.status IN :cancellableStatuses"
+                        + " AND (o.buyer.id = :userId"
+                        + "   OR o.listing.id IN (SELECT l.id FROM Listing l WHERE l.creator.id = :userId))")
+                .setParameter("rejected", OfferStatus.REJECTED)
+                .setParameter("cancellableStatuses", List.of(OfferStatus.PENDING, OfferStatus.PENDING_PAYMENT))
+                .setParameter("userId", userId)
+                .executeUpdate();
+    }
+
+    @Override
     public int countPendingBySeller(User seller) {
         return em.createQuery("SELECT COUNT(o) FROM Offer o WHERE o.listing.creator.id = :sellerId AND o.status = :status", Long.class)
                 .setParameter("sellerId", seller.getId())

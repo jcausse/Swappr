@@ -35,6 +35,8 @@ public interface OfferDao {
 
     List<Offer> rejectPendingOffers(Long listingId, Long exceptOfferId);
 
+    int rejectAllForParticipant(Long userId);
+
     int countPendingBySeller(User seller);
 
     Map<OfferStatusGroup, Long> countByStatus(User currentUser, Boolean incoming);

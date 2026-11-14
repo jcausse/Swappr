@@ -733,6 +733,126 @@ public class ListingJpaDaoTest {
         ));
     }
 
+    /* ---------------------------------------------------------------------------------------------- */
+    /* releaseOfferedListingsForParticipant                                                            */
+    /* ---------------------------------------------------------------------------------------------- */
+
+    @Test
+    public void testReleaseOfferedListingsForParticipantReleasesOfferedListing() {
+        // Arrange: turn offer 3 into a pending-payment trade whose offered listing is the buyer's listing 1
+        jdbcTemplate.update(
+            "UPDATE offers SET status = 'PENDING_PAYMENT', offered_listing_id = 1 WHERE offer_id = 3");
+        jdbcTemplate.update("UPDATE listings SET status = 'SOLD' WHERE listing_id = " + MACBOOK_LISTING_ID);
+
+        // Act
+        final int updated = listingDao.releaseOfferedListingsForParticipant(SELLER_ID);
+
+        // Assert
+        Assert.assertEquals(1, updated);
+        Assert.assertEquals(1, countListingsWhere(
+            "listing_id = " + MACBOOK_LISTING_ID + " AND status = 'ACTIVE'"
+        ));
+    }
+
+    @Test
+    public void testReleaseOfferedListingsForParticipantIgnoresNonParticipant() {
+        // Arrange
+        jdbcTemplate.update(
+            "UPDATE offers SET status = 'PENDING_PAYMENT', offered_listing_id = 1 WHERE offer_id = 3");
+        jdbcTemplate.update("UPDATE listings SET status = 'SOLD' WHERE listing_id = " + MACBOOK_LISTING_ID);
+
+        // Act
+        final int updated = listingDao.releaseOfferedListingsForParticipant(NON_EXISTING_ID);
+
+        // Assert
+        Assert.assertEquals(0, updated);
+        Assert.assertEquals(1, countListingsWhere(
+            "listing_id = " + MACBOOK_LISTING_ID + " AND status = 'SOLD'"
+        ));
+    }
+
+    /* ---------------------------------------------------------------------------------------------- */
+    /* releaseListingsHeldByBuyerPaymentOffers                                                         */
+    /* ---------------------------------------------------------------------------------------------- */
+
+    @Test
+    public void testReleaseListingsHeldByBuyerPaymentOffersReleasesTargetListing() {
+        // Arrange
+        jdbcTemplate.update("UPDATE offers SET status = 'PENDING_PAYMENT' WHERE offer_id = 3");
+        jdbcTemplate.update("UPDATE listings SET status = 'PENDING_TRANSACTION' WHERE listing_id = " + GAMING_LISTING_ID);
+
+        // Act
+        final int updated = listingDao.releaseListingsHeldByBuyerPaymentOffers(SELLER_ID);
+
+        // Assert
+        Assert.assertEquals(1, updated);
+        Assert.assertEquals(1, countListingsWhere(
+            "listing_id = " + GAMING_LISTING_ID + " AND status = 'ACTIVE'"
+        ));
+    }
+
+    @Test
+    public void testReleaseListingsHeldByBuyerPaymentOffersIgnoresPendingOffers() {
+        // Arrange: offer 3 is still PENDING, not PENDING_PAYMENT
+        jdbcTemplate.update("UPDATE listings SET status = 'PENDING_TRANSACTION' WHERE listing_id = " + GAMING_LISTING_ID);
+
+        // Act
+        final int updated = listingDao.releaseListingsHeldByBuyerPaymentOffers(SELLER_ID);
+
+        // Assert
+        Assert.assertEquals(0, updated);
+        Assert.assertEquals(1, countListingsWhere(
+            "listing_id = " + GAMING_LISTING_ID + " AND status = 'PENDING_TRANSACTION'"
+        ));
+    }
+
+    /* ---------------------------------------------------------------------------------------------- */
+    /* cancelAllByCreator                                                                              */
+    /* ---------------------------------------------------------------------------------------------- */
+
+    @Test
+    public void testCancelAllByCreatorCancelsActiveListings() {
+        // Act
+        final int updated = listingDao.cancelAllByCreator(SELLER_ID);
+
+        // Assert
+        Assert.assertEquals(2, updated);
+        Assert.assertEquals(2, countListingsWhere(
+            "creator_id = " + SELLER_ID + " AND status = 'CANCELED'"
+        ));
+    }
+
+    @Test
+    public void testCancelAllByCreatorCancelsPendingTransactionAndOfferedInTradeListings() {
+        // Arrange
+        jdbcTemplate.update("UPDATE listings SET status = 'PENDING_TRANSACTION' WHERE listing_id = " + MACBOOK_LISTING_ID);
+        jdbcTemplate.update("UPDATE listings SET status = 'OFFERED_IN_TRADE' WHERE listing_id = " + GALAXY_LISTING_ID);
+
+        // Act
+        final int updated = listingDao.cancelAllByCreator(SELLER_ID);
+
+        // Assert
+        Assert.assertEquals(2, updated);
+        Assert.assertEquals(2, countListingsWhere(
+            "creator_id = " + SELLER_ID + " AND status = 'CANCELED'"
+        ));
+    }
+
+    @Test
+    public void testCancelAllByCreatorLeavesSoldListingsUntouched() {
+        // Act
+        final int updated = listingDao.cancelAllByCreator(BUYER_ID);
+
+        // Assert
+        Assert.assertEquals(1, updated);
+        Assert.assertEquals(1, countListingsWhere(
+            "listing_id = " + OLD_MACBOOK_LISTING_ID + " AND status = 'SOLD'"
+        ));
+        Assert.assertEquals(1, countListingsWhere(
+            "listing_id = " + GAMING_LISTING_ID + " AND status = 'CANCELED'"
+        ));
+    }
+
     @Test
     public void testReplaceModelMovesListings() {
         // Act

@@ -206,6 +206,44 @@ public class ListingJpaDao implements ListingDao {
     }
 
     @Override
+    public int releaseOfferedListingsForParticipant(Long userId) {
+        return em.createQuery(
+                        "UPDATE Listing l SET l.status = :active"
+                        + " WHERE l.id IN (SELECT o.offeredListing.id FROM Offer o"
+                        + "   WHERE o.offeredListing IS NOT NULL"
+                        + "   AND o.status IN :cancellableStatuses"
+                        + "   AND (o.buyer.id = :userId OR o.listing.creator.id = :userId))")
+                .setParameter("active", ListingStatus.ACTIVE)
+                .setParameter("cancellableStatuses", List.of(OfferStatus.PENDING, OfferStatus.PENDING_PAYMENT))
+                .setParameter("userId", userId)
+                .executeUpdate();
+    }
+
+    @Override
+    public int releaseListingsHeldByBuyerPaymentOffers(Long userId) {
+        return em.createQuery(
+                        "UPDATE Listing l SET l.status = :active"
+                        + " WHERE l.id IN (SELECT o.listing.id FROM Offer o"
+                        + "   WHERE o.buyer.id = :userId AND o.status = :pendingPayment)")
+                .setParameter("active", ListingStatus.ACTIVE)
+                .setParameter("userId", userId)
+                .setParameter("pendingPayment", OfferStatus.PENDING_PAYMENT)
+                .executeUpdate();
+    }
+
+    @Override
+    public int cancelAllByCreator(Long userId) {
+        return em.createQuery(
+                        "UPDATE Listing l SET l.status = :canceled"
+                        + " WHERE l.creator.id = :userId AND l.status IN :cancellableStatuses")
+                .setParameter("canceled", ListingStatus.CANCELED)
+                .setParameter("userId", userId)
+                .setParameter("cancellableStatuses",
+                        List.of(ListingStatus.ACTIVE, ListingStatus.PENDING_TRANSACTION, ListingStatus.OFFERED_IN_TRADE))
+                .executeUpdate();
+    }
+
+    @Override
     public int replaceModel(Long fromModelId, Long toModelId) {
         final Model from = em.getReference(Model.class, fromModelId);
         final Model to = em.getReference(Model.class, toModelId);

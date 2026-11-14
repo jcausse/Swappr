@@ -28,6 +28,12 @@ public interface ListingDao {
                    Condition condition, boolean acceptsTrade, boolean acceptsShipping, String description);
     boolean cancel(Long id);
 
+    int releaseOfferedListingsForParticipant(Long userId);
+
+    int releaseListingsHeldByBuyerPaymentOffers(Long userId);
+
+    int cancelAllByCreator(Long userId);
+
     void updateImages(Long listingId, List<Long> imageIds);
 
     int replaceModel(Long fromModelId, Long toModelId);
