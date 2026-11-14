@@ -631,7 +631,7 @@ public class ListingJpaDaoTest {
             MACBOOK_LISTING_ID, "MacBook Pro M3", new Price(new BigDecimal("1400.00")),
             buildFakeModel(PHONE_MODEL_ID, SAMSUNG_BRAND_ID, PHONES_SUBCATEGORY_ID, PHONES_CATEGORY_ID), 2023,
             Condition.FAIR, false, false, "Some scratches"
-        );
+        ).orElseThrow();
 
         // Assert
         Assert.assertEquals("MacBook Pro M3", updated.getTitle());
@@ -648,10 +648,22 @@ public class ListingJpaDaoTest {
         final Listing updated = listingDao.update(
             MACBOOK_LISTING_ID, "MacBook Pro M3", new Price(new BigDecimal("1400.00")),
             buildFakeModel(MODEL_ID, BRAND_ID, SUBCATEGORY_ID, CATEGORY_ID), 2023, Condition.FAIR, false, false, "Some scratches"
-        );
+        ).orElseThrow();
 
         // Assert
         Assert.assertEquals(ListingStatus.ACTIVE, updated.getStatus());
+    }
+
+    @Test
+    public void testUpdateNonExistingListingReturnsEmpty() {
+        // Act
+        final Optional<Listing> updated = listingDao.update(
+            NON_EXISTING_ID, "MacBook Pro M3", new Price(new BigDecimal("1400.00")),
+            buildFakeModel(MODEL_ID, BRAND_ID, SUBCATEGORY_ID, CATEGORY_ID), 2023, Condition.FAIR, false, false, "Some scratches"
+        );
+
+        // Assert
+        Assert.assertTrue(updated.isEmpty());
     }
 
     @Test

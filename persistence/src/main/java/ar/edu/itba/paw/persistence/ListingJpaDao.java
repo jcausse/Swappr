@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 
 @Repository
@@ -293,7 +292,7 @@ public class ListingJpaDao implements ListingDao {
     }
 
     @Override
-    public Listing update(
+    public Optional<Listing> update(
         Long id,
         String title,
         Price price,
@@ -306,7 +305,7 @@ public class ListingJpaDao implements ListingDao {
     ) {
         final Listing listing = em.find(Listing.class, id);
         if (listing == null) {
-            throw new NoSuchElementException("Listing not found with id: " + id);
+            return Optional.empty();
         }
         listing.setTitle(title);
         listing.setPrice(price);
@@ -316,7 +315,7 @@ public class ListingJpaDao implements ListingDao {
         listing.setAcceptsTrade(acceptsTrade);
         listing.setAcceptsShipping(acceptsShipping);
         listing.setDescription(description);
-        return listing;
+        return Optional.of(listing);
     }
 
     @Override

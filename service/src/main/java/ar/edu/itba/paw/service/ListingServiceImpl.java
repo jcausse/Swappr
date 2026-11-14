@@ -275,7 +275,7 @@ public class ListingServiceImpl implements ListingService {
             acceptsTradeFor(price, dto.acceptsTrade()),
             dto.acceptsShipping(),
             dto.description()
-        );
+        ).orElseThrow(() -> NotFoundException.createFor("Listing with ID " + existing.getId()));
 
         final var currentImageIds = existing.getImageIds();
         final var removedImageIds = Optional.ofNullable(dto.removedImageIds()).orElse(List.of()).stream()

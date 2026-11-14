@@ -24,8 +24,8 @@ public interface ListingDao {
 
     void updateStatusBulk(List<Long> ids, ListingStatus status);
 
-    Listing update(Long id, String title, Price price, Model model, int year,
-                   Condition condition, boolean acceptsTrade, boolean acceptsShipping, String description);
+    Optional<Listing> update(Long id, String title, Price price, Model model, int year,
+                             Condition condition, boolean acceptsTrade, boolean acceptsShipping, String description);
     boolean cancel(Long id);
 
     int releaseOfferedListingsForParticipant(Long userId);

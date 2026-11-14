@@ -171,7 +171,7 @@ public class ListingServiceImplTest {
         when(catalogService.getModelById(eq(MODEL_ID))).thenReturn(buildFakeModel());
         when(listingDao.update(
             any(), any(), any(), any(), anyInt(), any(), acceptsTradeCaptor.capture(), anyBoolean(), any()
-        )).thenReturn(listing);
+        )).thenReturn(Optional.of(listing));
     }
 
     private static ListingUpdateDto buildUpdateDto(final long listingId, final Condition condition) {
@@ -522,7 +522,7 @@ public class ListingServiceImplTest {
         when(listingDao.update(
             eq(LISTING_ID), eq(LISTING_TITLE), eq(LISTING_PRICE), eq(model), eq(YEAR),
             eq(Condition.FAIR), eq(true), anyBoolean(), eq(LISTING_DESCRIPTION)
-        )).thenReturn(listing);
+        )).thenReturn(Optional.of(listing));
 
         // Act
         final Listing result = listingService.update(buildUpdateDto(LISTING_ID, Condition.FAIR), SELLER_ID);
@@ -614,7 +614,7 @@ public class ListingServiceImplTest {
         when(listingDao.update(
             eq(LISTING_ID), eq(LISTING_TITLE), eq(LISTING_PRICE), eq(model), eq(YEAR),
             eq(Condition.GOOD), eq(true), anyBoolean(), eq(LISTING_DESCRIPTION)
-        )).thenReturn(listing);
+        )).thenReturn(Optional.of(listing));
         lenient().doThrow(new AssertionError("Foreign image must not be deleted"))
             .when(imageService).delete(eq(FOREIGN_IMAGE_ID));
 
