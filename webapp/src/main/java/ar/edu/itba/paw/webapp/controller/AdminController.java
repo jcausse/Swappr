@@ -17,6 +17,7 @@ import ar.edu.itba.paw.service.OfferService;
 import ar.edu.itba.paw.service.UserService;
 import ar.edu.itba.paw.service.exception.BadParameterException;
 import ar.edu.itba.paw.service.exception.BrandAlreadyExistsException;
+import ar.edu.itba.paw.service.exception.ListingNotCancelableException;
 import ar.edu.itba.paw.service.exception.ModelAlreadyExistsException;
 import ar.edu.itba.paw.service.exception.NotFoundException;
 import ar.edu.itba.paw.service.exception.SelfSuspendException;
@@ -457,6 +458,13 @@ public class AdminController {
                     .addObject("takeDownOfferForm", new AdminTakeDownOfferForm())
                     .addObject("suspendUserForm", new AdminSuspendUserForm())
                     .addObject("grantRoleForm", new AdminGrantRoleForm());
+        } catch (ListingNotCancelableException e) {
+            LOGGER.warn("Listing {} cannot be taken down: {}", form.getListingId(), e.getMessage());
+            errors.rejectValue("listingId", "admin.error.listingCannotBeCanceled");
+            return new ModelAndView("admin/dashboard")
+                    .addObject("takeDownOfferForm", new AdminTakeDownOfferForm())
+                    .addObject("suspendUserForm", new AdminSuspendUserForm())
+                    .addObject("grantRoleForm", new AdminGrantRoleForm());
         }
 
         final var target = RedirectHelper.resolvePath(
@@ -481,6 +489,9 @@ public class AdminController {
             fallback = "/admin/listings?success=listing_takedown";
         } catch (NotFoundException e) {
             LOGGER.warn("Listing {} not found for takedown", id);
+        } catch (ListingNotCancelableException e) {
+            LOGGER.warn("Listing {} cannot be taken down: {}", id, e.getMessage());
+            fallback = "/admin/listings?error=listingCannotBeCanceled";
         }
         final var target = RedirectHelper.resolvePath(redirectUrl, fallback, ADMIN_PATH_FILTER);
         return new ModelAndView("redirect:" + target);
