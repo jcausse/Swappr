@@ -63,4 +63,13 @@ public class CategoriesInterceptorTest {
 
         Assert.assertFalse(mav.getModel().containsKey("categories"));
     }
+
+    @Test
+    public void testPostHandleSkipsForwardViewName() {
+        final ModelAndView mav = new ModelAndView("forward:/account/listings");
+
+        interceptor().postHandle(null, null, null, mav);
+
+        Assert.assertFalse(mav.getModel().containsKey("categories"));
+    }
 }
