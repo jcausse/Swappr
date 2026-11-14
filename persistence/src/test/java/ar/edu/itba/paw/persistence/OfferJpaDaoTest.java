@@ -645,6 +645,49 @@ public class OfferJpaDaoTest {
     }
 
     /* ---------------------------------------------------------------------------------------------- */
+    /* rejectAllForParticipant                                                                         */
+    /* ---------------------------------------------------------------------------------------------- */
+
+    @Test
+    public void testRejectAllForParticipantRejectsPendingAndPendingPaymentOffers() {
+        // Act
+        final int updated = offerDao.rejectAllForParticipant(BUYER_ID);
+
+        // Assert
+        Assert.assertEquals(4, updated);
+        Assert.assertEquals(1, countOffersWhere("offer_id = " + LOW_OFFER_ID + " AND status = 'REJECTED'"));
+        Assert.assertEquals(1, countOffersWhere("offer_id = " + FULL_PRICE_OFFER_ID + " AND status = 'REJECTED'"));
+        Assert.assertEquals(1, countOffersWhere("offer_id = " + GAMING_OFFER_ID + " AND status = 'REJECTED'"));
+        Assert.assertEquals(1, countOffersWhere("offer_id = " + TRADE_OFFER_ID + " AND status = 'REJECTED'"));
+        Assert.assertEquals(0, countOffersWhere(
+                "(buyer_id = " + BUYER_ID + " OR listing_id IN (3, 4))"
+                + " AND status IN ('PENDING', 'PENDING_PAYMENT')"));
+    }
+
+    @Test
+    public void testRejectAllForParticipantLeavesResolvedOffersUntouched() {
+        // Act
+        offerDao.rejectAllForParticipant(BUYER_ID);
+
+        // Assert
+        Assert.assertEquals(1, countOffersWhere("offer_id = " + ACCEPTED_OFFER_ID + " AND status = 'ACCEPTED'"));
+        Assert.assertEquals(1, countOffersWhere("offer_id = " + RATED_OFFER_ID + " AND status = 'ACCEPTED'"));
+        Assert.assertEquals(1, countOffersWhere("offer_id = " + RECENT_ACCEPTED_OFFER_ID + " AND status = 'ACCEPTED'"));
+        Assert.assertEquals(1, countOffersWhere("offer_id = " + REJECTED_OFFER_ID + " AND status = 'REJECTED'"));
+    }
+
+    @Test
+    public void testRejectAllForParticipantDoesNothingForNonParticipant() {
+        // Act
+        final int updated = offerDao.rejectAllForParticipant(NON_EXISTING_ID);
+
+        // Assert
+        Assert.assertEquals(0, updated);
+        Assert.assertEquals(3, countOffersWhere("status = 'PENDING'"));
+        Assert.assertEquals(1, countOffersWhere("status = 'PENDING_PAYMENT'"));
+    }
+
+    /* ---------------------------------------------------------------------------------------------- */
     /* countPendingBySeller                                                                            */
     /* ---------------------------------------------------------------------------------------------- */
 
