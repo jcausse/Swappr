@@ -414,7 +414,20 @@ public class AdminController {
         mav.addObject("statusOptions", Arrays.stream(ListingStatus.values())
                 .map(status -> new StringSelectOption(status.name(), "listing.status." + status.name()))
                 .toList());
+        mav.addObject("listingsReturnUrl", buildListingsReturnUrl(page, filterForm));
         return mav;
+    }
+
+    private String buildListingsReturnUrl(final int page, final AdminListingFilterForm filterForm) {
+        final var builder = UriComponentsBuilder.fromPath("/admin/listings")
+                .queryParam("page", page);
+        if (filterForm.getQuery() != null && !filterForm.getQuery().isBlank()) {
+            builder.queryParam("query", filterForm.getQuery());
+        }
+        if (filterForm.getStatus() != null) {
+            builder.queryParam("status", filterForm.getStatus().name());
+        }
+        return builder.build().encode().toUriString();
     }
 
     @PostMapping("/listings/takedown")
@@ -486,7 +499,17 @@ public class AdminController {
         mav.addObject("statusGroupOptions", Arrays.stream(OfferStatusGroup.values())
                 .map(statusGroup -> new StringSelectOption(statusGroup.name(), "offer.statusGroup." + statusGroup.getStatus()))
                 .toList());
+        mav.addObject("offersReturnUrl", buildOffersReturnUrl(page, filterForm));
         return mav;
+    }
+
+    private String buildOffersReturnUrl(final int page, final AdminOfferFilterForm filterForm) {
+        final var builder = UriComponentsBuilder.fromPath("/admin/offers")
+                .queryParam("page", page);
+        if (filterForm.getStatusGroup() != null) {
+            builder.queryParam("statusGroup", filterForm.getStatusGroup().name());
+        }
+        return builder.build().encode().toUriString();
     }
 
     @PostMapping("/offers/takedown")

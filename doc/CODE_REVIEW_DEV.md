@@ -215,6 +215,7 @@ Things to fix before the final delivery. Items 1-10 were checked against `dev` (
 ### 3.9 Takedown redirects in the admin are built without URL-encoding
 
 - `jsp/admin/listings.jsp:131` and `jsp/admin/offers.jsp:153` build the hidden `redirect` value with `<c:out>`, which escapes HTML but not URLs. A search with `&`, `#` or `%` changes or cuts the destination parameters. Build it with `<c:url>` + `<c:param>`.
+- **Update:** these redirects are now built server-side as `listingsReturnUrl` / `offersReturnUrl`, because `<c:url>` also prepends the context path, which `RedirectHelper` rejects against the `/admin` path predicate (it would silently fall back to a state-less redirect in production).
 
 ### 3.10 Admin catalog actions lose page, sort and filters, and report generic errors
 
