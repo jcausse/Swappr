@@ -305,28 +305,42 @@ public class OfferJpaDaoTest {
     /* ---------------------------------------------------------------------------------------------- */
 
     @Test
-    public void testGetPendingCountsForListingWithSeveralPendingOffers() {
+    public void testGetPendingCountsAggregatesPendingOffersPerListing() {
         // Act
         final Map<Long, OfferPendingCount> counts =
-            offerDao.getPendingCounts(List.of(LOW_OFFER_ID, FULL_PRICE_OFFER_ID));
+            offerDao.getPendingCounts(List.of(MACBOOK_LISTING_ID));
 
         // Assert
-        Assert.assertEquals(2, counts.size());
-        Assert.assertEquals(1L, counts.get(LOW_OFFER_ID).otherCount());
-        Assert.assertEquals(1L, counts.get(LOW_OFFER_ID).betterCount());
-        Assert.assertEquals(1L, counts.get(FULL_PRICE_OFFER_ID).otherCount());
-        Assert.assertEquals(0L, counts.get(FULL_PRICE_OFFER_ID).betterCount());
+        Assert.assertEquals(1, counts.size());
+        Assert.assertEquals(2L, counts.get(MACBOOK_LISTING_ID).count());
+        Assert.assertEquals(0, new BigDecimal("1500.00").compareTo(counts.get(MACBOOK_LISTING_ID).maxAmount()));
     }
 
     @Test
     public void testGetPendingCountsIgnoresNonPendingOffers() {
         // Act (listing 4 also has a rejected and a pending_payment offer, which must be ignored)
-        final Map<Long, OfferPendingCount> counts = offerDao.getPendingCounts(List.of(GAMING_OFFER_ID));
+        final Map<Long, OfferPendingCount> counts = offerDao.getPendingCounts(List.of(GAMING_LISTING_ID));
 
         // Assert
         Assert.assertEquals(1, counts.size());
-        Assert.assertEquals(0L, counts.get(GAMING_OFFER_ID).otherCount());
-        Assert.assertEquals(0L, counts.get(GAMING_OFFER_ID).betterCount());
+        Assert.assertEquals(1L, counts.get(GAMING_LISTING_ID).count());
+        Assert.assertEquals(0, new BigDecimal("1900.00").compareTo(counts.get(GAMING_LISTING_ID).maxAmount()));
+    }
+
+    @Test
+    public void testGetPendingCountsIncludesEqualAmountOffersInMax() {
+        // Arrange (offer 2 drops to the same amount as offer 1)
+        jdbcTemplate.update("UPDATE offers SET amount = ? WHERE offer_id = ?",
+            new BigDecimal("1400.00"), FULL_PRICE_OFFER_ID);
+
+        // Act
+        final Map<Long, OfferPendingCount> counts =
+            offerDao.getPendingCounts(List.of(MACBOOK_LISTING_ID));
+
+        // Assert
+        Assert.assertEquals(1, counts.size());
+        Assert.assertEquals(2L, counts.get(MACBOOK_LISTING_ID).count());
+        Assert.assertEquals(0, new BigDecimal("1400.00").compareTo(counts.get(MACBOOK_LISTING_ID).maxAmount()));
     }
 
     @Test
@@ -339,24 +353,6 @@ public class OfferJpaDaoTest {
     public void testGetPendingCountsWithNullIdsReturnsEmpty() {
         // Act / Assert
         Assert.assertTrue(offerDao.getPendingCounts(null).isEmpty());
-    }
-
-    @Test
-    public void testGetPendingCountsTreatsEqualAmountOffersAsNotBetter() {
-        // Arrange (offer 2 drops to the same amount as offer 1, so neither is better than the other)
-        jdbcTemplate.update("UPDATE offers SET amount = ? WHERE offer_id = ?",
-            new BigDecimal("1400.00"), FULL_PRICE_OFFER_ID);
-
-        // Act
-        final Map<Long, OfferPendingCount> counts =
-            offerDao.getPendingCounts(List.of(LOW_OFFER_ID, FULL_PRICE_OFFER_ID));
-
-        // Assert
-        Assert.assertEquals(2, counts.size());
-        Assert.assertEquals(1L, counts.get(LOW_OFFER_ID).otherCount());
-        Assert.assertEquals(0L, counts.get(LOW_OFFER_ID).betterCount());
-        Assert.assertEquals(1L, counts.get(FULL_PRICE_OFFER_ID).otherCount());
-        Assert.assertEquals(0L, counts.get(FULL_PRICE_OFFER_ID).betterCount());
     }
 
     /* ---------------------------------------------------------------------------------------------- */

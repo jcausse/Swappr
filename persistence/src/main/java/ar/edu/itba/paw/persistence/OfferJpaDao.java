@@ -91,20 +91,19 @@ public class OfferJpaDao implements OfferDao {
     }
 
     @Override
-    public Map<Long, OfferPendingCount> getPendingCounts(Collection<Long> offerIds) {
-        if (offerIds == null || offerIds.isEmpty()) {
+    public Map<Long, OfferPendingCount> getPendingCounts(Collection<Long> listingIds) {
+        if (listingIds == null || listingIds.isEmpty()) {
             return Map.of();
         }
         return em.createQuery(
-                "SELECT new ar.edu.itba.paw.model.OfferPendingCount(o.id, " +
-                    "(SELECT COUNT(p) FROM Offer p WHERE p.listing.id = o.listing.id AND p.status = :pending AND p.id <> o.id), " +
-                    "(SELECT COUNT(p) FROM Offer p WHERE p.listing.id = o.listing.id AND p.status = :pending AND p.id <> o.id AND p.amount > o.amount)) " +
-                    "FROM Offer o WHERE o.id IN :offerIds",
+                "SELECT new ar.edu.itba.paw.model.OfferPendingCount(o.listing.id, COUNT(o), MAX(o.amount)) " +
+                    "FROM Offer o WHERE o.listing.id IN :listingIds AND o.status = :pending " +
+                    "GROUP BY o.listing.id",
                 OfferPendingCount.class)
                 .setParameter("pending", OfferStatus.PENDING)
-                .setParameter("offerIds", offerIds)
+                .setParameter("listingIds", listingIds)
                 .getResultStream()
-                .collect(Collectors.toMap(OfferPendingCount::offerId, count -> count));
+                .collect(Collectors.toMap(OfferPendingCount::listingId, count -> count));
     }
 
     @Override

@@ -65,10 +65,15 @@ public class CategoriesInterceptorTest {
     }
 
     @Test
-<<<<<<< HEAD
     public void testPostHandleSkipsForwardViewName() {
         final ModelAndView mav = new ModelAndView("forward:/account/listings");
-=======
+
+        interceptor().postHandle(null, null, null, mav);
+
+        Assert.assertFalse(mav.getModel().containsKey("categories"));
+    }
+
+    @Test
     public void testPostHandleSkipsNullModelAndView() {
         RuntimeException thrown = null;
         try {
@@ -83,7 +88,6 @@ public class CategoriesInterceptorTest {
     @Test
     public void testPostHandleSkipsModelAndViewWithoutView() {
         final ModelAndView mav = new ModelAndView();
->>>>>>> dev
 
         interceptor().postHandle(null, null, null, mav);
 
