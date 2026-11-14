@@ -24,9 +24,11 @@ import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import ar.edu.itba.paw.service.CatalogService;
 import ar.edu.itba.paw.service.UserService;
 import ar.edu.itba.paw.webapp.auth.AuthHelper;
 import ar.edu.itba.paw.webapp.auth.CurrentUserArgumentResolver;
+import ar.edu.itba.paw.webapp.controller.interceptor.CategoriesInterceptor;
 import ar.edu.itba.paw.webapp.i18n.DatabaseLocaleResolver;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
@@ -62,11 +64,14 @@ public class WebConfig implements WebMvcConfigurer {
 
     private final Environment env;
     private final CurrentUserArgumentResolver currentUserArgumentResolver;
+    private final CatalogService catalogService;
 
     @Autowired
-    public WebConfig(Environment env, @Lazy CurrentUserArgumentResolver currentUserArgumentResolver) {
+    public WebConfig(Environment env, @Lazy CurrentUserArgumentResolver currentUserArgumentResolver,
+                     @Lazy CatalogService catalogService) {
         this.env = env;
         this.currentUserArgumentResolver = currentUserArgumentResolver;
+        this.catalogService = catalogService;
     }
 
     /* --------------------------------------------------------------- */
@@ -128,6 +133,7 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(localeChangeInterceptor());
+        registry.addInterceptor(new CategoriesInterceptor(catalogService));
     }
 
     @Bean
