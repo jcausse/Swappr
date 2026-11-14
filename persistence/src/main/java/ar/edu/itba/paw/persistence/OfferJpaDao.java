@@ -4,6 +4,7 @@ import ar.edu.itba.paw.model.File;
 import ar.edu.itba.paw.model.Listing;
 import ar.edu.itba.paw.model.Offer;
 import ar.edu.itba.paw.model.OfferFilter;
+import ar.edu.itba.paw.model.OfferPendingCount;
 import ar.edu.itba.paw.model.OfferRating;
 import ar.edu.itba.paw.model.OfferStatus;
 import ar.edu.itba.paw.model.OfferStatusCount;
@@ -18,12 +19,12 @@ import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.Collection;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Repository
@@ -34,11 +35,7 @@ public class OfferJpaDao implements OfferDao {
 
     @Override
     public Optional<Offer> getById(Long id) {
-        final Offer offer = em.find(Offer.class, id);
-        if (offer != null) {
-            populateTransientFlags(List.of(offer));
-        }
-        return Optional.ofNullable(offer);
+        return Optional.ofNullable(em.find(Offer.class, id));
     }
 
     @Override
@@ -50,12 +47,7 @@ public class OfferJpaDao implements OfferDao {
                 .setParameter("buyerId", buyer.getId())
                 .setParameter("statuses", List.of(OfferStatus.PENDING, OfferStatus.PENDING_PAYMENT))
                 .getResultList();
-        if (result.isEmpty()) {
-            return Optional.empty();
-        }
-        final Offer offer = result.getFirst();
-        populateTransientFlags(List.of(offer));
-        return Optional.of(offer);
+        return result.isEmpty() ? Optional.empty() : Optional.of(result.getFirst());
     }
 
     @Override
@@ -96,8 +88,24 @@ public class OfferJpaDao implements OfferDao {
         query.setMaxResults(pageSize);
 
         final List<Offer> content = query.getResultList();
-        populateTransientFlags(content);
         return new Page<>(content, page, pageSize, totalCount);
+    }
+
+    @Override
+    public Map<Long, OfferPendingCount> getPendingCounts(Collection<Long> offerIds) {
+        if (offerIds == null || offerIds.isEmpty()) {
+            return Map.of();
+        }
+        return em.createQuery(
+                "SELECT new ar.edu.itba.paw.model.OfferPendingCount(o.id, " +
+                    "(SELECT COUNT(p) FROM Offer p WHERE p.listing.id = o.listing.id AND p.status = :pending AND p.id <> o.id), " +
+                    "(SELECT COUNT(p) FROM Offer p WHERE p.listing.id = o.listing.id AND p.status = :pending AND p.id <> o.id AND p.amount > o.amount)) " +
+                    "FROM Offer o WHERE o.id IN :offerIds",
+                OfferPendingCount.class)
+                .setParameter("pending", OfferStatus.PENDING)
+                .setParameter("offerIds", offerIds)
+                .getResultStream()
+                .collect(Collectors.toMap(OfferPendingCount::offerId, count -> count));
     }
 
     @Override
@@ -116,7 +124,6 @@ public class OfferJpaDao implements OfferDao {
                 .offeredListing(offeredListing)
                 .build();
         em.persist(offer);
-        populateTransientFlags(List.of(offer));
         return offer;
     }
 
@@ -272,45 +279,6 @@ public class OfferJpaDao implements OfferDao {
                 .setParameter("status", OfferStatus.ACCEPTED)
                 .setParameter("cutoff", cutoff)
                 .getResultList();
-        populateTransientFlags(offers);
         return offers;
-    }
-
-    // TODO: This should not be here. Move this to Service layer because this is business logic, not DAO logic.
-    private void populateTransientFlags(List<Offer> offers) {
-        if (offers == null || offers.isEmpty()) return;
-        final Set<Long> listingIds = offers.stream()
-                .map(o -> o.getListing().getId())
-                .collect(Collectors.toSet());
-
-        final List<Object[]> pending = em.createQuery(
-                "SELECT o.listing.id, o.id, o.amount FROM Offer o WHERE o.listing.id IN :listingIds AND o.status = :status",
-                Object[].class)
-                .setParameter("listingIds", listingIds)
-                .setParameter("status", OfferStatus.PENDING)
-                .getResultList();
-
-        for (Offer offer : offers) {
-            boolean hasOther = false;
-            boolean hasBetter = false;
-            final Long listingId = offer.getListing().getId();
-            final Long offerId = offer.getId();
-            final BigDecimal amount = offer.getAmount();
-
-            for (Object[] row : pending) {
-                final Long rowListingId = (Long) row[0];
-                final Long rowOfferId = (Long) row[1];
-                final BigDecimal rowAmount = (BigDecimal) row[2];
-
-                if (rowListingId.equals(listingId) && !rowOfferId.equals(offerId)) {
-                    hasOther = true;
-                    if (rowAmount != null && amount != null && rowAmount.compareTo(amount) > 0) {
-                        hasBetter = true;
-                    }
-                }
-            }
-            offer.setHasOtherOffers(hasOther);
-            offer.setHasBetterOffers(hasBetter);
-        }
     }
 }
