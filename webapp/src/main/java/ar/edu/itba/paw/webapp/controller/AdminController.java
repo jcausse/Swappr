@@ -16,6 +16,8 @@ import ar.edu.itba.paw.service.ListingService;
 import ar.edu.itba.paw.service.OfferService;
 import ar.edu.itba.paw.service.UserService;
 import ar.edu.itba.paw.service.exception.BadParameterException;
+import ar.edu.itba.paw.service.exception.BrandAlreadyExistsException;
+import ar.edu.itba.paw.service.exception.ModelAlreadyExistsException;
 import ar.edu.itba.paw.service.exception.NotFoundException;
 import ar.edu.itba.paw.service.exception.SelfSuspendException;
 import ar.edu.itba.paw.webapp.auth.CurrentUser;
@@ -49,6 +51,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.validation.Valid;
 import java.net.URLEncoder;
@@ -139,7 +142,54 @@ public class AdminController {
                 .addObject("modelReplacementOptions", catalogService.getModelReplacementOptions(
                         modelsPage.getContent().stream().map(ModelInfo::getId).toList()))
                 .addObject("requests", requestsPage.getContent())
-                .addObject("requestsPage", requestsPage);
+                .addObject("requestsPage", requestsPage)
+                .addObject("catalogReturnUrl", buildCatalogReturnUrl(
+                        page, sort, modelPage, modelSort, requestPage, modelFilterForm, createModelFilterForm));
+    }
+
+    private String buildCatalogReturnUrl(
+            final int page,
+            final BrandSort sort,
+            final int modelPage,
+            final ModelSort modelSort,
+            final int requestPage,
+            final AdminModelFilterForm modelFilterForm,
+            final AdminCreateModelFilterForm createModelFilterForm
+    ) {
+        final var builder = UriComponentsBuilder.fromPath("/admin/catalog")
+                .queryParam("page", page)
+                .queryParam("sort", sort.name())
+                .queryParam("modelPage", modelPage)
+                .queryParam("modelSort", modelSort.name())
+                .queryParam("requestPage", requestPage);
+        addQueryParamIfPresent(builder, "filterBrandId", modelFilterForm.getFilterBrandId());
+        addQueryParamIfPresent(builder, "filterCategoryId", modelFilterForm.getFilterCategoryId());
+        addQueryParamIfPresent(builder, "filterSubcategoryId", modelFilterForm.getFilterSubcategoryId());
+        addQueryParamIfPresent(builder, "categoryId", createModelFilterForm.getCategoryId());
+        return builder.build().encode().toUriString();
+    }
+
+    private void addQueryParamIfPresent(
+            final UriComponentsBuilder builder,
+            final String name,
+            final Object value
+    ) {
+        if (value != null) {
+            builder.queryParam(name, value);
+        }
+    }
+
+    private ModelAndView catalogSuccess(final String redirectUrl, final String code) {
+        return catalogOutcome(redirectUrl, "success", code);
+    }
+
+    private ModelAndView catalogError(final String redirectUrl, final String code) {
+        return catalogOutcome(redirectUrl, "error", code);
+    }
+
+    private ModelAndView catalogOutcome(final String redirectUrl, final String key, final String code) {
+        final var target = RedirectHelper.resolvePath(redirectUrl, "/admin/catalog", ADMIN_PATH_FILTER);
+        return new ModelAndView("redirect:" + RedirectHelper.appendQueryParam(target, key, code));
     }
 
     private List<SelectOption> subcategoryOptions(Long categoryId) {
@@ -158,40 +208,45 @@ public class AdminController {
             @CurrentUser User currentUser,
             @PathVariable Long id,
             @Valid @ModelAttribute("acceptRequestForm") AdminBrandModelRequestAcceptForm form,
-            BindingResult errors
+            BindingResult errors,
+            @RequestParam(value = "redirect", required = false) String redirectUrl
     ) {
         LOGGER.info("Admin {} requested acceptance of brand/model request {}", currentUser.getUsername(), id);
         if (errors.hasErrors()) {
-            return new ModelAndView("redirect:/admin/catalog?error=requestInvalid");
+            return catalogError(redirectUrl, "requestInvalid");
         }
 
         try {
             brandModelRequestService.accept(id, form.toDto());
-        } catch (BadParameterException e) {
+        } catch (BrandAlreadyExistsException e) {
             LOGGER.warn("Brand/model request {} could not be accepted: {}", id, e.getMessage());
-            return new ModelAndView("redirect:/admin/catalog?error=requestInvalid");
+            return catalogError(redirectUrl, "brandNameTaken");
+        } catch (ModelAlreadyExistsException e) {
+            LOGGER.warn("Brand/model request {} could not be accepted: {}", id, e.getMessage());
+            return catalogError(redirectUrl, "modelNameTaken");
         } catch (NotFoundException e) {
             LOGGER.warn("Brand/model request {} not found for acceptance", id);
-            return new ModelAndView("redirect:/admin/catalog?error=requestNotFound");
+            return catalogError(redirectUrl, "requestNotFound");
         }
 
-        return new ModelAndView("redirect:/admin/catalog?success=request_accepted");
+        return catalogSuccess(redirectUrl, "request_accepted");
     }
 
     @PostMapping("/catalog/requests/{id}/reject")
     @PreAuthorize("hasRole('ADMIN')")
     public ModelAndView rejectBrandModelRequest(
             @CurrentUser User currentUser,
-            @PathVariable Long id
+            @PathVariable Long id,
+            @RequestParam(value = "redirect", required = false) String redirectUrl
     ) {
         LOGGER.info("Admin {} requested rejection of brand/model request {}", currentUser.getUsername(), id);
         try {
             brandModelRequestService.reject(id);
         } catch (NotFoundException e) {
             LOGGER.warn("Brand/model request {} not found for rejection", id);
-            return new ModelAndView("redirect:/admin/catalog?error=requestNotFound");
+            return catalogError(redirectUrl, "requestNotFound");
         }
-        return new ModelAndView("redirect:/admin/catalog?success=request_rejected");
+        return catalogSuccess(redirectUrl, "request_rejected");
     }
 
     @PostMapping("/catalog/brands")
@@ -199,21 +254,22 @@ public class AdminController {
     public ModelAndView createBrand(
             @CurrentUser User currentUser,
             @Valid @ModelAttribute("createBrandForm") AdminCreateBrandForm form,
-            BindingResult errors
+            BindingResult errors,
+            @RequestParam(value = "redirect", required = false) String redirectUrl
     ) {
         LOGGER.info("Admin {} requested creation of brand '{}'", currentUser.getUsername(), form.getName());
         if (errors.hasErrors()) {
-            return new ModelAndView("redirect:/admin/catalog?error=brandInvalidName");
+            return catalogError(redirectUrl, "brandInvalidName");
         }
 
         try {
             catalogService.createBrand(form.getName());
-        } catch (BadParameterException e) {
+        } catch (BrandAlreadyExistsException e) {
             LOGGER.warn("Brand '{}' could not be created: {}", form.getName(), e.getMessage());
-            return new ModelAndView("redirect:/admin/catalog?error=brandNameTaken");
+            return catalogError(redirectUrl, "brandNameTaken");
         }
 
-        return new ModelAndView("redirect:/admin/catalog?success=brand_created");
+        return catalogSuccess(redirectUrl, "brand_created");
     }
 
     @PostMapping("/catalog/brands/{id}/replace")
@@ -222,24 +278,17 @@ public class AdminController {
             @CurrentUser User currentUser,
             @PathVariable Long id,
             @Valid @ModelAttribute("replaceBrandForm") AdminReplaceBrandForm form,
-            BindingResult errors
+            BindingResult errors,
+            @RequestParam(value = "redirect", required = false) String redirectUrl
     ) {
         LOGGER.info("Admin {} requested replacement of brand {} with {}", currentUser.getUsername(), id, form.getReplacementBrandId());
         if (errors.hasErrors()) {
-            return new ModelAndView("redirect:/admin/catalog?error=brandInvalidReplacement");
+            return catalogError(redirectUrl, "brandInvalidReplacement");
         }
 
-        try {
-            catalogService.replaceBrand(id, form.getReplacementBrandId());
-        } catch (NotFoundException e) {
-            LOGGER.warn("Brand replacement failed for {} -> {}: {}", id, form.getReplacementBrandId(), e.getMessage());
-            return new ModelAndView("redirect:/admin/catalog?error=brandNotFound");
-        } catch (BadParameterException e) {
-            LOGGER.warn("Brand replacement failed for {} -> {}: {}", id, form.getReplacementBrandId(), e.getMessage());
-            return new ModelAndView("redirect:/admin/catalog?error=brandReplaceSame");
-        }
+        catalogService.replaceBrand(id, form.getReplacementBrandId());
 
-        return new ModelAndView("redirect:/admin/catalog?success=brand_replaced");
+        return catalogSuccess(redirectUrl, "brand_replaced");
     }
 
     @PostMapping("/catalog/brands/{id}/rename")
@@ -248,24 +297,22 @@ public class AdminController {
             @CurrentUser User currentUser,
             @PathVariable Long id,
             @Valid @ModelAttribute("renameBrandForm") AdminRenameBrandForm form,
-            BindingResult errors
+            BindingResult errors,
+            @RequestParam(value = "redirect", required = false) String redirectUrl
     ) {
         LOGGER.info("Admin {} requested rename for brand {}", currentUser.getUsername(), id);
         if (errors.hasErrors()) {
-            return new ModelAndView("redirect:/admin/catalog?error=brandInvalidName");
+            return catalogError(redirectUrl, "brandInvalidName");
         }
 
         try {
             catalogService.renameBrand(id, form.getName());
-        } catch (NotFoundException e) {
-            LOGGER.warn("Brand {} not found for rename", id);
-            return new ModelAndView("redirect:/admin/catalog?error=brandNotFound");
-        } catch (BadParameterException e) {
+        } catch (BrandAlreadyExistsException e) {
             LOGGER.warn("Brand {} could not be renamed: {}", id, e.getMessage());
-            return new ModelAndView("redirect:/admin/catalog?error=brandNameTaken");
+            return catalogError(redirectUrl, "brandNameTaken");
         }
 
-        return new ModelAndView("redirect:/admin/catalog?success=brand_renamed");
+        return catalogSuccess(redirectUrl, "brand_renamed");
     }
 
     @PostMapping("/catalog/models")
@@ -273,22 +320,20 @@ public class AdminController {
     public ModelAndView createModel(
             @CurrentUser User currentUser,
             @Valid @ModelAttribute("createModelForm") AdminModelForm form,
-            BindingResult errors
+            BindingResult errors,
+            @RequestParam(value = "redirect", required = false) String redirectUrl
     ) {
         LOGGER.info("Admin {} requested creation of model '{}'", currentUser.getUsername(), form.getName());
         if (errors.hasErrors()) {
-            return new ModelAndView("redirect:/admin/catalog?error=modelInvalid");
+            return catalogError(redirectUrl, "modelInvalid");
         }
         try {
             catalogService.createModel(form.getName(), form.getBrandId(), form.getSubcategoryId());
-        } catch (BadParameterException e) {
+        } catch (ModelAlreadyExistsException e) {
             LOGGER.warn("Model '{}' could not be created: {}", form.getName(), e.getMessage());
-            return new ModelAndView("redirect:/admin/catalog?error=modelNameTaken");
-        } catch (NotFoundException e) {
-            LOGGER.warn("Model '{}' references missing catalog data: {}", form.getName(), e.getMessage());
-            return new ModelAndView("redirect:/admin/catalog?error=modelNotFound");
+            return catalogError(redirectUrl, "modelNameTaken");
         }
-        return new ModelAndView("redirect:/admin/catalog?success=model_created");
+        return catalogSuccess(redirectUrl, "model_created");
     }
 
     @PostMapping("/catalog/models/{id}/edit")
@@ -297,41 +342,32 @@ public class AdminController {
             @CurrentUser User currentUser,
             @PathVariable Long id,
             @Valid @ModelAttribute("editModelForm") AdminModelForm form,
-            BindingResult errors
+            BindingResult errors,
+            @RequestParam(value = "redirect", required = false) String redirectUrl
     ) {
         LOGGER.info("Admin {} requested edit of model {}", currentUser.getUsername(), id);
         if (errors.hasErrors()) {
-            return new ModelAndView("redirect:/admin/catalog?error=modelInvalid");
+            return catalogError(redirectUrl, "modelInvalid");
         }
         try {
             catalogService.updateModel(id, form.getName(), form.getBrandId(), form.getSubcategoryId());
-        } catch (BadParameterException e) {
+        } catch (ModelAlreadyExistsException e) {
             LOGGER.warn("Model {} could not be updated: {}", id, e.getMessage());
-            return new ModelAndView("redirect:/admin/catalog?error=modelNameTaken");
-        } catch (NotFoundException e) {
-            LOGGER.warn("Model {} not found for update", id);
-            return new ModelAndView("redirect:/admin/catalog?error=modelNotFound");
+            return catalogError(redirectUrl, "modelNameTaken");
         }
-        return new ModelAndView("redirect:/admin/catalog?success=model_updated");
+        return catalogSuccess(redirectUrl, "model_updated");
     }
 
     @PostMapping("/catalog/models/{id}/delete")
     @PreAuthorize("hasRole('ADMIN')")
     public ModelAndView deleteModel(
             @CurrentUser User currentUser,
-            @PathVariable Long id
+            @PathVariable Long id,
+            @RequestParam(value = "redirect", required = false) String redirectUrl
     ) {
         LOGGER.info("Admin {} requested deletion of model {}", currentUser.getUsername(), id);
-        try {
-            catalogService.deleteModel(id);
-        } catch (BadParameterException e) {
-            LOGGER.warn("Model {} could not be deleted: {}", id, e.getMessage());
-            return new ModelAndView("redirect:/admin/catalog?error=modelHasListings");
-        } catch (NotFoundException e) {
-            LOGGER.warn("Model {} not found for deletion", id);
-            return new ModelAndView("redirect:/admin/catalog?error=modelNotFound");
-        }
-        return new ModelAndView("redirect:/admin/catalog?success=model_deleted");
+        catalogService.deleteModel(id);
+        return catalogSuccess(redirectUrl, "model_deleted");
     }
 
     @PostMapping("/catalog/models/{id}/replace")
@@ -340,42 +376,27 @@ public class AdminController {
             @CurrentUser User currentUser,
             @PathVariable Long id,
             @Valid @ModelAttribute("replaceModelForm") AdminReplaceModelForm form,
-            BindingResult errors
+            BindingResult errors,
+            @RequestParam(value = "redirect", required = false) String redirectUrl
     ) {
         LOGGER.info("Admin {} requested replacement of model {} with {}", currentUser.getUsername(), id, form.getReplacementModelId());
         if (errors.hasErrors()) {
-            return new ModelAndView("redirect:/admin/catalog?error=modelInvalidReplacement");
+            return catalogError(redirectUrl, "modelInvalidReplacement");
         }
-        try {
-            catalogService.replaceModel(id, form.getReplacementModelId());
-        } catch (NotFoundException e) {
-            LOGGER.warn("Model replacement failed for {} -> {}: {}", id, form.getReplacementModelId(), e.getMessage());
-            return new ModelAndView("redirect:/admin/catalog?error=modelNotFound");
-        } catch (BadParameterException e) {
-            LOGGER.warn("Model replacement failed for {} -> {}: {}", id, form.getReplacementModelId(), e.getMessage());
-            return new ModelAndView("redirect:/admin/catalog?error=modelReplaceSame");
-        }
-        return new ModelAndView("redirect:/admin/catalog?success=model_replaced");
+        catalogService.replaceModel(id, form.getReplacementModelId());
+        return catalogSuccess(redirectUrl, "model_replaced");
     }
 
     @PostMapping("/catalog/brands/{id}/delete")
     @PreAuthorize("hasRole('ADMIN')")
     public ModelAndView deleteBrand(
             @CurrentUser User currentUser,
-            @PathVariable Long id
+            @PathVariable Long id,
+            @RequestParam(value = "redirect", required = false) String redirectUrl
     ) {
         LOGGER.info("Admin {} requested deletion of brand {}", currentUser.getUsername(), id);
-        try {
-            catalogService.deleteBrand(id);
-        } catch (NotFoundException e) {
-            LOGGER.warn("Brand {} not found for deletion", id);
-            return new ModelAndView("redirect:/admin/catalog?error=brandNotFound");
-        } catch (BadParameterException e) {
-            LOGGER.warn("Brand {} could not be deleted: {}", id, e.getMessage());
-            return new ModelAndView("redirect:/admin/catalog?error=brandHasListings");
-        }
-
-        return new ModelAndView("redirect:/admin/catalog?success=brand_deleted");
+        catalogService.deleteBrand(id);
+        return catalogSuccess(redirectUrl, "brand_deleted");
     }
 
     @GetMapping("/listings")
@@ -393,7 +414,20 @@ public class AdminController {
         mav.addObject("statusOptions", Arrays.stream(ListingStatus.values())
                 .map(status -> new StringSelectOption(status.name(), "listing.status." + status.name()))
                 .toList());
+        mav.addObject("listingsReturnUrl", buildListingsReturnUrl(page, filterForm));
         return mav;
+    }
+
+    private String buildListingsReturnUrl(final int page, final AdminListingFilterForm filterForm) {
+        final var builder = UriComponentsBuilder.fromPath("/admin/listings")
+                .queryParam("page", page);
+        if (filterForm.getQuery() != null && !filterForm.getQuery().isBlank()) {
+            builder.queryParam("query", filterForm.getQuery());
+        }
+        if (filterForm.getStatus() != null) {
+            builder.queryParam("status", filterForm.getStatus().name());
+        }
+        return builder.build().encode().toUriString();
     }
 
     @PostMapping("/listings/takedown")
@@ -465,7 +499,17 @@ public class AdminController {
         mav.addObject("statusGroupOptions", Arrays.stream(OfferStatusGroup.values())
                 .map(statusGroup -> new StringSelectOption(statusGroup.name(), "offer.statusGroup." + statusGroup.getStatus()))
                 .toList());
+        mav.addObject("offersReturnUrl", buildOffersReturnUrl(page, filterForm));
         return mav;
+    }
+
+    private String buildOffersReturnUrl(final int page, final AdminOfferFilterForm filterForm) {
+        final var builder = UriComponentsBuilder.fromPath("/admin/offers")
+                .queryParam("page", page);
+        if (filterForm.getStatusGroup() != null) {
+            builder.queryParam("statusGroup", filterForm.getStatusGroup().name());
+        }
+        return builder.build().encode().toUriString();
     }
 
     @PostMapping("/offers/takedown")

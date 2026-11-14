@@ -219,6 +219,7 @@
                 <h3 class="text-sm font-semibold"><c:out value="${createBrandTitle}"/></h3>
                 <c:url value="/admin/catalog/brands" var="createBrandUrl"/>
                 <form action="${createBrandUrl}" method="post" class="flex flex-col sm:flex-row gap-3 items-end">
+                    <input type="hidden" name="redirect" value="<c:out value='${catalogReturnUrl}'/>"/>
                     <div class="flex-1 w-full">
                         <paw:input
                             id="newBrandName"
@@ -251,6 +252,7 @@
                 confirmText="${renameBrandConfirm}"
                 cancelText="${renameBrandCancel}"
                 formAction="${renameBrandUrl}"
+                redirect="${catalogReturnUrl}"
             >
                 <div class="flex flex-col gap-3 text-black">
                     <paw:input
@@ -269,6 +271,7 @@
                 cancelText="${replaceBrandCancel}"
                 formAction="${replaceBrandUrl}"
                 modelAttribute="replaceBrandForm"
+                redirect="${catalogReturnUrl}"
             >
                 <div class="flex flex-col gap-3">
                     <paw:formSelect
@@ -290,6 +293,7 @@
                 confirmText="${deleteBrandConfirm}"
                 cancelText="${deleteBrandCancel}"
                 formAction="${deleteBrandUrl}"
+                redirect="${catalogReturnUrl}"
             >
                 <c:out value="${deleteBrandMessage}"/>
             </paw:confirmDialog>
@@ -515,6 +519,7 @@
                     method="post"
                     class="flex flex-col gap-3"
                 >
+                    <input type="hidden" name="redirect" value="<c:out value='${catalogReturnUrl}'/>"/>
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
                         <paw:formInput
                             path="name"
@@ -567,6 +572,7 @@
                 cancelText="${replaceModelCancel}"
                 formAction="${replaceModelUrl}"
                 modelAttribute="replaceModelForm"
+                redirect="${catalogReturnUrl}"
             >
                 <div class="flex flex-col gap-3">
                     <paw:formSelect
@@ -588,6 +594,7 @@
                 confirmText="${deleteModelConfirm}"
                 cancelText="${deleteModelCancel}"
                 formAction="${deleteModelUrl}"
+                redirect="${catalogReturnUrl}"
             >
                 <c:out value="${deleteModelMessage}"/>
             </paw:confirmDialog>
@@ -685,6 +692,7 @@
                 confirmText="${rejectRequestConfirm}"
                 cancelText="${rejectRequestCancel}"
                 formAction="${rejectRequestUrl}"
+                redirect="${catalogReturnUrl}"
             >
                 <c:out value="${rejectRequestMessage}"/>
             </paw:confirmDialog>
@@ -697,6 +705,7 @@
             cancelText="${acceptRequestCancel}"
             formAction="${catalogUrl}"
             modelAttribute="acceptRequestForm"
+            redirect="${catalogReturnUrl}"
         >
             <div class="flex flex-col gap-3 text-black">
                 <div class="flex flex-col gap-2">
@@ -738,6 +747,7 @@
             cancelText="${editModelCancel}"
             formAction="${catalogUrl}"
             modelAttribute="editModelForm"
+            redirect="${catalogReturnUrl}"
         >
             <div class="flex flex-col gap-3 text-black">
                 <paw:formInput

@@ -358,6 +358,81 @@ public class RedirectHelperTest {
         Assert.assertEquals(FALLBACK, RedirectHelper.resolvePath("/listing/10", FALLBACK, adminFilter));
     }
 
+    /* ---------------------------------------------------------------------------------------------- */
+    /* appendQueryParam                                                                                 */
+    /* ---------------------------------------------------------------------------------------------- */
+
+    @Test
+    public void testAppendQueryParamAddsToPathWithoutQuery() {
+        Assert.assertEquals(
+                "/admin/catalog?success=brand_created",
+                RedirectHelper.appendQueryParam("/admin/catalog", "success", "brand_created")
+        );
+    }
+
+    @Test
+    public void testAppendQueryParamPreservesExistingParamsAndEncodesValue() {
+        Assert.assertEquals(
+                "/admin/catalog?page=2&sort=BRAND_ASC&error=name%3A+taken",
+                RedirectHelper.appendQueryParam(
+                        "/admin/catalog?page=2&sort=BRAND_ASC",
+                        "error",
+                        "name: taken"
+                )
+        );
+    }
+
+    @Test
+    public void testAppendQueryParamReplacesExistingParamWithoutDuplicating() {
+        Assert.assertEquals(
+                "/admin/catalog?page=2&success=model_created",
+                RedirectHelper.appendQueryParam(
+                        "/admin/catalog?success=brand_created&page=2",
+                        "success",
+                        "model_created"
+                )
+        );
+    }
+
+    @Test
+    public void testAppendQueryParamReplacesEncodedParamName() {
+        Assert.assertEquals(
+                "/admin/catalog?page=2&sort=NAME_ASC",
+                RedirectHelper.appendQueryParam(
+                        "/admin/catalog?page=2&sort=BRAND_ASC%20",
+                        "sort",
+                        "NAME_ASC"
+                )
+        );
+    }
+
+    @Test
+    public void testAppendQueryParamPreservesEncodedQueryValues() {
+        Assert.assertEquals(
+                "/admin/catalog?query=a%26b&page=2",
+                RedirectHelper.appendQueryParam(
+                        "/admin/catalog?query=a%26b",
+                        "page",
+                        "2"
+                )
+        );
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testAppendQueryParamNullPathThrowsNpe() {
+        RedirectHelper.appendQueryParam(null, "page", "2");
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testAppendQueryParamNullNameThrowsNpe() {
+        RedirectHelper.appendQueryParam("/admin", null, "2");
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testAppendQueryParamNullValueThrowsNpe() {
+        RedirectHelper.appendQueryParam("/admin", "page", null);
+    }
+
     @Test(expected = NullPointerException.class)
     public void testResolveRefererNullRequestThrowsNpe() {
         RedirectHelper.resolveReferer(null, FALLBACK);

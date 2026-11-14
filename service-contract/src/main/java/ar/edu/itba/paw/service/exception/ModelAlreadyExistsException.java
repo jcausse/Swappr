@@ -2,7 +2,7 @@ package ar.edu.itba.paw.service.exception;
 
 import ar.edu.itba.paw.model.Model;
 
-public class ModelAlreadyExistsException extends RuntimeException {
+public class ModelAlreadyExistsException extends BadParameterException {
 
     private final Long modelId;
     private final String brandName;
@@ -21,6 +21,10 @@ public class ModelAlreadyExistsException extends RuntimeException {
             model.getBrand().getName(),
             model.getName()
         );
+    }
+
+    public static ModelAlreadyExistsException createFor(String brandName, String modelName) {
+        return new ModelAlreadyExistsException(null, brandName, modelName);
     }
 
     public Long getModelId() {

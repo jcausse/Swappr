@@ -6,6 +6,7 @@
 <%@ attribute name="formAction" required="true" %>
 <%@ attribute name="method" required="false" %>
 <%@ attribute name="modelAttribute" required="false" %>
+<%@ attribute name="redirect" required="false" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
 <%@ taglib prefix="paw" tagdir="/WEB-INF/tags" %>
@@ -20,6 +21,9 @@
     <c:choose>
         <c:when test="${not empty modelAttribute}">
             <form:form modelAttribute="${modelAttribute}" action="${formAction}" method="${formMethod}">
+                <c:if test="${not empty redirect}">
+                    <input type="hidden" name="redirect" value="<c:out value='${redirect}'/>"/>
+                </c:if>
                 <div class="text-sm text-black/60 mt-2 mb-6">
                     <jsp:doBody/>
                 </div>
@@ -32,6 +36,9 @@
         </c:when>
         <c:otherwise>
             <form action="${formAction}" method="${formMethod}">
+                <c:if test="${not empty redirect}">
+                    <input type="hidden" name="redirect" value="<c:out value='${redirect}'/>"/>
+                </c:if>
                 <div class="text-sm text-black/60 mt-2 mb-6">
                     <jsp:doBody/>
                 </div>

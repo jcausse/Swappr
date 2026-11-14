@@ -19,6 +19,9 @@ import ar.edu.itba.paw.persistence.ListingDao;
 import ar.edu.itba.paw.persistence.ModelDao;
 import ar.edu.itba.paw.persistence.SubcategoryDao;
 import ar.edu.itba.paw.service.exception.BadParameterException;
+import ar.edu.itba.paw.service.exception.BrandAlreadyExistsException;
+import ar.edu.itba.paw.service.exception.CatalogEntityInUseException;
+import ar.edu.itba.paw.service.exception.ModelAlreadyExistsException;
 import ar.edu.itba.paw.service.exception.NotFoundException;
 import org.junit.Assert;
 import org.junit.Test;
@@ -285,7 +288,7 @@ public class CatalogServiceImplTest {
         Assert.assertSame(created, result);
     }
 
-    @Test(expected = BadParameterException.class)
+    @Test(expected = BrandAlreadyExistsException.class)
     public void testCreateBrandWithExistingNameThrows() {
         when(brandDao.getByName(eq("Apple"))).thenReturn(Optional.of(buildFakeBrand()));
 
@@ -297,7 +300,7 @@ public class CatalogServiceImplTest {
         catalogService.createBrand("   ");
     }
 
-    @Test(expected = BadParameterException.class)
+    @Test(expected = BrandAlreadyExistsException.class)
     public void testRenameBrandToExistingNameThrows() {
         when(brandDao.existsByNameAndIdNot(eq("Dell"), eq(BRAND_ID))).thenReturn(true);
 
@@ -317,7 +320,7 @@ public class CatalogServiceImplTest {
         catalogService.renameBrand(NON_EXISTING_MODEL_ID, "New name");
     }
 
-    @Test(expected = BadParameterException.class)
+    @Test(expected = CatalogEntityInUseException.class)
     public void testDeleteBrandWithListingsThrows() {
         when(brandDao.hasListings(eq(BRAND_ID))).thenReturn(true);
 
@@ -369,7 +372,7 @@ public class CatalogServiceImplTest {
         Assert.assertSame(created, result);
     }
 
-    @Test(expected = BadParameterException.class)
+    @Test(expected = ModelAlreadyExistsException.class)
     public void testCreateModelWithExistingNameThrows() {
         when(brandDao.getById(eq(BRAND_ID))).thenReturn(Optional.of(buildFakeBrand()));
         when(subcategoryDao.getById(eq(SUBCATEGORY_ID))).thenReturn(Optional.of(buildFakeSubcategory()));
@@ -385,7 +388,7 @@ public class CatalogServiceImplTest {
         catalogService.createModel("New Model", BRAND_ID, SUBCATEGORY_ID);
     }
 
-    @Test(expected = BadParameterException.class)
+    @Test(expected = CatalogEntityInUseException.class)
     public void testDeleteModelWithListingsThrows() {
         when(modelDao.hasListings(eq(MODEL_ID))).thenReturn(true);
 

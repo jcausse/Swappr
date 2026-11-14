@@ -18,7 +18,7 @@
         <spring:message code="admin.listings.takedown.desc" var="takedownCardDesc"/>
         <paw:card title="${takedownCardTitle}" subtitle="${takedownCardDesc}">
             <form:form method="post" action="${takedownListingUrl}" modelAttribute="takeDownListingForm" class="flex flex-col sm:flex-row gap-3 items-end mt-2">
-                <input type="hidden" name="redirect" value="/admin/listings?success=listing_takedown"/>
+                <input type="hidden" name="redirect" value="<c:out value='${listingsReturnUrl}'/>"/>
                 <div class="flex-1 w-full">
                     <spring:message code="admin.listings.takedown.idLabel" var="listingIdLabel"/>
                     <spring:message code="admin.listings.takedown.idPlaceholder" var="listingIdPlaceholder"/>
@@ -127,17 +127,8 @@
                                     <paw:linkButton href="${listingViewUrl}" text="${viewListingText}" variant="outline" size="sm" icon="external-link"/>
 
                                     <c:if test="${listing.canBeCanceledByAdmin()}">
-                                        <c:url value="/admin/listings" var="takedownRedirectUrl">
-                                            <c:param name="page" value="${listingsPage.page}"/>
-                                            <c:if test="${not empty filterForm.query}">
-                                                <c:param name="query" value="${filterForm.query}"/>
-                                            </c:if>
-                                            <c:if test="${not empty filterForm.status}">
-                                                <c:param name="status" value="${filterForm.status}"/>
-                                            </c:if>
-                                        </c:url>
                                         <form method="post" action="${takedownActionUrl}">
-                                            <input type="hidden" name="redirect" value="<c:out value='${takedownRedirectUrl}'/>"/>
+                                            <input type="hidden" name="redirect" value="<c:out value='${listingsReturnUrl}'/>"/>
                                             <spring:message code="admin.listings.takedown.btn" var="takeDownBtnText"/>
                                             <paw:button text="${takeDownBtnText}" type="submit" variant="outline" role="danger" size="sm" icon="trash-2"/>
                                         </form>
