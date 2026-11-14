@@ -67,7 +67,8 @@ are no longer maintained; this file keeps only what future reviews need.
   is a data-integrity/cleanup concern, not an actionable review item yet.
 - `Listing` maps images as an `@ElementCollection List<Long> imageIds` over `listing_images` (no
   `Image` association or `ListingImage` entity); covers come from the `coverImageId` formula.
-- Remaining native queries are either the mandated 1+1 ID queries or candidates for JPQL rewrites
-  (`replaceBrand`, `replaceSameNameModelsForBrands`, the model-summary count).
+- The only remaining native queries are the ID queries required by the 1+1 pagination rule
+  (`SiteNotificationJpaDao`, `BrandModelRequestJpaDao`, `ModelJpaDao`); all other queries are typed
+  JPQL. Keep it that way in future changes.
 - Review scope was first the `dev` revision `a80c04fd`, then `a385aa63`, then `ea1b01a1`; the fixes
   landed through `41d08076`.
