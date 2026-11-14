@@ -7,8 +7,10 @@ import lombok.Value;
 
 @Value
 public class ModelListingInfo {
-    Brand brand;
-    Model model;
+    Long brandId;
+    String brandName;
+    Long modelId;
+    String modelName;
     long listingCount;
     Condition condition;
     Price minPrice;
@@ -16,15 +18,19 @@ public class ModelListingInfo {
 
     @Builder
     public ModelListingInfo(
-            Brand brand,
-            Model model,
+            Long brandId,
+            String brandName,
+            Long modelId,
+            String modelName,
             long listingCount,
             Condition condition,
             Price minPrice,
             Price maxPrice
     ) {
-        this.brand = brand;
-        this.model = model;
+        this.brandId = brandId;
+        this.brandName = brandName;
+        this.modelId = modelId;
+        this.modelName = modelName;
         this.listingCount = listingCount;
         this.condition = condition;
         this.minPrice = minPrice;
@@ -32,15 +38,19 @@ public class ModelListingInfo {
     }
 
     public ModelListingInfo(
-            Brand brand,
-            Model model,
-            Condition condition,
+            Long brandId,
+            String brandName,
+            Long modelId,
+            String modelName,
             long listingCount,
+            Condition condition,
             BigDecimal minPrice,
             BigDecimal maxPrice
     ) {
-        this.brand = brand;
-        this.model = model;
+        this.brandId = brandId;
+        this.brandName = brandName;
+        this.modelId = modelId;
+        this.modelName = modelName;
         this.condition = condition;
         this.listingCount = listingCount;
         this.minPrice = new Price(minPrice);
