@@ -22,6 +22,7 @@ import ar.edu.itba.paw.service.dto.OfferFilterDto;
 import ar.edu.itba.paw.service.exception.BadParameterException;
 import ar.edu.itba.paw.service.exception.ForbiddenException;
 import ar.edu.itba.paw.service.exception.NotFoundException;
+import ar.edu.itba.paw.service.exception.OfferNotCancelableException;
 
 import java.time.Instant;
 import java.math.BigDecimal;
@@ -631,7 +632,7 @@ public class OfferServiceImpl implements OfferService {
 
         if (!offer.canBeCanceledByAdmin()) {
             LOGGER.warn("Cannot cancel offer {} in status {}", offerId, offer.getStatus());
-            throw new BadParameterException("Offer cannot be canceled in its current state");
+            throw new OfferNotCancelableException(offerId);
         }
 
         /* Reset listing status to ACTIVE if the current offer is holding it PENDING_TRANSACTION */

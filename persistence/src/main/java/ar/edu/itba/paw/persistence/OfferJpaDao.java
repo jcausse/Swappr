@@ -285,7 +285,7 @@ public class OfferJpaDao implements OfferDao {
     @Override
     public List<Offer> getAcceptedUnratedBefore(Instant cutoff) {
         return em.createQuery(
-                "FROM Offer o WHERE o.status = :status AND o.acceptedAt IS NOT NULL AND o.acceptedAt < :cutoff AND (o.sellerRating IS NULL OR o.buyerRating IS NULL)",
+                "SELECT o FROM Offer o JOIN FETCH o.listing WHERE o.status = :status AND o.acceptedAt IS NOT NULL AND o.acceptedAt < :cutoff AND (o.sellerRating IS NULL OR o.buyerRating IS NULL)",
                 Offer.class)
                 .setParameter("status", OfferStatus.ACCEPTED)
                 .setParameter("cutoff", cutoff)

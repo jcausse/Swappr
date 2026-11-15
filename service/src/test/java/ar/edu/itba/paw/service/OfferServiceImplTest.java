@@ -22,6 +22,7 @@ import ar.edu.itba.paw.service.dto.OfferFilterDto;
 import ar.edu.itba.paw.service.exception.BadParameterException;
 import ar.edu.itba.paw.service.exception.ForbiddenException;
 import ar.edu.itba.paw.service.exception.NotFoundException;
+import ar.edu.itba.paw.service.exception.OfferNotCancelableException;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -748,5 +749,24 @@ public class OfferServiceImplTest {
 
         // Act
         offerService.rate(offer, buildFakeUser(OUTSIDER_ID), OfferRating.POSITIVE);
+    }
+
+    @Test(expected = OfferNotCancelableException.class)
+    public void testCancelByAdminAcceptedOfferThrows() {
+        // Arrange
+        final Offer offer = buildFakeOffer(OfferStatus.ACCEPTED);
+        when(offerDao.getById(eq(OFFER_ID))).thenReturn(Optional.of(offer));
+
+        // Act
+        offerService.cancelByAdmin(OFFER_ID);
+    }
+
+    @Test(expected = NotFoundException.class)
+    public void testCancelByAdminNonExistingOfferThrows() {
+        // Arrange
+        when(offerDao.getById(eq(NON_EXISTING_ID))).thenReturn(Optional.empty());
+
+        // Act
+        offerService.cancelByAdmin(NON_EXISTING_ID);
     }
 }
