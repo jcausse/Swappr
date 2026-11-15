@@ -12,9 +12,9 @@ review).
 
 | Item | Description | Status |
 | --- | --- | --- |
-| 1.1 | [Product summary page runs one query per model (N+1)](#11-product-summary-page-runs-one-query-per-model-n1) | 🕓 todo |
+| 1.1 | [Product summary page runs one query per model (N+1)](#11-product-summary-page-runs-one-query-per-model-n1) | ✅ done |
 | 1.2 | [Canceling a listing does not check its state](#12-canceling-a-listing-does-not-check-its-state) | 🕓 todo |
-| 1.3 | [Auto-rating job loads each listing separately (N+1)](#13-auto-rating-job-loads-each-listing-separately-n1) | 🕓 todo |
+| 1.3 | [Auto-rating job loads each listing separately (N+1)](#13-auto-rating-job-loads-each-listing-separately-n1) | ✅ done |
 | 1.4 | [`ListingJpaDao.update` throws](#14-listingjpadaoupdate-throws) | 🕓 todo |
 | 1.5 | [Offer takedown still catches `BadParameterException`](#15-offer-takedown-still-catches-badparameterexception) | ✅ done |
 | 1.6 | [Catalog request form validates by hand](#16-catalog-request-form-validates-by-hand) | 🕓 todo |
@@ -36,9 +36,9 @@ review).
 | 4.2 | [Catalog write methods have no success-path tests](#42-catalog-write-methods-have-no-success-path-tests) | ❌ false positive |
 | 4.3 | [Misnamed and multi-case DAO tests](#43-misnamed-and-multi-case-dao-tests) | 🕓 todo |
 
-No item in this review is already resolved on current `dev`. Two are false positives, two conflict
-with deliberate decisions of the earlier review, and several are regressions, oversights or
-follow-ups left by earlier fixes (see the notes on each item).
+No item is resolved on current `dev` except 1.1. Two are false positives, two conflict with
+deliberate decisions of the earlier review, and several are regressions, oversights or follow-ups
+left by earlier fixes (see the notes on each item).
 
 ---
 
@@ -46,12 +46,12 @@ follow-ups left by earlier fixes (see the notes on each item).
 
 ### 1.1 Product summary page runs one query per model (N+1)
 
-- (graded) Measured. `ModelJpaDao.getListingInfoSummary` (`persistence/…/ModelJpaDao.java:263`) uses `SELECT new ar.edu.itba.paw.model.ModelListingInfo(b, m, …)`. With entity arguments in a constructor expression, Hibernate 5 selects only `brand_id` / `model_id` and then loads each `Model` with its own `select … from models where model_id=?`.
-- The first page of `/listing/by-product?categoryId=1&subcategoryId=1` runs 16 queries; with `SELECT b, m, …` and `Object[]` it ran 6. The HTML is the same, so it only shows in the SQL log.
-- **Cross-reference:** regression introduced by the earlier fix that replaced the `Object[]` row mapping with an entity constructor projection to remove the casting; that change reintroduced the N+1. Reverting to `Object[]` (or ids + `em.find`) is acceptable here; keep the immutability introduced there.
-- `getListingInfoSummaryForModel` (`:311`) is not affected: its model is already loaded by `em.find`.
-- Fix: select the entities as `Object[]` columns (one query, full entities) or select ids and map onto entities loaded once.
-- Minor, same class: `ModelListingInfo` has two 7-argument constructors with `listingCount` and `condition` in different order (`model/…/ModelListingInfo.java:18` for the builder, `:34` for JPQL). Easy to call the wrong one. Also introduced with the earlier constructor-projection change.
+- **Done.** `ModelListingInfo` / `ModelListingInfoSummary` now carry `brandId` / `brandName` / `modelId` / `modelName` instead of `Brand` / `Model` entities. The aggregation constructor expression selects those scalar columns and groups by them explicitly, so Hibernate runs a single query and never loads entities. `getListingInfoSummaryForModel` also drops its unnecessary `em.find` and derives the summary header from the first row.
+- (graded) Measured. The query used `SELECT new ar.edu.itba.paw.model.ModelListingInfo(b, m, …)`. With entity arguments in a constructor expression, Hibernate 5 only selects `brand_id` / `model_id` and then loads each `Model` with its own `select … from models where model_id=?` (16 queries for the first page instead of 6).
+- **Lesson:** pass the scalar properties the DTO needs (`b.id`, `b.name`, ...) to the constructor instead of entities. That keeps the typed projection and one SQL statement. Do **not** revert to `Object[]`; that was the earlier approach this typing change replaced.
+- **Cross-reference:** the N+1 was introduced by the earlier fix that replaced the `Object[]` row mapping with an entity constructor projection to remove the casting. It is now solved with a scalar constructor projection instead of going back.
+- `getListingInfoSummaryForModel` was not affected (its model was already loaded), but it now uses the same scalar projection.
+- Both `ModelListingInfo` constructors now have the same parameter order and differ only in `Price` vs `BigDecimal`, so the old `listingCount` / `condition` swap that invited wrong calls is gone.
 
 ### 1.2 Canceling a listing does not check its state
 

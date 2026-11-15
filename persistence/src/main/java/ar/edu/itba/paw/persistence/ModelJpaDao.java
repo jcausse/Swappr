@@ -261,11 +261,11 @@ public class ModelJpaDao implements ModelDao {
 
         final var query = em.createQuery(
                 "SELECT new ar.edu.itba.paw.model.ModelListingInfo("
-                + "b, m, l.condition, COUNT(l.condition),"
+                + "b.id, b.name, m.id, m.name, COUNT(l.condition), l.condition,"
                 + " MIN(l.price.amount), MAX(l.price.amount))"
                 + " FROM Listing l JOIN l.model m JOIN m.brand b"
                 + " WHERE m.id IN :modelIds AND l.status = :status" + yearWhere
-                + " GROUP BY b, m, l.condition"
+                + " GROUP BY b.id, b.name, m.id, m.name, l.condition"
                 + " ORDER BY b.name, m.name," + CONDITION_ORDER_CASE,
                 ModelListingInfo.class)
                 .setParameter("modelIds", modelIds)
@@ -301,19 +301,14 @@ public class ModelJpaDao implements ModelDao {
     }
 
     public Optional<ModelListingInfoSummary> getListingInfoSummaryForModel(final Long modelId, final Long excludedListingId) {
-        final Model model = em.find(Model.class, modelId);
-        if (model == null) {
-            return Optional.empty();
-        }
-
         final String excludedClause = excludedListingId != null ? " AND l.id <> :excludedListingId" : "";
         final var query = em.createQuery(
                 "SELECT new ar.edu.itba.paw.model.ModelListingInfo("
-                + "b, m, l.condition, COUNT(l),"
+                + "b.id, b.name, m.id, m.name, COUNT(l), l.condition,"
                 + " MIN(l.price.amount), MAX(l.price.amount))"
                 + " FROM Listing l JOIN l.model m JOIN m.brand b"
                 + " WHERE m.id = :modelId AND l.status = :status" + excludedClause
-                + " GROUP BY b, m, l.condition"
+                + " GROUP BY b.id, b.name, m.id, m.name, l.condition"
                 + " ORDER BY" + CONDITION_ORDER_CASE,
                 ModelListingInfo.class)
                 .setParameter("modelId", modelId)
@@ -328,9 +323,12 @@ public class ModelJpaDao implements ModelDao {
             return Optional.empty();
         }
 
+        final ModelListingInfo first = infos.get(0);
         return Optional.of(ModelListingInfoSummary.builder()
-            .brand(model.getBrand())
-            .model(model)
+            .brandId(first.getBrandId())
+            .brandName(first.getBrandName())
+            .modelId(first.getModelId())
+            .modelName(first.getModelName())
             .listingInfoByCondition(infos)
             .build());
     }
