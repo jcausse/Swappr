@@ -342,9 +342,9 @@ public class CatalogServiceImplTest {
     @Test
     public void testGetModelsDefaultsPageAndSort() {
         final Page<ModelInfo> modelsPage = new Page<>(List.of(), 1, 10, 0);
-        when(modelDao.getWithInfo(null, null, ModelSort.NAME_ASC, 1, 10)).thenReturn(modelsPage);
+        when(modelDao.getWithInfo(null, null, null, ModelSort.NAME_ASC, 1, 10)).thenReturn(modelsPage);
 
-        final Page<ModelInfo> result = catalogService.getModels(null, null, null, null, 10);
+        final Page<ModelInfo> result = catalogService.getModels(null, null, null, null, null, 10);
 
         Assert.assertSame(modelsPage, result);
     }

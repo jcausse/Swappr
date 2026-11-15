@@ -143,6 +143,11 @@ public class OfferJpaDao implements OfferDao {
         return true;
     }
 
+    /*
+     * The bulk UPDATE does not refresh entities already in the persistence context, so the returned
+     * instances may still report PENDING if they were loaded earlier in the same transaction. Use
+     * them only for their immutable data (buyer, listing, offered listing), never to read the status.
+     */
     @Override
     public List<Offer> rejectPendingOffers(Long listingId, Long exceptOfferId) {
         final String pendingClause = exceptOfferId != null

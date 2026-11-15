@@ -344,7 +344,7 @@ public class OfferServiceImpl implements OfferService {
 
     @Override
     @Transactional
-    public List<Offer> rejectPendingOffersForListing(Long listingId, Long exceptOfferId) {
+    public void rejectPendingOffersForListing(Long listingId, Long exceptOfferId) {
         final List<Offer> rejected = offerDao.rejectPendingOffers(listingId, exceptOfferId);
         LOGGER.info("Rejected {} pending offers for listing id={} (except offerId={})", rejected.size(), listingId, exceptOfferId);
         // Collect offered listing IDs to bulk update
@@ -361,7 +361,6 @@ public class OfferServiceImpl implements OfferService {
         for (Offer offer : rejected) {
             notificationDispatcherService.notifyOfferRejected(offer);
         }
-        return rejected;
     }
 
     @Override
@@ -596,21 +595,27 @@ public class OfferServiceImpl implements OfferService {
         final Instant cutoff = Instant.now().minus(RATING_AUTO_ASSIGN_DELAY);
         final List<Offer> pending = offerDao.getAcceptedUnratedBefore(cutoff);
 
-        final List<Long> sellerRatingOfferIds = pending.stream()
+        // Increments are derived from the offers read here, while the bulk UPDATE only touches rows
+        // whose rating is still NULL. A manual rating in between can over-count by one; deriving the
+        // exact increments would require the DAO to report which offers were actually updated.
+        final List<Offer> sellerUnrated = pending.stream()
             .filter(offer -> offer.getSellerRating().isEmpty())
+            .toList();
+        final List<Long> sellerRatingOfferIds = sellerUnrated.stream()
             .map(Offer::getId)
             .toList();
-        final Map<Long, Long> sellerIncrements = pending.stream()
-            .filter(offer -> offer.getSellerRating().isEmpty())
+        final Map<Long, Long> sellerIncrements = sellerUnrated.stream()
             .collect(Collectors.groupingBy(
                 offer -> offer.getListing().getCreator().getId(),
                 Collectors.counting()));
-        final List<Long> buyerRatingOfferIds = pending.stream()
+
+        final List<Offer> buyerUnrated = pending.stream()
             .filter(offer -> offer.getBuyerRating().isEmpty())
+            .toList();
+        final List<Long> buyerRatingOfferIds = buyerUnrated.stream()
             .map(Offer::getId)
             .toList();
-        final Map<Long, Long> buyerIncrements = pending.stream()
-            .filter(offer -> offer.getBuyerRating().isEmpty())
+        final Map<Long, Long> buyerIncrements = buyerUnrated.stream()
             .collect(Collectors.groupingBy(
                 offer -> offer.getBuyer().getId(),
                 Collectors.counting()));

@@ -10,5 +10,4 @@ import lombok.Setter;
 public class AdminCreateModelFilterForm {
 
     private Long categoryId;
-    private Boolean isAutoSubmit = false;
 }

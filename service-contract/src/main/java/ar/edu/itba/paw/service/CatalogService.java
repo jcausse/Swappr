@@ -52,7 +52,7 @@ public interface CatalogService {
 
     Optional<Model> findModelByNameAndBrand(String name, Long brandId);
 
-    Page<ModelInfo> getModels(Long brandId, Long subcategoryId, ModelSort sort, Integer page, int pageSize);
+    Page<ModelInfo> getModels(Long brandId, Long categoryId, Long subcategoryId, ModelSort sort, Integer page, int pageSize);
 
     Map<Long, List<ModelOption>> getModelReplacementOptions(Collection<Long> modelIds);
 
