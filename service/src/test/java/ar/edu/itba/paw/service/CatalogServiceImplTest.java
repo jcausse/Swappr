@@ -431,8 +431,8 @@ public class CatalogServiceImplTest {
         Assert.assertEquals(10, result.getPageSize());
         Assert.assertEquals(25, result.getTotalCount());
         Assert.assertEquals(2, result.getContent().size());
-        Assert.assertEquals("MacBook Air", result.getContent().get(0).getModel().getName());
-        Assert.assertEquals("MacBook Pro", result.getContent().get(1).getModel().getName());
+        Assert.assertEquals("MacBook Air", result.getContent().get(0).getModelName());
+        Assert.assertEquals("MacBook Pro", result.getContent().get(1).getModelName());
         Assert.assertEquals(
             List.of(Condition.LIKE_NEW, Condition.GOOD),
             result.getContent().get(1).getListingInfoByCondition().stream()
@@ -466,8 +466,10 @@ public class CatalogServiceImplTest {
         final ModelListingInfo good = buildListingInfo(model, Condition.GOOD);
         final ModelListingInfo likeNew = buildListingInfo(model, Condition.LIKE_NEW);
         final ModelListingInfoSummary summary = ModelListingInfoSummary.builder()
-            .brand(model.getBrand())
-            .model(model)
+            .brandId(model.getBrand().getId())
+            .brandName(model.getBrand().getName())
+            .modelId(model.getId())
+            .modelName(model.getName())
             .listingInfoByCondition(List.of(likeNew, good))
             .build();
         when(modelDao.getListingInfoSummaryForModel(eq(MODEL_ID), isNull())).thenReturn(Optional.of(summary));
@@ -492,8 +494,10 @@ public class CatalogServiceImplTest {
 
     private ModelListingInfo buildListingInfo(final Model model, final Condition condition) {
         return ModelListingInfo.builder()
-            .brand(model.getBrand())
-            .model(model)
+            .brandId(model.getBrand().getId())
+            .brandName(model.getBrand().getName())
+            .modelId(model.getId())
+            .modelName(model.getName())
             .condition(condition)
             .listingCount(1L)
             .minPrice(new Price(BigDecimal.TEN))
