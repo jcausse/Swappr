@@ -17,7 +17,7 @@ review).
 | 1.3 | [Auto-rating job loads each listing separately (N+1)](#13-auto-rating-job-loads-each-listing-separately-n1) | ✅ done |
 | 1.4 | [`ListingJpaDao.update` throws](#14-listingjpadaoupdate-throws) | ✅ done |
 | 1.5 | [Offer takedown still catches `BadParameterException`](#15-offer-takedown-still-catches-badparameterexception) | ✅ done |
-| 1.6 | [Catalog request form validates by hand](#16-catalog-request-form-validates-by-hand) | 🕓 todo |
+| 1.6 | [Catalog request form validates by hand](#16-catalog-request-form-validates-by-hand) | ✅ done |
 | 2.1 | [Listing/offer takedowns lose the success and error banners](#21-listingoffer-takedowns-lose-the-success-and-error-banners) | 🕓 todo |
 | 2.2 | [Duplicate brand/model request empties the form](#22-duplicate-brandmodel-request-empties-the-form) | 🕓 todo |
 | 2.3 | [Merged brand/model requests lose the second subcategory](#23-merged-brandmodel-requests-lose-the-second-subcategory) | ❌ false positive |

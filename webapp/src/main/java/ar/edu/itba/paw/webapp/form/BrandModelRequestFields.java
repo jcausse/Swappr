@@ -2,7 +2,7 @@ package ar.edu.itba.paw.webapp.form;
 
 import ar.edu.itba.paw.model.BrandModelRequestType;
 
-// Fields shared by the request form and the admin accept form, checked by BrandModelRequestBrandRule.
+// Fields shared by the request form and the admin accept form, checked by @ValidBrandModelRequest.
 public interface BrandModelRequestFields {
 
     BrandModelRequestType getType();
