@@ -30,7 +30,7 @@
 | 2.2 | [N+1 on the main listing, offer and rating lists](#22-n1-on-the-main-listing-offer-and-rating-lists) | 🕓 Open |
 | 2.3 | [Proof-file blobs loaded eagerly just to show metadata](#23-proof-file-blobs-are-loaded-eagerly-just-to-show-metadata) | 🕓 Open |
 | 2.4 | [OSIV deploy marker (added; OSIV accepted as discouraged)](#24-osiv-is-enabled-and-its-deploy-todo-lacks-the-required-marker) | ✅ Resolved |
-| 2.5 | [Notification advice queries the DB on every request including images](#25-notification-advice-queries-the-db-on-every-request-including-images) | 🕓 Open |
+| 2.5 | [Notification advice queries the DB on every request including images](#25-notification-advice-queries-the-db-on-every-request-including-images) | ✅ Resolved |
 | 3.1 | [Admin user-management error paths render a view missing filterForm](#31-admin-user-management-error-paths-render-a-view-missing-filterform) | 🕓 Open |
 | 3.2 | [Missing or tampered hidden IDs produce 500 instead of 400](#32-missing-or-tampered-hidden-ids-produce-500-instead-of-400) | 🕓 Open |
 | 3.3 | [Profile listing pagination is broken and shares page with ratings](#33-profile-listing-pagination-is-broken-and-shares-page-with-ratings) | 🕓 Open |
