@@ -11,11 +11,14 @@ import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Repository
 public class RatingJpaDao implements RatingDao {
@@ -27,20 +30,28 @@ public class RatingJpaDao implements RatingDao {
     public Page<Rating> search(RatingFilter filter) {
         final StringBuilder whereClause = new StringBuilder(" WHERE 1=1");
         final Map<String, Object> params = new HashMap<>();
+        final StringBuilder nativeWhere = new StringBuilder(" WHERE 1=1");
+        final Map<String, Object> nativeParams = new HashMap<>();
 
         if (filter.getRatedId() != null) {
             whereClause.append(" AND r.rated.id = :ratedId");
+            nativeWhere.append(" AND r.rated_id = :ratedId");
             params.put("ratedId", filter.getRatedId());
+            nativeParams.put("ratedId", filter.getRatedId());
         }
 
         if (filter.getRoles() != null && !filter.getRoles().isEmpty()) {
             whereClause.append(" AND r.role IN (:roles)");
+            nativeWhere.append(" AND r.role IN (:roles)");
             params.put("roles", filter.getRoles());
+            nativeParams.put("roles", filter.getRoles().stream().map(Enum::name).toList());
         }
 
         if (filter.getTypes() != null && !filter.getTypes().isEmpty()) {
             whereClause.append(" AND r.type IN (:types)");
+            nativeWhere.append(" AND r.type IN (:types)");
             params.put("types", filter.getTypes());
+            nativeParams.put("types", filter.getTypes().stream().map(Enum::name).toList());
         }
 
         final TypedQuery<Long> countQuery = em.createQuery(
@@ -54,13 +65,33 @@ public class RatingJpaDao implements RatingDao {
             return new Page<>(List.of(), page, pageSize, 0);
         }
 
-        final TypedQuery<Rating> query = em.createQuery(
-                "FROM Rating r" + whereClause + " ORDER BY r.createdAt DESC, r.id DESC", Rating.class);
-        params.forEach(query::setParameter);
-        query.setFirstResult((page - 1) * pageSize);
-        query.setMaxResults(pageSize);
+        // 1+1 pagination: page only rating IDs in a native query, then load those entities.
+        final Query idQuery = em.createNativeQuery(
+                "SELECT r.rating_id FROM ratings r" + nativeWhere
+                + " ORDER BY r.created_at DESC, r.rating_id DESC")
+                .setFirstResult((page - 1) * pageSize)
+                .setMaxResults(pageSize);
+        nativeParams.forEach(idQuery::setParameter);
 
-        return new Page<>(query.getResultList(), page, pageSize, totalCount);
+        final List<Long> ids = ((List<?>) idQuery.getResultList()).stream()
+                .map(row -> ((Number) row).longValue())
+                .toList();
+        if (ids.isEmpty()) {
+            return new Page<>(List.of(), page, pageSize, totalCount);
+        }
+
+        final List<Rating> fetched = em.createQuery(
+                "FROM Rating r WHERE r.id IN :ids", Rating.class)
+                .setParameter("ids", ids)
+                .getResultList();
+        final Map<Long, Rating> byId = fetched.stream()
+                .collect(Collectors.toMap(Rating::getId, rating -> rating));
+        final List<Rating> content = ids.stream()
+                .map(byId::get)
+                .filter(Objects::nonNull)
+                .toList();
+
+        return new Page<>(content, page, pageSize, totalCount);
     }
 
     @Override

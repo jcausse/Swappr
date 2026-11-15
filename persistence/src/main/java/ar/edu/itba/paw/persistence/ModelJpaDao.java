@@ -16,7 +16,10 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Repository
 public class ModelJpaDao implements ModelDao {
@@ -95,29 +98,61 @@ public class ModelJpaDao implements ModelDao {
             return new Page<>(List.of(), page, pageSize, 0);
         }
 
-        // This query doesn't use the 1+1 pattern: it's not needed, since it only returns individual
-        // fields and aggregates and not entities and doesn't paginate fetch joins, so there is no
-        // risk of lazy-fetching issues, in-memory pagination, or n+1 queries
+        // 1+1 pagination: page only model IDs in a native query, then aggregate for those IDs.
+        final StringBuilder nativeWhere = new StringBuilder(" WHERE 1=1");
+        if (brandId != null) nativeWhere.append(" AND m.brand_id = :brandId");
+        if (categoryId != null) nativeWhere.append(" AND s.category_id = :categoryId");
+        if (subcategoryId != null) nativeWhere.append(" AND m.subcategory_id = :subcategoryId");
+
         final String direction = sort.isAscending() ? "ASC" : "DESC";
+        final String nativeOrderBy = sort.getKey().equals("id")
+                ? "m.model_id " + direction
+                : "m.model_name " + direction + ", m.model_id " + direction;
         final String orderBy = sort.getKey().equals("id")
                 ? "m.id " + direction
                 : "m.name " + direction + ", m.id " + direction;
+
+        final var idQuery = em.createNativeQuery(
+                "SELECT m.model_id FROM models m"
+                + " JOIN subcategories s ON s.subcategory_id = m.subcategory_id"
+                + nativeWhere
+                + " ORDER BY " + nativeOrderBy);
+        if (brandId != null) idQuery.setParameter("brandId", brandId);
+        if (categoryId != null) idQuery.setParameter("categoryId", categoryId);
+        if (subcategoryId != null) idQuery.setParameter("subcategoryId", subcategoryId);
+        idQuery.setFirstResult((page - 1) * pageSize);
+        idQuery.setMaxResults(pageSize);
+
+        final List<Long> modelIds = ((List<?>) idQuery.getResultList()).stream()
+                .map(row -> ((Number) row).longValue())
+                .toList();
+
+        if (modelIds.isEmpty()) {
+            return new Page<>(List.of(), page, pageSize, totalCount);
+        }
+
         final var query = em.createQuery(
                 "SELECT new ar.edu.itba.paw.model.ModelInfo("
                 + "m.id, m.name, b.id, b.name, s.id, s.name, COUNT(DISTINCT l.id))"
                 + " FROM Model m JOIN m.brand b JOIN m.subcategory s"
                 + " LEFT JOIN Listing l ON l.model.id = m.id"
                 + where
+                + " AND m.id IN :modelIds"
                 + " GROUP BY m.id, m.name, b.id, b.name, s.id, s.name"
                 + " ORDER BY " + orderBy,
                 ModelInfo.class);
         if (brandId != null) query.setParameter("brandId", brandId);
         if (categoryId != null) query.setParameter("categoryId", categoryId);
         if (subcategoryId != null) query.setParameter("subcategoryId", subcategoryId);
-        query.setFirstResult((page - 1) * pageSize);
-        query.setMaxResults(pageSize);
+        query.setParameter("modelIds", modelIds);
 
-        final List<ModelInfo> content = query.getResultList();
+        final List<ModelInfo> fetched = query.getResultList();
+        final Map<Long, ModelInfo> byId = fetched.stream()
+                .collect(Collectors.toMap(ModelInfo::getId, model -> model));
+        final List<ModelInfo> content = modelIds.stream()
+                .map(byId::get)
+                .filter(Objects::nonNull)
+                .toList();
 
         return new Page<>(content, page, pageSize, totalCount);
     }

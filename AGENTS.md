@@ -204,6 +204,7 @@ While you as an AI agent are allowed to edit this file on your own, you must **a
 ### Pagination (Mandatory)
 
 - **Never paginate a JPQL/HQL entity query with `setFirstResult`/`setMaxResults` when it joins a collection or uses a fetch join.** Hibernate may silently fall back to in-memory pagination (warning `HHH000104`), loading the entire result set before slicing it, causing excessive memory use and severe performance degradation. This is one of the most heavily penalized mistakes in the course.
+- **The 1+1 model is mandatory for every paginated query without exception**: entity queries, projection/DTO queries, aggregate queries and PK-only queries alike. Even when a query currently returns only scalar columns or does not join a collection, a future mapping change must never be able to turn it into in-memory pagination or an N+1. Do not "optimize" around the rule by paginating a JPQL projection directly.
 - **Use the 1+1 query model for every paginated query:**
   1. **ID query**: **always use a native query**, select only entity IDs, apply every filter and `ORDER BY`, and apply `setFirstResult`/`setMaxResults`. This query must not join collections, so one row always maps to one entity.
   2. **Population query**: fetch the entities with `WHERE e.id IN :ids`, without limit or offset, preserving the ID query order (re-apply the same `ORDER BY` or reorder in memory).
