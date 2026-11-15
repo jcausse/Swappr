@@ -109,8 +109,12 @@ public class BrandJpaDaoTest {
     }
 
     @Test
-    public void testExistsByNameAndIdNotIsCaseInsensitiveButExcludesSameBrand() {
+    public void testExistsByNameAndIdNotIsCaseInsensitive() {
         Assert.assertTrue(brandDao.existsByNameAndIdNot("apple", DELL_BRAND_ID));
+    }
+
+    @Test
+    public void testExistsByNameAndIdNotExcludesSameBrandCaseInsensitively() {
         Assert.assertFalse(brandDao.existsByNameAndIdNot("apple", APPLE_BRAND_ID));
     }
 

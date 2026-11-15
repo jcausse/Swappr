@@ -32,9 +32,9 @@ review).
 | 3.4 | [Auto-rating counters can drift from the ratings written](#34-auto-rating-counters-can-drift-from-the-ratings-written) | ✅ done |
 | 3.5 | [`rejectPendingOffers` can return stale entities](#35-rejectpendingoffers-can-return-stale-entities) | ✅ done |
 | 3.6 | [Smaller cleanups](#36-smaller-cleanups) | ✅ done |
-| 4.1 | [`autoRatePendingOffers` has no test](#41-autoratependingoffers-has-no-test) | 🕓 todo |
+| 4.1 | [`autoRatePendingOffers` has no test](#41-autoratependingoffers-has-no-test) | ✅ done |
 | 4.2 | [Catalog write methods have no success-path tests](#42-catalog-write-methods-have-no-success-path-tests) | ❌ false positive |
-| 4.3 | [Misnamed and multi-case DAO tests](#43-misnamed-and-multi-case-dao-tests) | 🕓 todo |
+| 4.3 | [Misnamed and multi-case DAO tests](#43-misnamed-and-multi-case-dao-tests) | ✅ done |
 
 Items: two are false positives, two conflict with deliberate decisions of the earlier review, and several are regressions, oversights or follow-ups left by earlier fixes (see the notes on each item).
 

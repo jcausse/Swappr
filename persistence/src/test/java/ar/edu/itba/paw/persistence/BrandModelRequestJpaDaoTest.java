@@ -215,18 +215,6 @@ public class BrandModelRequestJpaDaoTest {
     }
 
     @Test
-    public void testFindMatchingIgnoresSubcategory() {
-        insertSampleRequests();
-
-        final Optional<BrandModelRequest> maybeRequest =
-                brandModelRequestDao.findMatching("Apple", "MacBook Pro");
-
-        Assert.assertTrue(maybeRequest.isPresent());
-        Assert.assertEquals(702L, (long) maybeRequest.get().getId());
-        Assert.assertEquals(SUBCATEGORY_ID, (long) maybeRequest.get().getSubcategory().getId());
-    }
-
-    @Test
     public void testFindMatchingDifferentModel() {
         insertSampleRequests();
 

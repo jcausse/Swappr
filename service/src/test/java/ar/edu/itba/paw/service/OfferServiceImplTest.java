@@ -34,6 +34,7 @@ import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -760,6 +761,66 @@ public class OfferServiceImplTest {
 
         // Act
         offerService.rate(offer, buildFakeUser(OUTSIDER_ID), OfferRating.POSITIVE);
+    }
+
+    /* ---------------------------------------------------------------------------------------------- */
+    /* autoRatePendingOffers                                                                           */
+    /* ---------------------------------------------------------------------------------------------- */
+
+    @Test
+    public void testAutoRatePendingOffersGroupsIncrementsBySellerAndBuyer() {
+        // Arrange
+        final Offer firstOffer = offerBuilder(OfferStatus.ACCEPTED).id(OFFER_ID).build();
+        final Offer secondOffer = offerBuilder(OfferStatus.ACCEPTED).id(OTHER_OFFER_ID).build();
+        when(offerDao.getAcceptedUnratedBefore(any(Instant.class)))
+            .thenReturn(List.of(firstOffer, secondOffer));
+
+        final Map<Long, Long> sellerIncrements = new HashMap<>();
+        final Map<Long, Long> buyerIncrements = new HashMap<>();
+        doAnswer(invocation -> {
+            sellerIncrements.putAll(invocation.getArgument(0));
+            return null;
+        }).when(userDao).incrementSellerRatingCounters(any(), eq(OfferRating.POSITIVE));
+        doAnswer(invocation -> {
+            buyerIncrements.putAll(invocation.getArgument(0));
+            return null;
+        }).when(userDao).incrementBuyerRatingCounters(any(), eq(OfferRating.POSITIVE));
+
+        // Act
+        offerService.autoRatePendingOffers();
+
+        // Assert
+        Assert.assertEquals(Map.of(SELLER_ID, 2L), sellerIncrements);
+        Assert.assertEquals(Map.of(BUYER_ID, 2L), buyerIncrements);
+    }
+
+    @Test
+    public void testAutoRatePendingOffersExcludesAlreadyRatedSeller() {
+        // Arrange
+        final Offer alreadyRatedOffer = offerBuilder(OfferStatus.ACCEPTED)
+            .id(OFFER_ID)
+            .sellerRating(OfferRating.POSITIVE)
+            .build();
+        when(offerDao.getAcceptedUnratedBefore(any(Instant.class)))
+            .thenReturn(List.of(alreadyRatedOffer));
+
+        final List<Long> sellerRatingOfferIds = new ArrayList<>();
+        final Map<Long, Long> sellerIncrements = new HashMap<>();
+        doAnswer(invocation -> {
+            sellerRatingOfferIds.addAll(invocation.getArgument(0));
+            return 0;
+        }).when(offerDao).setSellerRatings(any(), eq(OfferRating.POSITIVE));
+        doAnswer(invocation -> {
+            sellerIncrements.putAll(invocation.getArgument(0));
+            return null;
+        }).when(userDao).incrementSellerRatingCounters(any(), eq(OfferRating.POSITIVE));
+
+        // Act
+        offerService.autoRatePendingOffers();
+
+        // Assert
+        Assert.assertTrue(sellerRatingOfferIds.isEmpty());
+        Assert.assertTrue(sellerIncrements.isEmpty());
     }
 
     @Test(expected = OfferNotCancelableException.class)
