@@ -3,6 +3,7 @@ package ar.edu.itba.paw.persistence;
 import ar.edu.itba.paw.model.Condition;
 import ar.edu.itba.paw.model.ModelListingInfo;
 import ar.edu.itba.paw.model.ModelListingInfoSummary;
+import ar.edu.itba.paw.model.Page;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -115,5 +116,22 @@ public class ModelListingInfoJpaDaoTest {
     @Test
     public void testGetListingInfoSummaryForModelEmptyWhenModelDoesNotExist() {
         Assert.assertTrue(modelDao.getListingInfoSummaryForModel(NON_EXISTING_MODEL_ID, null).isEmpty());
+    }
+
+    /* ---------------------------------------------------------------------------------------------- */
+    /* getListingInfoSummary                                                                           */
+    /* ---------------------------------------------------------------------------------------------- */
+
+    @Test
+    public void testGetListingInfoSummaryAppliesAllFiltersToCountAndContent() {
+        final Page<ModelListingInfo> page = modelDao.getListingInfoSummary(
+                APPLE_BRAND_ID, MACBOOK_MODEL_ID, 2024, 2024, LAPTOPS_SUBCATEGORY_ID, 1, 10);
+
+        Assert.assertEquals(1, page.getTotalCount());
+        Assert.assertEquals(1, page.getContent().size());
+        final ModelListingInfo info = page.getContent().getFirst();
+        Assert.assertEquals(MACBOOK_MODEL_ID, (long) info.getModelId());
+        Assert.assertEquals(Condition.EXCELLENT, info.getCondition());
+        Assert.assertEquals(0, new BigDecimal("2000.00").compareTo(info.getMinPrice().getAmount()));
     }
 }
