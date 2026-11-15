@@ -460,6 +460,28 @@ public class OfferServiceImplTest {
         Assert.assertEquals(OFFER_ID, (long) result.getId());
     }
 
+    @Test
+    public void testAcceptTradeRejectsOffersOnOfferedListing() {
+        // Arrange
+        final Offer tradeOffer = offerBuilder(OfferStatus.PENDING)
+            .offeredListing(buildFakeListing(OFFERED_LISTING_ID, buildFakeUser(BUYER_ID),
+                ListingStatus.OFFERED_IN_TRADE, false))
+            .build();
+        givenOffer(tradeOffer);
+
+        final List<Long> rejectedListingIds = new ArrayList<>();
+        when(offerDao.rejectPendingOffers(any(), isNull())).thenAnswer(invocation -> {
+            rejectedListingIds.add(invocation.getArgument(0));
+            return List.of();
+        });
+
+        // Act
+        offerService.accept(OFFER_ID, SELLER_ID);
+
+        // Assert
+        Assert.assertTrue(rejectedListingIds.contains(OFFERED_LISTING_ID));
+    }
+
     @Test(expected = ForbiddenException.class)
     public void testAcceptByNonSellerThrows() {
         // Arrange
