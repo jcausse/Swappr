@@ -364,6 +364,7 @@
                             <th class="py-2 pr-4 font-medium">
                                 <c:url value="/admin/catalog" var="modelIdSortUrl">
                                     <c:if test="${not empty modelFilterForm.filterBrandId}"><c:param name="filterBrandId" value="${modelFilterForm.filterBrandId}"/></c:if>
+                                    <c:if test="${not empty modelFilterForm.filterCategoryId}"><c:param name="filterCategoryId" value="${modelFilterForm.filterCategoryId}"/></c:if>
                                     <c:if test="${not empty modelFilterForm.filterSubcategoryId}"><c:param name="filterSubcategoryId" value="${modelFilterForm.filterSubcategoryId}"/></c:if>
                                     <c:param name="page" value="${brandsPage.page}"/>
                                     <c:param name="sort" value="${currentSort.name()}"/>
@@ -377,6 +378,7 @@
                             <th class="py-2 pr-4 font-medium">
                                 <c:url value="/admin/catalog" var="modelNameSortUrl">
                                     <c:if test="${not empty modelFilterForm.filterBrandId}"><c:param name="filterBrandId" value="${modelFilterForm.filterBrandId}"/></c:if>
+                                    <c:if test="${not empty modelFilterForm.filterCategoryId}"><c:param name="filterCategoryId" value="${modelFilterForm.filterCategoryId}"/></c:if>
                                     <c:if test="${not empty modelFilterForm.filterSubcategoryId}"><c:param name="filterSubcategoryId" value="${modelFilterForm.filterSubcategoryId}"/></c:if>
                                     <c:param name="page" value="${brandsPage.page}"/>
                                     <c:param name="sort" value="${currentSort.name()}"/>
