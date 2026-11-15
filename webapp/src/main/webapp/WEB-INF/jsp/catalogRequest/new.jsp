@@ -35,11 +35,7 @@
         <paw:divider />
 
         <form:form id="catalogRequestForm" modelAttribute="requestForm" action="${requestUrl}" method="post" class="flex flex-col gap-4 mt-4">
-            <c:if test="${not empty formError}">
-                <div class="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-                    <spring:message code="${formError}"/>
-                </div>
-            </c:if>
+            <form:errors path="*" element="div" cssClass="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700"/>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <paw:formSelect

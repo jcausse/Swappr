@@ -40,15 +40,10 @@ public class BrandModelRequestController {
             @ModelAttribute("requestForm") BrandModelRequestForm form,
             @RequestParam(value = "categoryId", required = false) Long categoryId,
             @RequestParam(value = "subcategoryId", required = false) Long subcategoryId,
-            @RequestParam(value = "brandId", required = false) Long brandId,
-            @RequestParam(value = "duplicate", defaultValue = "false") boolean duplicate
+            @RequestParam(value = "brandId", required = false) Long brandId
     ) {
         form.applyDefaults(categoryId, subcategoryId, brandId);
-        final ModelAndView mav = render(form);
-        if (duplicate) {
-            mav.addObject("formError", "error.catalogRequest.duplicate");
-        }
-        return mav;
+        return render(form);
     }
 
     @PostMapping
@@ -75,7 +70,8 @@ public class BrandModelRequestController {
             return mav;
         } catch (BrandModelRequestAlreadyExistsException ex) {
             LOGGER.warn("Brand/model request already exists: {}", ex.getMessage());
-            return new ModelAndView("redirect:/catalog-requests/new?duplicate=1");
+            errors.reject("error.catalogRequest.duplicate");
+            return render(form);
         }
 
         return new ModelAndView("redirect:/catalog-requests/success");

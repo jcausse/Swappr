@@ -254,6 +254,8 @@ public class ListingJpaDao implements ListingDao {
 
     @Override
     public int replaceSameNameModelsForBrands(Long fromBrandId, Long toBrandId) {
+        // This is JPQL, not native SQL: the subquery in SET is a Hibernate extension that standard
+        // JPQL does not support.
         return em.createQuery(
                 "UPDATE Listing l SET l.model = ("
                 + "SELECT newModel FROM Model oldModel, Model newModel"
