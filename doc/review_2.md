@@ -13,7 +13,7 @@ review).
 | Item | Description | Status |
 | --- | --- | --- |
 | 1.1 | [Product summary page runs one query per model (N+1)](#11-product-summary-page-runs-one-query-per-model-n1) | ✅ done |
-| 1.2 | [Canceling a listing does not check its state](#12-canceling-a-listing-does-not-check-its-state) | 🕓 todo |
+| 1.2 | [Canceling a listing does not check its state](#12-canceling-a-listing-does-not-check-its-state) | ✅ done |
 | 1.3 | [Auto-rating job loads each listing separately (N+1)](#13-auto-rating-job-loads-each-listing-separately-n1) | ✅ done |
 | 1.4 | [`ListingJpaDao.update` throws](#14-listingjpadaoupdate-throws) | ✅ done |
 | 1.5 | [Offer takedown still catches `BadParameterException`](#15-offer-takedown-still-catches-badparameterexception) | ✅ done |

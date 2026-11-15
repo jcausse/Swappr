@@ -2,6 +2,7 @@ package ar.edu.itba.paw.service;
 
 import ar.edu.itba.paw.persistence.ListingDao;
 import ar.edu.itba.paw.service.exception.ForbiddenException;
+import ar.edu.itba.paw.service.exception.ListingNotCancelableException;
 import ar.edu.itba.paw.service.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -28,6 +29,9 @@ public class ListingCancellationServiceImpl implements ListingCancellationServic
         if (!listing.isCreator(currentUserId)) {
             throw new ForbiddenException("Not authorized to cancel this listing");
         }
+        if (!listing.isActive()) {
+            throw new ListingNotCancelableException(id);
+        }
         offerService.rejectPendingOffersForListing(id, null);
         if (!listingDao.cancel(id)) {
             throw NotFoundException.createFor("Listing with ID " + id);
@@ -39,8 +43,10 @@ public class ListingCancellationServiceImpl implements ListingCancellationServic
     @Transactional
     public void cancelByAdmin(Long id) {
         LOGGER.info("Canceling listing id={} by Admin", id);
-        if (listingDao.getById(id).isEmpty()) {
-            throw NotFoundException.createFor("Listing with ID " + id);
+        final var listing = listingDao.getById(id)
+            .orElseThrow(() -> NotFoundException.createFor("Listing with ID " + id));
+        if (!listing.canBeCanceledByAdmin()) {
+            throw new ListingNotCancelableException(id);
         }
         offerService.rejectPendingOffersForListing(id, null);
         if (!listingDao.cancel(id)) {
