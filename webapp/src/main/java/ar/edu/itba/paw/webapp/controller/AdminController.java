@@ -113,8 +113,6 @@ public class AdminController {
             @ModelAttribute("acceptRequestForm") AdminBrandModelRequestAcceptForm acceptRequestForm
     ) {
         LOGGER.debug("Admin {} accessed catalog management page: brandPage={}, modelPage={}, requestPage={}", currentUser.getUsername(), page, modelPage, requestPage);
-        modelFilterForm.setIsAutoSubmit(false);
-        createModelFilterForm.setIsAutoSubmit(false);
         final var brandsPage = catalogService.getBrands(sort, page, BRAND_PAGE_SIZE);
         final var modelsPage = catalogService.getModels(
                 modelFilterForm.getFilterBrandId(), modelFilterForm.getFilterSubcategoryId(),

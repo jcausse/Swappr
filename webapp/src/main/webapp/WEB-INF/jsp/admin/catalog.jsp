@@ -316,7 +316,6 @@
                 <input type="hidden" name="page" value="${brandsPage.page}"/>
                 <input type="hidden" name="sort" value="${currentSort.name()}"/>
                 <input type="hidden" name="modelSort" value="${currentModelSort.name()}"/>
-                <form:hidden path="isAutoSubmit"/>
                 <div class="flex-1 w-full">
                     <paw:formSelect
                         path="filterBrandId"
@@ -485,8 +484,7 @@
                     method="get"
                     class="flex flex-col sm:flex-row gap-3 items-end"
                 >
-                    <form:hidden path="isAutoSubmit"/>
-                    <input type="hidden" name="page" value="${brandsPage.page}"/>
+                        <input type="hidden" name="page" value="${brandsPage.page}"/>
                     <input type="hidden" name="sort" value="${currentSort.name()}"/>
                     <input type="hidden" name="modelPage" value="${modelsPage.page}"/>
                     <input type="hidden" name="modelSort" value="${currentModelSort.name()}"/>
@@ -834,10 +832,6 @@
                         if (filterSubcategory) {
                             filterSubcategory.value = '';
                         }
-                        var autoSubmit = filterForm.querySelector('input[name="isAutoSubmit"]');
-                        if (autoSubmit) {
-                            autoSubmit.value = 'true';
-                        }
                         filterForm.submit();
                     });
                 }
@@ -846,10 +840,6 @@
                 var createModelFilterCategory = document.getElementById('createModelFilterCategoryId');
                 if (createModelFilterForm && createModelFilterCategory) {
                     createModelFilterCategory.addEventListener('change', function () {
-                        var autoSubmit = createModelFilterForm.querySelector('input[name="isAutoSubmit"]');
-                        if (autoSubmit) {
-                            autoSubmit.value = 'true';
-                        }
                         createModelFilterForm.submit();
                     });
                 }
