@@ -5,8 +5,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
@@ -15,10 +13,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Properties;
 import java.util.function.Predicate;
 
 /**
@@ -32,17 +28,7 @@ public final class RedirectHelper {
     private static final Logger LOGGER = LoggerFactory.getLogger(RedirectHelper.class);
 
     private static final String REFERER_HEADER = "Referer";
-    private static final String FORWARDED_HEADER = "Forwarded";
-    private static final String FORWARDED_PROTO_HEADER = "X-Forwarded-Proto";
     private static final String FORWARDED_HOST_HEADER = "X-Forwarded-Host";
-    private static final String FORWARDED_PORT_HEADER = "X-Forwarded-Port";
-    private static final String FORWARDED_SSL_HEADER = "X-Forwarded-Ssl";
-    private static final String APP_PROPERTIES_RESOURCE = "/app.properties";
-    private static final String BASE_URL_PROPERTY = "app.baseUrl";
-    private static final int HTTP_DEFAULT_PORT = 80;
-    private static final int HTTPS_DEFAULT_PORT = 443;
-
-    private static final ConfiguredBaseUrl CONFIGURED_BASE_URL = loadConfiguredBaseUrl();
 
     private RedirectHelper() {
         throw new AssertionError("Utility class");
@@ -50,7 +36,7 @@ public final class RedirectHelper {
 
     /**
      * Resolves the {@code Referer} header of {@code request} into a normalized context-relative path (preserving query
-     * parameters), or returns {@code fallbackPath} if the header is missing, malformed, or cross-origin/cross-context.
+     * parameters), or returns {@code fallbackPath} if the header is missing, malformed, or cross-host/cross-context.
      */
     public static String resolveReferer(final HttpServletRequest request, final String fallbackPath) {
         return resolveReferer(request, fallbackPath, path -> true);
@@ -58,31 +44,13 @@ public final class RedirectHelper {
 
     /**
      * Resolves the {@code Referer} header of {@code request} into a normalized context-relative path (preserving query
-     * parameters) when it belongs to the same origin and context path and its decoded path satisfies
+     * parameters) when it targets this host and context path and its decoded path satisfies
      * {@code allowedPathPredicate}; otherwise returns {@code fallbackPath}.
      */
     public static String resolveReferer(
             final @NonNull HttpServletRequest request,
             final @NonNull String fallbackPath,
             final @NonNull Predicate<String> allowedPathPredicate
-    ) {
-        return resolveReferer(request, fallbackPath, allowedPathPredicate, CONFIGURED_BASE_URL);
-    }
-
-    static String resolveReferer(
-            final @NonNull HttpServletRequest request,
-            final @NonNull String fallbackPath,
-            final @NonNull Predicate<String> allowedPathPredicate,
-            final URI configuredBaseUrlUri
-    ) {
-        return resolveReferer(request, fallbackPath, allowedPathPredicate, toConfiguredBaseUrl(configuredBaseUrlUri));
-    }
-
-    private static String resolveReferer(
-            final HttpServletRequest request,
-            final String fallbackPath,
-            final Predicate<String> allowedPathPredicate,
-            final ConfiguredBaseUrl configuredBaseUrl
     ) {
         final String referer = request.getHeader(REFERER_HEADER);
         if (referer == null || referer.isBlank() || containsControlChars(referer)) {
@@ -97,12 +65,8 @@ public final class RedirectHelper {
             return fallbackPath;
         }
 
-        final String contextPath = normalizeContextPath(request.getContextPath());
-        final Origin refererOrigin = extractOrigin(refererUri);
-        final Origin requestOrigin = resolveRequestOrigin(request);
-        if (refererOrigin == null || (!refererOrigin.matches(requestOrigin)
-                && !matchesConfiguredBaseUrl(refererOrigin, contextPath, configuredBaseUrl))) {
-            LOGGER.warn("Rejected cross-origin Referer '{}' (expected origin {})", referer, requestOrigin);
+        if (!isSameHost(refererUri, request)) {
+            LOGGER.warn("Rejected cross-host Referer: {}", referer);
             return fallbackPath;
         }
 
@@ -113,6 +77,7 @@ public final class RedirectHelper {
             return fallbackPath;
         }
 
+        final String contextPath = normalizeContextPath(request.getContextPath());
         if (!contextPath.isEmpty() && !matchesPrefix(rawFullPath, contextPath)) {
             LOGGER.warn("Rejected Referer outside application context path '{}': {}", contextPath, referer);
             return fallbackPath;
@@ -244,221 +209,28 @@ public final class RedirectHelper {
         }
     }
 
-    private static ConfiguredBaseUrl loadConfiguredBaseUrl() {
-        try (InputStream stream = RedirectHelper.class.getResourceAsStream(APP_PROPERTIES_RESOURCE)) {
-            if (stream == null) {
-                return null;
-            }
-            final Properties properties = new Properties();
-            properties.load(stream);
-            final String baseUrl = properties.getProperty(BASE_URL_PROPERTY);
-            if (baseUrl == null || baseUrl.isBlank()) {
-                return null;
-            }
-            return toConfiguredBaseUrl(URI.create(baseUrl.trim()));
-        } catch (IOException | IllegalArgumentException e) {
-            LOGGER.warn("Unable to parse {} from {}: {}", BASE_URL_PROPERTY, APP_PROPERTIES_RESOURCE, e.getMessage());
+    private static boolean isSameHost(final URI refererUri, final HttpServletRequest request) {
+        final String scheme = refererUri.getScheme();
+        final String refererHost = refererUri.getHost();
+        if ((!"http".equalsIgnoreCase(scheme) && !"https".equalsIgnoreCase(scheme))
+                || refererUri.getRawUserInfo() != null
+                || refererHost == null || refererHost.isBlank()) {
+            return false;
+        }
+        final String forwardedHost = stripPort(firstHeaderToken(request.getHeader(FORWARDED_HOST_HEADER)));
+        return refererHost.equalsIgnoreCase(request.getServerName()) || (refererHost.equalsIgnoreCase(forwardedHost));
+    }
+
+    private static String stripPort(final String hostHeader) {
+        if (hostHeader == null || hostHeader.isBlank()) {
             return null;
         }
-    }
-
-    private static ConfiguredBaseUrl toConfiguredBaseUrl(final URI uri) {
-        if (uri == null) {
-            return null;
+        if (hostHeader.startsWith("[")) {
+            final int closeBracket = hostHeader.indexOf(']');
+            return closeBracket > 1 ? hostHeader.substring(0, closeBracket + 1) : null;
         }
-        final Origin origin = extractOrigin(uri);
-        if (origin == null) {
-            return null;
-        }
-        return new ConfiguredBaseUrl(origin, normalizeContextPath(uri.getRawPath()));
-    }
-
-    private static boolean matchesConfiguredBaseUrl(
-            final Origin refererOrigin,
-            final String requestContextPath,
-            final ConfiguredBaseUrl configuredBaseUrl
-    ) {
-        return configuredBaseUrl != null
-                && refererOrigin.matches(configuredBaseUrl.origin())
-                && configuredBaseUrl.contextPath().equals(requestContextPath);
-    }
-
-    private static Origin extractOrigin(final URI uri) {
-        final String scheme = uri.getScheme();
-        if (!isHttpScheme(scheme) || uri.getRawUserInfo() != null) {
-            return null;
-        }
-        final String host = uri.getHost();
-        if (host == null || host.isBlank()) {
-            return null;
-        }
-        final int port = uri.getPort() != -1 ? uri.getPort() : defaultPortForScheme(scheme);
-        return new Origin(scheme, host, port);
-    }
-
-    private static Origin resolveRequestOrigin(final HttpServletRequest request) {
-        final ForwardedValues forwarded = parseForwardedHeader(request.getHeader(FORWARDED_HEADER));
-        final String effectiveScheme = resolveRequestScheme(request, forwarded);
-
-        final HostAndPort forwardedHost = resolveForwardedHost(request, forwarded);
-        final String effectiveHost = forwardedHost != null
-                ? forwardedHost.host()
-                : request.getServerName();
-        final int effectivePort = resolveRequestPort(request, effectiveScheme, forwardedHost);
-        return new Origin(effectiveScheme, effectiveHost, effectivePort);
-    }
-
-    private static boolean isHttpScheme(final String scheme) {
-        return "http".equalsIgnoreCase(scheme) || "https".equalsIgnoreCase(scheme);
-    }
-
-    private static int defaultPortForScheme(final String scheme) {
-        return "https".equalsIgnoreCase(scheme) ? HTTPS_DEFAULT_PORT : HTTP_DEFAULT_PORT;
-    }
-
-    private static String resolveRequestScheme(final HttpServletRequest request, final ForwardedValues forwarded) {
-        if (isHttpScheme(forwarded.proto())) {
-            return forwarded.proto();
-        }
-        final String forwardedProto = firstHeaderToken(request.getHeader(FORWARDED_PROTO_HEADER));
-        if (isHttpScheme(forwardedProto)) {
-            return forwardedProto;
-        }
-        final String forwardedSsl = firstHeaderToken(request.getHeader(FORWARDED_SSL_HEADER));
-        if ("on".equalsIgnoreCase(forwardedSsl)) {
-            return "https";
-        }
-        return request.getScheme();
-    }
-
-    private static HostAndPort resolveForwardedHost(
-            final HttpServletRequest request,
-            final ForwardedValues forwarded
-    ) {
-        if (forwarded.host() != null) {
-            final HostAndPort parsed = parseHostAndPort(forwarded.host());
-            if (parsed != null) {
-                return parsed;
-            }
-        }
-        final String forwardedHostHeader = firstHeaderToken(request.getHeader(FORWARDED_HOST_HEADER));
-        if (forwardedHostHeader != null) {
-            return parseHostAndPort(forwardedHostHeader);
-        }
-        return null;
-    }
-
-    private static int resolveRequestPort(
-            final HttpServletRequest request,
-            final String effectiveScheme,
-            final HostAndPort forwardedHost
-    ) {
-        final Integer forwardedPort = parsePositivePort(firstHeaderToken(request.getHeader(FORWARDED_PORT_HEADER)));
-        if (forwardedPort != null) {
-            return forwardedPort;
-        }
-        if (forwardedHost != null) {
-            return forwardedHost.port() != null
-                    ? forwardedHost.port()
-                    : defaultPortForScheme(effectiveScheme);
-        }
-        // TLS terminated at a reverse proxy (with internal Tomcat running on 80, 8080, etc.) exposes standard 443 externally
-        if ("http".equalsIgnoreCase(request.getScheme()) && "https".equalsIgnoreCase(effectiveScheme)) {
-            return HTTPS_DEFAULT_PORT;
-        }
-        final int serverPort = request.getServerPort();
-        return serverPort > 0 ? serverPort : defaultPortForScheme(effectiveScheme);
-    }
-
-    private static ForwardedValues parseForwardedHeader(final String headerValue) {
-        final String firstElement = firstHeaderToken(headerValue);
-        if (firstElement == null) {
-            return new ForwardedValues(null, null);
-        }
-        String proto = null;
-        String host = null;
-        for (final String param : firstElement.split(";")) {
-            final int eqIdx = param.indexOf('=');
-            if (eqIdx <= 0) {
-                continue;
-            }
-            final String key = param.substring(0, eqIdx).trim().toLowerCase(Locale.ROOT);
-            final String value = stripOptionalQuotes(param.substring(eqIdx + 1).trim());
-            if ("proto".equals(key) && proto == null) {
-                proto = value;
-            } else if ("host".equals(key) && host == null) {
-                host = value;
-            }
-        }
-        return new ForwardedValues(proto, host);
-    }
-
-    private static String stripOptionalQuotes(final String value) {
-        if (value.length() >= 2 && value.startsWith("\"") && value.endsWith("\"")) {
-            return value.substring(1, value.length() - 1);
-        }
-        return value;
-    }
-
-    private static HostAndPort parseHostAndPort(final String rawHost) {
-        if (rawHost == null || rawHost.isBlank() || rawHost.contains("@") || containsControlChars(rawHost)) {
-            return null;
-        }
-        final String trimmed = rawHost.trim();
-        if (trimmed.startsWith("[")) {
-            final int closeBracket = trimmed.indexOf(']');
-            if (closeBracket <= 1) {
-                return null;
-            }
-            final String ipv6Host = trimmed.substring(0, closeBracket + 1);
-            if (closeBracket == trimmed.length() - 1) {
-                return new HostAndPort(ipv6Host, null);
-            }
-            if (trimmed.charAt(closeBracket + 1) != ':') {
-                return null;
-            }
-            final Integer port = parsePositivePort(trimmed.substring(closeBracket + 2));
-            return port != null ? new HostAndPort(ipv6Host, port) : null;
-        }
-        final int colonIdx = trimmed.indexOf(':');
-        if (colonIdx < 0) {
-            return new HostAndPort(trimmed, null);
-        }
-        if (colonIdx == 0 || trimmed.indexOf(':', colonIdx + 1) >= 0) {
-            return null;
-        }
-        final Integer port = parsePositivePort(trimmed.substring(colonIdx + 1));
-        return port != null ? new HostAndPort(trimmed.substring(0, colonIdx), port) : null;
-    }
-
-    private static Integer parsePositivePort(final String rawPort) {
-        if (rawPort == null || rawPort.isBlank()) {
-            return null;
-        }
-        try {
-            final int parsed = Integer.parseInt(rawPort.trim());
-            return parsed > 0 && parsed <= 65535 ? parsed : null;
-        } catch (NumberFormatException ignored) {
-            return null;
-        }
-    }
-
-    private record Origin(String scheme, String host, int port) {
-        private boolean matches(final Origin other) {
-            return other != null
-                    && scheme.equalsIgnoreCase(other.scheme)
-                    && host.equalsIgnoreCase(other.host)
-                    && port == other.port;
-        }
-    }
-
-    private record ConfiguredBaseUrl(Origin origin, String contextPath) {
-    }
-
-    private record ForwardedValues(String proto, String host) {
-    }
-
-    private record HostAndPort(String host, Integer port) {
+        final int colonIdx = hostHeader.indexOf(':');
+        return colonIdx >= 0 ? hostHeader.substring(0, colonIdx) : hostHeader;
     }
 
     private static String firstHeaderToken(final String headerValue) {

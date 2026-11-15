@@ -4,7 +4,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 
-import java.net.URI;
 import java.util.function.Predicate;
 
 public class RedirectHelperTest {
@@ -79,132 +78,24 @@ public class RedirectHelperTest {
         final var request = new MockHttpServletRequest();
         request.setScheme("http");
         request.setServerName(PAW_HOST);
-        request.setServerPort(80);
+        request.setServerPort(8080);
         request.setContextPath(PAW_CONTEXT);
-        request.addHeader("X-Forwarded-Proto", "https, http");
         request.addHeader("Referer", "https://pawserver.it.itba.edu.ar/paw-2026b-08/account/my-offers");
 
         Assert.assertEquals("/account/my-offers", RedirectHelper.resolveReferer(request, FALLBACK));
     }
 
     @Test
-    public void testResolveRefererBehindReverseProxyWithForwardedPort() {
-        final var request = new MockHttpServletRequest();
-        request.setScheme("http");
-        request.setServerName("example.org");
-        request.setServerPort(8080);
-        request.setContextPath("");
-        request.addHeader("X-Forwarded-Proto", "https");
-        request.addHeader("X-Forwarded-Port", "8443");
-        request.addHeader("Referer", "https://example.org:8443/listing");
-
-        Assert.assertEquals("/listing", RedirectHelper.resolveReferer(request, FALLBACK));
-    }
-
-    @Test
-    public void testResolveRefererBehindTlsReverseProxyOnNonDefaultBackendPortWithoutForwardedPort() {
-        final var request = new MockHttpServletRequest();
-        request.setScheme("http");
-        request.setServerName(PAW_HOST);
-        request.setServerPort(8080);
-        request.setContextPath(PAW_CONTEXT);
-        request.addHeader("X-Forwarded-Proto", "https");
-        request.addHeader("Referer", "https://pawserver.it.itba.edu.ar/paw-2026b-08/listing?page=2");
-
-        Assert.assertEquals("/listing?page=2", RedirectHelper.resolveReferer(request, FALLBACK));
-    }
-
-    @Test
     public void testResolveRefererBehindReverseProxyWithForwardedHost() {
-        final var tlsRequest = new MockHttpServletRequest();
-        tlsRequest.setScheme("http");
-        tlsRequest.setServerName("localhost");
-        tlsRequest.setServerPort(8080);
-        tlsRequest.setContextPath(PAW_CONTEXT);
-        tlsRequest.addHeader("X-Forwarded-Proto", "https");
-        tlsRequest.addHeader("X-Forwarded-Host", PAW_HOST);
-        tlsRequest.addHeader("Referer", "https://pawserver.it.itba.edu.ar/paw-2026b-08/listing");
-
-        Assert.assertEquals("/listing", RedirectHelper.resolveReferer(tlsRequest, FALLBACK));
-
-        final var hostWithPortRequest = new MockHttpServletRequest();
-        hostWithPortRequest.setScheme("http");
-        hostWithPortRequest.setServerName("127.0.0.1");
-        hostWithPortRequest.setServerPort(8080);
-        hostWithPortRequest.setContextPath("");
-        hostWithPortRequest.addHeader("X-Forwarded-Proto", "https");
-        hostWithPortRequest.addHeader("X-Forwarded-Host", "example.org:8443");
-        hostWithPortRequest.addHeader("Referer", "https://example.org:8443/account/my-offers");
-
-        Assert.assertEquals("/account/my-offers", RedirectHelper.resolveReferer(hostWithPortRequest, FALLBACK));
-    }
-
-    @Test
-    public void testResolveRefererBehindReverseProxyWithRfc7239ForwardedHeader() {
         final var request = new MockHttpServletRequest();
         request.setScheme("http");
         request.setServerName("localhost");
         request.setServerPort(8080);
         request.setContextPath(PAW_CONTEXT);
-        request.addHeader("Forwarded", "for=192.0.2.60;proto=https;host=\"pawserver.it.itba.edu.ar\", for=10.0.0.2");
-        request.addHeader("Referer", "https://pawserver.it.itba.edu.ar/paw-2026b-08/listing");
+        request.addHeader("X-Forwarded-Host", "pawserver.it.itba.edu.ar:443, internal-proxy:8080");
+        request.addHeader("Referer", "https://pawserver.it.itba.edu.ar/paw-2026b-08/listing?page=2");
 
-        Assert.assertEquals("/listing", RedirectHelper.resolveReferer(request, FALLBACK));
-    }
-
-    @Test
-    public void testResolveRefererBehindReverseProxyWithForwardedSslOn() {
-        final var request = new MockHttpServletRequest();
-        request.setScheme("http");
-        request.setServerName(PAW_HOST);
-        request.setServerPort(8080);
-        request.setContextPath(PAW_CONTEXT);
-        request.addHeader("X-Forwarded-Ssl", "on");
-        request.addHeader("Referer", "https://pawserver.it.itba.edu.ar/paw-2026b-08/listing");
-
-        Assert.assertEquals("/listing", RedirectHelper.resolveReferer(request, FALLBACK));
-    }
-
-    @Test
-    public void testResolveRefererBehindReverseProxyWithoutForwardedHeadersMatchesConfiguredBaseUrl() {
-        final URI configuredProdBaseUrl = URI.create("https://pawserver.it.itba.edu.ar/paw-2026b-08");
-        final Predicate<String> allowAll = path -> true;
-
-        final var validRequest = new MockHttpServletRequest();
-        validRequest.setScheme("http");
-        validRequest.setServerName("localhost");
-        validRequest.setServerPort(8080);
-        validRequest.setContextPath(PAW_CONTEXT);
-        validRequest.addHeader("Referer", "https://pawserver.it.itba.edu.ar/paw-2026b-08/listing?sort=PRICE_ASC");
-
-        Assert.assertEquals(
-                "/listing?sort=PRICE_ASC",
-                RedirectHelper.resolveReferer(validRequest, FALLBACK, allowAll, configuredProdBaseUrl)
-        );
-
-        final var downgradedSchemeRequest = new MockHttpServletRequest();
-        downgradedSchemeRequest.setScheme("http");
-        downgradedSchemeRequest.setServerName("localhost");
-        downgradedSchemeRequest.setServerPort(8080);
-        downgradedSchemeRequest.setContextPath(PAW_CONTEXT);
-        downgradedSchemeRequest.addHeader("Referer", "http://pawserver.it.itba.edu.ar/paw-2026b-08/listing");
-
-        Assert.assertEquals(
-                FALLBACK,
-                RedirectHelper.resolveReferer(downgradedSchemeRequest, FALLBACK, allowAll, configuredProdBaseUrl)
-        );
-
-        final var wrongContextPathRequest = new MockHttpServletRequest();
-        wrongContextPathRequest.setScheme("http");
-        wrongContextPathRequest.setServerName("localhost");
-        wrongContextPathRequest.setServerPort(8080);
-        wrongContextPathRequest.setContextPath(PAW_CONTEXT);
-        wrongContextPathRequest.addHeader("Referer", "https://pawserver.it.itba.edu.ar/paw-2026b-01/listing");
-
-        Assert.assertEquals(
-                FALLBACK,
-                RedirectHelper.resolveReferer(wrongContextPathRequest, FALLBACK, allowAll, configuredProdBaseUrl)
-        );
+        Assert.assertEquals("/listing?page=2", RedirectHelper.resolveReferer(request, FALLBACK));
     }
 
     @Test
@@ -254,28 +145,6 @@ public class RedirectHelperTest {
         final var prefixHostReq = buildDevRequest();
         prefixHostReq.addHeader("Referer", "http://evillocalhost:8080/listing");
         Assert.assertEquals(FALLBACK, RedirectHelper.resolveReferer(prefixHostReq, FALLBACK));
-    }
-
-    @Test
-    public void testResolveRefererRejectsDifferentPortOnSameHost() {
-        final var otherCustomPort = buildDevRequest();
-        otherCustomPort.addHeader("Referer", "http://localhost:3000/listing");
-        Assert.assertEquals(FALLBACK, RedirectHelper.resolveReferer(otherCustomPort, FALLBACK));
-
-        final var defaultPortAgainst8080 = buildDevRequest();
-        defaultPortAgainst8080.addHeader("Referer", "http://localhost/listing");
-        Assert.assertEquals(FALLBACK, RedirectHelper.resolveReferer(defaultPortAgainst8080, FALLBACK));
-    }
-
-    @Test
-    public void testResolveRefererRejectsSchemeMismatch() {
-        final var httpsOnHttpDev = buildDevRequest();
-        httpsOnHttpDev.addHeader("Referer", "https://localhost:8080/listing");
-        Assert.assertEquals(FALLBACK, RedirectHelper.resolveReferer(httpsOnHttpDev, FALLBACK));
-
-        final var httpOnHttpsProd = buildProdRequest();
-        httpOnHttpsProd.addHeader("Referer", "http://pawserver.it.itba.edu.ar/paw-2026b-08/listing");
-        Assert.assertEquals(FALLBACK, RedirectHelper.resolveReferer(httpOnHttpsProd, FALLBACK));
     }
 
     @Test
