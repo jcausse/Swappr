@@ -21,7 +21,8 @@ public interface ModelDao {
     Page<ModelListingInfo> getListingInfoSummary(Long brandId, Long modelId, Integer fromYear, Integer toYear,
             Long subcategoryId, int page, int pageSize);
 
-    Page<ModelInfo> getWithInfo(Long brandId, Long subcategoryId, ModelSort sort, int page, int pageSize);
+    Page<ModelInfo> getWithInfo(Long brandId, Long categoryId, Long subcategoryId, ModelSort sort, int page,
+            int pageSize);
 
     List<Model> getAllWithBrand();
 

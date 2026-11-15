@@ -181,10 +181,17 @@ public class CatalogServiceImpl implements CatalogService {
     }
 
     @Override
-    public Page<ModelInfo> getModels(Long brandId, Long subcategoryId, ModelSort sort, Integer page, int pageSize) {
+    public Page<ModelInfo> getModels(
+            Long brandId,
+            Long categoryId,
+            Long subcategoryId,
+            ModelSort sort,
+            Integer page,
+            int pageSize
+    ) {
         final int safePage = page == null || page < 1 ? 1 : page;
         return modelDao.getWithInfo(
-            brandId, subcategoryId, sort == null ? ModelSort.NAME_ASC : sort, safePage, pageSize
+            brandId, categoryId, subcategoryId, sort == null ? ModelSort.NAME_ASC : sort, safePage, pageSize
         );
     }
 

@@ -35,6 +35,7 @@ public class ModelJpaDaoTest {
 
     private static final long SUBCATEGORY_ID = 1L;
     private static final long PHONES_SUBCATEGORY_ID = 2L;
+    private static final long PHONES_CATEGORY_ID = 2L;
     private static final long NON_EXISTING_ID = 9000L;
 
     private static final long MACBOOK_PRO_MODEL_ID = 1L;
@@ -149,7 +150,7 @@ public class ModelJpaDaoTest {
 
     @Test
     public void testGetWithInfoFirstPageSortedByName() {
-        final Page<ModelInfo> page = modelDao.getWithInfo(null, null, ModelSort.NAME_ASC, 1, 2);
+        final Page<ModelInfo> page = modelDao.getWithInfo(null, null, null, ModelSort.NAME_ASC, 1, 2);
 
         Assert.assertEquals(1, page.getPage());
         Assert.assertEquals(2, page.getPageSize());
@@ -163,7 +164,7 @@ public class ModelJpaDaoTest {
 
     @Test
     public void testGetWithInfoFiltersByBrand() {
-        final Page<ModelInfo> page = modelDao.getWithInfo(DELL_BRAND_ID, null, ModelSort.NAME_ASC, 1, 10);
+        final Page<ModelInfo> page = modelDao.getWithInfo(DELL_BRAND_ID, null, null, ModelSort.NAME_ASC, 1, 10);
 
         Assert.assertEquals(2, page.getTotalCount());
         Assert.assertEquals(List.of("Inspiron 14", "XPS 15"),
@@ -173,7 +174,7 @@ public class ModelJpaDaoTest {
 
     @Test
     public void testGetWithInfoFiltersBySubcategory() {
-        final Page<ModelInfo> page = modelDao.getWithInfo(null, PHONES_SUBCATEGORY_ID, ModelSort.NAME_ASC, 1, 10);
+        final Page<ModelInfo> page = modelDao.getWithInfo(null, null, PHONES_SUBCATEGORY_ID, ModelSort.NAME_ASC, 1, 10);
 
         Assert.assertEquals(1, page.getTotalCount());
         Assert.assertEquals("Galaxy S23", page.getContent().get(0).getName());
@@ -181,8 +182,16 @@ public class ModelJpaDaoTest {
     }
 
     @Test
+    public void testGetWithInfoFiltersByCategory() {
+        final Page<ModelInfo> page = modelDao.getWithInfo(null, PHONES_CATEGORY_ID, null, ModelSort.NAME_ASC, 1, 10);
+
+        Assert.assertEquals(1, page.getTotalCount());
+        Assert.assertEquals("Galaxy S23", page.getContent().get(0).getName());
+    }
+
+    @Test
     public void testGetWithInfoSortedById() {
-        final Page<ModelInfo> page = modelDao.getWithInfo(null, null, ModelSort.ID_ASC, 1, 2);
+        final Page<ModelInfo> page = modelDao.getWithInfo(null, null, null, ModelSort.ID_ASC, 1, 2);
 
         Assert.assertEquals(List.of("MacBook Pro", "MacBook Air"),
                 page.getContent().stream().map(ModelInfo::getName).toList());
@@ -190,7 +199,7 @@ public class ModelJpaDaoTest {
 
     @Test
     public void testGetWithInfoSortedByNameDescending() {
-        final Page<ModelInfo> page = modelDao.getWithInfo(null, null, ModelSort.NAME_DESC, 1, 2);
+        final Page<ModelInfo> page = modelDao.getWithInfo(null, null, null, ModelSort.NAME_DESC, 1, 2);
 
         Assert.assertEquals(List.of("XPS 15", "ThinkPad X1"),
                 page.getContent().stream().map(ModelInfo::getName).toList());

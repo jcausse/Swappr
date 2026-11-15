@@ -316,7 +316,6 @@
                 <input type="hidden" name="page" value="${brandsPage.page}"/>
                 <input type="hidden" name="sort" value="${currentSort.name()}"/>
                 <input type="hidden" name="modelSort" value="${currentModelSort.name()}"/>
-                <form:hidden path="isAutoSubmit"/>
                 <div class="flex-1 w-full">
                     <paw:formSelect
                         path="filterBrandId"
@@ -364,6 +363,7 @@
                             <th class="py-2 pr-4 font-medium">
                                 <c:url value="/admin/catalog" var="modelIdSortUrl">
                                     <c:if test="${not empty modelFilterForm.filterBrandId}"><c:param name="filterBrandId" value="${modelFilterForm.filterBrandId}"/></c:if>
+                                    <c:if test="${not empty modelFilterForm.filterCategoryId}"><c:param name="filterCategoryId" value="${modelFilterForm.filterCategoryId}"/></c:if>
                                     <c:if test="${not empty modelFilterForm.filterSubcategoryId}"><c:param name="filterSubcategoryId" value="${modelFilterForm.filterSubcategoryId}"/></c:if>
                                     <c:param name="page" value="${brandsPage.page}"/>
                                     <c:param name="sort" value="${currentSort.name()}"/>
@@ -377,6 +377,7 @@
                             <th class="py-2 pr-4 font-medium">
                                 <c:url value="/admin/catalog" var="modelNameSortUrl">
                                     <c:if test="${not empty modelFilterForm.filterBrandId}"><c:param name="filterBrandId" value="${modelFilterForm.filterBrandId}"/></c:if>
+                                    <c:if test="${not empty modelFilterForm.filterCategoryId}"><c:param name="filterCategoryId" value="${modelFilterForm.filterCategoryId}"/></c:if>
                                     <c:if test="${not empty modelFilterForm.filterSubcategoryId}"><c:param name="filterSubcategoryId" value="${modelFilterForm.filterSubcategoryId}"/></c:if>
                                     <c:param name="page" value="${brandsPage.page}"/>
                                     <c:param name="sort" value="${currentSort.name()}"/>
@@ -485,8 +486,7 @@
                     method="get"
                     class="flex flex-col sm:flex-row gap-3 items-end"
                 >
-                    <form:hidden path="isAutoSubmit"/>
-                    <input type="hidden" name="page" value="${brandsPage.page}"/>
+                        <input type="hidden" name="page" value="${brandsPage.page}"/>
                     <input type="hidden" name="sort" value="${currentSort.name()}"/>
                     <input type="hidden" name="modelPage" value="${modelsPage.page}"/>
                     <input type="hidden" name="modelSort" value="${currentModelSort.name()}"/>
@@ -834,10 +834,6 @@
                         if (filterSubcategory) {
                             filterSubcategory.value = '';
                         }
-                        var autoSubmit = filterForm.querySelector('input[name="isAutoSubmit"]');
-                        if (autoSubmit) {
-                            autoSubmit.value = 'true';
-                        }
                         filterForm.submit();
                     });
                 }
@@ -846,10 +842,6 @@
                 var createModelFilterCategory = document.getElementById('createModelFilterCategoryId');
                 if (createModelFilterForm && createModelFilterCategory) {
                     createModelFilterCategory.addEventListener('change', function () {
-                        var autoSubmit = createModelFilterForm.querySelector('input[name="isAutoSubmit"]');
-                        if (autoSubmit) {
-                            autoSubmit.value = 'true';
-                        }
                         createModelFilterForm.submit();
                     });
                 }

@@ -68,7 +68,7 @@ public class AccountController {
     public ModelAndView listings(@CurrentUser User currentUser, @ModelAttribute("filterForm") ListingFilterForm filterForm) {
         LOGGER.debug("User {} accessing account listings", currentUser.getId());
 
-        final var filter = filterForm.toDto(currentUser.getId(), ACCOUNT_LISTINGS_PAGE_SIZE);
+        final var filter = filterForm.toOwnedListingsDto(currentUser.getId(), ACCOUNT_LISTINGS_PAGE_SIZE);
 
         final var listingPage = listingService.search(filter);
         final var listings = listingPage.getContent();
