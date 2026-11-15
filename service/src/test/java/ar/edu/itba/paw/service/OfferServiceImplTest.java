@@ -33,11 +33,13 @@ import org.mockito.junit.MockitoJUnitRunner;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.isNull;
 import static org.mockito.Mockito.lenient;
@@ -533,19 +535,28 @@ public class OfferServiceImplTest {
     /* ---------------------------------------------------------------------------------------------- */
 
     @Test
-    public void testRejectPendingOffersReturnsRejectedOffers() {
+    public void testRejectPendingOffersForListingReleasesOfferedListings() {
         // Arrange
-        final List<Offer> rejected = List.of(
-            buildFakeOffer(OfferStatus.REJECTED),
-            offerBuilder(OfferStatus.REJECTED).id(OTHER_OFFER_ID).build()
-        );
-        when(offerDao.rejectPendingOffers(eq(LISTING_ID), isNull())).thenReturn(rejected);
+        final Offer tradeOffer = offerBuilder(OfferStatus.REJECTED)
+            .id(OFFER_ID)
+            .offeredListing(buildFakeListing(OFFERED_LISTING_ID, buildFakeUser(BUYER_ID),
+                ListingStatus.OFFERED_IN_TRADE, false))
+            .build();
+        final Offer cashOffer = offerBuilder(OfferStatus.REJECTED).id(OTHER_OFFER_ID).build();
+        when(offerDao.rejectPendingOffers(eq(LISTING_ID), isNull()))
+            .thenReturn(List.of(tradeOffer, cashOffer));
+
+        final List<Long> releasedListingIds = new ArrayList<>();
+        doAnswer(invocation -> {
+            releasedListingIds.addAll(invocation.getArgument(0));
+            return null;
+        }).when(listingService).updateStatusBulk(any(), eq(ListingStatus.ACTIVE));
 
         // Act
-        final List<Offer> result = offerService.rejectPendingOffersForListing(LISTING_ID, null);
+        offerService.rejectPendingOffersForListing(LISTING_ID, null);
 
         // Assert
-        Assert.assertEquals(rejected, result);
+        Assert.assertEquals(List.of(OFFERED_LISTING_ID), releasedListingIds);
     }
 
     /* ---------------------------------------------------------------------------------------------- */

@@ -344,7 +344,7 @@ public class OfferServiceImpl implements OfferService {
 
     @Override
     @Transactional
-    public List<Offer> rejectPendingOffersForListing(Long listingId, Long exceptOfferId) {
+    public void rejectPendingOffersForListing(Long listingId, Long exceptOfferId) {
         final List<Offer> rejected = offerDao.rejectPendingOffers(listingId, exceptOfferId);
         LOGGER.info("Rejected {} pending offers for listing id={} (except offerId={})", rejected.size(), listingId, exceptOfferId);
         // Collect offered listing IDs to bulk update
@@ -361,7 +361,6 @@ public class OfferServiceImpl implements OfferService {
         for (Offer offer : rejected) {
             notificationDispatcherService.notifyOfferRejected(offer);
         }
-        return rejected;
     }
 
     @Override
