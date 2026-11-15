@@ -15,11 +15,11 @@ import ar.edu.itba.paw.service.CatalogService;
 import ar.edu.itba.paw.service.ListingService;
 import ar.edu.itba.paw.service.OfferService;
 import ar.edu.itba.paw.service.UserService;
-import ar.edu.itba.paw.service.exception.BadParameterException;
 import ar.edu.itba.paw.service.exception.BrandAlreadyExistsException;
 import ar.edu.itba.paw.service.exception.ListingNotCancelableException;
 import ar.edu.itba.paw.service.exception.ModelAlreadyExistsException;
 import ar.edu.itba.paw.service.exception.NotFoundException;
+import ar.edu.itba.paw.service.exception.OfferNotCancelableException;
 import ar.edu.itba.paw.service.exception.SelfSuspendException;
 import ar.edu.itba.paw.webapp.auth.CurrentUser;
 import ar.edu.itba.paw.webapp.form.AdminBrandModelRequestAcceptForm;
@@ -550,7 +550,7 @@ public class AdminController {
                     .addObject("takeDownListingForm", new AdminTakeDownListingForm())
                     .addObject("suspendUserForm", new AdminSuspendUserForm())
                     .addObject("grantRoleForm", new AdminGrantRoleForm());
-        } catch (BadParameterException e) {
+        } catch (OfferNotCancelableException e) {
             LOGGER.warn("Offer {} cannot be taken down: {}", form.getOfferId(), e.getMessage());
             errors.rejectValue("offerId", "admin.error.offerCannotBeCanceled");
             return new ModelAndView("admin/dashboard")
@@ -581,7 +581,7 @@ public class AdminController {
             fallback = "/admin/offers?success=offer_takedown";
         } catch (NotFoundException e) {
             LOGGER.warn("Offer {} not found for takedown", id);
-        } catch (BadParameterException e) {
+        } catch (OfferNotCancelableException e) {
             LOGGER.warn("Offer {} cannot be taken down: {}", id, e.getMessage());
             fallback = "/admin/offers?error=offerCannotBeCanceled";
         }

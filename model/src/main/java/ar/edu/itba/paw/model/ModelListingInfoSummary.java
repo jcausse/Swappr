@@ -7,18 +7,24 @@ import lombok.Value;
 
 @Value
 public class ModelListingInfoSummary {
-    Brand brand;
-    Model model;
+    Long brandId;
+    String brandName;
+    Long modelId;
+    String modelName;
     List<ModelListingInfo> listingInfoByCondition;
 
     @Builder
     public ModelListingInfoSummary(
-            Brand brand,
-            Model model,
+            Long brandId,
+            String brandName,
+            Long modelId,
+            String modelName,
             List<ModelListingInfo> listingInfoByCondition
     ) {
-        this.brand = brand;
-        this.model = model;
+        this.brandId = brandId;
+        this.brandName = brandName;
+        this.modelId = modelId;
+        this.modelName = modelName;
         this.listingInfoByCondition = listingInfoByCondition == null
                 ? List.of()
                 : List.copyOf(listingInfoByCondition);
