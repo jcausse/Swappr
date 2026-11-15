@@ -64,10 +64,20 @@ public class ModelJpaDao implements ModelDao {
     }
 
     @Override
-    public Page<ModelInfo> getWithInfo(Long brandId, Long subcategoryId, ModelSort sort, int page, int pageSize) {
+    public Page<ModelInfo> getWithInfo(
+            Long brandId,
+            Long categoryId,
+            Long subcategoryId,
+            ModelSort sort,
+            int page,
+            int pageSize
+    ) {
         final StringBuilder where = new StringBuilder(" WHERE 1=1");
         if (brandId != null) {
             where.append(" AND b.id = :brandId");
+        }
+        if (categoryId != null) {
+            where.append(" AND s.category.id = :categoryId");
         }
         if (subcategoryId != null) {
             where.append(" AND s.id = :subcategoryId");
@@ -77,6 +87,7 @@ public class ModelJpaDao implements ModelDao {
                 "SELECT COUNT(m) FROM Model m JOIN m.brand b JOIN m.subcategory s" + where,
                 Long.class);
         if (brandId != null) countQuery.setParameter("brandId", brandId);
+        if (categoryId != null) countQuery.setParameter("categoryId", categoryId);
         if (subcategoryId != null) countQuery.setParameter("subcategoryId", subcategoryId);
         final long totalCount = countQuery.getSingleResult();
 
@@ -101,6 +112,7 @@ public class ModelJpaDao implements ModelDao {
                 + " ORDER BY " + orderBy,
                 ModelInfo.class);
         if (brandId != null) query.setParameter("brandId", brandId);
+        if (categoryId != null) query.setParameter("categoryId", categoryId);
         if (subcategoryId != null) query.setParameter("subcategoryId", subcategoryId);
         query.setFirstResult((page - 1) * pageSize);
         query.setMaxResults(pageSize);

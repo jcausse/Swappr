@@ -12,5 +12,4 @@ public class AdminModelFilterForm {
     private Long filterBrandId;
     private Long filterCategoryId;
     private Long filterSubcategoryId;
-    private Boolean isAutoSubmit = false;
 }

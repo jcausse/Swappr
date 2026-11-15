@@ -113,11 +113,10 @@ public class AdminController {
             @ModelAttribute("acceptRequestForm") AdminBrandModelRequestAcceptForm acceptRequestForm
     ) {
         LOGGER.debug("Admin {} accessed catalog management page: brandPage={}, modelPage={}, requestPage={}", currentUser.getUsername(), page, modelPage, requestPage);
-        modelFilterForm.setIsAutoSubmit(false);
-        createModelFilterForm.setIsAutoSubmit(false);
         final var brandsPage = catalogService.getBrands(sort, page, BRAND_PAGE_SIZE);
         final var modelsPage = catalogService.getModels(
-                modelFilterForm.getFilterBrandId(), modelFilterForm.getFilterSubcategoryId(),
+                modelFilterForm.getFilterBrandId(), modelFilterForm.getFilterCategoryId(),
+                modelFilterForm.getFilterSubcategoryId(),
                 modelSort, modelPage, MODEL_PAGE_SIZE);
         final var requestsPage = brandModelRequestService.getRequests(requestPage, REQUEST_PAGE_SIZE);
         final List<Brand> allBrands = catalogService.getAllBrands();
@@ -467,12 +466,9 @@ public class AdminController {
                     .addObject("grantRoleForm", new AdminGrantRoleForm());
         }
 
-        final var target = RedirectHelper.resolvePath(
-                redirectUrl,
-                "/admin/listings?success=listing_takedown",
-                ADMIN_PATH_FILTER
-        );
-        return new ModelAndView("redirect:" + target);
+        final var target = RedirectHelper.resolvePath(redirectUrl, "/admin/listings", ADMIN_PATH_FILTER);
+        return new ModelAndView("redirect:"
+                + RedirectHelper.appendQueryParam(target, "success", "listing_takedown"));
     }
 
     @PostMapping("/listings/{id}/takedown")
@@ -483,18 +479,20 @@ public class AdminController {
             @RequestParam(value = "redirect", required = false) String redirectUrl
     ) {
         LOGGER.info("Admin {} took down listing id={}", currentUser.getUsername(), id);
-        String fallback = "/admin/listings?error=listingNotFound";
+        String key = "error";
+        String code = "listingNotFound";
         try {
             adminService.takeDownListing(id);
-            fallback = "/admin/listings?success=listing_takedown";
+            key = "success";
+            code = "listing_takedown";
         } catch (NotFoundException e) {
             LOGGER.warn("Listing {} not found for takedown", id);
         } catch (ListingNotCancelableException e) {
             LOGGER.warn("Listing {} cannot be taken down: {}", id, e.getMessage());
-            fallback = "/admin/listings?error=listingCannotBeCanceled";
+            code = "listingCannotBeCanceled";
         }
-        final var target = RedirectHelper.resolvePath(redirectUrl, fallback, ADMIN_PATH_FILTER);
-        return new ModelAndView("redirect:" + target);
+        final var target = RedirectHelper.resolvePath(redirectUrl, "/admin/listings", ADMIN_PATH_FILTER);
+        return new ModelAndView("redirect:" + RedirectHelper.appendQueryParam(target, key, code));
     }
 
     @GetMapping("/offers")
@@ -559,12 +557,9 @@ public class AdminController {
                     .addObject("grantRoleForm", new AdminGrantRoleForm());
         }
 
-        final var target = RedirectHelper.resolvePath(
-                redirectUrl,
-                "/admin/offers?success=offer_takedown",
-                ADMIN_PATH_FILTER
-        );
-        return new ModelAndView("redirect:" + target);
+        final var target = RedirectHelper.resolvePath(redirectUrl, "/admin/offers", ADMIN_PATH_FILTER);
+        return new ModelAndView("redirect:"
+                + RedirectHelper.appendQueryParam(target, "success", "offer_takedown"));
     }
 
     @PostMapping("/offers/{id}/takedown")
@@ -575,18 +570,20 @@ public class AdminController {
             @RequestParam(value = "redirect", required = false) String redirectUrl
     ) {
         LOGGER.info("Admin {} took down offer id={}", currentUser.getUsername(), id);
-        String fallback = "/admin/offers?error=offerNotFound";
+        String key = "error";
+        String code = "offerNotFound";
         try {
             adminService.takeDownOffer(id);
-            fallback = "/admin/offers?success=offer_takedown";
+            key = "success";
+            code = "offer_takedown";
         } catch (NotFoundException e) {
             LOGGER.warn("Offer {} not found for takedown", id);
         } catch (OfferNotCancelableException e) {
             LOGGER.warn("Offer {} cannot be taken down: {}", id, e.getMessage());
-            fallback = "/admin/offers?error=offerCannotBeCanceled";
+            code = "offerCannotBeCanceled";
         }
-        final var target = RedirectHelper.resolvePath(redirectUrl, fallback, ADMIN_PATH_FILTER);
-        return new ModelAndView("redirect:" + target);
+        final var target = RedirectHelper.resolvePath(redirectUrl, "/admin/offers", ADMIN_PATH_FILTER);
+        return new ModelAndView("redirect:" + RedirectHelper.appendQueryParam(target, key, code));
     }
 
     @GetMapping("/users")

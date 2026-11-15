@@ -30,19 +30,19 @@ public class ImageController {
     @GetMapping(value = "/image/{id}")
     public ResponseEntity<byte[]> getImage(@PathVariable("id") Long id, WebRequest request) {
         LOGGER.debug("Accessing image {}", id);
+        final String etag = "image-" + id;
+        if (request.checkNotModified(etag)) {
+            return ResponseEntity.status(HttpStatus.NOT_MODIFIED)
+                    .cacheControl(IMAGE_CACHE_CONTROL)
+                    .build();
+        }
+
         final var maybeImage = imageService.getById(id);
         if (maybeImage.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
 
         final var image = maybeImage.get();
-        final String etag = "image-" + image.getId();
-        if (request.checkNotModified(etag)) {
-            return ResponseEntity.status(HttpStatus.NOT_MODIFIED)
-                    .eTag(etag)
-                    .cacheControl(IMAGE_CACHE_CONTROL)
-                    .build();
-        }
 
         return ResponseEntity.ok()
                 .eTag(etag)
