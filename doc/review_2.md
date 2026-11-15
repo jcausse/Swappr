@@ -18,19 +18,19 @@ review).
 | 1.4 | [`ListingJpaDao.update` throws](#14-listingjpadaoupdate-throws) | ✅ done |
 | 1.5 | [Offer takedown still catches `BadParameterException`](#15-offer-takedown-still-catches-badparameterexception) | ✅ done |
 | 1.6 | [Catalog request form validates by hand](#16-catalog-request-form-validates-by-hand) | ✅ done |
-| 2.1 | [Listing/offer takedowns lose the success and error banners](#21-listingoffer-takedowns-lose-the-success-and-error-banners) | 🕓 todo |
-| 2.2 | [Duplicate brand/model request empties the form](#22-duplicate-brandmodel-request-empties-the-form) | 🕓 todo |
+| 2.1 | [Listing/offer takedowns lose the success and error banners](#21-listingoffer-takedowns-lose-the-success-and-error-banners) | ✅ done |
+| 2.2 | [Duplicate brand/model request empties the form](#22-duplicate-brandmodel-request-empties-the-form) | ✅ done |
 | 2.3 | [Merged brand/model requests lose the second subcategory](#23-merged-brandmodel-requests-lose-the-second-subcategory) | ❌ false positive |
-| 2.4 | [Request count pluralization prints `+` twice](#24-request-count-pluralization-prints--twice) | 🕓 todo |
-| 2.5 | [Admin model sort links drop the category filter](#25-admin-model-sort-links-drop-the-category-filter) | 🕓 todo |
-| 2.6 | [Selecting only a category does not filter admin models](#26-selecting-only-a-category-does-not-filter-admin-models) | 🕓 todo |
-| 2.7 | [Empty actions menu for free pending-payment offers](#27-empty-actions-menu-for-free-pending-payment-offers) | 🕓 todo |
-| 2.8 | [Image `304` loads the image bytes and repeats `ETag`](#28-image-304-loads-the-image-bytes-and-repeats-etag) | 🕓 todo |
+| 2.4 | [Request count pluralization prints `+` twice](#24-request-count-pluralization-prints--twice) | ✅ done |
+| 2.5 | [Admin model sort links drop the category filter](#25-admin-model-sort-links-drop-the-category-filter) | ✅ done |
+| 2.6 | [Selecting only a category does not filter admin models](#26-selecting-only-a-category-does-not-filter-admin-models) | ✅ done |
+| 2.7 | [Empty actions menu for free pending-payment offers](#27-empty-actions-menu-for-free-pending-payment-offers) | ✅ done |
+| 2.8 | [Image `304` loads the image bytes and repeats `ETag`](#28-image-304-loads-the-image-bytes-and-repeats-etag) | ✅ done |
 | 3.1 | [Listing summary count and ID query duplicate their filters](#31-listing-summary-count-and-id-query-duplicate-their-filters) | 🕓 todo |
-| 3.2 | [Dead `isAutoSubmit` in the admin catalog filter forms](#32-dead-isautosubmit-in-the-admin-catalog-filter-forms) | 🕓 todo |
+| 3.2 | [Dead `isAutoSubmit` in the admin catalog filter forms](#32-dead-isautosubmit-in-the-admin-catalog-filter-forms) | ✅ done |
 | 3.3 | [Unused `String` fields in five enums](#33-unused-string-fields-in-five-enums) | 🕓 todo |
 | 3.4 | [Auto-rating counters can drift from the ratings written](#34-auto-rating-counters-can-drift-from-the-ratings-written) | ✅ done |
-| 3.5 | [`rejectPendingOffers` can return stale entities](#35-rejectpendingoffers-can-return-stale-entities) | 🕓 todo |
+| 3.5 | [`rejectPendingOffers` can return stale entities](#35-rejectpendingoffers-can-return-stale-entities) | ✅ done |
 | 3.6 | [Smaller cleanups](#36-smaller-cleanups) | 🕓 todo |
 | 4.1 | [`autoRatePendingOffers` has no test](#41-autoratependingoffers-has-no-test) | 🕓 todo |
 | 4.2 | [Catalog write methods have no success-path tests](#42-catalog-write-methods-have-no-success-path-tests) | ❌ false positive |
