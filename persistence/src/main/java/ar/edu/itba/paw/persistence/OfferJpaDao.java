@@ -24,6 +24,7 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -53,20 +54,28 @@ public class OfferJpaDao implements OfferDao {
     public Page<Offer> search(OfferFilter filter) {
         final StringBuilder whereClause = new StringBuilder(" WHERE 1=1");
         final Map<String, Object> params = new HashMap<>();
+        final StringBuilder nativeWhere = new StringBuilder(" WHERE 1=1");
+        final Map<String, Object> nativeParams = new HashMap<>();
 
         if (filter.getBuyerId() != null) {
             whereClause.append(" AND o.buyer.id = :buyerId");
+            nativeWhere.append(" AND o.buyer_id = :buyerId");
             params.put("buyerId", filter.getBuyerId());
+            nativeParams.put("buyerId", filter.getBuyerId());
         }
 
         if (filter.getSellerId() != null) {
             whereClause.append(" AND o.listing.creator.id = :sellerId");
+            nativeWhere.append(" AND l.creator_id = :sellerId");
             params.put("sellerId", filter.getSellerId());
+            nativeParams.put("sellerId", filter.getSellerId());
         }
 
         if (filter.getStatus() != null && !filter.getStatus().isEmpty()) {
             whereClause.append(" AND o.status IN (:statuses)");
+            nativeWhere.append(" AND o.status IN (:statuses)");
             params.put("statuses", filter.getStatus());
+            nativeParams.put("statuses", filter.getStatus().stream().map(Enum::name).toList());
         }
 
         final TypedQuery<Long> countQuery = em.createQuery(
@@ -80,13 +89,45 @@ public class OfferJpaDao implements OfferDao {
             return new Page<>(List.of(), page, pageSize, 0);
         }
 
-        final TypedQuery<Offer> query = em.createQuery(
-                "FROM Offer o" + whereClause + " ORDER BY o.createdAt DESC, o.id DESC", Offer.class);
-        params.forEach(query::setParameter);
-        query.setFirstResult((page - 1) * pageSize);
-        query.setMaxResults(pageSize);
+        // 1+1 pagination: page only offer IDs in a native query, then load those entities.
+        final Query idQuery = em.createNativeQuery(
+                "SELECT o.offer_id FROM offers o"
+                + " JOIN listings l ON l.listing_id = o.listing_id"
+                + nativeWhere
+                + " ORDER BY o.created_at DESC, o.offer_id DESC")
+                .setFirstResult((page - 1) * pageSize)
+                .setMaxResults(pageSize);
+        nativeParams.forEach(idQuery::setParameter);
 
-        final List<Offer> content = query.getResultList();
+        final List<Long> ids = ((List<?>) idQuery.getResultList()).stream()
+                .map(row -> ((Number) row).longValue())
+                .toList();
+        if (ids.isEmpty()) {
+            return new Page<>(List.of(), page, pageSize, totalCount);
+        }
+
+        final List<Offer> fetched = em.createQuery(
+                "SELECT o FROM Offer o"
+                + " JOIN FETCH o.listing l"
+                + " JOIN FETCH o.buyer"
+                + " LEFT JOIN FETCH o.offeredListing ol"
+                + " LEFT JOIN FETCH ol.model om"
+                + " LEFT JOIN FETCH om.brand"
+                + " JOIN FETCH l.creator"
+                + " JOIN FETCH l.model m"
+                + " JOIN FETCH m.brand"
+                + " JOIN FETCH m.subcategory s"
+                + " JOIN FETCH s.category"
+                + " WHERE o.id IN :ids", Offer.class)
+                .setParameter("ids", ids)
+                .getResultList();
+        final Map<Long, Offer> byId = fetched.stream()
+                .collect(Collectors.toMap(Offer::getId, offer -> offer));
+        final List<Offer> content = ids.stream()
+                .map(byId::get)
+                .filter(Objects::nonNull)
+                .toList();
+
         return new Page<>(content, page, pageSize, totalCount);
     }
 
