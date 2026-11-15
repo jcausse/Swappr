@@ -61,8 +61,8 @@ public class ModelListingInfoJpaDaoTest {
 
         Assert.assertTrue(maybeSummary.isPresent());
         final ModelListingInfoSummary summary = maybeSummary.get();
-        Assert.assertEquals("Apple", summary.getBrand().getName());
-        Assert.assertEquals("MacBook Pro", summary.getModel().getName());
+        Assert.assertEquals("Apple", summary.getBrandName());
+        Assert.assertEquals("MacBook Pro", summary.getModelName());
         Assert.assertEquals(2, summary.getListingInfoByCondition().size());
 
         final Map<Condition, ModelListingInfo> byCondition = summary.getListingInfoByCondition().stream()

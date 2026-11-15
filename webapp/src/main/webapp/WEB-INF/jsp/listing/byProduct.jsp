@@ -146,8 +146,8 @@
                                             <c:url value="/listing" var="discoveryUrlAllConditions">
                                                 <c:param name="categoryId" value="${productForm.categoryId}"/>
                                                 <c:param name="subcategoryId" value="${productForm.subcategoryId}"/>
-                                                <c:param name="brandId" value="${summary.brand.id}"/>
-                                                <c:param name="modelId" value="${summary.model.id}"/>
+                                                <c:param name="brandId" value="${summary.brandId}"/>
+                                                <c:param name="modelId" value="${summary.modelId}"/>
                                                 <c:if test="${not empty productForm.yearMin}">
                                                     <c:param name="yearMin" value="${productForm.yearMin}"/>
                                                 </c:if>
@@ -159,7 +159,7 @@
                                                 <div class="flex flex-col gap-2">
                                                     <div class="flex flex-row items-center gap-2">
                                                         <h3 class="text-base font-semibold">
-                                                            <c:out value="${summary.brand.name} ${summary.model.name}" />
+                                                            <c:out value="${summary.brandName} ${summary.modelName}" />
                                                         </h3>
                                                         <spring:message code="byProduct.seeAll" var="seeAllLabel" />
                                                         <paw:linkButton
@@ -175,8 +175,8 @@
                                                         <c:url value="/listing" var="discoveryUrl">
                                                             <c:param name="categoryId" value="${productForm.categoryId}"/>
                                                             <c:param name="subcategoryId" value="${productForm.subcategoryId}"/>
-                                                            <c:param name="brandId" value="${summary.brand.id}"/>
-                                                            <c:param name="modelId" value="${summary.model.id}"/>
+                                                            <c:param name="brandId" value="${summary.brandId}"/>
+                                                            <c:param name="modelId" value="${summary.modelId}"/>
                                                             <c:param name="condition" value="${info.condition}"/>
                                                             <c:if test="${not empty productForm.yearMin}">
                                                                 <c:param name="yearMin" value="${productForm.yearMin}"/>
