@@ -29,7 +29,7 @@ review).
 | 3.1 | [Listing summary count and ID query duplicate their filters](#31-listing-summary-count-and-id-query-duplicate-their-filters) | 🕓 todo |
 | 3.2 | [Dead `isAutoSubmit` in the admin catalog filter forms](#32-dead-isautosubmit-in-the-admin-catalog-filter-forms) | ✅ done |
 | 3.3 | [Unused `String` fields in five enums](#33-unused-string-fields-in-five-enums) | 🕓 todo |
-| 3.4 | [Auto-rating counters can drift from the ratings written](#34-auto-rating-counters-can-drift-from-the-ratings-written) | 🕓 todo |
+| 3.4 | [Auto-rating counters can drift from the ratings written](#34-auto-rating-counters-can-drift-from-the-ratings-written) | ✅ done |
 | 3.5 | [`rejectPendingOffers` can return stale entities](#35-rejectpendingoffers-can-return-stale-entities) | ✅ done |
 | 3.6 | [Smaller cleanups](#36-smaller-cleanups) | 🕓 todo |
 | 4.1 | [`autoRatePendingOffers` has no test](#41-autoratependingoffers-has-no-test) | 🕓 todo |
