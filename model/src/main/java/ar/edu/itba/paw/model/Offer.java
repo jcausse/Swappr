@@ -98,6 +98,12 @@ public class Offer {
     @Transient
     private boolean hasBetterOffers;
 
+    @Transient
+    private FileMetadata proofOfPaymentMetadata;
+
+    @Transient
+    private FileMetadata proofOfShippingMetadata;
+
     // -------------------------------------------------------------------------------------------------
 
     public Optional<File> getProofOfPayment() {
@@ -126,53 +132,45 @@ public class Offer {
     }
 
     public Long getProofOfPaymentId() {
+        if (proofOfPaymentMetadata != null) return proofOfPaymentMetadata.getId();
         return proofOfPayment != null ? proofOfPayment.getId() : null;
     }
 
     public String getProofOfPaymentFilename() {
-        return proofOfPayment != null ? proofOfPayment.getFilename() : null;
+        return proofOfPaymentMetadata != null ? proofOfPaymentMetadata.getFilename() : null;
     }
 
     public Long getProofOfPaymentSizeKb() {
-        if (proofOfPayment == null || proofOfPayment.getSize() <= 0) return 0L;
-        return proofOfPayment.getSize() / 1024;
+        return proofOfPaymentMetadata != null ? proofOfPaymentMetadata.getSizeKb() : 0L;
     }
 
     public boolean proofOfPaymentIsImage() {
-        return proofOfPayment != null && proofOfPayment.getContentType().map(ct -> ct.startsWith("image/")).orElse(false);
+        return proofOfPaymentMetadata != null && proofOfPaymentMetadata.isImage();
     }
 
     public String getProofOfPaymentExtension() {
-        if (proofOfPayment == null || proofOfPayment.getFilename() == null || proofOfPayment.getFilename().isBlank()) return "";
-        String filename = proofOfPayment.getFilename();
-        int lastDot = filename.lastIndexOf('.');
-        if (lastDot == -1 || lastDot == filename.length() - 1) return "";
-        return filename.substring(lastDot + 1).toLowerCase();
+        return proofOfPaymentMetadata != null ? proofOfPaymentMetadata.getExtension() : "";
     }
 
     public Long getProofOfShippingId() {
+        if (proofOfShippingMetadata != null) return proofOfShippingMetadata.getId();
         return proofOfShipping != null ? proofOfShipping.getId() : null;
     }
 
     public String getProofOfShippingFilename() {
-        return proofOfShipping != null ? proofOfShipping.getFilename() : null;
+        return proofOfShippingMetadata != null ? proofOfShippingMetadata.getFilename() : null;
     }
 
     public Long getProofOfShippingSizeKb() {
-        if (proofOfShipping == null || proofOfShipping.getSize() <= 0) return 0L;
-        return proofOfShipping.getSize() / 1024;
+        return proofOfShippingMetadata != null ? proofOfShippingMetadata.getSizeKb() : 0L;
     }
 
     public boolean proofOfShippingIsImage() {
-        return proofOfShipping != null && proofOfShipping.getContentType().map(ct -> ct.startsWith("image/")).orElse(false);
+        return proofOfShippingMetadata != null && proofOfShippingMetadata.isImage();
     }
 
     public String getProofOfShippingExtension() {
-        if (proofOfShipping == null || proofOfShipping.getFilename() == null || proofOfShipping.getFilename().isBlank()) return "";
-        String filename = proofOfShipping.getFilename();
-        int lastDot = filename.lastIndexOf('.');
-        if (lastDot == -1 || lastDot == filename.length() - 1) return "";
-        return filename.substring(lastDot + 1).toLowerCase();
+        return proofOfShippingMetadata != null ? proofOfShippingMetadata.getExtension() : "";
     }
 
     public boolean isPending() {

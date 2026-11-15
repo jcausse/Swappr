@@ -406,6 +406,23 @@ public class OfferJpaDaoTest {
     /* ---------------------------------------------------------------------------------------------- */
 
     @Test
+    public void testSearchDoesNotInitializeProofFiles() {
+        // Act
+        final Page<Offer> page = offerDao.search(baseFilter().build());
+
+        // Assert
+        final Offer offer = page.getContent().stream()
+                .filter(candidate -> candidate.getId().equals(ACCEPTED_OFFER_ID))
+                .findFirst()
+                .orElseThrow();
+        Assert.assertEquals(1L, (long) offer.getProofOfPaymentId());
+        Assert.assertEquals(2L, (long) offer.getProofOfShippingId());
+        final var persistenceUnitUtil = em.getEntityManagerFactory().getPersistenceUnitUtil();
+        Assert.assertFalse(persistenceUnitUtil.isLoaded(offer.getProofOfPayment().orElseThrow()));
+        Assert.assertFalse(persistenceUnitUtil.isLoaded(offer.getProofOfShipping().orElseThrow()));
+    }
+
+    @Test
     public void testSearchWithoutFiltersReturnsAllOrderedByCreatedAtDesc() {
         // Act
         final Page<Offer> page = offerDao.search(baseFilter().build());
