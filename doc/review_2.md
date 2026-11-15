@@ -15,7 +15,7 @@ review).
 | 1.1 | [Product summary page runs one query per model (N+1)](#11-product-summary-page-runs-one-query-per-model-n1) | ✅ done |
 | 1.2 | [Canceling a listing does not check its state](#12-canceling-a-listing-does-not-check-its-state) | 🕓 todo |
 | 1.3 | [Auto-rating job loads each listing separately (N+1)](#13-auto-rating-job-loads-each-listing-separately-n1) | ✅ done |
-| 1.4 | [`ListingJpaDao.update` throws](#14-listingjpadaoupdate-throws) | 🕓 todo |
+| 1.4 | [`ListingJpaDao.update` throws](#14-listingjpadaoupdate-throws) | ✅ done |
 | 1.5 | [Offer takedown still catches `BadParameterException`](#15-offer-takedown-still-catches-badparameterexception) | ✅ done |
 | 1.6 | [Catalog request form validates by hand](#16-catalog-request-form-validates-by-hand) | 🕓 todo |
 | 2.1 | [Listing/offer takedowns lose the success and error banners](#21-listingoffer-takedowns-lose-the-success-and-error-banners) | 🕓 todo |
@@ -36,9 +36,7 @@ review).
 | 4.2 | [Catalog write methods have no success-path tests](#42-catalog-write-methods-have-no-success-path-tests) | ❌ false positive |
 | 4.3 | [Misnamed and multi-case DAO tests](#43-misnamed-and-multi-case-dao-tests) | 🕓 todo |
 
-No item is resolved on current `dev` except 1.1. Two are false positives, two conflict with
-deliberate decisions of the earlier review, and several are regressions, oversights or follow-ups
-left by earlier fixes (see the notes on each item).
+Items: two are false positives, two conflict with deliberate decisions of the earlier review, and several are regressions, oversights or follow-ups left by earlier fixes (see the notes on each item).
 
 ---
 
