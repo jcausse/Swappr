@@ -55,6 +55,16 @@ public class ListingServiceImpl implements ListingService {
     }
 
     @Override
+    public Page<Listing> getActiveByCreator(Long creatorId, Integer page, int pageSize) {
+        return search(ListingFilterDto.builder()
+            .creatorId(creatorId)
+            .status(ListingStatus.ACTIVE)
+            .page(page == null || page < 1 ? 1 : page)
+            .pageSize(pageSize)
+            .build());
+    }
+
+    @Override
     public Page<Listing> search(ListingFilterDto dto) {
         Objects.requireNonNull(dto, "ListingFilterDto cannot be null");
         LOGGER.debug("Searching listings: query='{}', categoryId={}, status={}, sort={}, page={}",

@@ -43,6 +43,16 @@ public class ListingFilterForm {
         return toDto(creatorId, getStatus(), pageSize);
     }
 
+    public ListingFilterDto toOwnedListingsDto(Long creatorId, int pageSize) {
+        return ListingFilterDto.builder()
+                .creatorId(creatorId)
+                .status(getStatus())
+                .sort(sort)
+                .page(getPage())
+                .pageSize(pageSize)
+                .build();
+    }
+
     public ListingFilterDto toDto(Long creatorId, ListingStatus status, int pageSize) {
         return ListingFilterDto.builder()
                 .categoryId(categoryId)

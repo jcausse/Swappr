@@ -16,6 +16,8 @@ public interface ListingService {
 
     Page<Listing> search(ListingFilterDto filter);
 
+    Page<Listing> getActiveByCreator(Long creatorId, Integer page, int pageSize);
+
     LandingListingsDto getForLanding();
 
     Listing purchase(Long id, Long buyerId, String message);

@@ -31,7 +31,7 @@ review).
 | 3.3 | [Unused `String` fields in five enums](#33-unused-string-fields-in-five-enums) | 🕓 todo |
 | 3.4 | [Auto-rating counters can drift from the ratings written](#34-auto-rating-counters-can-drift-from-the-ratings-written) | 🕓 todo |
 | 3.5 | [`rejectPendingOffers` can return stale entities](#35-rejectpendingoffers-can-return-stale-entities) | 🕓 todo |
-| 3.6 | [Smaller cleanups](#36-smaller-cleanups) | 🕓 todo |
+| 3.6 | [Smaller cleanups](#36-smaller-cleanups) | ✅ done |
 | 4.1 | [`autoRatePendingOffers` has no test](#41-autoratependingoffers-has-no-test) | 🕓 todo |
 | 4.2 | [Catalog write methods have no success-path tests](#42-catalog-write-methods-have-no-success-path-tests) | ❌ false positive |
 | 4.3 | [Misnamed and multi-case DAO tests](#43-misnamed-and-multi-case-dao-tests) | 🕓 todo |
