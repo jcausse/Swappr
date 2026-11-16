@@ -37,7 +37,7 @@
         />
 
         <div
-            id="${id}"
+            id="<c:out value='${id}'/>"
             class="flex gap-2 overflow-x-auto overflow-y-visible scroll-smooth snap-x snap-start snap-mandatory [scrollbar-width:none] py-4 px-6 scroll-px-6"
         >
             <c:forEach var="listing" items="${listings}" varStatus="status">
