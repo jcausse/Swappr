@@ -69,9 +69,9 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public User create(@NonNull UserCreationDto dto) {
-        LOGGER.debug("Creating user with username '{}'", dto.username());
+        LOGGER.debug("Creating user");
         if (dto.username().contains("@")) {
-            LOGGER.warn("User creation rejected: username '{}' contains '@'", dto.username());
+            LOGGER.warn("User creation rejected: username contains '@'");
             throw new IllegalArgumentException("UserCreationDto.username cannot contain @");
         }
 
@@ -85,7 +85,7 @@ public class UserServiceImpl implements UserService {
             Language.fromCode(LocaleContextHolder.getLocale().getLanguage())
         );
         userRoleDao.addRole(user, Role.USER);
-        LOGGER.info("User created: id={}, username='{}'", user.getId(), user.getUsername());
+        LOGGER.info("User created: id={}", user.getId());
 
         sendVerificationEmail(user);
 
@@ -178,10 +178,10 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public Optional<OneTimePassword> resendVerificationEmail(@NonNull String usernameOrEmail) {
-        LOGGER.debug("Resending verification email requested for '{}'", usernameOrEmail);
+        LOGGER.debug("Resending verification email requested");
         final var maybeUser = getByUsernameOrEmail(usernameOrEmail);
         if (maybeUser.isEmpty()) {
-            LOGGER.warn("Resend verification email failed: user '{}' not found", usernameOrEmail);
+            LOGGER.warn("Resend verification email failed: user not found");
             return Optional.empty();
         }
 
@@ -200,10 +200,10 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public OneTimePasswordVerificationResult verifyEmail(@NonNull String usernameOrEmail, @NonNull String otpValue) {
-        LOGGER.debug("Verifying email for '{}'", usernameOrEmail);
+        LOGGER.debug("Verifying email");
         final var maybeUser = getByUsernameOrEmail(usernameOrEmail);
         if (maybeUser.isEmpty()) {
-            LOGGER.warn("Email verification rejected: user '{}' not found", usernameOrEmail);
+            LOGGER.warn("Email verification rejected: user not found");
             return OneTimePasswordVerificationResult.REJECTED;
         }
 

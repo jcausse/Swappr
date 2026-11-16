@@ -172,7 +172,7 @@ public class UserController {
         }
 
         LOGGER.info("User {} profile edit submitted", currentUser.getId());
-        LOGGER.debug("User {} updating profile", currentUser.getUsername());
+        LOGGER.debug("User {} updating profile", currentUser.getId());
 
         // One service call does the whole profile update (display name, password, image, location,
         // language) in a single transaction. Persisting the language also updates the website locale,
@@ -201,8 +201,7 @@ public class UserController {
             return registerForm(form);
         }
 
-        LOGGER.info("User registration submitted: {}", form.getUsername());
-        LOGGER.debug("Registering new user with username: {}", form.getUsername());
+        LOGGER.debug("Registering new user");
 
         final User created = userService.create(form.toDto());
 

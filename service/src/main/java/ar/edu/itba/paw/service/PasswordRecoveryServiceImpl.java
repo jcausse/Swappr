@@ -26,10 +26,10 @@ public class PasswordRecoveryServiceImpl implements PasswordRecoveryService {
     @Override
     @Transactional
     public Optional<OneTimePassword> startAndSendRecoveryEmail(@NonNull String usernameOrEmail) {
-        LOGGER.debug("Starting password recovery for '{}'", usernameOrEmail);
+        LOGGER.debug("Starting password recovery");
         final var maybeUser = userService.getByUsernameOrEmail(usernameOrEmail);
         if (maybeUser.isEmpty()) {
-            LOGGER.warn("Password recovery failed: user '{}' not found", usernameOrEmail);
+            LOGGER.warn("Password recovery failed: user not found");
             return Optional.empty();
         }
 
@@ -47,10 +47,10 @@ public class PasswordRecoveryServiceImpl implements PasswordRecoveryService {
             @NonNull String password,
             @NonNull String otpValue
     ) {
-        LOGGER.debug("Verifying password recovery for '{}'", usernameOrEmail);
+        LOGGER.debug("Verifying password recovery");
         final var maybeUser = userService.getByUsernameOrEmail(usernameOrEmail);
         if (maybeUser.isEmpty()) {
-            LOGGER.warn("Password recovery verification failed: user '{}' not found", usernameOrEmail);
+            LOGGER.warn("Password recovery verification failed: user not found");
             return OneTimePasswordVerificationResult.REJECTED;
         }
 

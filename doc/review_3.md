@@ -58,7 +58,7 @@
 | 5.7 | [ListingService does not validate negative prices](#57-listingservice-does-not-validate-negative-prices) | ✅ Resolved |
 | 5.8 | [Proof of shipping accepts a zero-byte file](#58-proof-of-shipping-accepts-a-zero-byte-file) | ✅ Resolved |
 | 5.9 | [Raw filename and unvalidated content type in response headers](#59-raw-filename-and-unvalidated-content-type-in-response-headers) | ✅ Resolved |
-| 5.10 | [Emails/usernames logged in clear text](#510-emails-and-usernames-are-logged-in-clear-text) | 🕓 Open |
+| 5.10 | [Emails/usernames logged in clear text](#510-emails-and-usernames-are-logged-in-clear-text) | ✅ Resolved |
 | 6.1 | [Comma-containing display names are truncated in message arguments](#61-comma-containing-display-names-are-truncated-in-message-arguments) | 🕓 Open |
 | 6.2 | [Hardcoded “KB” unit in proof components](#62-hardcoded-kb-unit-in-proof-components) | 🕓 Open |
 | 6.3 | [Translated fragments concatenated instead of parameterized](#63-translated-fragments-concatenated-instead-of-parameterized) | 🕓 Open |
