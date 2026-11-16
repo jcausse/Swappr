@@ -60,7 +60,7 @@
 | 5.9 | [Raw filename and unvalidated content type in response headers](#59-raw-filename-and-unvalidated-content-type-in-response-headers) | ✅ Resolved |
 | 5.10 | [Emails/usernames logged in clear text](#510-emails-and-usernames-are-logged-in-clear-text) | ✅ Resolved |
 | 6.1 | [Comma-containing display names are truncated in message arguments](#61-comma-containing-display-names-are-truncated-in-message-arguments) | 🕓 Open |
-| 6.2 | [Hardcoded “KB” unit in proof components](#62-hardcoded-kb-unit-in-proof-components) | 🕓 Open |
+| 6.2 | [Hardcoded “KB” unit in proof components](#62-hardcoded-kb-unit-in-proof-components) | ✅ Resolved |
 | 6.3 | [Translated fragments concatenated instead of parameterized](#63-translated-fragments-concatenated-instead-of-parameterized) | 🕓 Open |
 | 6.4 | [Icon-only links, hidden radios and preference checkboxes are inaccessible](#64-icon-only-links-hidden-radios-and-preference-checkboxes-are-inaccessible) | 🕓 Open |
 | 6.5 | [Duplicate DOM ids in admin user forms](#65-duplicate-dom-ids-in-admin-user-forms) | 🕓 Open |
@@ -386,9 +386,7 @@ Examples: `ListingController:370`, `OfferController:29,38,49,64`, `AdminControll
 
 ### 6.2 Hardcoded KB unit in proof components
 
-`offerProofOfPayment.tag:19` and `offerProofOfShipping.tag:34` render `<c:out value="${...SizeKb}"/> KB`. The unit is not localizable and the number is not locale-formatted.
-
-**Action:** add a message such as `file.size.kb={0} KB` and pass the size as an argument.
+**Resolved.** Added `file.size.kb={0} KB` to both bundles and used `<spring:message code="file.size.kb"><spring:argument .../></spring:message>` in `offerProofOfPayment.tag` and `offerProofOfShipping.tag` instead of the hardcoded `KB` suffix.
 
 ### 6.3 Translated fragments concatenated instead of parameterized
 

@@ -31,7 +31,7 @@
                 <span class="text-xs text-black/60 font-normal">
                     <c:out value="${offer.getProofOfShippingExtension()}"/>
                     &nbsp;|&nbsp;
-                    <c:out value="${offer.getProofOfShippingSizeKb()}"/> KB
+                    <spring:message code="file.size.kb"><spring:argument value="${offer.getProofOfShippingSizeKb()}"/></spring:message>
                 </span>
             </div>
         </paw:linkButton>
