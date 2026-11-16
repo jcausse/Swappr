@@ -81,7 +81,7 @@ public class RatingJpaDao implements RatingDao {
         final List<Rating> content = em.createQuery(
                 "SELECT r FROM Rating r"
                 + " JOIN FETCH r.creator"
-                + " JOIN FETCH r.listing"
+                + " JOIN FETCH r.offer.listing"
                 + " WHERE r.id IN :ids"
                 + " ORDER BY r.createdAt DESC, r.id DESC", Rating.class)
                 .setParameter("ids", ids)
