@@ -44,7 +44,7 @@
 | 3.11 | [Error JSPs declare DOCTYPE twice](#311-error-jsps-declare-doctype-twice) | ✅ Resolved |
 | 4.1 | [Emails/notifications dispatched before the transaction commits](#41-emails-and-notifications-are-dispatched-before-the-transaction-commits) | 🕓 Open |
 | 4.2 | [OfferService injects foreign DAOs and mutates user counters directly](#42-offerservice-injects-foreign-daos-and-mutates-user-counters-directly) | 🕓 Open |
-| 4.3 | [OfferService.rate accepts a detached entity and relies on OSIV](#43-offerservicerate-accepts-a-detached-entity-and-relies-on-osiv) | 🕓 Open |
+| 4.3 | [OfferService.rate accepts a detached entity and relies on OSIV](#43-offerservicerate-accepts-a-detached-entity-and-relies-on-osiv) | ✅ Resolved |
 | 4.4 | [Notification loops query preferences once per recipient](#44-notification-loops-query-preferences-once-per-recipient) | 🕓 Open |
 | 4.5 | [Business-action logging lives in controllers, before the action succeeds](#45-business-action-logging-lives-in-controllers-before-the-action-succeeds) | 🕓 Open |
 | 4.6 | [ListingDao purchase/pendingTransaction have unused parameters and fake returns](#46-listingdao-purchasependingtransaction-have-unused-parameters-and-fake-returns) | 🕓 Open |
