@@ -11,22 +11,17 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @RequiredArgsConstructor
 @Controller
 @RequestMapping("/offer")
 public class OfferController {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(OfferController.class);
-
     private final OfferService offerService;
 
     @PostMapping("/{offerId}/accept")
     @PreAuthorize("@webPermissionService.canManageOfferAsSeller(authentication, #offerId)")
     public ModelAndView acceptOffer(@PathVariable Long offerId, @CurrentUser User currentUser) {
-        LOGGER.info("User {} accepted offer {}", currentUser.getId(), offerId);
         offerService.accept(offerId, currentUser.getId());
 
         return new ModelAndView("redirect:/account/incoming-offers?statusGroup=PENDING_PAYMENT");
@@ -35,7 +30,6 @@ public class OfferController {
     @PostMapping("/{offerId}/reject")
     @PreAuthorize("@webPermissionService.canManageOfferAsSeller(authentication, #offerId)")
     public ModelAndView rejectOffer(@PathVariable Long offerId, @CurrentUser User currentUser) {
-        LOGGER.info("User {} rejected offer {}", currentUser.getId(), offerId);
         offerService.reject(offerId, currentUser.getId());
 
         return new ModelAndView("redirect:/account/incoming-offers?statusGroup=RESOLVED");
@@ -46,7 +40,6 @@ public class OfferController {
     public ModelAndView withdrawOffer(@PathVariable Long offerId,
                                       @CurrentUser User currentUser,
                                       HttpServletRequest request) {
-        LOGGER.info("User {} withdrew offer {}", currentUser.getId(), offerId);
 
         final var offer = offerService.withdraw(offerId, currentUser.getId());
 
@@ -61,7 +54,6 @@ public class OfferController {
     @PostMapping("/{offerId}/confirm-payment")
     @PreAuthorize("@webPermissionService.canManageOfferAsSeller(authentication, #offerId)")
     public ModelAndView confirmPayment(@PathVariable Long offerId, @CurrentUser User currentUser) {
-        LOGGER.info("User {} confirmed payment for offer {}", currentUser.getId(), offerId);
         offerService.confirmPayment(offerId, currentUser.getId());
 
         return new ModelAndView("redirect:/account/incoming-offers?statusGroup=RESOLVED");
