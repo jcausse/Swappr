@@ -23,6 +23,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -236,16 +238,22 @@ public class NotificationDispatcherServiceImpl implements NotificationDispatcher
             @NonNull Brand brand,
             @NonNull Model model
     ) {
+        final Map<Long, Set<NotificationChannel>> channelsByUser =
+                notificationPreferenceService.getEnabledChannelsForUsers(
+                        recipients, NotificationType.BRAND_MODEL_REQUEST_ACCEPTED);
+
         for (final User recipient : recipients) {
             LOGGER.debug("Dispatching {} notification for request id={}, recipient id={}",
                     NotificationType.BRAND_MODEL_REQUEST_ACCEPTED, request.getId(), recipient.getId());
+            final Set<NotificationChannel> enabledChannels =
+                    channelsByUser.getOrDefault(recipient.getId(), Set.of());
 
-            if (shouldSendSite(recipient, NotificationType.BRAND_MODEL_REQUEST_ACCEPTED)) {
+            if (enabledChannels.contains(NotificationChannel.SITE)) {
                 siteNotificationService.create(
                         SiteNotificationCreationDtoFactory.brandModelRequestAccepted(request, recipient, brand, model));
             }
 
-            if (shouldSendEmail(recipient, NotificationType.BRAND_MODEL_REQUEST_ACCEPTED)) {
+            if (enabledChannels.contains(NotificationChannel.EMAIL)) {
                 emailNotificationService.sendBrandModelRequestAcceptedEmail(
                         UserMailDto.from(recipient),
                         brand.getName(),
@@ -262,16 +270,22 @@ public class NotificationDispatcherServiceImpl implements NotificationDispatcher
             @NonNull BrandModelRequest request,
             @NonNull List<User> recipients
     ) {
+        final Map<Long, Set<NotificationChannel>> channelsByUser =
+                notificationPreferenceService.getEnabledChannelsForUsers(
+                        recipients, NotificationType.BRAND_MODEL_REQUEST_REJECTED);
+
         for (final User recipient : recipients) {
             LOGGER.debug("Dispatching {} notification for request id={}, recipient id={}",
                     NotificationType.BRAND_MODEL_REQUEST_REJECTED, request.getId(), recipient.getId());
+            final Set<NotificationChannel> enabledChannels =
+                    channelsByUser.getOrDefault(recipient.getId(), Set.of());
 
-            if (shouldSendSite(recipient, NotificationType.BRAND_MODEL_REQUEST_REJECTED)) {
+            if (enabledChannels.contains(NotificationChannel.SITE)) {
                 siteNotificationService.create(
                         SiteNotificationCreationDtoFactory.brandModelRequestRejected(request, recipient));
             }
 
-            if (shouldSendEmail(recipient, NotificationType.BRAND_MODEL_REQUEST_REJECTED)) {
+            if (enabledChannels.contains(NotificationChannel.EMAIL)) {
                 emailNotificationService.sendBrandModelRequestRejectedEmail(
                         UserMailDto.from(recipient),
                         request.getRequestedBrandName(),
