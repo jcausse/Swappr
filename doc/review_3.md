@@ -23,8 +23,8 @@
 | 1.3 | [Stored XSS through unescaped page-title messages](#13-stored-xss-through-unescaped-page-title-messages) | ✅ Resolved |
 | 1.4 | [Admin cancellation leaves active offers and can resurrect canceled listings](#14-admin-cancellation-leaves-active-offers-and-can-resurrect-canceled-listings) | ⚠️ Bigger refactor needed |
 | 1.5 | [Trade acceptance does not reject offers on the offered listing](#15-trade-acceptance-does-not-reject-offers-on-the-offered-listing) | 🕓 Open |
-| 1.6 | [Rating uniqueness constraint was dropped without replacement](#16-rating-uniqueness-constraint-was-dropped-without-replacement) | 🕓 Open |
-| 1.7 | [Listing creator is nullable in schema and mapping](#17-listing-creator-is-nullable-in-schema-and-mapping) | 🕓 Open |
+| 1.6 | [Rating uniqueness constraint was dropped without replacement](#16-rating-uniqueness-constraint-was-dropped-without-replacement) | ✅ Resolved |
+| 1.7 | [Listing creator is nullable in schema and mapping](#17-listing-creator-is-nullable-in-schema-and-mapping) | ✅ Resolved |
 | 1.8 | [Rating counters use boxed Integer on NOT NULL columns](#18-rating-counters-use-boxed-integer-on-not-null-columns) | 🕓 Open |
 | 2.1 | [Five paginated DAOs bypass the mandatory native 1+1 model](#21-five-paginated-daos-bypass-the-mandatory-native-11-model) | ✅ Resolved |
 | 2.2 | [N+1 on the main listing, offer and rating lists](#22-n1-on-the-main-listing-offer-and-rating-lists) | 🕓 Open |
