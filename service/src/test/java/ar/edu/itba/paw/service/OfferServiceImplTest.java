@@ -662,6 +662,27 @@ public class OfferServiceImplTest {
         offerService.uploadProofOfShipping(OFFER_ID, SELLER_ID, FILE_DTO_TXT, TRACKING_NUMBER);
     }
 
+    @Test(expected = BadParameterException.class)
+    public void testUploadProofOfShippingEmptyFileThrows() {
+        // Arrange
+        givenOffer(buildFakeOffer(OfferStatus.PENDING_PAYMENT));
+
+        // Act
+        offerService.uploadProofOfShipping(OFFER_ID, SELLER_ID, FILE_DTO_PNG_EMPTY, TRACKING_NUMBER);
+    }
+
+    @Test
+    public void testUploadProofOfShippingWithTrackingOnlySucceeds() {
+        // Arrange
+        givenOffer(buildFakeOffer(OfferStatus.PENDING_PAYMENT));
+
+        // Act
+        final Offer result = offerService.uploadProofOfShipping(OFFER_ID, SELLER_ID, null, TRACKING_NUMBER);
+
+        // Assert
+        Assert.assertEquals(OFFER_ID, (long) result.getId());
+    }
+
     /* ---------------------------------------------------------------------------------------------- */
     /* confirmPayment                                                                                  */
     /* ---------------------------------------------------------------------------------------------- */
@@ -757,28 +778,31 @@ public class OfferServiceImplTest {
     public void testRateTwiceThrows() {
         // Arrange
         final Offer offer = buildFakeOffer(OfferStatus.ACCEPTED);
+        givenOffer(offer);
         when(offerDao.setSellerRating(eq(OFFER_ID), eq(OfferRating.POSITIVE))).thenReturn(false);
 
         // Act
-        offerService.rate(offer, buildFakeUser(BUYER_ID), OfferRating.POSITIVE);
+        offerService.rate(OFFER_ID, buildFakeUser(BUYER_ID), OfferRating.POSITIVE);
     }
 
     @Test(expected = BadParameterException.class)
     public void testRateNonAcceptedOfferThrows() {
         // Arrange
         final Offer offer = buildFakeOffer(OfferStatus.PENDING_PAYMENT);
+        givenOffer(offer);
 
         // Act
-        offerService.rate(offer, buildFakeUser(BUYER_ID), OfferRating.POSITIVE);
+        offerService.rate(OFFER_ID, buildFakeUser(BUYER_ID), OfferRating.POSITIVE);
     }
 
     @Test(expected = ForbiddenException.class)
     public void testRateByOutsiderThrows() {
         // Arrange
         final Offer offer = buildFakeOffer(OfferStatus.ACCEPTED);
+        givenOffer(offer);
 
         // Act
-        offerService.rate(offer, buildFakeUser(OUTSIDER_ID), OfferRating.POSITIVE);
+        offerService.rate(OFFER_ID, buildFakeUser(OUTSIDER_ID), OfferRating.POSITIVE);
     }
 
     /* ---------------------------------------------------------------------------------------------- */

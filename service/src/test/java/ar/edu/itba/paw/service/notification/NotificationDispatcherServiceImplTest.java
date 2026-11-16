@@ -32,7 +32,11 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
@@ -63,6 +67,19 @@ public class NotificationDispatcherServiceImplTest {
             final NotificationType type = inv.getArgument(1);
             final NotificationChannel channel = inv.getArgument(2);
             return type != null && type.supportsChannel(channel);
+        });
+        lenient().when(notificationPreferenceService.getEnabledChannelsForUsers(
+                any(Collection.class), any(NotificationType.class)
+        )).thenAnswer(inv -> {
+            final Collection<User> users = inv.getArgument(0);
+            final NotificationType type = inv.getArgument(1);
+            final Map<Long, Set<NotificationChannel>> channelsByUser = new HashMap<>();
+            if (users != null && type != null) {
+                for (final User user : users) {
+                    channelsByUser.put(user.getId(), type.getSupportedChannels());
+                }
+            }
+            return channelsByUser;
         });
         dispatcher = new NotificationDispatcherServiceImpl(
                 siteNotificationService,

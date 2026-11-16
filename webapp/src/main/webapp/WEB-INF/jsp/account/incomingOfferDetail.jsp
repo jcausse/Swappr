@@ -13,7 +13,7 @@
 <account:layout titleKey="account.incomingOffers.title" title="${titleMsg}" subtitle="${subtitleMsg}">
     <!-- Back link -->
     <div class="mb-4">
-        <spring:message code="offer.detail.back" var="backLabel"/>
+        <spring:message code="account.incomingOffers.title" var="backLabel"/>
         <paw:linkButton href="${incomingOffersUrl}" text="${backLabel}" variant="ghost" icon="chevron-left" classname="justify-start" />
     </div>
 

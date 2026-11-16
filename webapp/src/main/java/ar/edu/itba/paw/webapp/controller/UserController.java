@@ -32,6 +32,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
 import java.net.URLEncoder;
@@ -59,7 +60,9 @@ public class UserController {
     @GetMapping("/profile/{id}")
     @PreAuthorize("permitAll()")
     public ModelAndView profile(@PathVariable Long id, @CurrentUser(required = false) User currentUser,
-                                @ModelAttribute("ratingFilterForm") RatingFilterForm ratingFilterForm) {
+                                @ModelAttribute("ratingFilterForm") RatingFilterForm ratingFilterForm,
+                                @RequestParam(value = "listingPage", defaultValue = "1") int listingPageNumber,
+                                @RequestParam(value = "ratingPage", defaultValue = "1") int ratingPageNumber) {
         LOGGER.debug("Accessing profile for user id: {}", id);
         final User user = userService.getById(id).orElseThrow(() -> UserNotFoundException.byId(id));
         final boolean isSelfRequest = user.isSameUser(currentUser);
@@ -68,7 +71,7 @@ public class UserController {
                 .sort(ListingSort.RECENT)
                 .creatorId(user.getId())
                 .status(ListingStatus.ACTIVE)
-                .page(1)
+                .page(Math.max(listingPageNumber, 1))
                 .pageSize(PROFILE_LISTINGS_PAGE_SIZE)
                 .build();
 
@@ -82,7 +85,7 @@ public class UserController {
                 .ratedId(user.getId())
                 .roles(List.of(role))
                 .types(type != null ? List.of(type) : null)
-                .page(ratingFilterForm.getPage())
+                .page(Math.max(ratingPageNumber, 1))
                 .pageSize(PROFILE_RATINGS_PAGE_SIZE)
                 .build();
 
@@ -169,7 +172,7 @@ public class UserController {
         }
 
         LOGGER.info("User {} profile edit submitted", currentUser.getId());
-        LOGGER.debug("User {} updating profile", currentUser.getUsername());
+        LOGGER.debug("User {} updating profile", currentUser.getId());
 
         // One service call does the whole profile update (display name, password, image, location,
         // language) in a single transaction. Persisting the language also updates the website locale,
@@ -198,8 +201,7 @@ public class UserController {
             return registerForm(form);
         }
 
-        LOGGER.info("User registration submitted: {}", form.getUsername());
-        LOGGER.debug("Registering new user with username: {}", form.getUsername());
+        LOGGER.debug("Registering new user");
 
         final User created = userService.create(form.toDto());
 

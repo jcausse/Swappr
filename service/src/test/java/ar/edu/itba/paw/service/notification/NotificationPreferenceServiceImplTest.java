@@ -15,6 +15,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import java.util.Collection;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -115,6 +116,24 @@ public class NotificationPreferenceServiceImplTest {
                 enabled.get(NotificationType.OFFER_ACCEPTED));
         Assert.assertTrue(enabled.get(NotificationType.LISTING_PUBLISHED).isEmpty());
         Assert.assertNull(enabled.get(NotificationType.PASSWORD_RECOVERY));
+    }
+
+    @Test
+    public void testGetEnabledChannelsForUsersAppliesDefaultsAndStoredOverrides() {
+        final User first = buildUser(10L);
+        final User second = buildUser(20L);
+        final Collection<User> users = List.of(first, second);
+        when(preferenceDao.getByUsersAndType(users, NotificationType.NEW_OFFER)).thenReturn(List.of(
+                buildPref(first, NotificationType.NEW_OFFER, NotificationChannel.EMAIL, false)
+        ));
+
+        final Map<Long, Set<NotificationChannel>> enabled =
+                service.getEnabledChannelsForUsers(users, NotificationType.NEW_OFFER);
+
+        Assert.assertEquals(Set.of(NotificationChannel.SITE), enabled.get(first.getId()));
+        Assert.assertEquals(
+                Set.of(NotificationChannel.SITE, NotificationChannel.EMAIL),
+                enabled.get(second.getId()));
     }
 
     @Test

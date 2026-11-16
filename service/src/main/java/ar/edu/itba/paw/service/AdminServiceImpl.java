@@ -40,10 +40,10 @@ public class AdminServiceImpl implements AdminService {
     @Override
     @Transactional
     public User grantRole(@NonNull String usernameOrEmail, @NonNull Role role) {
-        LOGGER.info("Admin granting role {} to user '{}'", role, usernameOrEmail);
+        LOGGER.info("Admin granting role {}", role);
         final var user = userService.getByUsernameOrEmail(usernameOrEmail)
                 .orElseThrow(() -> {
-                    LOGGER.warn("User '{}' not found for granting role {}", usernameOrEmail, role);
+                    LOGGER.warn("User not found for granting role {}", role);
                     return NotFoundException.createFor("User");
                 });
 
@@ -94,10 +94,10 @@ public class AdminServiceImpl implements AdminService {
     @Override
     @Transactional
     public User unsuspendUser(@NonNull String usernameOrEmail) {
-        LOGGER.info("Admin unsuspending user '{}'", usernameOrEmail);
+        LOGGER.info("Admin unsuspending user");
         final var user = userService.getByUsernameOrEmail(usernameOrEmail)
                 .orElseThrow(() -> {
-                    LOGGER.warn("User '{}' not found for unsuspension", usernameOrEmail);
+                    LOGGER.warn("User not found for unsuspension");
                     return NotFoundException.createFor("User");
                 });
 
