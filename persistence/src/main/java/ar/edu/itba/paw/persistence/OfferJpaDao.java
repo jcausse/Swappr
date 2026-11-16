@@ -106,7 +106,19 @@ public class OfferJpaDao implements OfferDao {
         }
 
         final List<Offer> content = em.createQuery(
-                "FROM Offer o WHERE o.id IN :ids ORDER BY o.createdAt DESC, o.id DESC", Offer.class)
+                "SELECT o FROM Offer o"
+                + " JOIN FETCH o.listing l"
+                + " JOIN FETCH o.buyer"
+                + " LEFT JOIN FETCH o.offeredListing ol"
+                + " LEFT JOIN FETCH ol.model om"
+                + " LEFT JOIN FETCH om.brand"
+                + " JOIN FETCH l.creator"
+                + " JOIN FETCH l.model m"
+                + " JOIN FETCH m.brand"
+                + " JOIN FETCH m.subcategory s"
+                + " JOIN FETCH s.category"
+                + " WHERE o.id IN :ids"
+                + " ORDER BY o.createdAt DESC, o.id DESC", Offer.class)
                 .setParameter("ids", ids)
                 .getResultList();
 

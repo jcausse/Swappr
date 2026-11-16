@@ -27,7 +27,7 @@
 | 1.7 | [Listing creator is nullable in schema and mapping](#17-listing-creator-is-nullable-in-schema-and-mapping) | ✅ Resolved |
 | 1.8 | [Rating counters use boxed Integer on NOT NULL columns](#18-rating-counters-use-boxed-integer-on-not-null-columns) | ✅ Resolved |
 | 2.1 | [Five paginated DAOs bypass the mandatory native 1+1 model](#21-five-paginated-daos-bypass-the-mandatory-native-11-model) | ✅ Resolved |
-| 2.2 | [N+1 on the main listing, offer and rating lists](#22-n1-on-the-main-listing-offer-and-rating-lists) | 🕓 Open |
+| 2.2 | [N+1 on the main listing, offer and rating lists](#22-n1-on-the-main-listing-offer-and-rating-lists) | ✅ Resolved |
 | 2.3 | [Proof-file blobs loaded eagerly just to show metadata](#23-proof-file-blobs-are-loaded-eagerly-just-to-show-metadata) | ✅ Resolved |
 | 2.4 | [OSIV deploy marker (added; OSIV accepted as discouraged)](#24-osiv-is-enabled-and-its-deploy-todo-lacks-the-required-marker) | ✅ Resolved |
 | 2.5 | [Notification advice queries the DB on every request including images](#25-notification-advice-queries-the-db-on-every-request-including-images) | 🕓 Open |

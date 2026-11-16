@@ -203,8 +203,13 @@ public class ListingJpaDao implements ListingDao {
         }
 
         final List<Listing> content = em.createQuery(
-                "FROM Listing l WHERE l.id IN :ids ORDER BY " + resolveOrderBy(filter.getSort()),
-                Listing.class)
+                "SELECT l FROM Listing l"
+                + " JOIN FETCH l.model m"
+                + " JOIN FETCH m.brand"
+                + " JOIN FETCH m.subcategory s"
+                + " JOIN FETCH s.category"
+                + " WHERE l.id IN :ids"
+                + " ORDER BY " + resolveOrderBy(filter.getSort()), Listing.class)
                 .setParameter("ids", ids)
                 .getResultList();
 
@@ -397,7 +402,7 @@ public class ListingJpaDao implements ListingDao {
         if (listing == null) {
             return;
         }
-        
+
         listing.setImageIds(imageIds != null ? new ArrayList<>(imageIds) : new ArrayList<>());
     }
 }
