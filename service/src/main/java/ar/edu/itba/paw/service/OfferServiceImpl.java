@@ -10,6 +10,7 @@ import ar.edu.itba.paw.model.OfferStatusGroup;
 import ar.edu.itba.paw.model.OfferType;
 import ar.edu.itba.paw.model.Page;
 import ar.edu.itba.paw.model.File;
+import ar.edu.itba.paw.model.FileMetadata;
 import ar.edu.itba.paw.model.User;
 import ar.edu.itba.paw.model.OfferRating;
 import ar.edu.itba.paw.persistence.OfferDao;
@@ -32,6 +33,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -70,6 +72,7 @@ public class OfferServiceImpl implements OfferService {
     @Override
     public Optional<Offer> getById(Long id, boolean populateTransientFlags) {
         final Optional<Offer> offer = offerDao.getById(id);
+        offer.ifPresent(this::populateProofMetadata);
         if (populateTransientFlags) {
             offer.ifPresent(this::populateTransientFlags);
         }
@@ -95,10 +98,40 @@ public class OfferServiceImpl implements OfferService {
             .build();
 
         final Page<Offer> page = offerDao.search(filter);
+        populateProofMetadata(page.getContent());
         if (populateTransientFlags) {
             populateTransientFlags(page.getContent());
         }
         return page;
+    }
+
+    private void populateProofMetadata(Offer offer) {
+        populateProofMetadata(List.of(offer));
+    }
+
+    private void populateProofMetadata(List<Offer> offers) {
+        if (offers == null || offers.isEmpty()) return;
+
+        // Load proof-file metadata with a projection so listing/detail views never initialize the
+        // File entities (and therefore never read their binary data).
+        final List<Long> fileIds = offers.stream()
+                .flatMap(offer -> Stream.of(offer.getProofOfPaymentId(), offer.getProofOfShippingId()))
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+        if (fileIds.isEmpty()) return;
+
+        final Map<Long, FileMetadata> metadata = fileDao.getMetadataByIds(fileIds);
+        for (Offer offer : offers) {
+            final Long paymentId = offer.getProofOfPaymentId();
+            if (paymentId != null) {
+                offer.setProofOfPaymentMetadata(metadata.get(paymentId));
+            }
+            final Long shippingId = offer.getProofOfShippingId();
+            if (shippingId != null) {
+                offer.setProofOfShippingMetadata(metadata.get(shippingId));
+            }
+        }
     }
 
     private void populateTransientFlags(Offer offer) {
@@ -255,8 +288,9 @@ public class OfferServiceImpl implements OfferService {
             throw new BadParameterException("Offer is not pending");
         }
 
-        // Handle trade offer: set offered listing to SOLD
+        // Handle trade offer: reject competing offers on the offered listing, then set it to SOLD
         if (offer.getOfferedListingId() != null) {
+            rejectPendingOffersForListing(offer.getOfferedListingId(), null);
             listingService.updateStatus(offer.getOfferedListingId(), ListingStatus.SOLD);
         }
 

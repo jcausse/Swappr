@@ -1,6 +1,7 @@
 package ar.edu.itba.paw.persistence;
 
 import ar.edu.itba.paw.model.File;
+import ar.edu.itba.paw.model.FileMetadata;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -16,6 +17,8 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.sql.DataSource;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -100,6 +103,37 @@ public class FileJpaDaoTest {
 
         // Assert
         Assert.assertEquals(Optional.empty(), file.getContentType());
+    }
+
+    /* ---------------------------------------------------------------------------------------------- */
+    /* getMetadataByIds                                                                                */
+    /* ---------------------------------------------------------------------------------------------- */
+
+    @Test
+    public void testGetMetadataByIdsReturnsMetadataWithoutBinaryData() {
+        // Arrange
+        insertFile(FILE_ID, CONTENT_TYPE);
+
+        // Act
+        final Map<Long, FileMetadata> metadata = fileDao.getMetadataByIds(List.of(FILE_ID));
+
+        // Assert
+        Assert.assertEquals(1, metadata.size());
+        final FileMetadata file = metadata.get(FILE_ID);
+        Assert.assertNotNull(file);
+        Assert.assertEquals(FILENAME, file.getFilename());
+        Assert.assertEquals(ALT, file.getAlt());
+        Assert.assertEquals(CONTENT_TYPE, file.getContentType());
+        Assert.assertEquals(DATA.length, (long) file.getSize());
+    }
+
+    @Test
+    public void testGetMetadataByIdsWithEmptyIdsReturnsEmptyMap() {
+        // Act
+        final Map<Long, FileMetadata> metadata = fileDao.getMetadataByIds(List.of());
+
+        // Assert
+        Assert.assertTrue(metadata.isEmpty());
     }
 
     /* ---------------------------------------------------------------------------------------------- */

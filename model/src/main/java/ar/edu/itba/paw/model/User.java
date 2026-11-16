@@ -68,27 +68,27 @@ public class User {
 
     @Builder.Default
     @Column(name = "seller_positive_ratings", nullable = false)
-    private Integer sellerPositiveRatings = 0;
+    private int sellerPositiveRatings = 0;
 
     @Builder.Default
     @Column(name = "seller_neutral_ratings", nullable = false)
-    private Integer sellerNeutralRatings = 0;
+    private int sellerNeutralRatings = 0;
 
     @Builder.Default
     @Column(name = "seller_negative_ratings", nullable = false)
-    private Integer sellerNegativeRatings = 0;
+    private int sellerNegativeRatings = 0;
 
     @Builder.Default
     @Column(name = "buyer_positive_ratings", nullable = false)
-    private Integer buyerPositiveRatings = 0;
+    private int buyerPositiveRatings = 0;
 
     @Builder.Default
     @Column(name = "buyer_neutral_ratings", nullable = false)
-    private Integer buyerNeutralRatings = 0;
+    private int buyerNeutralRatings = 0;
 
     @Builder.Default
     @Column(name = "buyer_negative_ratings", nullable = false)
-    private Integer buyerNegativeRatings = 0;
+    private int buyerNegativeRatings = 0;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "province_id")
@@ -159,28 +159,18 @@ public class User {
     }
 
     public int getSellerTotalRatings() {
-        int pos = sellerPositiveRatings != null ? sellerPositiveRatings : 0;
-        int neu = sellerNeutralRatings != null ? sellerNeutralRatings : 0;
-        int neg = sellerNegativeRatings != null ? sellerNegativeRatings : 0;
-        return pos + neu + neg;
+        return sellerPositiveRatings + sellerNeutralRatings + sellerNegativeRatings;
     }
 
     public int getBuyerTotalRatings() {
-        int pos = buyerPositiveRatings != null ? buyerPositiveRatings : 0;
-        int neu = buyerNeutralRatings != null ? buyerNeutralRatings : 0;
-        int neg = buyerNegativeRatings != null ? buyerNegativeRatings : 0;
-        return pos + neu + neg;
+        return buyerPositiveRatings + buyerNeutralRatings + buyerNegativeRatings;
     }
 
     public int getSellerRatingBalance() {
-        int pos = sellerPositiveRatings != null ? sellerPositiveRatings : 0;
-        int neg = sellerNegativeRatings != null ? sellerNegativeRatings : 0;
-        return pos - neg;
+        return sellerPositiveRatings - sellerNegativeRatings;
     }
 
     public int getBuyerRatingBalance() {
-        int pos = buyerPositiveRatings != null ? buyerPositiveRatings : 0;
-        int neg = buyerNegativeRatings != null ? buyerNegativeRatings : 0;
-        return pos - neg;
+        return buyerPositiveRatings - buyerNegativeRatings;
     }
 }

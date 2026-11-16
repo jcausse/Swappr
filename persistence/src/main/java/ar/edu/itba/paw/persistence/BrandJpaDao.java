@@ -56,20 +56,38 @@ public class BrandJpaDao implements BrandDao {
         }
 
         final String direction = sort.isAscending() ? "ASC" : "DESC";
+        final String nativeOrderBy = sort.getKey().equals("id")
+                ? "b.brand_id " + direction
+                : "b.brand_name " + direction + ", b.brand_id " + direction;
         final String orderBy = sort.getKey().equals("id")
                 ? "b.id " + direction
                 : "b.name " + direction + ", b.id " + direction;
+
+        // 1+1 pagination: page only brand IDs in a native query, then aggregate for those IDs.
+        final List<Long> brandIds = ((List<?>) em.createNativeQuery(
+                "SELECT b.brand_id FROM brands b ORDER BY " + nativeOrderBy)
+                .setFirstResult((page - 1) * pageSize)
+                .setMaxResults(pageSize)
+                .getResultList())
+                .stream()
+                .map(row -> ((Number) row).longValue())
+                .toList();
+
+        if (brandIds.isEmpty()) {
+            return new Page<>(List.of(), page, pageSize, totalCount);
+        }
+
         final List<BrandInfo> content = em.createQuery(
                 "SELECT new ar.edu.itba.paw.model.BrandInfo("
                 + "b.id, b.name, COUNT(DISTINCT m.id), COUNT(DISTINCT l.id))"
                 + " FROM Brand b"
                 + " LEFT JOIN Model m ON m.brand.id = b.id"
                 + " LEFT JOIN Listing l ON l.model.id = m.id"
+                + " WHERE b.id IN :brandIds"
                 + " GROUP BY b.id, b.name"
                 + " ORDER BY " + orderBy,
                 BrandInfo.class)
-                .setFirstResult((page - 1) * pageSize)
-                .setMaxResults(pageSize)
+                .setParameter("brandIds", brandIds)
                 .getResultList();
 
         return new Page<>(content, page, pageSize, totalCount);

@@ -402,7 +402,7 @@ public class ListingJpaDao implements ListingDao {
         if (listing == null) {
             return;
         }
-        
+
         listing.setImageIds(imageIds != null ? new ArrayList<>(imageIds) : new ArrayList<>());
     }
 }
