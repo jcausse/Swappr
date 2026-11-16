@@ -54,7 +54,7 @@
 | 5.3 | [Shipping tracking number has no max length](#53-shipping-tracking-number-has-no-max-length) | ✅ Resolved |
 | 5.4 | [Rating review text has no length bound](#54-rating-review-text-has-no-length-bound) | ✅ Resolved |
 | 5.5 | [Admin suspend/grant forms reject emails longer than 100 chars](#55-admin-suspendgrant-forms-reject-emails-longer-than-100-chars) | ✅ Resolved |
-| 5.6 | [Resend-verification validation errors are silently discarded](#56-resend-verification-validation-errors-are-silently-discarded) | 🕓 Open |
+| 5.6 | [Resend-verification validation errors are silently discarded](#56-resend-verification-validation-errors-are-silently-discarded) | ✅ Resolved |
 | 5.7 | [ListingService does not validate negative prices](#57-listingservice-does-not-validate-negative-prices) | 🕓 Open |
 | 5.8 | [Proof of shipping accepts a zero-byte file](#58-proof-of-shipping-accepts-a-zero-byte-file) | 🕓 Open |
 | 5.9 | [Raw filename and unvalidated content type in response headers](#59-raw-filename-and-unvalidated-content-type-in-response-headers) | 🕓 Open |
