@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.util.Optional;
 
 import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
 import lombok.Getter;
@@ -25,13 +26,13 @@ import org.springframework.web.multipart.MultipartFile;
 @FieldMatch(first = "password", second = "confirmPassword")
 public class UserForm {
 
-    @NotEmpty
+    @NotBlank
     @Size(min = 3, max = 24)
     @Username
     @UniqueUsername
     private String username;
 
-    @NotEmpty
+    @NotBlank
     @Size(max = 50)
     private String displayName;
 

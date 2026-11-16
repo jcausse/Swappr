@@ -32,7 +32,7 @@
 | 2.4 | [OSIV deploy marker (added; OSIV accepted as discouraged)](#24-osiv-is-enabled-and-its-deploy-todo-lacks-the-required-marker) | ✅ Resolved |
 | 2.5 | [Notification advice queries the DB on every request including images](#25-notification-advice-queries-the-db-on-every-request-including-images) | 🕓 Open |
 | 3.1 | [Admin user-management error paths render a view missing filterForm](#31-admin-user-management-error-paths-render-a-view-missing-filterform) | 🕓 Open |
-| 3.2 | [Missing or tampered hidden IDs produce 500 instead of 400](#32-missing-or-tampered-hidden-ids-produce-500-instead-of-400) | 🕓 Open |
+| 3.2 | [Missing or tampered hidden IDs produce 500 instead of 400](#32-missing-or-tampered-hidden-ids-produce-500-instead-of-400) | ✅ Resolved |
 | 3.3 | [Profile listing pagination is broken and shares page with ratings](#33-profile-listing-pagination-is-broken-and-shares-page-with-ratings) | 🕓 Open |
 | 3.4 | [Duplicate tracking-number DOM id copies the wrong offer](#34-duplicate-tracking-number-dom-id-copies-the-wrong-offer) | ✅ Resolved |
 | 3.5 | [Admin listing table shows raw OFFERED_IN_TRADE status](#35-admin-listing-table-shows-raw-offered_in_trade-status) | ✅ Resolved |
@@ -44,12 +44,12 @@
 | 3.11 | [Error JSPs declare DOCTYPE twice](#311-error-jsps-declare-doctype-twice) | ✅ Resolved |
 | 4.1 | [Emails/notifications dispatched before the transaction commits](#41-emails-and-notifications-are-dispatched-before-the-transaction-commits) | 🕓 Open |
 | 4.2 | [OfferService injects foreign DAOs and mutates user counters directly](#42-offerservice-injects-foreign-daos-and-mutates-user-counters-directly) | 🕓 Open |
-| 4.3 | [OfferService.rate accepts a detached entity and relies on OSIV](#43-offerservicerate-accepts-a-detached-entity-and-relies-on-osiv) | 🕓 Open |
+| 4.3 | [OfferService.rate accepts a detached entity and relies on OSIV](#43-offerservicerate-accepts-a-detached-entity-and-relies-on-osiv) | ✅ Resolved |
 | 4.4 | [Notification loops query preferences once per recipient](#44-notification-loops-query-preferences-once-per-recipient) | 🕓 Open |
 | 4.5 | [Business-action logging lives in controllers, before the action succeeds](#45-business-action-logging-lives-in-controllers-before-the-action-succeeds) | ✅ Resolved |
 | 4.6 | [ListingDao purchase/pendingTransaction have unused parameters and fake returns](#46-listingdao-purchasependingtransaction-have-unused-parameters-and-fake-returns) | 🕓 Open |
 | 4.7 | [Move AdminServiceImpl bulk cleanup into owning services](#47-move-adminserviceimpl-bulk-cleanup-into-the-owning-services) | 🕓 Open |
-| 5.1 | [Clearing display name on profile edit causes a 500](#51-clearing-display-name-on-profile-edit-causes-a-500) | 🕓 Open |
+| 5.1 | [Clearing display name on profile edit causes a 500](#51-clearing-display-name-on-profile-edit-causes-a-500) | ✅ Resolved |
 | 5.2 | [Missing users throw IllegalArgumentException instead of NotFoundException](#52-missing-users-throw-illegalargumentexception-instead-of-notfoundexception) | ✅ Resolved |
 | 5.3 | [Shipping tracking number has no max length](#53-shipping-tracking-number-has-no-max-length) | ✅ Resolved |
 | 5.4 | [Rating review text has no length bound](#54-rating-review-text-has-no-length-bound) | ✅ Resolved |
