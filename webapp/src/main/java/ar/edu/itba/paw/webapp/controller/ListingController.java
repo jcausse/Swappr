@@ -29,6 +29,7 @@ import ar.edu.itba.paw.service.ListingCancellationService;
 import ar.edu.itba.paw.service.ListingService;
 import ar.edu.itba.paw.service.OfferService;
 import ar.edu.itba.paw.service.ProvinceService;
+import ar.edu.itba.paw.service.exception.BadParameterException;
 import ar.edu.itba.paw.webapp.auth.CurrentUser;
 import ar.edu.itba.paw.webapp.form.ChooseProductForm;
 import ar.edu.itba.paw.webapp.form.ListingDetailsForm;
@@ -299,7 +300,7 @@ public class ListingController {
         LOGGER.info("User {} submitted listing creation for model {}", currentUser.getId(), form.getModelId());
         if (bindingResult.hasErrors()) {
             LOGGER.debug("Validation failed for listing creation for model {}", form.getModelId());
-            return detailsView(catalogService.getModelById(form.getModelId()), null);
+            return detailsViewForForm(form.getModelId(), null);
         }
 
         listingService.create(form.toCreationDto(currentUser.getId()));
@@ -360,8 +361,15 @@ public class ListingController {
     }
 
     private ModelAndView editDetailsWithErrors(final Long listingId, final ListingDetailsForm form) {
-        return detailsView(catalogService.getModelById(form.getModelId()), listingId)
+        return detailsViewForForm(form.getModelId(), listingId)
             .addObject("existingImageIds", listingService.getById(listingId).getImageIds());
+    }
+
+    private ModelAndView detailsViewForForm(final Long modelId, final Long editedListingId) {
+        if (modelId == null) {
+            throw BadParameterException.create("modelId", "Model is required");
+        }
+        return detailsView(catalogService.getModelById(modelId), editedListingId);
     }
 
     @PostMapping("/{id}/cancel")
