@@ -619,13 +619,14 @@ public class AdminController {
             @CurrentUser User currentUser,
             @Valid @ModelAttribute("suspendUserForm") AdminSuspendUserForm form,
             BindingResult errors,
-            @ModelAttribute("grantRoleForm") AdminGrantRoleForm grantRoleForm
+            @ModelAttribute("grantRoleForm") AdminGrantRoleForm grantRoleForm,
+            @ModelAttribute("filterForm") AdminUserFilterForm filterForm
     ) {
         final var formUsernameOrEmail = form.getUsernameOrEmail();
         LOGGER.info("Admin {} requested user suspension for '{}'", currentUser.getUsername(), formUsernameOrEmail);
 
         if (errors.hasErrors()) {
-            return new ModelAndView("admin/users");
+            return new ModelAndView("admin/users").addObject("filterForm", filterForm);
         }
 
         final User user;
@@ -634,7 +635,7 @@ public class AdminController {
         } catch (SelfSuspendException e) {
             LOGGER.warn("Admin {} prevented from suspending theirself", currentUser.getUsername());
             errors.rejectValue("username", "admin.users.error.selfSuspend");
-            return new ModelAndView("admin/users");
+            return new ModelAndView("admin/users").addObject("filterForm", filterForm);
         }
 
         LOGGER.info("Admin {} logically suspended user {}", currentUser.getUsername(), user.getUsername());
@@ -647,13 +648,14 @@ public class AdminController {
             @CurrentUser User currentUser,
             @Valid @ModelAttribute("suspendUserForm") AdminSuspendUserForm form,
             BindingResult errors,
-            @ModelAttribute("grantRoleForm") AdminGrantRoleForm grantRoleForm
+            @ModelAttribute("grantRoleForm") AdminGrantRoleForm grantRoleForm,
+            @ModelAttribute("filterForm") AdminUserFilterForm filterForm
     ) {
         final var formUsernameOrEmail = form.getUsernameOrEmail();
         LOGGER.info("Admin {} requested user unsuspension for '{}'", currentUser.getUsername(), formUsernameOrEmail);
 
         if (errors.hasErrors()) {
-            return new ModelAndView("admin/users");
+            return new ModelAndView("admin/users").addObject("filterForm", filterForm);
         }
 
         User user = adminService.unsuspendUser(formUsernameOrEmail);
@@ -668,11 +670,12 @@ public class AdminController {
             @CurrentUser User currentUser,
             @Valid @ModelAttribute("grantRoleForm") AdminGrantRoleForm form,
             BindingResult errors,
-            @ModelAttribute("suspendUserForm") AdminSuspendUserForm suspendUserForm
+            @ModelAttribute("suspendUserForm") AdminSuspendUserForm suspendUserForm,
+            @ModelAttribute("filterForm") AdminUserFilterForm filterForm
     ) {
         LOGGER.info("Admin {} requested granting ADMIN role for '{}'", currentUser.getUsername(), form.getUsernameOrEmail());
         if (errors.hasErrors()) {
-            return new ModelAndView("admin/users");
+            return new ModelAndView("admin/users").addObject("filterForm", filterForm);
         }
 
         User user = adminService.grantRole(form.getUsernameOrEmail(), Role.ADMIN);
