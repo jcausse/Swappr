@@ -478,7 +478,6 @@ public class AdminController {
             @PathVariable Long id,
             @RequestParam(value = "redirect", required = false) String redirectUrl
     ) {
-        LOGGER.info("Admin {} took down listing id={}", currentUser.getUsername(), id);
         String key = "error";
         String code = "listingNotFound";
         try {
@@ -569,7 +568,6 @@ public class AdminController {
             @PathVariable Long id,
             @RequestParam(value = "redirect", required = false) String redirectUrl
     ) {
-        LOGGER.info("Admin {} took down offer id={}", currentUser.getUsername(), id);
         String key = "error";
         String code = "offerNotFound";
         try {

@@ -83,6 +83,10 @@
                                 <c:set var="statusBadgeClass" value="text-blue-600 bg-blue-50 border-blue-200"/>
                                 <spring:message code="listing.status.PENDING_TRANSACTION" var="statusBadgeText"/>
                             </c:when>
+                            <c:when test="${listing.status.name() == 'OFFERED_IN_TRADE'}">
+                                <c:set var="statusBadgeClass" value="text-purple-600 bg-purple-50 border-purple-200"/>
+                                <spring:message code="listing.status.OFFERED_IN_TRADE" var="statusBadgeText"/>
+                            </c:when>
                             <c:when test="${listing.status.name() == 'CANCELED'}">
                                 <c:set var="statusBadgeClass" value="text-red-600 bg-red-50 border-red-200"/>
                                 <spring:message code="listing.status.CANCELED" var="statusBadgeText"/>
