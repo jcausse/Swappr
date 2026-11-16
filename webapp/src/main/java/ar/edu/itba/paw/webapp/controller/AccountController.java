@@ -1,5 +1,6 @@
 package ar.edu.itba.paw.webapp.controller;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -10,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
+import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -250,10 +252,14 @@ public class AccountController {
 
     private ResponseEntity<Resource> getResource(final File file) {
         final ByteArrayResource resource = new ByteArrayResource(file.getData());
+        final String contentDisposition = ContentDisposition.attachment()
+                .filename(file.getFilename(), StandardCharsets.UTF_8)
+                .build()
+                .toString();
 
         return ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType(file.getContentType().orElse("application/octet-stream")))
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getFilename() + "\"")
+                .contentType(MediaType.valueOf(file.getMediaType()))
+                .header(HttpHeaders.CONTENT_DISPOSITION, contentDisposition)
                 .contentLength(file.getData().length)
                 .body(resource);
     }
