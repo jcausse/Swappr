@@ -253,21 +253,19 @@ public class ListingJpaDao implements ListingDao {
     }
 
     @Override
-    public ListingStatus purchase(Long id, Long buyerId) {
+    public void purchase(Long id) {
         final Listing listing = em.find(Listing.class, id);
         if (listing != null) {
             listing.setStatus(ListingStatus.SOLD);
         }
-        return ListingStatus.SOLD;
     }
 
     @Override
-    public ListingStatus pendingTransaction(Long id, Long buyerId) {
+    public void pendingTransaction(Long id) {
         final Listing listing = em.find(Listing.class, id);
         if (listing != null) {
             listing.setStatus(ListingStatus.PENDING_TRANSACTION);
         }
-        return ListingStatus.PENDING_TRANSACTION;
     }
 
     @Override

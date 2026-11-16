@@ -218,7 +218,7 @@ public class ListingServiceImpl implements ListingService {
             throw new BadParameterException("Listing is not in a pending transaction state");
         }
 
-        listingDao.purchase(id, buyerId);
+        listingDao.purchase(id);
 
         final User buyer = userService.getById(buyerId)
             .orElseThrow(() -> new BadParameterException("Invalid buyerId"));
@@ -239,7 +239,7 @@ public class ListingServiceImpl implements ListingService {
             .getById(id)
             .orElseThrow(() -> NotFoundException.createFor("Listing with ID " + id));
 
-        listingDao.pendingTransaction(id, buyerId);
+        listingDao.pendingTransaction(id);
 
         return listing;
     }
