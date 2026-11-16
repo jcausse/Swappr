@@ -38,7 +38,7 @@
 | 3.5 | [Admin listing table shows raw OFFERED_IN_TRADE status](#35-admin-listing-table-shows-raw-offered_in_trade-status) | 🕓 Open |
 | 3.6 | [Proof-of-payment back link uses the wrong label](#36-proof-of-payment-back-link-uses-the-wrong-label) | 🕓 Open |
 | 3.7 | [Duplicate cancel/sold banners (intended)](#37-canceledsold-banner-rendered-twice-on-listing-detail) | ❌ False positive |
-| 3.8 | [Brand sort links in admin catalog drop model filters and page](#38-brand-sort-links-in-admin-catalog-drop-model-filters-and-page) | 🕓 Open |
+| 3.8 | [Brand sort links in admin catalog drop model filters and page](#38-brand-sort-links-in-admin-catalog-drop-model-filters-and-page) | ✅ Resolved |
 | 3.9 | [Unsupported HTTP methods fall into the 500 handler](#39-unsupported-http-methods-fall-into-the-500-handler) | 🕓 Open |
 | 3.10 | [No container error-page mappings for render-time exceptions](#310-no-container-error-page-mappings-for-render-time-exceptions) | 🕓 Open |
 | 3.11 | [Error JSPs declare DOCTYPE twice](#311-error-jsps-declare-doctype-twice) | 🕓 Open |

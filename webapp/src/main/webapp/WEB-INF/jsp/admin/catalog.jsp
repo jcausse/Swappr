@@ -113,6 +113,11 @@
                         <tr class="border-b border-black/10 text-left text-xs uppercase tracking-wide text-black/50">
                             <th class="py-2 pr-4 font-medium">
                                 <c:url value="/admin/catalog" var="idSortUrl">
+                                    <c:if test="${not empty modelFilterForm.filterBrandId}"><c:param name="filterBrandId" value="${modelFilterForm.filterBrandId}"/></c:if>
+                                    <c:if test="${not empty modelFilterForm.filterCategoryId}"><c:param name="filterCategoryId" value="${modelFilterForm.filterCategoryId}"/></c:if>
+                                    <c:if test="${not empty modelFilterForm.filterSubcategoryId}"><c:param name="filterSubcategoryId" value="${modelFilterForm.filterSubcategoryId}"/></c:if>
+                                    <c:param name="modelPage" value="${modelsPage.page}"/>
+                                    <c:param name="modelSort" value="${currentModelSort.name()}"/>
                                     <c:param name="sort" value="${idNextSort}"/>
                                 </c:url>
                                 <a href="${idSortUrl}" class="inline-flex items-center gap-1 hover:text-black transition">
@@ -122,6 +127,11 @@
                             </th>
                             <th class="py-2 pr-4 font-medium">
                                 <c:url value="/admin/catalog" var="brandSortUrl">
+                                    <c:if test="${not empty modelFilterForm.filterBrandId}"><c:param name="filterBrandId" value="${modelFilterForm.filterBrandId}"/></c:if>
+                                    <c:if test="${not empty modelFilterForm.filterCategoryId}"><c:param name="filterCategoryId" value="${modelFilterForm.filterCategoryId}"/></c:if>
+                                    <c:if test="${not empty modelFilterForm.filterSubcategoryId}"><c:param name="filterSubcategoryId" value="${modelFilterForm.filterSubcategoryId}"/></c:if>
+                                    <c:param name="modelPage" value="${modelsPage.page}"/>
+                                    <c:param name="modelSort" value="${currentModelSort.name()}"/>
                                     <c:param name="sort" value="${brandNextSort}"/>
                                 </c:url>
                                 <a href="${brandSortUrl}" class="inline-flex items-center gap-1 hover:text-black transition">
