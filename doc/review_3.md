@@ -65,7 +65,7 @@
 | 6.4 | [Icon-only links, hidden radios and preference checkboxes are inaccessible](#64-icon-only-links-hidden-radios-and-preference-checkboxes-are-inaccessible) | 🕓 Open |
 | 6.5 | [Duplicate DOM ids in admin user forms](#65-duplicate-dom-ids-in-admin-user-forms) | 🕓 Open |
 | 6.6 | [Reusable tags render raw attributes without c:out](#66-reusable-tags-render-raw-attributes-without-cout) | 🕓 Open |
-| 7.1 | [No tests for the riskiest service flows](#71-no-tests-for-the-riskiest-service-flows) | 🕓 Open |
+| 7.1 | [No tests for the riskiest service flows](#71-no-tests-for-the-riskiest-service-flows) | ✅ Resolved |
 | 7.2 | [Missing DAO tests and only negative UserJpaDao coverage](#72-missing-dao-tests-and-only-negative-userjpadao-coverage) | 🕓 Open |
 | 7.3 | [Pagination tests do not exercise page 2 or RatingJpaDao](#73-pagination-tests-do-not-exercise-page-2-or-ratingjpadao) | 🕓 Open |
 | 7.4 | [HSQLDB test schema diverges from PostgreSQL](#74-hsqldb-test-schema-diverges-from-postgresql) | 🕓 Open |
