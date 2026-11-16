@@ -70,7 +70,7 @@
 | 7.3 | [Pagination tests do not exercise page 2 or RatingJpaDao](#73-pagination-tests-do-not-exercise-page-2-or-ratingjpadao) | 🕓 Open |
 | 7.4 | [HSQLDB test schema diverges from PostgreSQL](#74-hsqldb-test-schema-diverges-from-postgresql) | 🕓 Open |
 | 7.5 | [Migration edited before production push (unaffected DB)](#75-an-already-committed-migration-was-edited) | ✅ Resolved |
-| 7.6 | [Test Hibernate config dumps SQL and misspells format_sql](#76-test-hibernate-config-dumps-sql-and-misspells-format_sql) | 🕓 Open |
+| 7.6 | [Test Hibernate config dumps SQL and misspells format_sql](#76-test-hibernate-config-dumps-sql-and-misspells-format_sql) | ✅ Resolved |
 | 7.7 | [Outdated SLF4J/Logback and redundant logging deps](#77-obsolete-slf4jlogback-versions-and-redundant-logging-deps) | ⚠️ Decision needed |
 | 7.8 | [Plugin versions duplicated in child POMs](#78-plugin-versions-duplicated-in-every-child-pom) | ⚠️ Decision needed |
 | 7.9 | [Redundant Hibernate/JAXB dependencies and production JDBC declaration](#79-redundant-hibernatejaxb-dependencies-and-production-jdbc-declaration) | 🕓 Open |
