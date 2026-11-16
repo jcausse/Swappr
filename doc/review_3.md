@@ -49,7 +49,7 @@
 | 4.5 | [Business-action logging lives in controllers, before the action succeeds](#45-business-action-logging-lives-in-controllers-before-the-action-succeeds) | ✅ Resolved |
 | 4.6 | [ListingDao purchase/pendingTransaction have unused parameters and fake returns](#46-listingdao-purchasependingtransaction-have-unused-parameters-and-fake-returns) | 🕓 Open |
 | 4.7 | [Move AdminServiceImpl bulk cleanup into owning services](#47-move-adminserviceimpl-bulk-cleanup-into-the-owning-services) | 🕓 Open |
-| 5.1 | [Clearing display name on profile edit causes a 500](#51-clearing-display-name-on-profile-edit-causes-a-500) | 🕓 Open |
+| 5.1 | [Clearing display name on profile edit causes a 500](#51-clearing-display-name-on-profile-edit-causes-a-500) | ✅ Resolved |
 | 5.2 | [Missing users throw IllegalArgumentException instead of NotFoundException](#52-missing-users-throw-illegalargumentexception-instead-of-notfoundexception) | 🕓 Open |
 | 5.3 | [Shipping tracking number has no max length](#53-shipping-tracking-number-has-no-max-length) | ✅ Resolved |
 | 5.4 | [Rating review text has no length bound](#54-rating-review-text-has-no-length-bound) | ✅ Resolved |
