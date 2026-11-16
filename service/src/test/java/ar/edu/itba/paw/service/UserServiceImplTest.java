@@ -7,6 +7,7 @@ import ar.edu.itba.paw.model.OneTimePassword;
 import ar.edu.itba.paw.persistence.UserDao;
 import ar.edu.itba.paw.persistence.UserRoleDao;
 import ar.edu.itba.paw.service.dto.UserCreationDto;
+import ar.edu.itba.paw.service.exception.NotFoundException;
 import ar.edu.itba.paw.service.enumeration.OneTimePasswordVerificationResult;
 
 import org.junit.Assert;
@@ -204,7 +205,7 @@ public class UserServiceImplTest {
         Assert.assertSame(user, result);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = NotFoundException.class)
     public void testUpdatePreferredLanguageNonExistingUserThrows() {
         // Arrange
         final User user = buildFakeUser();

@@ -8,7 +8,6 @@
      Defaults to "notFound" when not provided. --%>
 <c:set var="prefix" value="${not empty messageCode ? messageCode : 'notFound'}"/>
 
-<!DOCTYPE html>
 <html lang="${pageContext.response.locale.language}">
 <paw:head titleKey="${prefix}.heading"/>
 <body class="min-h-screen bg-neutral-50 flex items-center justify-center p-6">

@@ -222,6 +222,11 @@ public class ListingServiceImplTest {
         listingService.getById(NON_EXISTING_ID);
     }
 
+    @Test(expected = BadParameterException.class)
+    public void testGetByIdNullThrows() {
+        listingService.getById(null);
+    }
+
     /* ---------------------------------------------------------------------------------------------- */
     /* search                                                                                          */
     /* ---------------------------------------------------------------------------------------------- */
