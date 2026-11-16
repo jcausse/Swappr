@@ -170,6 +170,9 @@ public class CatalogServiceImpl implements CatalogService {
 
     @Override
     public Model getModelById(Long id) {
+        if (id == null) {
+            throw BadParameterException.create("id", "Model id is required");
+        }
         return modelDao
             .getById(id)
             .orElseThrow(() -> NotFoundException.createFor("Model with ID " + id));

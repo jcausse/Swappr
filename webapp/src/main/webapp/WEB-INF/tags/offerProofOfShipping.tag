@@ -14,9 +14,9 @@
             <p class="text-xs font-medium text-black/60"><c:out value="${trackingLabel}"/></p>
             <div class="flex items-center gap-2 mt-2">
                 <div class="text-base font-mono font-semibold p-1 pl-3 border border-black/10 rounded-lg self-start min-w-0 select-all flex-1 flex flex-row gap-2 items-center">
-                    <span id="trackingNumberText"><c:out value="${offer.trackingNumber}"/></span>
+                    <span id="trackingNumberText-${offer.id}"><c:out value="${offer.trackingNumber}"/></span>
                     <paw:button variant="ghost" icon="copy" classname="flex-shrink-0 ml-auto"
-                        onclick="navigator.clipboard.writeText(document.querySelector('#trackingNumberText').textContent); this.querySelector('i').className='icon-check'; setTimeout(() => this.querySelector('i').className='icon-copy', 2000);"
+                        onclick="navigator.clipboard.writeText(document.querySelector('#trackingNumberText-${offer.id}').textContent); this.querySelector('i').className='icon-check'; setTimeout(() => this.querySelector('i').className='icon-copy', 2000);"
                     />
                 </div>
             </div>
