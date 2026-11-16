@@ -47,10 +47,7 @@ public class ImageController {
         return ResponseEntity.ok()
                 .eTag(etag)
                 .cacheControl(IMAGE_CACHE_CONTROL)
-                .contentType(image.getContentType()
-                        .map(MediaType::parseMediaType)
-                        .orElse(MediaType.APPLICATION_OCTET_STREAM)
-                )
+                .contentType(MediaType.valueOf(image.getMediaType()))
                 .body(image.getData());
     }
 }

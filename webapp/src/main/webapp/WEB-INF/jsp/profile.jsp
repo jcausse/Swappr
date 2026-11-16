@@ -138,7 +138,7 @@
                             </c:if>
                         </c:forEach>
 
-                        <paw:pagination page="${ratingPage}" baseUrl="/profile/${user.id}"/>
+                        <paw:pagination page="${ratingPage}" baseUrl="/profile/${user.id}" pageParam="ratingPage"/>
                     </div>
                 </c:otherwise>
             </c:choose>
@@ -191,7 +191,7 @@
                         </c:forEach>
                     </div>
 
-                    <paw:pagination page="${listingPage}" baseUrl="/profile/${user.id}"/>
+                    <paw:pagination page="${listingPage}" baseUrl="/profile/${user.id}" pageParam="listingPage"/>
                 </c:otherwise>
             </c:choose>
         </paw:card>

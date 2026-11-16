@@ -34,9 +34,11 @@ public class EmailVerificationController {
     @GetMapping("/verify")
     public ModelAndView verifyForm(
             @RequestParam(value = "resent", required = false) Boolean resent,
-            @ModelAttribute("emailVerificationForm") EmailVerificationForm form
+            @ModelAttribute("emailVerificationForm") EmailVerificationForm form,
+            @ModelAttribute("resendVerificationForm") ResendVerificationForm resendForm
     ) {
         LOGGER.debug("Accessing email verification form");
+        resendForm.setUsernameOrEmail(form.getUsernameOrEmail());
         return new ModelAndView("verify")
                 .addObject("resent", Boolean.TRUE.equals(resent));
     }
@@ -71,10 +73,12 @@ public class EmailVerificationController {
     public ModelAndView resendVerificationCode(
             @Valid @ModelAttribute("resendVerificationForm") ResendVerificationForm form,
             BindingResult errors,
+            @ModelAttribute("emailVerificationForm") EmailVerificationForm emailForm,
             RedirectAttributes redirectAttributes
     ) {
         if (errors.hasErrors()) {
-            return new ModelAndView("redirect:/verify");
+            emailForm.setUsernameOrEmail(form.getUsernameOrEmail());
+            return new ModelAndView("verify");
         }
         LOGGER.info("Requested resend of verification email");
         userService.resendVerificationEmail(form.getUsernameOrEmail());
