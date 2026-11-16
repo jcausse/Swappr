@@ -702,10 +702,9 @@ public class ListingJpaDaoTest {
     @Test
     public void testPurchaseMarksListingAsSold() {
         // Act
-        final ListingStatus status = listingDao.purchase(MACBOOK_LISTING_ID, BUYER_ID);
+        listingDao.purchase(MACBOOK_LISTING_ID);
 
         // Assert
-        Assert.assertEquals(ListingStatus.SOLD, status);
         Assert.assertEquals(1, countListingsWhere(
             "listing_id = " + MACBOOK_LISTING_ID + " AND status = 'SOLD'"
         ));
@@ -714,10 +713,9 @@ public class ListingJpaDaoTest {
     @Test
     public void testPendingTransactionMarksListingAsPending() {
         // Act
-        final ListingStatus status = listingDao.pendingTransaction(MACBOOK_LISTING_ID, BUYER_ID);
+        listingDao.pendingTransaction(MACBOOK_LISTING_ID);
 
         // Assert
-        Assert.assertEquals(ListingStatus.PENDING_TRANSACTION, status);
         Assert.assertEquals(1, countListingsWhere(
             "listing_id = " + MACBOOK_LISTING_ID + " AND status = 'PENDING_TRANSACTION'"
         ));
