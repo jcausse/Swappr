@@ -55,8 +55,8 @@ public class Listing {
     @Column(name = "description")
     private String description;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "creator_id")
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "creator_id", nullable = false)
     private User creator;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
