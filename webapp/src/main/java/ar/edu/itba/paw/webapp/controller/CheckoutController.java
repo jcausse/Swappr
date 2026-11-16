@@ -18,7 +18,6 @@ import ar.edu.itba.paw.model.Listing;
 import ar.edu.itba.paw.model.User;
 import ar.edu.itba.paw.service.ListingService;
 import ar.edu.itba.paw.service.OfferService;
-import ar.edu.itba.paw.service.exception.BadParameterException;
 import ar.edu.itba.paw.webapp.auth.CurrentUser;
 import ar.edu.itba.paw.webapp.form.CheckoutForm;
 import lombok.RequiredArgsConstructor;
@@ -56,9 +55,6 @@ public class CheckoutController {
             @CurrentUser User currentUser
     ) {
         if (bindingResult.hasErrors()) {
-            if (form.getListingId() == null) {
-                throw BadParameterException.create("listingId", "Listing is required");
-            }
             var listing = listingService.getById(form.getListingId());
             LOGGER.debug("Validation failed for checkout on listing {}", form.getListingId());
             return withUserListings(listing, currentUser, form);
