@@ -13,7 +13,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <c:choose>
         <c:when test="${not empty titleKey}">
-            <title><spring:message code="${titleKey}" arguments="${titleParams}"/></title>
+            <c:choose>
+                <c:when test="${not empty titleParams}">
+                    <spring:message code="${titleKey}" var="resolvedTitle">
+                        <spring:argument value="${titleParams}"/>
+                    </spring:message>
+                </c:when>
+                <c:otherwise>
+                    <spring:message code="${titleKey}" var="resolvedTitle"/>
+                </c:otherwise>
+            </c:choose>
+            <title><c:out value="${resolvedTitle}"/></title>
         </c:when>
         <c:when test="${not empty title}">
             <title><c:out value="${title}"/></title>
