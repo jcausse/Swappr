@@ -54,12 +54,12 @@ public class EmailVerificationController {
 
         final var result = userService.verifyEmail(form.getUsernameOrEmail(), form.getOtp());
         if (result == OneTimePasswordVerificationResult.ACCEPTED) {
-            LOGGER.info("User {} successfully verified email", form.getUsernameOrEmail());
+            LOGGER.info("User email verified successfully");
             authHelper.login(request, form.getUsernameOrEmail());
             return new ModelAndView("redirect:/");
         }
 
-        LOGGER.debug("Email verification failed for {} with result {}", form.getUsernameOrEmail(), result);
+        LOGGER.debug("Email verification failed with result {}", result);
         errors.rejectValue("otp", result == OneTimePasswordVerificationResult.EXPIRED
                 ? "verify.error.expiredOtp"
                 : "verify.error.invalidOtp"
@@ -76,7 +76,7 @@ public class EmailVerificationController {
         if (errors.hasErrors()) {
             return new ModelAndView("redirect:/verify");
         }
-        LOGGER.info("Requested resend of verification email for {}", form.getUsernameOrEmail());
+        LOGGER.info("Requested resend of verification email");
         userService.resendVerificationEmail(form.getUsernameOrEmail());
         redirectAttributes.addAttribute("email", form.getUsernameOrEmail().trim());
         redirectAttributes.addAttribute("resent", true);
