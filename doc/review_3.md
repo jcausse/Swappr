@@ -34,7 +34,7 @@
 | 3.1 | [Admin user-management error paths render a view missing filterForm](#31-admin-user-management-error-paths-render-a-view-missing-filterform) | 🕓 Open |
 | 3.2 | [Missing or tampered hidden IDs produce 500 instead of 400](#32-missing-or-tampered-hidden-ids-produce-500-instead-of-400) | 🕓 Open |
 | 3.3 | [Profile listing pagination is broken and shares page with ratings](#33-profile-listing-pagination-is-broken-and-shares-page-with-ratings) | 🕓 Open |
-| 3.4 | [Duplicate tracking-number DOM id copies the wrong offer](#34-duplicate-tracking-number-dom-id-copies-the-wrong-offer) | 🕓 Open |
+| 3.4 | [Duplicate tracking-number DOM id copies the wrong offer](#34-duplicate-tracking-number-dom-id-copies-the-wrong-offer) | ✅ Resolved |
 | 3.5 | [Admin listing table shows raw OFFERED_IN_TRADE status](#35-admin-listing-table-shows-raw-offered_in_trade-status) | ✅ Resolved |
 | 3.6 | [Proof-of-payment back link uses the wrong label](#36-proof-of-payment-back-link-uses-the-wrong-label) | 🕓 Open |
 | 3.7 | [Duplicate cancel/sold banners (intended)](#37-canceledsold-banner-rendered-twice-on-listing-detail) | ❌ False positive |
