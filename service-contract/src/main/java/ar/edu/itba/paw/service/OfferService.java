@@ -49,9 +49,9 @@ public interface OfferService {
 
     Optional<File> getProofOfShippingFile(Long offerId, Long currentUserId);
 
-    Offer rate(Offer offer, User currentUser, OfferRating rating);
+    Offer rate(Long offerId, User currentUser, OfferRating rating);
 
-    Offer rate(Offer offer, User currentUser, OfferRating rating, String reviewText);
+    Offer rate(Long offerId, User currentUser, OfferRating rating, String reviewText);
 
     @SuppressWarnings("unused")
     void autoRatePendingOffers();
