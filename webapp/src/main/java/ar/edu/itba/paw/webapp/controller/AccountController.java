@@ -280,18 +280,17 @@ public class AccountController {
                                         @CurrentUser User currentUser,
                                         @Valid @ModelAttribute("rateForm") RateForm rateForm,
                                         BindingResult bindingResult) {
-        final Offer offer = offerService.getById(offerId, false)
-                .orElseThrow(() -> NotFoundException.createFor("Offer"));
-
         if (bindingResult.hasErrors()) {
+            final Offer offer = offerService.getById(offerId, false)
+                    .orElseThrow(() -> NotFoundException.createFor("Offer"));
             return new ModelAndView("account/rate")
                 .addObject("offer", offer)
                 .addObject("pendingOffersCount", offerService.getPendingOffersCount(currentUser));
         }
 
-        offerService.rate(offer, currentUser, rateForm.getRating(), rateForm.getReviewText());
+        final Offer ratedOffer = offerService.rate(offerId, currentUser, rateForm.getRating(), rateForm.getReviewText());
 
-        return new ModelAndView("redirect:" + (offer.isBuyer(currentUser)
+        return new ModelAndView("redirect:" + (ratedOffer.isBuyer(currentUser)
             ? "/account/my-offers?statusGroup=RESOLVED"
             : "/account/incoming-offers?statusGroup=RESOLVED"));
     }
