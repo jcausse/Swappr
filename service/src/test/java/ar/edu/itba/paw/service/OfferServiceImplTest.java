@@ -666,6 +666,27 @@ public class OfferServiceImplTest {
         offerService.uploadProofOfShipping(OFFER_ID, SELLER_ID, FILE_DTO_TXT, TRACKING_NUMBER);
     }
 
+    @Test(expected = BadParameterException.class)
+    public void testUploadProofOfShippingEmptyFileThrows() {
+        // Arrange
+        givenOffer(buildFakeOffer(OfferStatus.PENDING_PAYMENT));
+
+        // Act
+        offerService.uploadProofOfShipping(OFFER_ID, SELLER_ID, FILE_DTO_PNG_EMPTY, TRACKING_NUMBER);
+    }
+
+    @Test
+    public void testUploadProofOfShippingWithTrackingOnlySucceeds() {
+        // Arrange
+        givenOffer(buildFakeOffer(OfferStatus.PENDING_PAYMENT));
+
+        // Act
+        final Offer result = offerService.uploadProofOfShipping(OFFER_ID, SELLER_ID, null, TRACKING_NUMBER);
+
+        // Assert
+        Assert.assertEquals(OFFER_ID, (long) result.getId());
+    }
+
     /* ---------------------------------------------------------------------------------------------- */
     /* confirmPayment                                                                                  */
     /* ---------------------------------------------------------------------------------------------- */
