@@ -2,8 +2,6 @@ package ar.edu.itba.paw.service;
 
 import ar.edu.itba.paw.model.Role;
 import ar.edu.itba.paw.model.User;
-import ar.edu.itba.paw.persistence.ListingDao;
-import ar.edu.itba.paw.persistence.OfferDao;
 import ar.edu.itba.paw.service.exception.NotFoundException;
 import ar.edu.itba.paw.service.exception.SelfSuspendException;
 import lombok.NonNull;
@@ -23,8 +21,7 @@ public class AdminServiceImpl implements AdminService {
     private final ListingCancellationService listingCancellationService;
     private final OfferService offerService;
     private final UserService userService;
-    private final ListingDao listingDao;
-    private final OfferDao offerDao;
+    private final ListingService listingService;
 
     @Override
     @Transactional
@@ -74,18 +71,18 @@ public class AdminServiceImpl implements AdminService {
         final Long userId = user.getId();
 
         // Release trade listings offered in the offers that are about to be rejected
-        final int releasedOfferedListings = listingDao.releaseOfferedListingsForParticipant(userId);
+        final int releasedOfferedListings = listingService.releaseOfferedListingsForParticipant(userId);
 
         // Release listings held by the user's pending-payment offers (target listings belong to other sellers)
-        final int releasedHeldListings = listingDao.releaseListingsHeldByBuyerPaymentOffers(userId);
+        final int releasedHeldListings = listingService.releaseListingsHeldByBuyerPaymentOffers(userId);
 
         // Silently reject every pending or pending-payment offer the user participates in
-        final int rejectedOffers = offerDao.rejectAllForParticipant(userId);
+        final int rejectedOffers = offerService.rejectAllForParticipant(userId);
 
         final User suspendedUser = userService.suspend(userId);
 
         // Cancel every listing still owned by the user, leaving completed sales untouched
-        final int canceledListings = listingDao.cancelAllByCreator(userId);
+        final int canceledListings = listingCancellationService.cancelAllByCreator(userId);
 
         LOGGER.info("Suspension cleanup for user id={}: releasedOfferedListings={}, releasedHeldListings={}, "
                         + "rejectedOffers={}, canceledListings={}",

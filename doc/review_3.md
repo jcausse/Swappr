@@ -43,12 +43,12 @@
 | 3.10 | [No container error-page mappings for render-time exceptions](#310-no-container-error-page-mappings-for-render-time-exceptions) | 🕓 Open |
 | 3.11 | [Error JSPs declare DOCTYPE twice](#311-error-jsps-declare-doctype-twice) | ✅ Resolved |
 | 4.1 | [Emails/notifications dispatched before the transaction commits](#41-emails-and-notifications-are-dispatched-before-the-transaction-commits) | 🕓 Open |
-| 4.2 | [OfferService injects foreign DAOs and mutates user counters directly](#42-offerservice-injects-foreign-daos-and-mutates-user-counters-directly) | 🕓 Open |
+| 4.2 | [OfferService injects foreign DAOs and mutates user counters directly](#42-offerservice-injects-foreign-daos-and-mutates-user-counters-directly) | ✅ Resolved |
 | 4.3 | [OfferService.rate accepts a detached entity and relies on OSIV](#43-offerservicerate-accepts-a-detached-entity-and-relies-on-osiv) | 🕓 Open |
 | 4.4 | [Notification loops query preferences once per recipient](#44-notification-loops-query-preferences-once-per-recipient) | 🕓 Open |
 | 4.5 | [Business-action logging lives in controllers, before the action succeeds](#45-business-action-logging-lives-in-controllers-before-the-action-succeeds) | 🕓 Open |
 | 4.6 | [ListingDao purchase/pendingTransaction have unused parameters and fake returns](#46-listingdao-purchasependingtransaction-have-unused-parameters-and-fake-returns) | 🕓 Open |
-| 4.7 | [Move AdminServiceImpl bulk cleanup into owning services](#47-move-adminserviceimpl-bulk-cleanup-into-the-owning-services) | 🕓 Open |
+| 4.7 | [Move AdminServiceImpl bulk cleanup into owning services](#47-move-adminserviceimpl-bulk-cleanup-into-the-owning-services) | ✅ Resolved |
 | 5.1 | [Clearing display name on profile edit causes a 500](#51-clearing-display-name-on-profile-edit-causes-a-500) | 🕓 Open |
 | 5.2 | [Missing users throw IllegalArgumentException instead of NotFoundException](#52-missing-users-throw-illegalargumentexception-instead-of-notfoundexception) | 🕓 Open |
 | 5.3 | [Shipping tracking number has no max length](#53-shipping-tracking-number-has-no-max-length) | 🕓 Open |

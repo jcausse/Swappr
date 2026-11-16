@@ -13,9 +13,7 @@ import ar.edu.itba.paw.model.OfferType;
 import ar.edu.itba.paw.model.Page;
 import ar.edu.itba.paw.model.Price;
 import ar.edu.itba.paw.model.User;
-import ar.edu.itba.paw.persistence.FileDao;
 import ar.edu.itba.paw.persistence.OfferDao;
-import ar.edu.itba.paw.persistence.UserDao;
 import ar.edu.itba.paw.service.dto.FileDto;
 import ar.edu.itba.paw.service.dto.OfferCreationDto;
 import ar.edu.itba.paw.service.dto.OfferFilterDto;
@@ -87,9 +85,7 @@ public class OfferServiceImplTest {
     @Mock
     private OfferDao offerDao;
     @Mock
-    private FileDao fileDao;
-    @Mock
-    private UserDao userDao;
+    private FileService fileService;
     @Mock
     private UserService userService;
     @Mock
@@ -590,7 +586,7 @@ public class OfferServiceImplTest {
     public void testUploadProofOfPaymentAcceptsPdf() {
         // Arrange
         givenOffer(buildFakeOffer(OfferStatus.PENDING_PAYMENT));
-        when(fileDao.create(any(), any(), eq(PDF), any(byte[].class))).thenReturn(buildFakeFile());
+        when(fileService.create(any(), any(), eq(PDF), any(byte[].class))).thenReturn(buildFakeFile());
 
         // Act
         final Offer result = offerService.uploadProofOfPayment(OFFER_ID, BUYER_ID, FILE_DTO_PDF);
@@ -708,7 +704,7 @@ public class OfferServiceImplTest {
     public void testGetProofOfPaymentFileReturnsStoredFile() {
         // Arrange
         givenOffer(offerBuilder(OfferStatus.PENDING_PAYMENT).proofOfPayment(ar.edu.itba.paw.model.File.builder().id(FILE_ID).build()).build());
-        when(fileDao.getById(eq(FILE_ID))).thenReturn(Optional.of(buildFakeFile()));
+        when(fileService.getById(eq(FILE_ID))).thenReturn(Optional.of(buildFakeFile()));
 
         // Act
         final Optional<File> maybeFile = offerService.getProofOfPaymentFile(OFFER_ID, SELLER_ID);
@@ -722,7 +718,7 @@ public class OfferServiceImplTest {
     public void testGetProofOfShippingFileReturnsStoredFile() {
         // Arrange
         givenOffer(offerBuilder(OfferStatus.PENDING_PAYMENT).proofOfShipping(ar.edu.itba.paw.model.File.builder().id(FILE_ID).build()).build());
-        when(fileDao.getById(eq(FILE_ID))).thenReturn(Optional.of(buildFakeFile()));
+        when(fileService.getById(eq(FILE_ID))).thenReturn(Optional.of(buildFakeFile()));
 
         // Act
         final Optional<File> maybeFile = offerService.getProofOfShippingFile(OFFER_ID, SELLER_ID);
@@ -802,11 +798,11 @@ public class OfferServiceImplTest {
         doAnswer(invocation -> {
             sellerIncrements.putAll(invocation.getArgument(0));
             return null;
-        }).when(userDao).incrementSellerRatingCounters(any(), eq(OfferRating.POSITIVE));
+        }).when(userService).incrementSellerRatingCounters(any(), eq(OfferRating.POSITIVE));
         doAnswer(invocation -> {
             buyerIncrements.putAll(invocation.getArgument(0));
             return null;
-        }).when(userDao).incrementBuyerRatingCounters(any(), eq(OfferRating.POSITIVE));
+        }).when(userService).incrementBuyerRatingCounters(any(), eq(OfferRating.POSITIVE));
 
         // Act
         offerService.autoRatePendingOffers();
@@ -835,7 +831,7 @@ public class OfferServiceImplTest {
         doAnswer(invocation -> {
             sellerIncrements.putAll(invocation.getArgument(0));
             return null;
-        }).when(userDao).incrementSellerRatingCounters(any(), eq(OfferRating.POSITIVE));
+        }).when(userService).incrementSellerRatingCounters(any(), eq(OfferRating.POSITIVE));
 
         // Act
         offerService.autoRatePendingOffers();

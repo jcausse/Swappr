@@ -57,4 +57,6 @@ public interface OfferService {
     void autoRatePendingOffers();
 
     void cancelByAdmin(Long offerId);
+
+    int rejectAllForParticipant(Long userId);
 }

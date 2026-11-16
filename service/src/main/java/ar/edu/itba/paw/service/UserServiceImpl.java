@@ -5,6 +5,7 @@ import ar.edu.itba.paw.model.Role;
 import ar.edu.itba.paw.model.Province;
 import ar.edu.itba.paw.model.User;
 import ar.edu.itba.paw.model.Language;
+import ar.edu.itba.paw.model.OfferRating;
 import ar.edu.itba.paw.model.OneTimePassword;
 import ar.edu.itba.paw.persistence.UserDao;
 import ar.edu.itba.paw.persistence.UserRoleDao;
@@ -15,6 +16,7 @@ import ar.edu.itba.paw.service.enumeration.OneTimePasswordVerificationResult;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -269,6 +271,30 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new IllegalArgumentException("Non-valid User received"));
         notificationDispatcherService.notifyAccountUnsuspended(user);
         return user;
+    }
+
+    @Override
+    @Transactional
+    public void incrementSellerRatingCounter(@NonNull Long userId, @NonNull OfferRating rating) {
+        userDao.incrementSellerRatingCounter(userId, rating);
+    }
+
+    @Override
+    @Transactional
+    public void incrementBuyerRatingCounter(@NonNull Long userId, @NonNull OfferRating rating) {
+        userDao.incrementBuyerRatingCounter(userId, rating);
+    }
+
+    @Override
+    @Transactional
+    public void incrementSellerRatingCounters(@NonNull Map<Long, Long> increments, @NonNull OfferRating rating) {
+        userDao.incrementSellerRatingCounters(increments, rating);
+    }
+
+    @Override
+    @Transactional
+    public void incrementBuyerRatingCounters(@NonNull Map<Long, Long> increments, @NonNull OfferRating rating) {
+        userDao.incrementBuyerRatingCounters(increments, rating);
     }
 
 
