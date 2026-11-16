@@ -6,6 +6,8 @@ import ar.edu.itba.paw.webapp.form.validator.ValidProofOfShippingUploadForm;
 
 import java.io.IOException;
 
+import javax.validation.constraints.Size;
+
 import org.springframework.web.multipart.MultipartFile;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,6 +19,7 @@ import lombok.Setter;
 @Setter
 public class ProofOfShippingUploadForm {
 
+    @Size(max = 255)
     private String trackingNumber;
 
     @ValidFile(optional = true)

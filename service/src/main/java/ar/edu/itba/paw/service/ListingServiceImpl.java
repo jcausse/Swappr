@@ -49,6 +49,9 @@ public class ListingServiceImpl implements ListingService {
 
     @Override
     public Listing getById(Long id) {
+        if (id == null) {
+            throw BadParameterException.create("id", "Listing id is required");
+        }
         return listingDao
             .getById(id)
             .orElseThrow(() -> NotFoundException.createFor("Listing with ID " + id));
