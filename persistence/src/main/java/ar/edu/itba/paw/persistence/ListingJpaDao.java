@@ -20,9 +20,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Repository
 public class ListingJpaDao implements ListingDao {
@@ -204,21 +202,16 @@ public class ListingJpaDao implements ListingDao {
             return new Page<>(List.of(), page, pageSize, totalCount);
         }
 
-        final List<Listing> fetched = em.createQuery(
+        final List<Listing> content = em.createQuery(
                 "SELECT l FROM Listing l"
                 + " JOIN FETCH l.model m"
                 + " JOIN FETCH m.brand"
                 + " JOIN FETCH m.subcategory s"
                 + " JOIN FETCH s.category"
-                + " WHERE l.id IN :ids", Listing.class)
+                + " WHERE l.id IN :ids"
+                + " ORDER BY " + resolveOrderBy(filter.getSort()), Listing.class)
                 .setParameter("ids", ids)
                 .getResultList();
-        final Map<Long, Listing> byId = fetched.stream()
-                .collect(Collectors.toMap(Listing::getId, listing -> listing));
-        final List<Listing> content = ids.stream()
-                .map(byId::get)
-                .filter(Objects::nonNull)
-                .toList();
 
         return new Page<>(content, page, pageSize, totalCount);
     }
@@ -236,8 +229,23 @@ public class ListingJpaDao implements ListingDao {
 
     private static final String LISTING_SORT_TO_SQL_DEFAULT = "l.listing_id DESC";
 
+    private static final Map<ListingSort, String> LISTING_SORT_TO_JPQL = new HashMap<>(Map.ofEntries(
+            Map.entry(ListingSort.PRICE_ASC, "l.price.amount ASC, l.id DESC"),
+            Map.entry(ListingSort.PRICE_DESC, "l.price.amount DESC, l.id DESC"),
+            Map.entry(ListingSort.NAME_ASC, "l.title ASC, l.id DESC"),
+            Map.entry(ListingSort.NAME_DESC, "l.title DESC, l.id DESC"),
+            Map.entry(ListingSort.MOST_OFFERS, "l.pendingOffersCount DESC, l.id DESC"),
+            Map.entry(ListingSort.RECENT_OFFERS, "l.recentPendingOfferAt DESC NULLS LAST, l.id DESC")
+    ));
+
+    private static final String LISTING_SORT_TO_JPQL_DEFAULT = "l.id DESC";
+
     private static String resolveNativeOrderBy(final ListingSort sort) {
         return LISTING_SORT_TO_SQL.getOrDefault(sort, LISTING_SORT_TO_SQL_DEFAULT);
+    }
+
+    private static String resolveOrderBy(final ListingSort sort) {
+        return LISTING_SORT_TO_JPQL.getOrDefault(sort, LISTING_SORT_TO_JPQL_DEFAULT);
     }
 
     private static String escapeLike(String input) {

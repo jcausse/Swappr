@@ -17,8 +17,6 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 @Repository
 public class RatingJpaDao implements RatingDao {
@@ -80,19 +78,14 @@ public class RatingJpaDao implements RatingDao {
             return new Page<>(List.of(), page, pageSize, totalCount);
         }
 
-        final List<Rating> fetched = em.createQuery(
+        final List<Rating> content = em.createQuery(
                 "SELECT r FROM Rating r"
                 + " JOIN FETCH r.creator"
                 + " JOIN FETCH r.listing"
-                + " WHERE r.id IN :ids", Rating.class)
+                + " WHERE r.id IN :ids"
+                + " ORDER BY r.createdAt DESC, r.id DESC", Rating.class)
                 .setParameter("ids", ids)
                 .getResultList();
-        final Map<Long, Rating> byId = fetched.stream()
-                .collect(Collectors.toMap(Rating::getId, rating -> rating));
-        final List<Rating> content = ids.stream()
-                .map(byId::get)
-                .filter(Objects::nonNull)
-                .toList();
 
         return new Page<>(content, page, pageSize, totalCount);
     }
