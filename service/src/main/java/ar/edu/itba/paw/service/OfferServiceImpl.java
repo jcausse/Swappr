@@ -573,13 +573,16 @@ public class OfferServiceImpl implements OfferService {
 
     @Override
     @Transactional
-    public Offer rate(Offer offer, User currentUser, OfferRating rating) {
-        return rate(offer, currentUser, rating, null);
+    public Offer rate(Long offerId, User currentUser, OfferRating rating) {
+        return rate(offerId, currentUser, rating, null);
     }
 
     @Override
     @Transactional
-    public Offer rate(Offer offer, User currentUser, OfferRating rating, String reviewText) {
+    public Offer rate(Long offerId, User currentUser, OfferRating rating, String reviewText) {
+        final Offer offer = offerDao.getById(offerId)
+            .orElseThrow(() -> NotFoundException.createFor("Offer with ID " + offerId));
+
         if (!offer.isAccepted()) {
             throw new BadParameterException("Only accepted offers can be rated");
         }

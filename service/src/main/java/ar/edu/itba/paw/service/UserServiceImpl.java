@@ -11,6 +11,7 @@ import ar.edu.itba.paw.persistence.UserRoleDao;
 import ar.edu.itba.paw.service.dto.ImageData;
 import ar.edu.itba.paw.service.dto.UserCreationDto;
 import ar.edu.itba.paw.service.dto.UserEditDto;
+import ar.edu.itba.paw.service.exception.NotFoundException;
 import ar.edu.itba.paw.service.enumeration.OneTimePasswordVerificationResult;
 
 import java.time.Instant;
@@ -134,7 +135,7 @@ public class UserServiceImpl implements UserService {
         }
 
         var updated = updateResult
-                .orElseThrow(() -> new IllegalArgumentException("Non-valid User received"));
+                .orElseThrow(() -> NotFoundException.createFor("User with ID " + user.getId()));
 
         /*
          * Location and preferred language live on the same user, so we apply them in the same
@@ -163,7 +164,7 @@ public class UserServiceImpl implements UserService {
         final String detail = province == null ? null : normalizeDetail(locationDetail);
 
         return userDao.updateLocation(user.getId(), resolvedProvinceId, detail)
-                .orElseThrow(() -> new IllegalArgumentException("Non-valid User received"));
+                .orElseThrow(() -> NotFoundException.createFor("User with ID " + user.getId()));
     }
 
     @Override
@@ -171,7 +172,7 @@ public class UserServiceImpl implements UserService {
     public User updatePreferredLanguage(@NonNull User user, @NonNull Language preferredLanguage) {
         LOGGER.info("Updating preferred language for user id={} to '{}'", user.getId(), preferredLanguage.getCode());
         return userDao.updatePreferredLanguage(user.getId(), preferredLanguage)
-                .orElseThrow(() -> new IllegalArgumentException("Non-valid User received"));
+                .orElseThrow(() -> NotFoundException.createFor("User with ID " + user.getId()));
     }
 
     @Override
@@ -226,7 +227,7 @@ public class UserServiceImpl implements UserService {
     private User markEmailAsVerified(@NonNull User user) {
         LOGGER.info("Marking email as verified for user id={}", user.getId());
         return userDao.verifyEmail(user.getId(), Instant.now())
-                .orElseThrow(() -> new IllegalArgumentException("Non-valid User received"));
+                .orElseThrow(() -> NotFoundException.createFor("User with ID " + user.getId()));
     }
 
     @Override
@@ -256,7 +257,7 @@ public class UserServiceImpl implements UserService {
     public User suspend(@NonNull Long userId) {
         LOGGER.info("Suspending user id={}", userId);
         final User user = userDao.suspend(userId, Instant.now())
-                .orElseThrow(() -> new IllegalArgumentException("Non-valid User received"));
+                .orElseThrow(() -> NotFoundException.createFor("User with ID " + userId));
         notificationDispatcherService.notifyAccountSuspended(user);
         return user;
     }
@@ -266,7 +267,7 @@ public class UserServiceImpl implements UserService {
     public User unsuspend(@NonNull Long userId) {
         LOGGER.info("Unsuspending user id={}", userId);
         final User user = userDao.unsuspend(userId)
-                .orElseThrow(() -> new IllegalArgumentException("Non-valid User received"));
+                .orElseThrow(() -> NotFoundException.createFor("User with ID " + userId));
         notificationDispatcherService.notifyAccountUnsuspended(user);
         return user;
     }

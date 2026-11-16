@@ -14,7 +14,7 @@ import javax.validation.constraints.Size;
 public class AdminGrantRoleForm {
 
     @NotEmpty
-    @Size(min = 3, max = 100)
+    @Size(min = 3, max = 254)
     @UserExists
     private String username;
 
