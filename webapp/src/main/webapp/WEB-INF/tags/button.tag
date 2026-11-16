@@ -12,7 +12,6 @@
 <%@ attribute name="onclick" required="false" %>
 <%@ attribute name="ariaLabel" required="false" %>
 <%@ attribute name="popovertarget" required="false" %>
-<%@ attribute name="dataTrackingNumber" required="false" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="paw" tagdir="/WEB-INF/tags" %>
 
@@ -97,7 +96,6 @@
     <c:if test="${not empty onclick}">onclick="${onclick}"</c:if>
     <c:if test="${not empty ariaLabel}">aria-label="${ariaLabel}"</c:if>
     <c:if test="${not empty popovertarget}">popovertarget="${popovertarget}"</c:if>
-    <c:if test="${not empty dataTrackingNumber}">data-tracking-number="<c:out value='${dataTrackingNumber}'/>"</c:if>
 >
     <c:if test="${not empty icon}">
         <paw:icon name="${icon}" />
