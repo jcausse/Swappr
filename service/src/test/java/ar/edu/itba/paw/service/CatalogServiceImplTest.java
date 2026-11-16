@@ -106,6 +106,11 @@ public class CatalogServiceImplTest {
         Assert.assertEquals(BRAND_NAME, result.getBrand().getName());
     }
 
+    @Test(expected = BadParameterException.class)
+    public void testGetModelByIdNullThrows() {
+        catalogService.getModelById(null);
+    }
+
     @Test(expected = NotFoundException.class)
     public void testGetModelByIdDoesNotExistThrows() {
         when(modelDao.getById(eq(NON_EXISTING_MODEL_ID))).thenReturn(Optional.empty());

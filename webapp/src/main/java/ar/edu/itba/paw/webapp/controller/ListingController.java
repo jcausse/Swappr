@@ -364,6 +364,7 @@ public class ListingController {
             .addObject("existingImageIds", listingService.getById(listingId).getImageIds());
     }
 
+
     @PostMapping("/{id}/cancel")
     @PreAuthorize("@webPermissionService.canManageListing(authentication, #id)")
     public ModelAndView cancelListing(@PathVariable Long id, @CurrentUser User currentUser) {
