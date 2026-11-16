@@ -59,10 +59,10 @@
 | 5.8 | [Proof of shipping accepts a zero-byte file](#58-proof-of-shipping-accepts-a-zero-byte-file) | ✅ Resolved |
 | 5.9 | [Raw filename and unvalidated content type in response headers](#59-raw-filename-and-unvalidated-content-type-in-response-headers) | ✅ Resolved |
 | 5.10 | [Emails/usernames logged in clear text](#510-emails-and-usernames-are-logged-in-clear-text) | ✅ Resolved |
-| 6.1 | [Comma-containing display names are truncated in message arguments](#61-comma-containing-display-names-are-truncated-in-message-arguments) | 🕓 Open |
+| 6.1 | [Comma-containing display names are truncated in message arguments](#61-comma-containing-display-names-are-truncated-in-message-arguments) | ✅ Resolved |
 | 6.2 | [Hardcoded “KB” unit in proof components](#62-hardcoded-kb-unit-in-proof-components) | 🕓 Open |
 | 6.3 | [Translated fragments concatenated instead of parameterized](#63-translated-fragments-concatenated-instead-of-parameterized) | 🕓 Open |
-| 6.4 | [Icon-only links, hidden radios and preference checkboxes are inaccessible](#64-icon-only-links-hidden-radios-and-preference-checkboxes-are-inaccessible) | 🕓 Open |
+| 6.4 | [Icon-only links, hidden radios and preference checkboxes are inaccessible](#64-icon-only-links-hidden-radios-and-preference-checkboxes-are-inaccessible) | ✅ Resolved |
 | 6.5 | [Duplicate DOM ids in admin user forms](#65-duplicate-dom-ids-in-admin-user-forms) | 🕓 Open |
 | 6.6 | [Reusable tags render raw attributes without c:out](#66-reusable-tags-render-raw-attributes-without-cout) | 🕓 Open |
 | 7.1 | [No tests for the riskiest service flows](#71-no-tests-for-the-riskiest-service-flows) | 🕓 Open |
@@ -380,9 +380,7 @@ Examples: `ListingController:370`, `OfferController:29,38,49,64`, `AdminControll
 
 ### 6.1 Comma-containing display names are truncated in message arguments
 
-`head.tag:16` and `account/index.jsp:8` pass a `String` to `spring:message arguments=`. Spring treats that string as a comma-delimited argument list. A display name like `Smith, John` renders only `Smith`, and a name containing `{0}` can also be interpreted by `MessageFormat`.
-
-**Action:** use nested `<spring:argument value="${displayName}"/>` (or a one-element collection) wherever a user-controlled value is passed to a message.
+**Resolved.** `head.tag`, `authLayout.tag` and `account/index.jsp` already use nested `<spring:argument>` instead of a comma-joined `arguments=` string for every user-controlled value (display names). The remaining `arguments="${...}"` call sites in the codebase only pass plain numbers (counts, timestamps, page numbers), so no other instance of this bug exists.
 
 ### 6.2 Hardcoded KB unit in proof components
 
@@ -398,11 +396,7 @@ Examples: `product.tag:16` joins category and subcategory with ` / `; `listing/i
 
 ### 6.4 Icon-only links, hidden radios and preference checkboxes are inaccessible
 
-- `pagination.tag:58-66` and several account pages render `paw:linkButton` with only an icon. `linkButton.tag` has no `ariaLabel` attribute, so the link has no accessible name.
-- `formButtonToggle.tag:16` renders the radios with `cssClass="hidden"` (display:none). They cannot receive keyboard focus, and the visible `paw:fakeButton` labels are not real controls.
-- `notifications/preferences.jsp:63-68` renders checkboxes without a `label` or `aria-label`; the type/channel association is only visual.
-
-**Action:** add accessible names for icon-only actions, use `sr-only`/`peer` instead of `hidden` for the radios, and associate every checkbox with its type and channel.
+**Resolved.** Added an `ariaLabel` attribute to `linkButton.tag` (escaped via `<c:out>`) and passed localized labels at every icon-only call site: `pagination.tag` (first/previous/next/last), `account/listings.jsp` (view/edit/cancel listing), `account/incomingOffers.jsp` (view offer) and `offerProofOfShipping.tag` (copy tracking number, via `button.tag`'s existing `ariaLabel`). Changed `formButtonToggle.tag`'s radios from `cssClass="hidden"` to `cssClass="sr-only peer"` (the same convention already used in `rate.jsp`), so they stay focusable while the `paw:fakeButton` labels remain the visible control; `fakeButton.tag` already styles via `peer-checked:`, so no further change was needed there. Added a `labelClassname` attribute to `checkbox.tag` and used it with `label`/`labelClassname="sr-only"` in `notifications/preferences.jsp` to associate each preference checkbox with its notification type and channel via a screen-reader-only `<label>`.
 
 ### 6.5 Duplicate DOM ids in admin user forms
 
