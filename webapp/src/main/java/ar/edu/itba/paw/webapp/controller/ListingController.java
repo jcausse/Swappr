@@ -367,7 +367,6 @@ public class ListingController {
     @PostMapping("/{id}/cancel")
     @PreAuthorize("@webPermissionService.canManageListing(authentication, #id)")
     public ModelAndView cancelListing(@PathVariable Long id, @CurrentUser User currentUser) {
-        LOGGER.info("User {} canceled listing {}", currentUser.getId(), id);
         listingCancellationService.cancel(id, currentUser.getId());
         return new ModelAndView("redirect:/account/listings");
     }
