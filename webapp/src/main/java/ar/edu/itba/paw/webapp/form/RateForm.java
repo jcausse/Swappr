@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 @NoArgsConstructor
 @Getter
@@ -15,5 +16,6 @@ public class RateForm {
     @NotNull
     private OfferRating rating;
 
+    @Size(max = 2000)
     private String reviewText;
 }
