@@ -9,10 +9,7 @@ import org.springframework.stereotype.Repository;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Repository
 public class BrandJpaDao implements BrandDao {
@@ -93,14 +90,7 @@ public class BrandJpaDao implements BrandDao {
                 .setParameter("brandIds", brandIds)
                 .getResultList();
 
-        final Map<Long, BrandInfo> byId = content.stream()
-                .collect(Collectors.toMap(BrandInfo::getId, brand -> brand));
-        final List<BrandInfo> ordered = brandIds.stream()
-                .map(byId::get)
-                .filter(Objects::nonNull)
-                .toList();
-
-        return new Page<>(ordered, page, pageSize, totalCount);
+        return new Page<>(content, page, pageSize, totalCount);
     }
 
     @Override

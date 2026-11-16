@@ -24,7 +24,6 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -106,16 +105,10 @@ public class OfferJpaDao implements OfferDao {
             return new Page<>(List.of(), page, pageSize, totalCount);
         }
 
-        final List<Offer> fetched = em.createQuery(
-                "FROM Offer o WHERE o.id IN :ids", Offer.class)
+        final List<Offer> content = em.createQuery(
+                "FROM Offer o WHERE o.id IN :ids ORDER BY o.createdAt DESC, o.id DESC", Offer.class)
                 .setParameter("ids", ids)
                 .getResultList();
-        final Map<Long, Offer> byId = fetched.stream()
-                .collect(Collectors.toMap(Offer::getId, offer -> offer));
-        final List<Offer> content = ids.stream()
-                .map(byId::get)
-                .filter(Objects::nonNull)
-                .toList();
 
         return new Page<>(content, page, pageSize, totalCount);
     }

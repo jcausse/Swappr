@@ -16,10 +16,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Repository
 public class ModelJpaDao implements ModelDao {
@@ -146,13 +143,7 @@ public class ModelJpaDao implements ModelDao {
         if (subcategoryId != null) query.setParameter("subcategoryId", subcategoryId);
         query.setParameter("modelIds", modelIds);
 
-        final List<ModelInfo> fetched = query.getResultList();
-        final Map<Long, ModelInfo> byId = fetched.stream()
-                .collect(Collectors.toMap(ModelInfo::getId, model -> model));
-        final List<ModelInfo> content = modelIds.stream()
-                .map(byId::get)
-                .filter(Objects::nonNull)
-                .toList();
+        final List<ModelInfo> content = query.getResultList();
 
         return new Page<>(content, page, pageSize, totalCount);
     }

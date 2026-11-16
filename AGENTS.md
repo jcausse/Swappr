@@ -207,8 +207,9 @@ While you as an AI agent are allowed to edit this file on your own, you must **a
 - **The 1+1 model is mandatory for every paginated query without exception**: entity queries, projection/DTO queries, aggregate queries and PK-only queries alike. Even when a query currently returns only scalar columns or does not join a collection, a future mapping change must never be able to turn it into in-memory pagination or an N+1. Do not "optimize" around the rule by paginating a JPQL projection directly.
 - **Use the 1+1 query model for every paginated query:**
   1. **ID query**: **always use a native query**, select only entity IDs, apply every filter and `ORDER BY`, and apply `setFirstResult`/`setMaxResults`. This query must not join collections, so one row always maps to one entity.
-  2. **Population query**: fetch the entities with `WHERE e.id IN :ids`, without limit or offset, preserving the ID query order (re-apply the same `ORDER BY` or reorder in memory).
-- Apply filters and ordering **only on the ID query**. The population query must not filter or paginate.
+  2. **Population query**: fetch the entities with `WHERE e.id IN :ids`, without limit or offset, and re-apply an **equivalent `ORDER BY`** so the page order matches the ID query exactly.
+- Apply filters and pagination **only on the ID query**. The population query must not filter or paginate, but it **must** re-apply the equivalent ordering.
+- **Never restore pagination order in memory** (e.g. mapping fetched rows by ID and rebuilding the list from the ID page). Always express the same order with `ORDER BY` clauses in both the ID query and the population/aggregate query, even if that duplicates sort expressions.
 - Run a separate `SELECT COUNT(...)` query with the same filters to compute the total.
 - Always use a deterministic order with a unique tie-breaker (e.g., `id`) when paginating.
 - **Never paginate by traversing an entity collection** (`@OneToMany`/`@ManyToMany`). Collections are unbounded and load fully; query the owning "many" entity directly from its DAO instead.
