@@ -412,7 +412,7 @@ public class AdminController {
         LOGGER.debug("Admin {} accessed listings page: page={}, query={}, status={}", currentUser.getId(), page, filterForm.getQuery(), filterForm.getStatus());
         ModelAndView mav = new ModelAndView("admin/listings");
         var filter = filterForm.toDto(page, DEFAULT_PAGE_SIZE);
-        mav.addObject("listingsPage", listingService.search(filter));
+        mav.addObject("listingsPage", listingService.searchForAdmin(filter));
         mav.addObject("statusOptions", Arrays.stream(ListingStatus.values())
                 .map(status -> new StringSelectOption(status.name(), "listing.status." + status.name()))
                 .toList());
