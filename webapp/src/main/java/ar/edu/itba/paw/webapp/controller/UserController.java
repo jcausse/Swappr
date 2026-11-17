@@ -5,7 +5,6 @@ import ar.edu.itba.paw.model.ListingSort;
 import ar.edu.itba.paw.model.ListingStatus;
 import ar.edu.itba.paw.model.OfferRating;
 import ar.edu.itba.paw.model.Province;
-import ar.edu.itba.paw.model.RatingFilter;
 import ar.edu.itba.paw.model.RatingRole;
 import ar.edu.itba.paw.model.User;
 import ar.edu.itba.paw.service.ListingService;
@@ -13,6 +12,7 @@ import ar.edu.itba.paw.service.RatingService;
 import ar.edu.itba.paw.service.ProvinceService;
 import ar.edu.itba.paw.service.UserService;
 import ar.edu.itba.paw.service.dto.ListingFilterDto;
+import ar.edu.itba.paw.service.dto.RatingFilterDto;
 import ar.edu.itba.paw.webapp.auth.AuthHelper;
 import ar.edu.itba.paw.webapp.auth.CurrentUser;
 import ar.edu.itba.paw.service.exception.UserNotFoundException;
@@ -71,7 +71,7 @@ public class UserController {
                 .sort(ListingSort.RECENT)
                 .creatorId(user.getId())
                 .status(ListingStatus.ACTIVE)
-                .page(Math.max(listingPageNumber, 1))
+                .page(listingPageNumber)
                 .pageSize(PROFILE_LISTINGS_PAGE_SIZE)
                 .build();
 
@@ -81,11 +81,11 @@ public class UserController {
         final var role = ratingFilterForm.getRole();
         final var type = ratingFilterForm.getType();
 
-        var ratingFilter = RatingFilter.builder()
+        var ratingFilter = RatingFilterDto.builder()
                 .ratedId(user.getId())
                 .roles(List.of(role))
                 .types(type != null ? List.of(type) : null)
-                .page(Math.max(ratingPageNumber, 1))
+                .page(ratingPageNumber)
                 .pageSize(PROFILE_RATINGS_PAGE_SIZE)
                 .build();
 
