@@ -13,7 +13,7 @@ Severity groups: **1 = High**, **2 = Medium**, **3 = Low**.
 | Item | Brief description | Status |
 |---|---|---|
 | 1.1 | [SiteNotification page order restored in memory](#11-sitenotificationjpadaogetmatching-rebuilds-pagination-order-in-memory) | ✅ Done |
-| 1.2 | [Eager User.roles secondary selects](#12-eager-userroles-produces-a-hidden-secondary-select-per-distinct-user) | 🕓 Open |
+| 1.2 | [Eager User.roles secondary selects](#12-eager-userroles-produces-a-hidden-secondary-select-per-distinct-user) | ✅ Done |
 | 1.3 | [Listing search does not fetch creator](#13-listingjpadaosearch-does-not-fetch-creator-but-admin-listings-renders-it) | 🕓 Open |
 | 1.4 | [rejectPendingOffers notification N+1](#14-offerjpadaorejectpendingoffers--notification-loop-is-an-n1) | ✅ Done |
 | 2.1 | [hasListings JPQL pagination](#21-haslistings-paginates-a-jpql-query-rule-violation) | 🕓 Open |
@@ -64,6 +64,8 @@ final List<SiteNotification> entities = ids.stream()
 - `ListingJpaDao.search` on the admin listings page — each lazily loaded `creator` adds this select as well (see 1.3).
 
 **Risk:** an N+1 hidden behind an entity mapping; it will not show up in the DAO SQL and grows with page size.
+
+**Status:** resolved — `User.roles` is now `FetchType.LAZY`, so only the paths that actually need roles load them (`UserRoleJpaDao#getRoles`/`#addRole`, and login via `AuthUserDetailsService`). `AdminController#users` now calls `UserService#getRoles` once for the target user and derives the admin flag from that list, instead of touching the entity collection after the service transaction ends.
 
 ### 1.3 `ListingJpaDao.search` does not fetch `creator`, but admin listings renders it
 

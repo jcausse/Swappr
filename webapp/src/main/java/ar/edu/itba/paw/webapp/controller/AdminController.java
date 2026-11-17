@@ -599,9 +599,10 @@ public class AdminController {
             Optional<User> targetUser = userService.getByUsernameOrEmail(username);
             if (targetUser.isPresent()) {
                 User user = targetUser.get();
+                final List<Role> targetUserRoles = userService.getRoles(user);
                 mav.addObject("targetUser", user);
-                mav.addObject("targetUserRoles", user.getRoles());
-                mav.addObject("isTargetUserAdmin", user.hasRole(Role.ADMIN));
+                mav.addObject("targetUserRoles", targetUserRoles);
+                mav.addObject("isTargetUserAdmin", targetUserRoles.contains(Role.ADMIN));
                 suspendUserForm.setUsername(user.getUsername());
                 grantRoleForm.setUsername(user.getUsername());
             } else {
