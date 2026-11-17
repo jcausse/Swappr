@@ -33,8 +33,15 @@ public interface OfferDao {
 
     boolean withdraw(Long offerId, Long buyerId);
 
+    /**
+     * Rejects PENDING offers on the listing; admin cancellation also rejects PENDING_PAYMENT offers.
+     */
     List<Offer> rejectPendingOffers(Long listingId, Long exceptOfferId, boolean includePendingPayment);
 
+    /**
+     * Admin-cancellation edge case: bulk-rejects trade offers that reference the given listing as
+     * their offered item. Used together with the ListingDao release query below.
+     */
     int rejectCancellableOffersForOfferedListing(Long offeredListingId);
 
     int rejectAllForParticipant(Long userId);

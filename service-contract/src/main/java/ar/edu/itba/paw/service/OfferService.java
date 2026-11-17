@@ -33,8 +33,16 @@ public interface OfferService {
 
     Offer withdraw(Long offerId, Long currentUserId);
 
+    /**
+     * Used by listing cancellation: rejects PENDING offers on the listing and, when
+     * {@code includePendingPayment} is true (admin cancellation), PENDING_PAYMENT offers too.
+     */
     void rejectPendingOffersForListing(Long listingId, Long exceptOfferId, boolean includePendingPayment);
 
+    /**
+     * Admin-cancellation edge case for OFFERED_IN_TRADE listings: silently rejects the trade
+     * offers that reference this listing as their offered item, releasing any held target listings.
+     */
     void rejectTradeOffersForOfferedListing(Long offeredListingId);
 
     int getPendingOffersCount(User seller);

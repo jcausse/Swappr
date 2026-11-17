@@ -372,6 +372,7 @@ public class OfferServiceImpl implements OfferService {
         return offer;
     }
 
+    // Listing cancellation path: admin cancellation also rejects the PENDING_PAYMENT offer holding the listing.
     @Override
     @Transactional
     public void rejectPendingOffersForListing(Long listingId, Long exceptOfferId, boolean includePendingPayment) {
@@ -393,6 +394,8 @@ public class OfferServiceImpl implements OfferService {
         }
     }
 
+    // Admin-cancellation edge case: an OFFERED_IN_TRADE listing may still be referenced by a trade
+    // offer; reject it silently (no notifications) and release any target listing it was holding.
     @Override
     @Transactional
     public void rejectTradeOffersForOfferedListing(Long offeredListingId) {
