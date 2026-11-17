@@ -20,62 +20,62 @@
 |---|---|---|
 | 1.1 | [Admin credentials in README (deliberate for professors)](#11-production-admin-credentials-are-committed-in-the-readme) | ❌ False positive |
 | 1.2 | [CSRF protection disabled globally (likely deliberate)](#12-csrf-protection-is-globally-disabled) | ⚠️ Decision needed |
-| 1.3 | [Stored XSS through unescaped page-title messages](#13-stored-xss-through-unescaped-page-title-messages) | 🕓 Open |
-| 1.4 | [Admin cancellation leaves active offers and can resurrect canceled listings](#14-admin-cancellation-leaves-active-offers-and-can-resurrect-canceled-listings) | 🕓 Open |
-| 1.5 | [Trade acceptance does not reject offers on the offered listing](#15-trade-acceptance-does-not-reject-offers-on-the-offered-listing) | 🕓 Open |
-| 1.6 | [Rating uniqueness constraint was dropped without replacement](#16-rating-uniqueness-constraint-was-dropped-without-replacement) | 🕓 Open |
-| 1.7 | [Listing creator is nullable in schema and mapping](#17-listing-creator-is-nullable-in-schema-and-mapping) | 🕓 Open |
-| 1.8 | [Rating counters use boxed Integer on NOT NULL columns](#18-rating-counters-use-boxed-integer-on-not-null-columns) | 🕓 Open |
-| 2.1 | [Five paginated DAOs bypass the mandatory native 1+1 model](#21-five-paginated-daos-bypass-the-mandatory-native-11-model) | 🕓 Open |
-| 2.2 | [N+1 on the main listing, offer and rating lists](#22-n1-on-the-main-listing-offer-and-rating-lists) | 🕓 Open |
-| 2.3 | [Proof-file blobs loaded eagerly just to show metadata](#23-proof-file-blobs-are-loaded-eagerly-just-to-show-metadata) | 🕓 Open |
+| 1.3 | [Stored XSS through unescaped page-title messages](#13-stored-xss-through-unescaped-page-title-messages) | ✅ Resolved |
+| 1.4 | [Admin cancellation leaves active offers and can resurrect canceled listings](#14-admin-cancellation-leaves-active-offers-and-can-resurrect-canceled-listings) | ⚠️ Bigger refactor needed |
+| 1.5 | [Trade acceptance does not reject offers on the offered listing](#15-trade-acceptance-does-not-reject-offers-on-the-offered-listing) | ✅ Resolved |
+| 1.6 | [Rating uniqueness constraint was dropped without replacement](#16-rating-uniqueness-constraint-was-dropped-without-replacement) | ✅ Resolved |
+| 1.7 | [Listing creator is nullable in schema and mapping](#17-listing-creator-is-nullable-in-schema-and-mapping) | ✅ Resolved |
+| 1.8 | [Rating counters use boxed Integer on NOT NULL columns](#18-rating-counters-use-boxed-integer-on-not-null-columns) | ✅ Resolved |
+| 2.1 | [Five paginated DAOs bypass the mandatory native 1+1 model](#21-five-paginated-daos-bypass-the-mandatory-native-11-model) | ✅ Resolved |
+| 2.2 | [N+1 on the main listing, offer and rating lists](#22-n1-on-the-main-listing-offer-and-rating-lists) | ✅ Resolved |
+| 2.3 | [Proof-file blobs loaded eagerly just to show metadata](#23-proof-file-blobs-are-loaded-eagerly-just-to-show-metadata) | ✅ Resolved |
 | 2.4 | [OSIV deploy marker (added; OSIV accepted as discouraged)](#24-osiv-is-enabled-and-its-deploy-todo-lacks-the-required-marker) | ✅ Resolved |
 | 2.5 | [Notification advice queries the DB on every request including images](#25-notification-advice-queries-the-db-on-every-request-including-images) | ✅ Resolved |
-| 3.1 | [Admin user-management error paths render a view missing filterForm](#31-admin-user-management-error-paths-render-a-view-missing-filterform) | 🕓 Open |
-| 3.2 | [Missing or tampered hidden IDs produce 500 instead of 400](#32-missing-or-tampered-hidden-ids-produce-500-instead-of-400) | 🕓 Open |
-| 3.3 | [Profile listing pagination is broken and shares page with ratings](#33-profile-listing-pagination-is-broken-and-shares-page-with-ratings) | 🕓 Open |
-| 3.4 | [Duplicate tracking-number DOM id copies the wrong offer](#34-duplicate-tracking-number-dom-id-copies-the-wrong-offer) | 🕓 Open |
-| 3.5 | [Admin listing table shows raw OFFERED_IN_TRADE status](#35-admin-listing-table-shows-raw-offered_in_trade-status) | 🕓 Open |
-| 3.6 | [Proof-of-payment back link uses the wrong label](#36-proof-of-payment-back-link-uses-the-wrong-label) | 🕓 Open |
+| 3.1 | [Admin user-management error paths render a view missing filterForm](#31-admin-user-management-error-paths-render-a-view-missing-filterform) | ✅ Resolved |
+| 3.2 | [Missing or tampered hidden IDs produce 500 instead of 400](#32-missing-or-tampered-hidden-ids-produce-500-instead-of-400) | ✅ Resolved |
+| 3.3 | [Profile listing pagination is broken and shares page with ratings](#33-profile-listing-pagination-is-broken-and-shares-page-with-ratings) | ✅ Resolved |
+| 3.4 | [Duplicate tracking-number DOM id copies the wrong offer](#34-duplicate-tracking-number-dom-id-copies-the-wrong-offer) | ✅ Resolved |
+| 3.5 | [Admin listing table shows raw OFFERED_IN_TRADE status](#35-admin-listing-table-shows-raw-offered_in_trade-status) | ✅ Resolved |
+| 3.6 | [Proof-of-payment back link uses the wrong label](#36-proof-of-payment-back-link-uses-the-wrong-label) | ✅ Resolved |
 | 3.7 | [Duplicate cancel/sold banners (intended)](#37-canceledsold-banner-rendered-twice-on-listing-detail) | ❌ False positive |
-| 3.8 | [Brand sort links in admin catalog drop model filters and page](#38-brand-sort-links-in-admin-catalog-drop-model-filters-and-page) | 🕓 Open |
-| 3.9 | [Unsupported HTTP methods fall into the 500 handler](#39-unsupported-http-methods-fall-into-the-500-handler) | 🕓 Open |
-| 3.10 | [No container error-page mappings for render-time exceptions](#310-no-container-error-page-mappings-for-render-time-exceptions) | 🕓 Open |
-| 3.11 | [Error JSPs declare DOCTYPE twice](#311-error-jsps-declare-doctype-twice) | 🕓 Open |
+| 3.8 | [Brand sort links in admin catalog drop model filters and page](#38-brand-sort-links-in-admin-catalog-drop-model-filters-and-page) | ✅ Resolved |
+| 3.9 | [Unsupported HTTP methods fall into the 500 handler](#39-unsupported-http-methods-fall-into-the-500-handler) | ✅ Resolved |
+| 3.10 | [No container error-page mappings for render-time exceptions](#310-no-container-error-page-mappings-for-render-time-exceptions) | ✅ Resolved |
+| 3.11 | [Error JSPs declare DOCTYPE twice](#311-error-jsps-declare-doctype-twice) | ✅ Resolved |
 | 4.1 | [Emails/notifications dispatched before the transaction commits](#41-emails-and-notifications-are-dispatched-before-the-transaction-commits) | 🕓 Open |
-| 4.2 | [OfferService injects foreign DAOs and mutates user counters directly](#42-offerservice-injects-foreign-daos-and-mutates-user-counters-directly) | 🕓 Open |
-| 4.3 | [OfferService.rate accepts a detached entity and relies on OSIV](#43-offerservicerate-accepts-a-detached-entity-and-relies-on-osiv) | 🕓 Open |
-| 4.4 | [Notification loops query preferences once per recipient](#44-notification-loops-query-preferences-once-per-recipient) | 🕓 Open |
-| 4.5 | [Business-action logging lives in controllers, before the action succeeds](#45-business-action-logging-lives-in-controllers-before-the-action-succeeds) | 🕓 Open |
-| 4.6 | [ListingDao purchase/pendingTransaction have unused parameters and fake returns](#46-listingdao-purchasependingtransaction-have-unused-parameters-and-fake-returns) | 🕓 Open |
-| 4.7 | [Move AdminServiceImpl bulk cleanup into owning services](#47-move-adminserviceimpl-bulk-cleanup-into-the-owning-services) | 🕓 Open |
-| 5.1 | [Clearing display name on profile edit causes a 500](#51-clearing-display-name-on-profile-edit-causes-a-500) | 🕓 Open |
-| 5.2 | [Missing users throw IllegalArgumentException instead of NotFoundException](#52-missing-users-throw-illegalargumentexception-instead-of-notfoundexception) | 🕓 Open |
-| 5.3 | [Shipping tracking number has no max length](#53-shipping-tracking-number-has-no-max-length) | 🕓 Open |
-| 5.4 | [Rating review text has no length bound](#54-rating-review-text-has-no-length-bound) | 🕓 Open |
-| 5.5 | [Admin suspend/grant forms reject emails longer than 100 chars](#55-admin-suspendgrant-forms-reject-emails-longer-than-100-chars) | 🕓 Open |
-| 5.6 | [Resend-verification validation errors are silently discarded](#56-resend-verification-validation-errors-are-silently-discarded) | 🕓 Open |
-| 5.7 | [ListingService does not validate negative prices](#57-listingservice-does-not-validate-negative-prices) | 🕓 Open |
-| 5.8 | [Proof of shipping accepts a zero-byte file](#58-proof-of-shipping-accepts-a-zero-byte-file) | 🕓 Open |
-| 5.9 | [Raw filename and unvalidated content type in response headers](#59-raw-filename-and-unvalidated-content-type-in-response-headers) | 🕓 Open |
-| 5.10 | [Emails/usernames logged in clear text](#510-emails-and-usernames-are-logged-in-clear-text) | 🕓 Open |
-| 6.1 | [Comma-containing display names are truncated in message arguments](#61-comma-containing-display-names-are-truncated-in-message-arguments) | 🕓 Open |
-| 6.2 | [Hardcoded “KB” unit in proof components](#62-hardcoded-kb-unit-in-proof-components) | 🕓 Open |
-| 6.3 | [Translated fragments concatenated instead of parameterized](#63-translated-fragments-concatenated-instead-of-parameterized) | 🕓 Open |
-| 6.4 | [Icon-only links, hidden radios and preference checkboxes are inaccessible](#64-icon-only-links-hidden-radios-and-preference-checkboxes-are-inaccessible) | 🕓 Open |
-| 6.5 | [Duplicate DOM ids in admin user forms](#65-duplicate-dom-ids-in-admin-user-forms) | 🕓 Open |
-| 6.6 | [Reusable tags render raw attributes without c:out](#66-reusable-tags-render-raw-attributes-without-cout) | 🕓 Open |
-| 7.1 | [No tests for the riskiest service flows](#71-no-tests-for-the-riskiest-service-flows) | 🕓 Open |
-| 7.2 | [Missing DAO tests and only negative UserJpaDao coverage](#72-missing-dao-tests-and-only-negative-userjpadao-coverage) | 🕓 Open |
-| 7.3 | [Pagination tests do not exercise page 2 or RatingJpaDao](#73-pagination-tests-do-not-exercise-page-2-or-ratingjpadao) | 🕓 Open |
-| 7.4 | [HSQLDB test schema diverges from PostgreSQL](#74-hsqldb-test-schema-diverges-from-postgresql) | 🕓 Open |
+| 4.2 | [OfferService injects foreign DAOs and mutates user counters directly](#42-offerservice-injects-foreign-daos-and-mutates-user-counters-directly) | ✅ Resolved |
+| 4.3 | [OfferService.rate accepts a detached entity and relies on OSIV](#43-offerservicerate-accepts-a-detached-entity-and-relies-on-osiv) | ✅ Resolved |
+| 4.4 | [Notification loops query preferences once per recipient](#44-notification-loops-query-preferences-once-per-recipient) | ✅ Resolved |
+| 4.5 | [Business-action logging lives in controllers, before the action succeeds](#45-business-action-logging-lives-in-controllers-before-the-action-succeeds) | ✅ Resolved |
+| 4.6 | [ListingDao purchase/pendingTransaction have unused parameters and fake returns](#46-listingdao-purchasependingtransaction-have-unused-parameters-and-fake-returns) | ✅ Resolved |
+| 4.7 | [Move AdminServiceImpl bulk cleanup into owning services](#47-move-adminserviceimpl-bulk-cleanup-into-the-owning-services) | ✅ Resolved |
+| 5.1 | [Clearing display name on profile edit causes a 500](#51-clearing-display-name-on-profile-edit-causes-a-500) | ✅ Resolved |
+| 5.2 | [Missing users throw IllegalArgumentException instead of NotFoundException](#52-missing-users-throw-illegalargumentexception-instead-of-notfoundexception) | ✅ Resolved |
+| 5.3 | [Shipping tracking number has no max length](#53-shipping-tracking-number-has-no-max-length) | ✅ Resolved |
+| 5.4 | [Rating review text has no length bound](#54-rating-review-text-has-no-length-bound) | ✅ Resolved |
+| 5.5 | [Admin suspend/grant forms reject emails longer than 100 chars](#55-admin-suspendgrant-forms-reject-emails-longer-than-100-chars) | ✅ Resolved |
+| 5.6 | [Resend-verification validation errors are silently discarded](#56-resend-verification-validation-errors-are-silently-discarded) | ✅ Resolved |
+| 5.7 | [ListingService does not validate negative prices](#57-listingservice-does-not-validate-negative-prices) | ✅ Resolved |
+| 5.8 | [Proof of shipping accepts a zero-byte file](#58-proof-of-shipping-accepts-a-zero-byte-file) | ✅ Resolved |
+| 5.9 | [Raw filename and unvalidated content type in response headers](#59-raw-filename-and-unvalidated-content-type-in-response-headers) | ✅ Resolved |
+| 5.10 | [Emails/usernames logged in clear text](#510-emails-and-usernames-are-logged-in-clear-text) | ✅ Resolved |
+| 6.1 | [Comma-containing display names are truncated in message arguments](#61-comma-containing-display-names-are-truncated-in-message-arguments) | ✅ Resolved |
+| 6.2 | [Hardcoded “KB” unit in proof components](#62-hardcoded-kb-unit-in-proof-components) | ✅ Resolved |
+| 6.3 | [Translated fragments concatenated instead of parameterized](#63-translated-fragments-concatenated-instead-of-parameterized) | ✅ Resolved |
+| 6.4 | [Icon-only links, hidden radios and preference checkboxes are inaccessible](#64-icon-only-links-hidden-radios-and-preference-checkboxes-are-inaccessible) | ✅ Resolved |
+| 6.5 | [Duplicate DOM ids in admin user forms](#65-duplicate-dom-ids-in-admin-user-forms) | ✅ Resolved |
+| 6.6 | [Reusable tags render raw attributes without c:out](#66-reusable-tags-render-raw-attributes-without-cout) | ✅ Resolved |
+| 7.1 | [No tests for the riskiest service flows](#71-no-tests-for-the-riskiest-service-flows) | ✅ Resolved |
+| 7.2 | [Missing DAO tests and only negative UserJpaDao coverage](#72-missing-dao-tests-and-only-negative-userjpadao-coverage) | ✅ Resolved |
+| 7.3 | [Pagination tests do not exercise page 2 or RatingJpaDao](#73-pagination-tests-do-not-exercise-page-2-or-ratingjpadao) | ✅ Resolved |
+| 7.4 | [HSQLDB test schema diverges from PostgreSQL](#74-hsqldb-test-schema-diverges-from-postgresql) | ✅ Resolved |
 | 7.5 | [Migration edited before production push (unaffected DB)](#75-an-already-committed-migration-was-edited) | ✅ Resolved |
-| 7.6 | [Test Hibernate config dumps SQL and misspells format_sql](#76-test-hibernate-config-dumps-sql-and-misspells-format_sql) | 🕓 Open |
+| 7.6 | [Test Hibernate config dumps SQL and misspells format_sql](#76-test-hibernate-config-dumps-sql-and-misspells-format_sql) | ✅ Resolved |
 | 7.7 | [Outdated SLF4J/Logback and redundant logging deps](#77-obsolete-slf4jlogback-versions-and-redundant-logging-deps) | ⚠️ Decision needed |
 | 7.8 | [Plugin versions duplicated in child POMs](#78-plugin-versions-duplicated-in-every-child-pom) | ⚠️ Decision needed |
-| 7.9 | [Redundant Hibernate/JAXB dependencies and production JDBC declaration](#79-redundant-hibernatejaxb-dependencies-and-production-jdbc-declaration) | 🕓 Open |
-| 7.10 | [Existence checks use COUNT or setMaxResults instead of EXISTS](#710-existence-checks-use-count-or-setmaxresults-instead-of-exists) | 🕓 Open |
-| 7.11 | [Dead code, unused collection mapping and unused message keys](#711-dead-code-unused-collection-mapping-and-unused-message-keys) | 🕓 Open |
+| 7.9 | [Redundant Hibernate/JAXB dependencies and production JDBC declaration](#79-redundant-hibernatejaxb-dependencies-and-production-jdbc-declaration) | ❌ False positive |
+| 7.10 | [Existence checks use COUNT or setMaxResults instead of EXISTS](#710-existence-checks-use-count-or-setmaxresults-instead-of-exists) | ❌ False positive |
+| 7.11 | [Dead code, unused collection mapping and unused message keys](#711-dead-code-unused-collection-mapping-and-unused-message-keys) | ✅ Resolved |
 | 8.1 | [Request dedup is global (AGENTS updated)](#81-agents-requires-subcategory-scoped-request-dedup-code-and-prior-review-say-global) | ✅ Resolved |
 | 8.2 | [OSIV discouraged but not a hard fail (policy settled)](#82-lecture-allows-osiv-agents-says-do-not-rely-on-it) | ✅ Resolved |
 | 8.3 | [Transactional rule scoped; EmailNotification exception documented](#83-agents-requires-transactional-on-all-services-then-forbids-it-on-emailnotificationserviceimpl) | ✅ Resolved |
@@ -380,41 +380,27 @@ Examples: `ListingController:370`, `OfferController:29,38,49,64`, `AdminControll
 
 ### 6.1 Comma-containing display names are truncated in message arguments
 
-`head.tag:16` and `account/index.jsp:8` pass a `String` to `spring:message arguments=`. Spring treats that string as a comma-delimited argument list. A display name like `Smith, John` renders only `Smith`, and a name containing `{0}` can also be interpreted by `MessageFormat`.
-
-**Action:** use nested `<spring:argument value="${displayName}"/>` (or a one-element collection) wherever a user-controlled value is passed to a message.
+**Resolved.** `head.tag`, `authLayout.tag` and `account/index.jsp` already use nested `<spring:argument>` instead of a comma-joined `arguments=` string for every user-controlled value (display names). The remaining `arguments="${...}"` call sites in the codebase only pass plain numbers (counts, timestamps, page numbers), so no other instance of this bug exists.
 
 ### 6.2 Hardcoded KB unit in proof components
 
-`offerProofOfPayment.tag:19` and `offerProofOfShipping.tag:34` render `<c:out value="${...SizeKb}"/> KB`. The unit is not localizable and the number is not locale-formatted.
-
-**Action:** add a message such as `file.size.kb={0} KB` and pass the size as an argument.
+**Resolved.** Added `file.size.kb={0} KB` to both bundles and used `<spring:message code="file.size.kb"><spring:argument .../></spring:message>` in `offerProofOfPayment.tag` and `offerProofOfShipping.tag` instead of the hardcoded `KB` suffix.
 
 ### 6.3 Translated fragments concatenated instead of parameterized
 
-Examples: `product.tag:16` joins category and subcategory with ` / `; `listing/index.jsp:44` joins condition title and label with a space; `offerCard.tag:61` passes `${currencySymbol} ${offer.amount}` as one `spring:message` argument. Each assumes a fixed word order and cannot be reordered by a translator.
-
-**Action:** use one message with ordered placeholders and separate arguments for currency and amount.
+**Resolved.** Added parameterized messages and split each concatenated fragment into separate `<spring:argument>`s: `product.categoryAndSubcategory={0} / {1}` in `product.tag`, `listing.detail.conditionWithLabel={0}: {1}` in `listing/index.jsp`'s condition title, and an extra `{n}` placeholder for the currency symbol in `offer.tradePlusAmount`, `listing.detail.pendingOffer`, `offer.detail.title` and `offer.detail.title.tradeWithCash` (used by `offerCard.tag` and `account/incomingOfferDetail.jsp`), which previously received `${currencySymbol} ${amount}` as a single concatenated argument.
 
 ### 6.4 Icon-only links, hidden radios and preference checkboxes are inaccessible
 
-- `pagination.tag:58-66` and several account pages render `paw:linkButton` with only an icon. `linkButton.tag` has no `ariaLabel` attribute, so the link has no accessible name.
-- `formButtonToggle.tag:16` renders the radios with `cssClass="hidden"` (display:none). They cannot receive keyboard focus, and the visible `paw:fakeButton` labels are not real controls.
-- `notifications/preferences.jsp:63-68` renders checkboxes without a `label` or `aria-label`; the type/channel association is only visual.
-
-**Action:** add accessible names for icon-only actions, use `sr-only`/`peer` instead of `hidden` for the radios, and associate every checkbox with its type and channel.
+**Resolved.** Added an `ariaLabel` attribute to `linkButton.tag` (escaped via `<c:out>`) and passed localized labels at every icon-only call site: `pagination.tag` (first/previous/next/last), `account/listings.jsp` (view/edit/cancel listing), `account/incomingOffers.jsp` (view offer) and `offerProofOfShipping.tag` (copy tracking number, via `button.tag`'s existing `ariaLabel`). Changed `formButtonToggle.tag`'s radios from `cssClass="hidden"` to `cssClass="sr-only peer"` (the same convention already used in `rate.jsp`), so they stay focusable while the `paw:fakeButton` labels remain the visible control; `fakeButton.tag` already styles via `peer-checked:`, so no further change was needed there. Added a `labelClassname` attribute to `checkbox.tag` and used it with `label`/`labelClassname="sr-only"` in `notifications/preferences.jsp` to associate each preference checkbox with its notification type and channel via a screen-reader-only `<label>`.
 
 ### 6.5 Duplicate DOM ids in admin user forms
 
-`admin/users.jsp:24,112,125` and `admin/dashboard.jsp:118,131` use `paw:formInput` with the default id equal to `path`, so multiple `username` inputs share `id="username"`. Labels focus the wrong field and the HTML is invalid.
-
-**Action:** pass explicit unique ids (`filterUsername`, `suspendUsername`, `grantUsername`).
+**Resolved.** Passed explicit unique `id`s to every `paw:formInput path="username"` call site: `filterUsername` (search form, `admin/users.jsp`), `suspendUsername` (suspend form, `admin/users.jsp` and `admin/dashboard.jsp`) and `grantUsername` (grant-admin form, `admin/users.jsp` and `admin/dashboard.jsp`).
 
 ### 6.6 Reusable tags render raw attributes without `c:out`
 
-Examples: `imageGallery.tag:21,27,52` (`src`, `id`), `listingCard.tag:29,34`, `listingImage.tag:30`, `offerProofOfPayment.tag:24`, `offerProofOfShipping.tag:39`, `button.tag:97` (`aria-label`), `listingCarousel.tag:36,62`. Current callers mostly pass `c:url` output or messages, so this is not currently exploitable, but the tag contract is not XSS-safe.
-
-**Action:** wrap attribute values in `<c:out>` inside the tags.
+**Resolved.** Wrapped the previously-raw `${...}` attribute values in `<c:out>` inside `imageGallery.tag` (`src`, `id` on both main images and thumbnails), `listingCard.tag` (`href`, `src`), `listingImage.tag` (`src`), `offerProofOfPayment.tag`/`offerProofOfShipping.tag` (the image preview `src`), `button.tag` (`aria-label`) and `listingCarousel.tag` (the scroll container `id` attribute). The `${id}` interpolations inside `onclick`/`<script>` JS string literals in `imageGallery.tag` and `listingCarousel.tag` were left as-is: `id` is always a literal passed by the calling page, never user input, and `<c:out>`'s HTML escaping is the wrong escaping strategy for a JS string context.
 
 ---
 
@@ -472,13 +458,13 @@ The same Maven plugin versions are copy-pasted in `model/pom.xml:44-83`, `persis
 
 `persistence/pom.xml:56-65` declares `hibernate-entitymanager` (deprecated compatibility artifact) and `jaxb-api` (already pulled by Hibernate core). `webapp/pom.xml:41-44` declares `spring-jdbc` at compile scope solely for `SimpleDriverDataSource` in `WebConfig`, while no JDBC DAO code remains.
 
-**Action:** remove the redundant Hibernate/JAXB declarations. Keep `spring-jdbc` only if the `DataSource` configuration truly requires it, and document why; otherwise use the JPA/Spring configuration without a direct JDBC dependency.
+**False positive:** idk but just don't bother with this, not relevant.
 
 ### 7.10 Existence checks use COUNT or setMaxResults instead of EXISTS
 
 `UserJpaDao.java:152-163` (username/email), `BrandJpaDao.java:34-41`, `ModelJpaDao.java:134-152` and `BrandModelRequestJpaDao.java:43-52` use `SELECT COUNT(...) > 0`; `BrandJpaDao.hasListings` and `ModelJpaDao.hasListings` use a `SELECT id ... setMaxResults(1)` query. The project convention is `SELECT EXISTS(SELECT 1 FROM ...)`.
 
-**Action:** replace with `SELECT EXISTS(...)` returning `Boolean.class`.
+**False positive** JPQL does not support `SELECT EXISTS`, removed `AGENTS.md` item leftover from JDBC days.
 
 ### 7.11 Dead code, unused collection mapping and unused message keys
 

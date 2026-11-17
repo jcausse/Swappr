@@ -59,6 +59,14 @@ public class File {
         return Optional.ofNullable(contentType);
     }
 
+    public String getMediaType() {
+        if (contentType != null
+                && contentType.matches("[A-Za-z0-9!#$&^_.+-]+/[A-Za-z0-9!#$&^_.+-]+")) {
+            return contentType;
+        }
+        return "application/octet-stream";
+    }
+
     public long getSize() {
         if (size != null) {
             return size;

@@ -14,8 +14,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collection;
 import java.util.EnumMap;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -73,6 +75,43 @@ public class NotificationPreferenceServiceImpl implements NotificationPreference
         }
 
         return enabledByType;
+    }
+
+    @Override
+    public Map<Long, Set<NotificationChannel>> getEnabledChannelsForUsers(
+            final Collection<User> users,
+            final NotificationType type
+    ) {
+        if (users == null || users.isEmpty() || type == null) {
+            return Map.of();
+        }
+
+        // Start every recipient with the defaults (all channels supported by the type)
+        final Map<Long, Set<NotificationChannel>> enabledByUser = new HashMap<>();
+        for (final User user : users) {
+            if (user == null || user.getId() == null) {
+                continue;
+            }
+            final Set<NotificationChannel> channels = EnumSet.noneOf(NotificationChannel.class);
+            channels.addAll(type.getSupportedChannels());
+            enabledByUser.put(user.getId(), channels);
+        }
+
+        // Mandatory notifications ignore stored preferences entirely
+        if (!type.isConfigurable()) {
+            return enabledByUser;
+        }
+
+        // Apply stored opt-outs in one query for the whole recipient list
+        for (final UserNotificationPreference pref : preferenceDao.getByUsersAndType(users, type)) {
+            final Set<NotificationChannel> channels = enabledByUser.get(pref.getUser().getId());
+            final NotificationChannel channel = pref.getId().getChannel();
+            if (channels != null && !pref.isEnabled() && type.supportsChannel(channel)) {
+                channels.remove(channel);
+            }
+        }
+
+        return enabledByUser;
     }
 
     @Override

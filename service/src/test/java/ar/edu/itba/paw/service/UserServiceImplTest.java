@@ -7,6 +7,7 @@ import ar.edu.itba.paw.model.OneTimePassword;
 import ar.edu.itba.paw.persistence.UserDao;
 import ar.edu.itba.paw.persistence.UserRoleDao;
 import ar.edu.itba.paw.service.dto.UserCreationDto;
+import ar.edu.itba.paw.service.exception.NotFoundException;
 import ar.edu.itba.paw.service.enumeration.OneTimePasswordVerificationResult;
 
 import org.junit.Assert;
@@ -165,6 +166,22 @@ public class UserServiceImplTest {
         Assert.assertTrue(userService.isEmailTaken(USER_EMAIL));
     }
 
+    @Test
+    public void testGetByUsernameOrEmailUsesEmailWhenInputContainsAt() {
+        final User user = buildFakeUser();
+        when(userDao.getByEmail(eq(USER_EMAIL))).thenReturn(Optional.of(user));
+
+        Assert.assertEquals(Optional.of(user), userService.getByUsernameOrEmail(USER_EMAIL));
+    }
+
+    @Test
+    public void testGetByUsernameOrEmailUsesUsernameOtherwise() {
+        final User user = buildFakeUser();
+        when(userDao.getByUsername(eq(USER_USERNAME))).thenReturn(Optional.of(user));
+
+        Assert.assertEquals(Optional.of(user), userService.getByUsernameOrEmail(USER_USERNAME));
+    }
+
     /* ---------------------------------------------------------------------------------------------- */
     /* create                                                                                          */
     /* ---------------------------------------------------------------------------------------------- */
@@ -204,7 +221,7 @@ public class UserServiceImplTest {
         Assert.assertSame(user, result);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = NotFoundException.class)
     public void testUpdatePreferredLanguageNonExistingUserThrows() {
         // Arrange
         final User user = buildFakeUser();

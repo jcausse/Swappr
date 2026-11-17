@@ -15,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.Optional;
 
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
@@ -24,6 +25,7 @@ import javax.validation.constraints.Size;
 @FieldMatch(first = "password", second = "confirmPassword")
 public class UserEditForm {
 
+    @NotBlank
     @Size(max = 50)
     private String displayName;
 

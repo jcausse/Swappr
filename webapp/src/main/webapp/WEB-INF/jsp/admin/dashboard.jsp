@@ -115,7 +115,7 @@
                 <form:form method="post" action="${suspendUserUrl}" modelAttribute="suspendUserForm" class="flex flex-col gap-4 mt-2">
                     <spring:message code="admin.users.usernameLabel" var="usernameLabel"/>
                     <spring:message code="admin.users.usernamePlaceholder" var="usernamePlaceholder"/>
-                    <paw:formInput path="username" label="${usernameLabel}" placeholder="${usernamePlaceholder}" variant="outline"/>
+                    <paw:formInput path="username" id="suspendUsername" label="${usernameLabel}" placeholder="${usernamePlaceholder}" variant="outline"/>
                     <spring:message code="admin.users.suspend.submit" var="submitUserSuspend"/>
                     <paw:button text="${submitUserSuspend}" type="submit" variant="default" role="danger" icon="user-x" classname="self-end"/>
                 </form:form>
@@ -128,7 +128,7 @@
                 <form:form method="post" action="${grantAdminUrl}" modelAttribute="grantRoleForm" class="flex flex-col gap-4 mt-2">
                     <spring:message code="admin.users.grantAdmin.usernameLabel" var="grantUsernameLabel"/>
                     <spring:message code="admin.users.usernamePlaceholder" var="grantUsernamePlaceholder"/>
-                    <paw:formInput path="username" label="${grantUsernameLabel}" placeholder="${grantUsernamePlaceholder}" variant="outline"/>
+                    <paw:formInput path="username" id="grantUsername" label="${grantUsernameLabel}" placeholder="${grantUsernamePlaceholder}" variant="outline"/>
                     <spring:message code="admin.users.grantAdmin.submit" var="submitGrantAdmin"/>
                     <paw:button text="${submitGrantAdmin}" type="submit" variant="default" role="default" icon="shield" classname="self-end"/>
                 </form:form>

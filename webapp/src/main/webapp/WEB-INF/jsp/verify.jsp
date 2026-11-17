@@ -28,10 +28,11 @@
     </form:form>
 
     <c:url value="/verify/resend" var="resendUrl"/>
-    <form action="${resendUrl}" method="post" class="mt-4 text-center">
-        <input type="hidden" name="usernameOrEmail" value="<c:out value="${emailVerificationForm.usernameOrEmail}"/>"/>
+    <form:form modelAttribute="resendVerificationForm" action="${resendUrl}" method="post" class="mt-4 text-center">
+        <form:hidden path="usernameOrEmail"/>
+        <form:errors path="usernameOrEmail" element="div" cssClass="text-xs text-red-600 mb-2"/>
         <button type="submit" class="text-xs text-neutral-600 hover:text-neutral-900 underline cursor-pointer bg-transparent border-none p-0">
             <spring:message code="verify.resend"/>
         </button>
-    </form>
+    </form:form>
 </paw:authLayout>

@@ -49,6 +49,9 @@ public class ListingServiceImpl implements ListingService {
 
     @Override
     public Listing getById(Long id) {
+        if (id == null) {
+            throw BadParameterException.create("id", "Listing id is required");
+        }
         return listingDao
             .getById(id)
             .orElseThrow(() -> NotFoundException.createFor("Listing with ID " + id));
@@ -218,7 +221,7 @@ public class ListingServiceImpl implements ListingService {
             throw new BadParameterException("Listing is not in a pending transaction state");
         }
 
-        listingDao.purchase(id, buyerId);
+        listingDao.purchase(id);
 
         final User buyer = userService.getById(buyerId)
             .orElseThrow(() -> new BadParameterException("Invalid buyerId"));
@@ -239,7 +242,7 @@ public class ListingServiceImpl implements ListingService {
             .getById(id)
             .orElseThrow(() -> NotFoundException.createFor("Listing with ID " + id));
 
-        listingDao.pendingTransaction(id, buyerId);
+        listingDao.pendingTransaction(id);
 
         return listing;
     }
@@ -319,5 +322,17 @@ public class ListingServiceImpl implements ListingService {
     public void updateStatusBulk(List<Long> ids, ListingStatus status) {
         LOGGER.debug("Bulk updating listing status: ids={}, newStatus={}", ids, status);
         listingDao.updateStatusBulk(ids, status);
+    }
+
+    @Override
+    @Transactional
+    public int releaseOfferedListingsForParticipant(Long userId) {
+        return listingDao.releaseOfferedListingsForParticipant(userId);
+    }
+
+    @Override
+    @Transactional
+    public int releaseListingsHeldByBuyerPaymentOffers(Long userId) {
+        return listingDao.releaseListingsHeldByBuyerPaymentOffers(userId);
     }
 }

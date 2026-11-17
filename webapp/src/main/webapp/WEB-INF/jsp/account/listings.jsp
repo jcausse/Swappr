@@ -14,6 +14,9 @@
 <spring:message code="account.listings.filter.all" var="allLabel"/>
 <spring:message code="listing.sort.label" var="sortLabel"/>
 <spring:message code="account.listings.filter.default" var="defaultLabel"/>
+<spring:message code="account.listings.view" var="viewListingLabel"/>
+<spring:message code="account.listings.edit" var="editListingLabel"/>
+<spring:message code="account.listings.cancel" var="cancelListingLabel"/>
 <spring:message code="listing.status.ACTIVE" var="statusActive"/>
 <spring:message code="listing.status.SOLD" var="statusSold"/>
 <spring:message code="listing.status.CANCELED" var="statusCanceled"/>
@@ -102,13 +105,14 @@
                                 </div>
 
                                 <div class="flex flex-row gap-1 self-end">
-                                    <paw:linkButton variant="outline" href="${listingUrl}" icon="eye" />
+                                    <paw:linkButton variant="outline" href="${listingUrl}" icon="eye" ariaLabel="${viewListingLabel}" />
                                     <c:if test="${listing.isActive()}">
                                         <c:url value="/listing/${listing.id}/edit" var="editListingUrl"/>
-                                        <paw:linkButton variant="outline" href="${editListingUrl}" icon="pencil" />
+                                        <paw:linkButton variant="outline" href="${editListingUrl}" icon="pencil" ariaLabel="${editListingLabel}" />
 
                                         <paw:button variant="outline" role="danger" icon="trash-2"
-                                                    onclick="document.getElementById('cancelDialog-${listing.id}').showModal()"/>
+                                                    onclick="document.getElementById('cancelDialog-${listing.id}').showModal()"
+                                                    ariaLabel="${cancelListingLabel}"/>
 
                                         <spring:message code="listing.cancel.confirm.title" var="cancelTitle"/>
                                         <spring:message code="listing.cancel.confirm.confirm" var="cancelConfirm"/>
