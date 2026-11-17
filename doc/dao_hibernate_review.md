@@ -20,11 +20,11 @@ Severity groups: **1 = High**, **2 = Medium**, **3 = Low**.
 | 2.2 | [Unfetched associations (latent risk)](#22-returnedpaginated-entities-rely-on-callers-not-touching-unfetched-associations-latent-risk) | 🚫 Won't fix |
 | 2.3 | [Bulk writes bypass persistence context](#23-bulk-jpql-writes-bypass-the-persistence-context) | 🕓 Open |
 | 2.4 | [JOIN FETCH nullability / native counts](#24-inner-fetch-joins-and-non-distinct-counts-depend-on-current-nullability) | 🕓 Open |
-| 3.1 | [OSIV reliance](#31-osiv-reliance-across-views-and-controllers) | 🕓 Open |
+| 3.1 | [OSIV reliance](#31-osiv-reliance-across-views-and-controllers) | 🚫 Won't fix |
 | 3.2 | [File/Image blobs](#32-file--image-blobs-are-loaded-eagerly--irrelevant) | ➖ Irrelevant |
-| 3.3 | [@Formula overhead](#33-formula-columns-are-evaluated-on-every-listing-load--potential-performance-issue-only) | ❓ Decision needed |
+| 3.3 | [@Formula overhead](#33-formula-columns-are-evaluated-on-every-listing-load--potential-performance-issue-only) | 🚫 Won't fix |
 | 3.4 | [Unbounded auto-rate list](#34-offerjpadaogetacceptedunratedbefore-returns-an-unbounded-entity-list--wont-fix) | 🚫 Won't fix |
-| 3.5 | [findFirst without limit](#35-findfirst-without-a-limit-relies-on-uniqueness) | ❓ Decision needed |
+| 3.5 | [findFirst without limit](#35-findfirst-without-a-limit-relies-on-uniqueness) | 🚫 Won't fix |
 | 3.6 | [updatePreferences per-pair upsert](#36-updatepreferences-issues-one-findinsert-or-update-per-preference--wont-fix) | 🚫 Won't fix |
 
 ---
