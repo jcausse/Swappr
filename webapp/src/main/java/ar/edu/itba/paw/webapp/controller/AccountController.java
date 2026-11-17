@@ -96,6 +96,10 @@ public class AccountController {
     public ModelAndView incomingOffers(@CurrentUser User currentUser, @ModelAttribute("filterForm") OfferFilterForm filterForm) {
         LOGGER.debug("User {} accessing incoming offers", currentUser.getId());
 
+        // Status group comparison: we consider this presentation, not business logic, as transient flags are only
+        // used to decide whether to show the other/better offer banners; these are only shown for pending offers.
+        // This is a UI choice and not something the service needs to be aware of, since these are presentation flags
+        // it's up to the view to decide if it needs them populated.
         final var filter = filterForm.toDto(currentUser.getId(), null, ACCOUNT_OFFERS_PAGE_SIZE);
         final var offerPage = offerService.get(filter, filter.statusGroup() == OfferStatusGroup.PENDING);
 
