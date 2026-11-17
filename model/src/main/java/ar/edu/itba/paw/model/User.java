@@ -106,7 +106,7 @@ public class User {
     private Instant suspendedAt;
 
     @Builder.Default
-    @ElementCollection(fetch = FetchType.EAGER)
+    @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "users_roles", joinColumns = @JoinColumn(name = "user_id"))
     @Column(name = "role_name")
     @Enumerated(EnumType.STRING)
