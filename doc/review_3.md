@@ -40,7 +40,7 @@
 | 3.7 | [Duplicate cancel/sold banners (intended)](#37-canceledsold-banner-rendered-twice-on-listing-detail) | ❌ False positive |
 | 3.8 | [Brand sort links in admin catalog drop model filters and page](#38-brand-sort-links-in-admin-catalog-drop-model-filters-and-page) | ✅ Resolved |
 | 3.9 | [Unsupported HTTP methods fall into the 500 handler](#39-unsupported-http-methods-fall-into-the-500-handler) | ✅ Resolved |
-| 3.10 | [No container error-page mappings for render-time exceptions](#310-no-container-error-page-mappings-for-render-time-exceptions) | 🕓 Open |
+| 3.10 | [No container error-page mappings for render-time exceptions](#310-no-container-error-page-mappings-for-render-time-exceptions) | ✅ Resolved |
 | 3.11 | [Error JSPs declare DOCTYPE twice](#311-error-jsps-declare-doctype-twice) | ✅ Resolved |
 | 4.1 | [Emails/notifications dispatched before the transaction commits](#41-emails-and-notifications-are-dispatched-before-the-transaction-commits) | 🕓 Open |
 | 4.2 | [OfferService injects foreign DAOs and mutates user counters directly](#42-offerservice-injects-foreign-daos-and-mutates-user-counters-directly) | ✅ Resolved |
