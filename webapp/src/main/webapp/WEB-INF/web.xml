@@ -97,15 +97,7 @@
     <url-pattern>/*</url-pattern>
   </filter-mapping>
 
-  <!-- Render-time exceptions bypass @ControllerAdvice, so map them to the application error views. -->
-  <error-page>
-    <error-code>403</error-code>
-    <location>/WEB-INF/jsp/error/forbidden.jsp</location>
-  </error-page>
-  <error-page>
-    <error-code>404</error-code>
-    <location>/WEB-INF/jsp/error/notFound.jsp</location>
-  </error-page>
+  <!-- Render-time exceptions bypass @ControllerAdvice; 403/404 are already handled there. -->
   <error-page>
     <error-code>500</error-code>
     <location>/WEB-INF/jsp/error/internalServerError.jsp</location>
