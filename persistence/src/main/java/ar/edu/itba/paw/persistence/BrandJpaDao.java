@@ -129,14 +129,17 @@ public class BrandJpaDao implements BrandDao {
         return brand;
     }
 
+    // Native EXISTS: JPQL has no select-level EXISTS, so the alternatives are a full COUNT or a
+    // setMaxResults(1) query (banned pagination). Native EXISTS short-circuits on the first match.
+    // The join is explicit so the SQL reads directly as listings -> models.
     @Override
     public boolean hasListings(Long brandId) {
-        return !em.createQuery(
-                "SELECT l.id FROM Listing l WHERE l.model.brand.id = :brandId",
-                Long.class)
+        return Boolean.TRUE.equals(em.createNativeQuery(
+                        "SELECT EXISTS ("
+                        + "SELECT 1 FROM listings l"
+                        + " JOIN models m ON m.model_id = l.model_id"
+                        + " WHERE m.brand_id = :brandId)")
                 .setParameter("brandId", brandId)
-                .setMaxResults(1)
-                .getResultList()
-                .isEmpty();
+                .getSingleResult());
     }
 }

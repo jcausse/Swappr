@@ -210,15 +210,14 @@ public class ModelJpaDao implements ModelDao {
         return true;
     }
 
+    // Native EXISTS: JPQL has no select-level EXISTS, so the alternatives are a full COUNT or a
+    // setMaxResults(1) query (banned pagination). Native EXISTS short-circuits on the first match.
     @Override
     public boolean hasListings(Long modelId) {
-        return !em.createQuery(
-                "SELECT l.id FROM Listing l WHERE l.model.id = :modelId",
-                Long.class)
+        return Boolean.TRUE.equals(em.createNativeQuery(
+                        "SELECT EXISTS (SELECT 1 FROM listings l WHERE l.model_id = :modelId)")
                 .setParameter("modelId", modelId)
-                .setMaxResults(1)
-                .getResultList()
-                .isEmpty();
+                .getSingleResult());
     }
 
     @Override

@@ -213,6 +213,7 @@ While you as an AI agent are allowed to edit this file on your own, you must **a
 - Apply filters and pagination **only on the ID query**. The population query must not filter or paginate, but it **must** re-apply the equivalent ordering.
 - **Never restore pagination order in memory** (e.g. mapping fetched rows by ID and rebuilding the list from the ID page). Always express the same order with `ORDER BY` clauses in both the ID query and the population/aggregate query, even if that duplicates sort expressions.
 - Run a separate `SELECT COUNT(...)` query with the same filters to compute the total.
+- Native `SELECT EXISTS(...)` is an allowed use of native SQL for existence checks (e.g. `hasListings`): JPQL has no select-level `EXISTS`, and a `setMaxResults(1)` JPQL check is banned pagination.
 - Always use a deterministic order with a unique tie-breaker (e.g., `id`) when paginating.
 - **Never paginate by traversing an entity collection** (`@OneToMany`/`@ManyToMany`). Collections are unbounded and load fully; query the owning "many" entity directly from its DAO instead.
 
