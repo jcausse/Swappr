@@ -130,7 +130,8 @@ public class BrandJpaDao implements BrandDao {
     }
 
     // Native EXISTS: JPQL has no select-level EXISTS, so the alternatives are a full COUNT or a
-    // setMaxResults(1) query (banned pagination). Native EXISTS short-circuits on the first match.
+    // setMaxResults(1) query, which may trigger hidden in-memory pagination via implicit joins if
+    // entities change. Native EXISTS short-circuits on the first match.
     // The join is explicit so the SQL reads directly as listings -> models.
     @Override
     public boolean hasListings(Long brandId) {
