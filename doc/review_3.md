@@ -74,7 +74,7 @@
 | 7.7 | [Outdated SLF4J/Logback and redundant logging deps](#77-obsolete-slf4jlogback-versions-and-redundant-logging-deps) | ⚠️ Decision needed |
 | 7.8 | [Plugin versions duplicated in child POMs](#78-plugin-versions-duplicated-in-every-child-pom) | ⚠️ Decision needed |
 | 7.9 | [Redundant Hibernate/JAXB dependencies and production JDBC declaration](#79-redundant-hibernatejaxb-dependencies-and-production-jdbc-declaration) | 🕓 Open |
-| 7.10 | [Existence checks use COUNT or setMaxResults instead of EXISTS](#710-existence-checks-use-count-or-setmaxresults-instead-of-exists) | 🕓 Open |
+| 7.10 | [Existence checks use COUNT or setMaxResults instead of EXISTS](#710-existence-checks-use-count-or-setmaxresults-instead-of-exists) | ❌ False positive |
 | 7.11 | [Dead code, unused collection mapping and unused message keys](#711-dead-code-unused-collection-mapping-and-unused-message-keys) | 🕓 Open |
 | 8.1 | [Request dedup is global (AGENTS updated)](#81-agents-requires-subcategory-scoped-request-dedup-code-and-prior-review-say-global) | ✅ Resolved |
 | 8.2 | [OSIV discouraged but not a hard fail (policy settled)](#82-lecture-allows-osiv-agents-says-do-not-rely-on-it) | ✅ Resolved |
@@ -464,7 +464,7 @@ The same Maven plugin versions are copy-pasted in `model/pom.xml:44-83`, `persis
 
 `UserJpaDao.java:152-163` (username/email), `BrandJpaDao.java:34-41`, `ModelJpaDao.java:134-152` and `BrandModelRequestJpaDao.java:43-52` use `SELECT COUNT(...) > 0`; `BrandJpaDao.hasListings` and `ModelJpaDao.hasListings` use a `SELECT id ... setMaxResults(1)` query. The project convention is `SELECT EXISTS(SELECT 1 FROM ...)`.
 
-**Action:** replace with `SELECT EXISTS(...)` returning `Boolean.class`.
+**False positive** JPQL does not support `SELECT EXISTS`, removed `AGENTS.md` item leftover from JDBC days.
 
 ### 7.11 Dead code, unused collection mapping and unused message keys
 
