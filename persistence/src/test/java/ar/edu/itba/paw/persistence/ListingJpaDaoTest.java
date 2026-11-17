@@ -722,6 +722,27 @@ public class ListingJpaDaoTest {
     }
 
     @Test
+    public void testReleaseListingsHeldByPendingPaymentTradeOffersForOfferedListing() {
+        // Arrange
+        jdbcTemplate.update("UPDATE listings SET status = 'PENDING_TRANSACTION' WHERE listing_id = ?",
+            GAMING_LISTING_ID);
+        jdbcTemplate.update(
+            "INSERT INTO offers (offer_id, listing_id, buyer_id, amount, is_full_price, status, message, created_at, offered_listing_id)"
+                + " VALUES (?, ?, ?, ?, FALSE, 'PENDING_PAYMENT', NULL, TIMESTAMP '2026-01-01 10:00:00+00:00', ?)",
+            910L, GAMING_LISTING_ID, SELLER_ID, new BigDecimal("100.00"), MACBOOK_LISTING_ID);
+
+        // Act
+        final int released = listingDao
+            .releaseListingsHeldByPendingPaymentTradeOffersForOfferedListing(MACBOOK_LISTING_ID);
+
+        // Assert
+        Assert.assertEquals(1, released);
+        Assert.assertEquals(1, countListingsWhere(
+            "listing_id = " + GAMING_LISTING_ID + " AND status = 'ACTIVE'"
+        ));
+    }
+
+    @Test
     public void testCancelMarksListingAsCanceled() {
         // Act
         listingDao.cancel(MACBOOK_LISTING_ID);

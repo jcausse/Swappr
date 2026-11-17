@@ -32,6 +32,8 @@ public interface ListingDao {
 
     int releaseListingsHeldByBuyerPaymentOffers(Long userId);
 
+    int releaseListingsHeldByPendingPaymentTradeOffersForOfferedListing(Long offeredListingId);
+
     int cancelAllByCreator(Long userId);
 
     void updateImages(Long listingId, List<Long> imageIds);

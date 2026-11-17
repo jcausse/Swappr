@@ -396,15 +396,12 @@ public class OfferServiceImpl implements OfferService {
     @Override
     @Transactional
     public void rejectTradeOffersForOfferedListing(Long offeredListingId) {
-        final List<Offer> rejected = offerDao.getCancellableOffersForOfferedListing(offeredListingId);
-        LOGGER.info("Rejecting {} trade offers referencing offered listing id={}", rejected.size(), offeredListingId);
-
-        for (Offer offer : rejected) {
-            if (offer.isPendingPayment()) {
-                listingService.updateStatus(offer.getListing().getId(), ListingStatus.ACTIVE);
-            }
-            offerDao.updateStatus(offer.getId(), OfferStatus.REJECTED);
-        }
+        // Reset the target listings of pending-payment trade offers before rejecting the offers
+        final int releasedListings = listingService
+                .releaseListingsHeldByPendingPaymentTradeOffersForOfferedListing(offeredListingId);
+        final int rejectedOffers = offerDao.rejectCancellableOffersForOfferedListing(offeredListingId);
+        LOGGER.info("Rejected {} trade offers referencing offered listing id={} and released {} listings",
+                rejectedOffers, offeredListingId, releasedListings);
     }
 
     private static void validateProofFile(final File partialFile) {

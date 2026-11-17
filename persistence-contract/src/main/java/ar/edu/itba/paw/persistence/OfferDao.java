@@ -35,7 +35,7 @@ public interface OfferDao {
 
     List<Offer> rejectPendingOffers(Long listingId, Long exceptOfferId, boolean includePendingPayment);
 
-    List<Offer> getCancellableOffersForOfferedListing(Long offeredListingId);
+    int rejectCancellableOffersForOfferedListing(Long offeredListingId);
 
     int rejectAllForParticipant(Long userId);
 

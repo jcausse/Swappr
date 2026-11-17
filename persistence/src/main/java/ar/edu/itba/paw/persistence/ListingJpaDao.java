@@ -305,6 +305,19 @@ public class ListingJpaDao implements ListingDao {
     }
 
     @Override
+    public int releaseListingsHeldByPendingPaymentTradeOffersForOfferedListing(Long offeredListingId) {
+        return em.createQuery(
+                        "UPDATE Listing l SET l.status = :active"
+                        + " WHERE l.id IN (SELECT o.listing.id FROM Offer o"
+                        + "   WHERE o.offeredListing.id = :offeredListingId"
+                        + "   AND o.status = :pendingPayment)")
+                .setParameter("active", ListingStatus.ACTIVE)
+                .setParameter("offeredListingId", offeredListingId)
+                .setParameter("pendingPayment", OfferStatus.PENDING_PAYMENT)
+                .executeUpdate();
+    }
+
+    @Override
     public int cancelAllByCreator(Long userId) {
         return em.createQuery(
                         "UPDATE Listing l SET l.status = :canceled"

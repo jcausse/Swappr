@@ -213,13 +213,14 @@ public class OfferJpaDao implements OfferDao {
     }
 
     @Override
-    public List<Offer> getCancellableOffersForOfferedListing(Long offeredListingId) {
+    public int rejectCancellableOffersForOfferedListing(Long offeredListingId) {
         return em.createQuery(
-                        "FROM Offer o WHERE o.offeredListing.id = :offeredListingId AND o.status IN :statuses",
-                        Offer.class)
+                        "UPDATE Offer o SET o.status = :rejected"
+                        + " WHERE o.offeredListing.id = :offeredListingId AND o.status IN :statuses")
+                .setParameter("rejected", OfferStatus.REJECTED)
                 .setParameter("offeredListingId", offeredListingId)
                 .setParameter("statuses", List.of(OfferStatus.PENDING, OfferStatus.PENDING_PAYMENT))
-                .getResultList();
+                .executeUpdate();
     }
 
     @Override

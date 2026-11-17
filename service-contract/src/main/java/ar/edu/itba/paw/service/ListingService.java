@@ -33,4 +33,6 @@ public interface ListingService {
     int releaseOfferedListingsForParticipant(Long userId);
 
     int releaseListingsHeldByBuyerPaymentOffers(Long userId);
+
+    int releaseListingsHeldByPendingPaymentTradeOffersForOfferedListing(Long offeredListingId);
 }

@@ -672,12 +672,14 @@ public class OfferJpaDaoTest {
     }
 
     @Test
-    public void testGetCancellableOffersForOfferedListing() {
+    public void testRejectCancellableOffersForOfferedListing() {
         // Act
-        final List<Offer> offers = offerDao.getCancellableOffersForOfferedListing(MACBOOK_LISTING_ID);
+        final int rejected = offerDao.rejectCancellableOffersForOfferedListing(MACBOOK_LISTING_ID);
 
         // Assert
-        Assert.assertEquals(List.of(TRADE_OFFER_ID), idsOf(offers));
+        Assert.assertEquals(1, rejected);
+        Assert.assertEquals(1, countOffersWhere(
+            "offer_id = " + TRADE_OFFER_ID + " AND status = 'REJECTED'"));
     }
 
     @Test
