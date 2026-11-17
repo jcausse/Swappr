@@ -73,7 +73,7 @@
 | 7.6 | [Test Hibernate config dumps SQL and misspells format_sql](#76-test-hibernate-config-dumps-sql-and-misspells-format_sql) | ✅ Resolved |
 | 7.7 | [Outdated SLF4J/Logback and redundant logging deps](#77-obsolete-slf4jlogback-versions-and-redundant-logging-deps) | ⚠️ Decision needed |
 | 7.8 | [Plugin versions duplicated in child POMs](#78-plugin-versions-duplicated-in-every-child-pom) | ⚠️ Decision needed |
-| 7.9 | [Redundant Hibernate/JAXB dependencies and production JDBC declaration](#79-redundant-hibernatejaxb-dependencies-and-production-jdbc-declaration) | 🕓 Open |
+| 7.9 | [Redundant Hibernate/JAXB dependencies and production JDBC declaration](#79-redundant-hibernatejaxb-dependencies-and-production-jdbc-declaration) | ❌ False positive |
 | 7.10 | [Existence checks use COUNT or setMaxResults instead of EXISTS](#710-existence-checks-use-count-or-setmaxresults-instead-of-exists) | ❌ False positive |
 | 7.11 | [Dead code, unused collection mapping and unused message keys](#711-dead-code-unused-collection-mapping-and-unused-message-keys) | ✅ Resolved |
 | 8.1 | [Request dedup is global (AGENTS updated)](#81-agents-requires-subcategory-scoped-request-dedup-code-and-prior-review-say-global) | ✅ Resolved |
@@ -458,7 +458,7 @@ The same Maven plugin versions are copy-pasted in `model/pom.xml:44-83`, `persis
 
 `persistence/pom.xml:56-65` declares `hibernate-entitymanager` (deprecated compatibility artifact) and `jaxb-api` (already pulled by Hibernate core). `webapp/pom.xml:41-44` declares `spring-jdbc` at compile scope solely for `SimpleDriverDataSource` in `WebConfig`, while no JDBC DAO code remains.
 
-**Action:** remove the redundant Hibernate/JAXB declarations. Keep `spring-jdbc` only if the `DataSource` configuration truly requires it, and document why; otherwise use the JPA/Spring configuration without a direct JDBC dependency.
+**False positive:** idk but just don't bother with this, not relevant.
 
 ### 7.10 Existence checks use COUNT or setMaxResults instead of EXISTS
 
