@@ -8,6 +8,7 @@ import ar.edu.itba.paw.model.RatingFilter;
 import ar.edu.itba.paw.model.RatingRole;
 import ar.edu.itba.paw.model.User;
 import ar.edu.itba.paw.persistence.RatingDao;
+import ar.edu.itba.paw.service.dto.RatingFilterDto;
 
 import java.time.Instant;
 import java.util.Objects;
@@ -27,9 +28,22 @@ public class RatingServiceImpl implements RatingService {
     }
 
     @Override
-    public Page<Rating> get(RatingFilter filter) {
-        Objects.requireNonNull(filter, "RatingFilter cannot be null");
+    public Page<Rating> get(RatingFilterDto dto) {
+        Objects.requireNonNull(dto, "RatingFilterDto cannot be null");
+
+        final var filter = RatingFilter.builder()
+            .ratedId(dto.ratedId())
+            .roles(dto.roles())
+            .types(dto.types())
+            .page(sanitizePage(dto.page()))
+            .pageSize(dto.pageSize())
+            .build();
+
         return ratingDao.search(filter);
+    }
+
+    private static int sanitizePage(final Integer page) {
+        return page == null || page < 1 ? 1 : page;
     }
 
     @Override
