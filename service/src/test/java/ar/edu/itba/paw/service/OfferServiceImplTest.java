@@ -443,7 +443,7 @@ public class OfferServiceImplTest {
         givenOffer(tradeOffer);
 
         final List<Long> rejectedListingIds = new ArrayList<>();
-        when(offerDao.rejectPendingOffers(any(), isNull())).thenAnswer(invocation -> {
+        when(offerDao.rejectPendingOffers(any(), isNull(), eq(false))).thenAnswer(invocation -> {
             rejectedListingIds.add(invocation.getArgument(0));
             return List.of();
         });
