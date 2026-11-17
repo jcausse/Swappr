@@ -5,16 +5,19 @@ import ar.edu.itba.paw.model.Role;
 import ar.edu.itba.paw.model.Province;
 import ar.edu.itba.paw.model.User;
 import ar.edu.itba.paw.model.Language;
+import ar.edu.itba.paw.model.OfferRating;
 import ar.edu.itba.paw.model.OneTimePassword;
 import ar.edu.itba.paw.persistence.UserDao;
 import ar.edu.itba.paw.persistence.UserRoleDao;
 import ar.edu.itba.paw.service.dto.ImageData;
 import ar.edu.itba.paw.service.dto.UserCreationDto;
 import ar.edu.itba.paw.service.dto.UserEditDto;
+import ar.edu.itba.paw.service.exception.NotFoundException;
 import ar.edu.itba.paw.service.enumeration.OneTimePasswordVerificationResult;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -68,9 +71,9 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public User create(@NonNull UserCreationDto dto) {
-        LOGGER.debug("Creating user with username '{}'", dto.username());
+        LOGGER.debug("Creating user");
         if (dto.username().contains("@")) {
-            LOGGER.warn("User creation rejected: username '{}' contains '@'", dto.username());
+            LOGGER.warn("User creation rejected: username contains '@'");
             throw new IllegalArgumentException("UserCreationDto.username cannot contain @");
         }
 
@@ -84,7 +87,7 @@ public class UserServiceImpl implements UserService {
             Language.fromCode(LocaleContextHolder.getLocale().getLanguage())
         );
         userRoleDao.addRole(user, Role.USER);
-        LOGGER.info("User created: id={}, username='{}'", user.getId(), user.getUsername());
+        LOGGER.info("User created: id={}", user.getId());
 
         sendVerificationEmail(user);
 
@@ -134,7 +137,7 @@ public class UserServiceImpl implements UserService {
         }
 
         var updated = updateResult
-                .orElseThrow(() -> new IllegalArgumentException("Non-valid User received"));
+                .orElseThrow(() -> NotFoundException.createFor("User with ID " + user.getId()));
 
         /*
          * Location and preferred language live on the same user, so we apply them in the same
@@ -163,7 +166,7 @@ public class UserServiceImpl implements UserService {
         final String detail = province == null ? null : normalizeDetail(locationDetail);
 
         return userDao.updateLocation(user.getId(), resolvedProvinceId, detail)
-                .orElseThrow(() -> new IllegalArgumentException("Non-valid User received"));
+                .orElseThrow(() -> NotFoundException.createFor("User with ID " + user.getId()));
     }
 
     @Override
@@ -171,16 +174,16 @@ public class UserServiceImpl implements UserService {
     public User updatePreferredLanguage(@NonNull User user, @NonNull Language preferredLanguage) {
         LOGGER.info("Updating preferred language for user id={} to '{}'", user.getId(), preferredLanguage.getCode());
         return userDao.updatePreferredLanguage(user.getId(), preferredLanguage)
-                .orElseThrow(() -> new IllegalArgumentException("Non-valid User received"));
+                .orElseThrow(() -> NotFoundException.createFor("User with ID " + user.getId()));
     }
 
     @Override
     @Transactional
     public Optional<OneTimePassword> resendVerificationEmail(@NonNull String usernameOrEmail) {
-        LOGGER.debug("Resending verification email requested for '{}'", usernameOrEmail);
+        LOGGER.debug("Resending verification email requested");
         final var maybeUser = getByUsernameOrEmail(usernameOrEmail);
         if (maybeUser.isEmpty()) {
-            LOGGER.warn("Resend verification email failed: user '{}' not found", usernameOrEmail);
+            LOGGER.warn("Resend verification email failed: user not found");
             return Optional.empty();
         }
 
@@ -199,10 +202,10 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public OneTimePasswordVerificationResult verifyEmail(@NonNull String usernameOrEmail, @NonNull String otpValue) {
-        LOGGER.debug("Verifying email for '{}'", usernameOrEmail);
+        LOGGER.debug("Verifying email");
         final var maybeUser = getByUsernameOrEmail(usernameOrEmail);
         if (maybeUser.isEmpty()) {
-            LOGGER.warn("Email verification rejected: user '{}' not found", usernameOrEmail);
+            LOGGER.warn("Email verification rejected: user not found");
             return OneTimePasswordVerificationResult.REJECTED;
         }
 
@@ -226,7 +229,7 @@ public class UserServiceImpl implements UserService {
     private User markEmailAsVerified(@NonNull User user) {
         LOGGER.info("Marking email as verified for user id={}", user.getId());
         return userDao.verifyEmail(user.getId(), Instant.now())
-                .orElseThrow(() -> new IllegalArgumentException("Non-valid User received"));
+                .orElseThrow(() -> NotFoundException.createFor("User with ID " + user.getId()));
     }
 
     @Override
@@ -256,7 +259,7 @@ public class UserServiceImpl implements UserService {
     public User suspend(@NonNull Long userId) {
         LOGGER.info("Suspending user id={}", userId);
         final User user = userDao.suspend(userId, Instant.now())
-                .orElseThrow(() -> new IllegalArgumentException("Non-valid User received"));
+                .orElseThrow(() -> NotFoundException.createFor("User with ID " + userId));
         notificationDispatcherService.notifyAccountSuspended(user);
         return user;
     }
@@ -266,9 +269,33 @@ public class UserServiceImpl implements UserService {
     public User unsuspend(@NonNull Long userId) {
         LOGGER.info("Unsuspending user id={}", userId);
         final User user = userDao.unsuspend(userId)
-                .orElseThrow(() -> new IllegalArgumentException("Non-valid User received"));
+                .orElseThrow(() -> NotFoundException.createFor("User with ID " + userId));
         notificationDispatcherService.notifyAccountUnsuspended(user);
         return user;
+    }
+
+    @Override
+    @Transactional
+    public void incrementSellerRatingCounter(@NonNull Long userId, @NonNull OfferRating rating) {
+        userDao.incrementSellerRatingCounter(userId, rating);
+    }
+
+    @Override
+    @Transactional
+    public void incrementBuyerRatingCounter(@NonNull Long userId, @NonNull OfferRating rating) {
+        userDao.incrementBuyerRatingCounter(userId, rating);
+    }
+
+    @Override
+    @Transactional
+    public void incrementSellerRatingCounters(@NonNull Map<Long, Long> increments, @NonNull OfferRating rating) {
+        userDao.incrementSellerRatingCounters(increments, rating);
+    }
+
+    @Override
+    @Transactional
+    public void incrementBuyerRatingCounters(@NonNull Map<Long, Long> increments, @NonNull OfferRating rating) {
+        userDao.incrementBuyerRatingCounters(increments, rating);
     }
 
 

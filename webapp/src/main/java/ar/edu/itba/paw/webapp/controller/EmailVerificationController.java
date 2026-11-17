@@ -34,9 +34,11 @@ public class EmailVerificationController {
     @GetMapping("/verify")
     public ModelAndView verifyForm(
             @RequestParam(value = "resent", required = false) Boolean resent,
-            @ModelAttribute("emailVerificationForm") EmailVerificationForm form
+            @ModelAttribute("emailVerificationForm") EmailVerificationForm form,
+            @ModelAttribute("resendVerificationForm") ResendVerificationForm resendForm
     ) {
         LOGGER.debug("Accessing email verification form");
+        resendForm.setUsernameOrEmail(form.getUsernameOrEmail());
         return new ModelAndView("verify")
                 .addObject("resent", Boolean.TRUE.equals(resent));
     }
@@ -54,12 +56,12 @@ public class EmailVerificationController {
 
         final var result = userService.verifyEmail(form.getUsernameOrEmail(), form.getOtp());
         if (result == OneTimePasswordVerificationResult.ACCEPTED) {
-            LOGGER.info("User {} successfully verified email", form.getUsernameOrEmail());
+            LOGGER.info("User email verified successfully");
             authHelper.login(request, form.getUsernameOrEmail());
             return new ModelAndView("redirect:/");
         }
 
-        LOGGER.debug("Email verification failed for {} with result {}", form.getUsernameOrEmail(), result);
+        LOGGER.debug("Email verification failed with result {}", result);
         errors.rejectValue("otp", result == OneTimePasswordVerificationResult.EXPIRED
                 ? "verify.error.expiredOtp"
                 : "verify.error.invalidOtp"
@@ -71,12 +73,14 @@ public class EmailVerificationController {
     public ModelAndView resendVerificationCode(
             @Valid @ModelAttribute("resendVerificationForm") ResendVerificationForm form,
             BindingResult errors,
+            @ModelAttribute("emailVerificationForm") EmailVerificationForm emailForm,
             RedirectAttributes redirectAttributes
     ) {
         if (errors.hasErrors()) {
-            return new ModelAndView("redirect:/verify");
+            emailForm.setUsernameOrEmail(form.getUsernameOrEmail());
+            return new ModelAndView("verify");
         }
-        LOGGER.info("Requested resend of verification email for {}", form.getUsernameOrEmail());
+        LOGGER.info("Requested resend of verification email");
         userService.resendVerificationEmail(form.getUsernameOrEmail());
         redirectAttributes.addAttribute("email", form.getUsernameOrEmail().trim());
         redirectAttributes.addAttribute("resent", true);

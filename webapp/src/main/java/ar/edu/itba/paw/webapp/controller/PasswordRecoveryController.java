@@ -58,7 +58,7 @@ public class PasswordRecoveryController {
             return new ModelAndView("recovery/request");
         }
 
-        LOGGER.info("Password recovery requested for {}", form.getUsernameOrEmail());
+        LOGGER.info("Password recovery requested");
         passwordRecoveryService.startAndSendRecoveryEmail(form.getUsernameOrEmail());
 
         redirectAttributes.addAttribute("codeSent", true);
@@ -92,12 +92,12 @@ public class PasswordRecoveryController {
         );
 
         if (result == OneTimePasswordVerificationResult.ACCEPTED) {
-            LOGGER.info("Password successfully recovered for {}", form.getUsernameOrEmail());
+            LOGGER.info("Password successfully recovered");
             authHelper.login(request, form.getUsernameOrEmail());
             return new ModelAndView("redirect:/");
         }
 
-        LOGGER.debug("Password recovery verification failed for {} with result {}", form.getUsernameOrEmail(), result);
+        LOGGER.debug("Password recovery verification failed with result {}", result);
         errors.rejectValue("otp", result == OneTimePasswordVerificationResult.EXPIRED
                 ? "recovery.verification.error.expiredOtp"
                 : "recovery.verification.error.invalidOtp"

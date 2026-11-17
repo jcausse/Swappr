@@ -57,6 +57,8 @@
                                     <p class="text-xs text-black/60 mt-0.5"><c:out value="${typeDesc}"/></p>
                                 </td>
                                 <c:forEach var="channel" items="${channels}">
+                                    <spring:message code="notifications.preferences.channel.${channel.name()}" var="rowChannelLabel"/>
+                                    <spring:message code="notifications.preferences.toggleLabel" arguments="${typeLabel},${rowChannelLabel}" var="toggleAriaLabel"/>
                                     <td class="py-3.5 px-4 align-middle w-28 text-center">
                                         <c:choose>
                                             <c:when test="${type.supportsChannel(channel)}">
@@ -65,6 +67,8 @@
                                                     id="pref_${type.name()}_${channel.name()}"
                                                     value="${channel.name()}"
                                                     classname="justify-center"
+                                                    label="${toggleAriaLabel}"
+                                                    labelClassname="sr-only"
                                                 />
                                             </c:when>
                                             <c:otherwise>

@@ -255,4 +255,107 @@ public class UserJpaDaoTest {
 
         Assert.assertFalse(user.isPresent());
     }
+
+    /* ---------------------------------------------------------------------------------------------- */
+    /* positive updates                                                                                */
+    /* ---------------------------------------------------------------------------------------------- */
+
+    @Test
+    public void testUpdateExistingUserUpdatesFields() {
+        final Optional<User> updated = userDao.update(
+            FAKE_USER_ID, "Updated Name", "updated@example.com", "new-secret", null);
+
+        Assert.assertTrue(updated.isPresent());
+        Assert.assertEquals("Updated Name", updated.get().getDisplayName());
+        Assert.assertEquals("updated@example.com", updated.get().getEmail());
+        Assert.assertEquals(1, countUsersWhere(
+            "user_id = " + FAKE_USER_ID
+                + " AND display_name = 'Updated Name'"
+                + " AND email = 'updated@example.com'"
+                + " AND password = 'new-secret'"));
+    }
+
+    @Test
+    public void testVerifyEmailExistingUserMarksEmailVerified() {
+        final Instant verifiedAt = Instant.parse("2026-02-01T10:00:00Z");
+
+        final Optional<User> verified = userDao.verifyEmail(FAKE_USER_ID, verifiedAt);
+
+        Assert.assertTrue(verified.isPresent());
+        Assert.assertEquals(1, countUsersWhere(
+            "user_id = " + FAKE_USER_ID + " AND email_verified_at IS NOT NULL"));
+    }
+
+    @Test
+    public void testUpdateLocationExistingUserUpdatesLocation() {
+        final Long cordobaId = provinceId("cordoba");
+
+        final Optional<User> updated = userDao.updateLocation(FAKE_USER_ID, cordobaId, "Centro");
+
+        Assert.assertTrue(updated.isPresent());
+        Assert.assertEquals(1, countUsersWhere(
+            "user_id = " + FAKE_USER_ID
+                + " AND province_id = " + cordobaId
+                + " AND location_detail = 'Centro'"));
+    }
+
+    @Test
+    public void testUpdatePreferredLanguageExistingUserUpdatesLanguage() {
+        final Optional<User> updated = userDao.updatePreferredLanguage(FAKE_USER_ID, Language.SPANISH);
+
+        Assert.assertTrue(updated.isPresent());
+        Assert.assertEquals(1, countUsersWhere(
+            "user_id = " + FAKE_USER_ID + " AND preferred_language = 'SPANISH'"));
+    }
+
+    @Test
+    public void testSuspendExistingUserSetsSuspendedAt() {
+        final Optional<User> suspended = userDao.suspend(FAKE_USER_ID, Instant.now());
+
+        Assert.assertTrue(suspended.isPresent());
+        Assert.assertEquals(1, countUsersWhere(
+            "user_id = " + FAKE_USER_ID + " AND suspended_at IS NOT NULL"));
+    }
+
+    @Test
+    public void testUnsuspendExistingUserClearsSuspendedAt() {
+        jdbcTemplate.update("UPDATE users SET suspended_at = ? WHERE user_id = ?",
+            java.sql.Timestamp.from(Instant.now()), FAKE_USER_ID);
+
+        final Optional<User> unsuspended = userDao.unsuspend(FAKE_USER_ID);
+
+        Assert.assertTrue(unsuspended.isPresent());
+        Assert.assertEquals(1, countUsersWhere(
+            "user_id = " + FAKE_USER_ID + " AND suspended_at IS NULL"));
+    }
+
+    /* ---------------------------------------------------------------------------------------------- */
+    /* getByUsername / getByEmail                                                                      */
+    /* ---------------------------------------------------------------------------------------------- */
+
+    @Test
+    public void testGetByUsernameExistingReturnsUser() {
+        final Optional<User> maybeUser = userDao.getByUsername(VERIFIED_USERNAME);
+
+        Assert.assertTrue(maybeUser.isPresent());
+        Assert.assertEquals(VERIFIED_USER_ID, (long) maybeUser.get().getId());
+    }
+
+    @Test
+    public void testGetByUsernameNonExistingReturnsEmpty() {
+        Assert.assertFalse(userDao.getByUsername("missing_user").isPresent());
+    }
+
+    @Test
+    public void testGetByEmailExistingReturnsUser() {
+        final Optional<User> maybeUser = userDao.getByEmail(VERIFIED_EMAIL);
+
+        Assert.assertTrue(maybeUser.isPresent());
+        Assert.assertEquals(VERIFIED_USER_ID, (long) maybeUser.get().getId());
+    }
+
+    @Test
+    public void testGetByEmailNonExistingReturnsEmpty() {
+        Assert.assertFalse(userDao.getByEmail("missing@example.com").isPresent());
+    }
 }

@@ -10,7 +10,7 @@
 <spring:message code="offer.proofOfPayment.title" var="titleMsg"/>
 <spring:message code="offer.proofOfPayment.subtitle" var="subtitleMsg"/>
 <spring:message code="offer.proofOfPayment.uploadLabel" var="uploadLabelMsg"/>
-<spring:message code="offer.detail.back" var="backLabelMsg"/>
+<spring:message code="account.myOffers.title" var="backLabelMsg"/>
 <spring:message code="offer.proofOfPayment.submit" var="submitLabelMsg"/>
 
 <account:layout titleKey="offer.proofOfPayment.title"  title="${titleMsg}" subtitle="${subtitleMsg}">

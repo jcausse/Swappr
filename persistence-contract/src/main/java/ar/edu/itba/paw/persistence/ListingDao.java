@@ -18,8 +18,8 @@ public interface ListingDao {
     Listing create(String title, Price price, User creator, Model model, int year,
                     Condition condition, boolean acceptsTrade, boolean acceptsShipping, String description, List<Long> imageIds);
     Page<Listing> search(ListingFilter filter);
-    ListingStatus purchase(Long id, Long buyerId);
-    ListingStatus pendingTransaction(Long id, Long buyerId);
+    void purchase(Long id);
+    void pendingTransaction(Long id);
     void updateStatus(Long id, ListingStatus status);
 
     void updateStatusBulk(List<Long> ids, ListingStatus status);

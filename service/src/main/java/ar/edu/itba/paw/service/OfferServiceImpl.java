@@ -14,8 +14,6 @@ import ar.edu.itba.paw.model.FileMetadata;
 import ar.edu.itba.paw.model.User;
 import ar.edu.itba.paw.model.OfferRating;
 import ar.edu.itba.paw.persistence.OfferDao;
-import ar.edu.itba.paw.persistence.FileDao;
-import ar.edu.itba.paw.persistence.UserDao;
 import ar.edu.itba.paw.model.RatingRole;
 import ar.edu.itba.paw.service.dto.FileDto;
 import ar.edu.itba.paw.service.dto.OfferCreationDto;
@@ -48,8 +46,7 @@ public class OfferServiceImpl implements OfferService {
     private static final Logger LOGGER = LoggerFactory.getLogger(OfferServiceImpl.class);
 
     private final OfferDao offerDao;
-    private final FileDao fileDao;
-    private final UserDao userDao;
+    private final FileService fileService;
     private final UserService userService;
     private final ListingService listingService;
     private final NotificationDispatcherService notificationDispatcherService;
@@ -57,12 +54,11 @@ public class OfferServiceImpl implements OfferService {
     private static final Duration RATING_AUTO_ASSIGN_DELAY = Duration.ofDays(14);
 
     @Autowired
-    public OfferServiceImpl(OfferDao offerDao, FileDao fileDao, UserDao userDao,
+    public OfferServiceImpl(OfferDao offerDao, FileService fileService,
                             UserService userService, ListingService listingService,
                             NotificationDispatcherService notificationDispatcherService, RatingService ratingService) {
         this.offerDao = offerDao;
-        this.fileDao = fileDao;
-        this.userDao = userDao;
+        this.fileService = fileService;
         this.userService = userService;
         this.listingService = listingService;
         this.notificationDispatcherService = notificationDispatcherService;
@@ -121,7 +117,7 @@ public class OfferServiceImpl implements OfferService {
                 .toList();
         if (fileIds.isEmpty()) return;
 
-        final Map<Long, FileMetadata> metadata = fileDao.getMetadataByIds(fileIds);
+        final Map<Long, FileMetadata> metadata = fileService.getMetadataByIds(fileIds);
         for (Offer offer : offers) {
             final Long paymentId = offer.getProofOfPaymentId();
             if (paymentId != null) {
@@ -397,6 +393,19 @@ public class OfferServiceImpl implements OfferService {
         }
     }
 
+    private static void validateProofFile(final File partialFile) {
+        final var contentType = partialFile.getContentType().orElse("");
+        final var data = partialFile.getData();
+
+        if (data == null || data.length == 0) {
+            throw new BadParameterException("File is empty");
+        }
+
+        if (!contentType.startsWith("image/") && !"application/pdf".equals(contentType)) {
+            throw new BadParameterException("Only image and PDF files are allowed");
+        }
+    }
+
     @Override
     @Transactional
     public Offer uploadProofOfPayment(Long offerId, Long buyerId, FileDto fileDto) {
@@ -422,20 +431,13 @@ public class OfferServiceImpl implements OfferService {
         }
 
         var partialFile = fileDto.toFile().orElseThrow(() -> new BadParameterException("No file given"));
+        validateProofFile(partialFile);
         var contentType = partialFile.getContentType().orElse("");
         var data = partialFile.getData();
         var filename = partialFile.getFilename();
         var alt = "Proof of payment for offer " + offerId;
 
-        if (data.length == 0) {
-            throw new BadParameterException("File is empty");
-        }
-
-        if (!contentType.startsWith("image/") && !"application/pdf".equals(contentType)) {
-            throw new BadParameterException("Only image and PDF files are allowed");
-        }
-
-        final File file = fileDao.create(filename, alt, contentType, data);
+        final File file = fileService.create(filename, alt, contentType, data);
         offerDao.updateProofOfPaymentId(offerId, file.getId());
 
         LOGGER.info("Proof of payment uploaded: offerId={}, buyerId={}, fileId={}", offerId, buyerId, file.getId());
@@ -466,11 +468,7 @@ public class OfferServiceImpl implements OfferService {
             throw new BadParameterException("Offer is not pending payment");
         }
 
-        if (fileDto == null) {
-            throw new BadParameterException("No file given");
-        }
-
-        var partialFileOptional = fileDto.toFile();
+        var partialFileOptional = fileDto != null ? fileDto.toFile() : Optional.<File>empty();
         if (partialFileOptional.isEmpty() && (trackingNumber == null || trackingNumber.isBlank())) {
             throw new BadParameterException("Either a file or a tracking number must be provided");
         }
@@ -478,16 +476,13 @@ public class OfferServiceImpl implements OfferService {
         Long proofOfShippingId = null;
         if (partialFileOptional.isPresent()) {
             var partialFile = partialFileOptional.get();
+            validateProofFile(partialFile);
             var contentType = partialFile.getContentType().orElse("");
             var data = partialFile.getData();
             var filename = partialFile.getFilename();
             var alt = "Proof of shipping for offer " + offerId;
 
-            if (!contentType.startsWith("image/") && !"application/pdf".equals(contentType)) {
-                throw new BadParameterException("Only image and PDF files are allowed");
-            }
-
-            final File file = fileDao.create(filename, alt, contentType, data);
+            final File file = fileService.create(filename, alt, contentType, data);
             proofOfShippingId = file.getId();
         }
 
@@ -542,7 +537,7 @@ public class OfferServiceImpl implements OfferService {
             return Optional.empty();
         }
 
-        return fileDao.getById(offer.getProofOfPaymentId());
+        return fileService.getById(offer.getProofOfPaymentId());
     }
 
     @Override
@@ -558,7 +553,7 @@ public class OfferServiceImpl implements OfferService {
             return Optional.empty();
         }
 
-        return fileDao.getById(offer.getProofOfShippingId());
+        return fileService.getById(offer.getProofOfShippingId());
     }
 
     @Override
@@ -573,13 +568,16 @@ public class OfferServiceImpl implements OfferService {
 
     @Override
     @Transactional
-    public Offer rate(Offer offer, User currentUser, OfferRating rating) {
-        return rate(offer, currentUser, rating, null);
+    public Offer rate(Long offerId, User currentUser, OfferRating rating) {
+        return rate(offerId, currentUser, rating, null);
     }
 
     @Override
     @Transactional
-    public Offer rate(Offer offer, User currentUser, OfferRating rating, String reviewText) {
+    public Offer rate(Long offerId, User currentUser, OfferRating rating, String reviewText) {
+        final Offer offer = offerDao.getById(offerId)
+            .orElseThrow(() -> NotFoundException.createFor("Offer with ID " + offerId));
+
         if (!offer.isAccepted()) {
             throw new BadParameterException("Only accepted offers can be rated");
         }
@@ -609,14 +607,14 @@ public class OfferServiceImpl implements OfferService {
                 throw new BadParameterException("You have already rated this offer");
             }
             offer.setSellerRating(rating);
-            userDao.incrementSellerRatingCounter(seller.getId(), rating);
+            userService.incrementSellerRatingCounter(seller.getId(), rating);
         } else {
             final boolean updated = offerDao.setBuyerRating(offer.getId(), rating);
             if (!updated) {
                 throw new BadParameterException("You have already rated this offer");
             }
             offer.setBuyerRating(rating);
-            userDao.incrementBuyerRatingCounter(buyer.getId(), rating);
+            userService.incrementBuyerRatingCounter(buyer.getId(), rating);
         }
 
         return offer;
@@ -655,9 +653,9 @@ public class OfferServiceImpl implements OfferService {
                 Collectors.counting()));
 
         offerDao.setSellerRatings(sellerRatingOfferIds, OfferRating.POSITIVE);
-        userDao.incrementSellerRatingCounters(sellerIncrements, OfferRating.POSITIVE);
+        userService.incrementSellerRatingCounters(sellerIncrements, OfferRating.POSITIVE);
         offerDao.setBuyerRatings(buyerRatingOfferIds, OfferRating.POSITIVE);
-        userDao.incrementBuyerRatingCounters(buyerIncrements, OfferRating.POSITIVE);
+        userService.incrementBuyerRatingCounters(buyerIncrements, OfferRating.POSITIVE);
     }
 
     @Override
@@ -691,5 +689,11 @@ public class OfferServiceImpl implements OfferService {
 
         /* Notify the buyer that the offer has been rejected */
         notificationDispatcherService.notifyOfferRejected(offer);
+    }
+
+    @Override
+    @Transactional
+    public int rejectAllForParticipant(Long userId) {
+        return offerDao.rejectAllForParticipant(userId);
     }
 }
