@@ -71,8 +71,8 @@
 | 7.4 | [HSQLDB test schema diverges from PostgreSQL](#74-hsqldb-test-schema-diverges-from-postgresql) | ✅ Resolved |
 | 7.5 | [Migration edited before production push (unaffected DB)](#75-an-already-committed-migration-was-edited) | ✅ Resolved |
 | 7.6 | [Test Hibernate config dumps SQL and misspells format_sql](#76-test-hibernate-config-dumps-sql-and-misspells-format_sql) | ✅ Resolved |
-| 7.7 | [Outdated SLF4J/Logback and redundant logging deps](#77-obsolete-slf4jlogback-versions-and-redundant-logging-deps) | ⚠️ Decision needed |
-| 7.8 | [Plugin versions duplicated in child POMs](#78-plugin-versions-duplicated-in-every-child-pom) | ⚠️ Decision needed |
+| 7.7 | [Outdated SLF4J/Logback and redundant logging deps](#77-obsolete-slf4jlogback-versions-and-redundant-logging-deps) | ❌ False positive |
+| 7.8 | [Plugin versions duplicated in child POMs](#78-plugin-versions-duplicated-in-every-child-pom) | ❌ False positive |
 | 7.9 | [Redundant Hibernate/JAXB dependencies and production JDBC declaration](#79-redundant-hibernatejaxb-dependencies-and-production-jdbc-declaration) | ❌ False positive |
 | 7.10 | [Existence checks use COUNT or setMaxResults instead of EXISTS](#710-existence-checks-use-count-or-setmaxresults-instead-of-exists) | ❌ False positive |
 | 7.11 | [Dead code, unused collection mapping and unused message keys](#711-dead-code-unused-collection-mapping-and-unused-message-keys) | ✅ Resolved |
@@ -446,13 +446,13 @@ Tests therefore run against a stricter schema than production, so invalid enum d
 
 `pom.xml:60-62` pins SLF4J `1.7.5` and Logback `1.1.2`, which are very old. Thymeleaf 3.1.3 expects SLF4J 2.0.x, and the root pin overrides it. `logback-ext-spring` has no listener/import, and `logback-core` is already pulled by `logback-classic`. The `service` module uses SLF4J directly but does not declare `slf4j-api`.
 
-**Decision needed.** The versions are largely mandated by the course, which is likely the reason for the outdated stack. Confirm whether they may be upgraded; if not, document the constraint. The redundant/unused declarations can still be reviewed separately.
+**False positive.** Not relevant for this project; do not flag again. No action.
 
 ### 7.8 Plugin versions duplicated in every child POM
 
 The same Maven plugin versions are copy-pasted in `model/pom.xml:44-83`, `persistence-contract/pom.xml:27-66`, `persistence/pom.xml:70-109`, `service-contract/pom.xml:31-70`, `service/pom.xml:78-117` and `webapp/pom.xml:159-214`.
 
-**Decision needed.** The plugin versions may be course-mandated; confirm before consolidating them into the parent `<pluginManagement>` block.
+**False positive.** Not relevant for this project; do not flag again. No action.
 
 ### 7.9 Redundant Hibernate/JAXB dependencies and production JDBC declaration
 
