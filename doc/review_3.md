@@ -61,7 +61,7 @@
 | 5.10 | [Emails/usernames logged in clear text](#510-emails-and-usernames-are-logged-in-clear-text) | ✅ Resolved |
 | 6.1 | [Comma-containing display names are truncated in message arguments](#61-comma-containing-display-names-are-truncated-in-message-arguments) | 🕓 Open |
 | 6.2 | [Hardcoded “KB” unit in proof components](#62-hardcoded-kb-unit-in-proof-components) | ✅ Resolved |
-| 6.3 | [Translated fragments concatenated instead of parameterized](#63-translated-fragments-concatenated-instead-of-parameterized) | 🕓 Open |
+| 6.3 | [Translated fragments concatenated instead of parameterized](#63-translated-fragments-concatenated-instead-of-parameterized) | ✅ Resolved |
 | 6.4 | [Icon-only links, hidden radios and preference checkboxes are inaccessible](#64-icon-only-links-hidden-radios-and-preference-checkboxes-are-inaccessible) | 🕓 Open |
 | 6.5 | [Duplicate DOM ids in admin user forms](#65-duplicate-dom-ids-in-admin-user-forms) | ✅ Resolved |
 | 6.6 | [Reusable tags render raw attributes without c:out](#66-reusable-tags-render-raw-attributes-without-cout) | ✅ Resolved |
@@ -390,9 +390,7 @@ Examples: `ListingController:370`, `OfferController:29,38,49,64`, `AdminControll
 
 ### 6.3 Translated fragments concatenated instead of parameterized
 
-Examples: `product.tag:16` joins category and subcategory with ` / `; `listing/index.jsp:44` joins condition title and label with a space; `offerCard.tag:61` passes `${currencySymbol} ${offer.amount}` as one `spring:message` argument. Each assumes a fixed word order and cannot be reordered by a translator.
-
-**Action:** use one message with ordered placeholders and separate arguments for currency and amount.
+**Resolved.** Added parameterized messages and split each concatenated fragment into separate `<spring:argument>`s: `product.categoryAndSubcategory={0} / {1}` in `product.tag`, `listing.detail.conditionWithLabel={0}: {1}` in `listing/index.jsp`'s condition title, and an extra `{n}` placeholder for the currency symbol in `offer.tradePlusAmount`, `listing.detail.pendingOffer`, `offer.detail.title` and `offer.detail.title.tradeWithCash` (used by `offerCard.tag` and `account/incomingOfferDetail.jsp`), which previously received `${currencySymbol} ${amount}` as a single concatenated argument.
 
 ### 6.4 Icon-only links, hidden radios and preference checkboxes are inaccessible
 
