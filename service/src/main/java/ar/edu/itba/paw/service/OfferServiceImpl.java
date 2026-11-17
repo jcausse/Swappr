@@ -284,15 +284,15 @@ public class OfferServiceImpl implements OfferService {
             throw new BadParameterException("Offer is not pending");
         }
 
-        // Handle trade offer: reject competing offers on the offered listing, then set it to SOLD
+        // Handle trade offer: set the offered listing to SOLD, then reject its competing offers
         if (offer.getOfferedListingId() != null) {
-            rejectPendingOffersForListing(offer.getOfferedListingId(), null, false);
             listingService.updateStatus(offer.getOfferedListingId(), ListingStatus.SOLD);
+            rejectPendingOffersForListing(offer.getOfferedListingId(), null, false);
         }
 
         listingService.pendingTransaction(offer.getListing().getId(), offer.getBuyer().getId(), offer.getMessage());
-        rejectPendingOffersForListing(offer.getListing().getId(), offerId, false);
         offerDao.updateStatus(offerId, OfferStatus.PENDING_PAYMENT);
+        rejectPendingOffersForListing(offer.getListing().getId(), offerId, false);
 
         LOGGER.info("Offer accepted: offerId={}, listingId={}, buyerId={}, sellerId={}",
                 offerId, offer.getListing().getId(), offer.getBuyer().getId(), currentUserId);

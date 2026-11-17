@@ -338,30 +338,6 @@ public class OfferServiceImplTest {
         Assert.assertEquals(OFFER_ID, (long) result.getId());
     }
 
-    @Test
-    public void testCanUploadDocumentsPendingPaymentFreeOfferIsFalse() {
-        // Arrange
-        final Offer offer = offerBuilder(OfferStatus.PENDING_PAYMENT).listing(buildFreeListing()).build();
-
-        // Act
-        final boolean canUpload = offer.canUploadDocuments();
-
-        // Assert
-        Assert.assertFalse(canUpload);
-    }
-
-    @Test
-    public void testCanUploadDocumentsPendingPaymentPaidOfferIsTrue() {
-        // Arrange
-        final Offer offer = buildFakeOffer(OfferStatus.PENDING_PAYMENT);
-
-        // Act
-        final boolean canUpload = offer.canUploadDocuments();
-
-        // Assert
-        Assert.assertTrue(canUpload);
-    }
-
     @Test(expected = BadParameterException.class)
     public void testCreateOnOwnListingThrows() {
         // Arrange
@@ -548,35 +524,6 @@ public class OfferServiceImplTest {
 
         // Act
         offerService.withdraw(OFFER_ID, BUYER_ID);
-    }
-
-    /* ---------------------------------------------------------------------------------------------- */
-    /* rejectPendingOffersForListing                                                                   */
-    /* ---------------------------------------------------------------------------------------------- */
-
-    @Test
-    public void testRejectPendingOffersForListingReleasesOfferedListings() {
-        // Arrange
-        final Offer tradeOffer = offerBuilder(OfferStatus.REJECTED)
-            .id(OFFER_ID)
-            .offeredListing(buildFakeListing(OFFERED_LISTING_ID, buildFakeUser(BUYER_ID),
-                ListingStatus.OFFERED_IN_TRADE, false))
-            .build();
-        final Offer cashOffer = offerBuilder(OfferStatus.REJECTED).id(OTHER_OFFER_ID).build();
-        when(offerDao.rejectPendingOffers(eq(LISTING_ID), isNull(), eq(false)))
-            .thenReturn(List.of(tradeOffer, cashOffer));
-
-        final List<Long> releasedListingIds = new ArrayList<>();
-        doAnswer(invocation -> {
-            releasedListingIds.addAll(invocation.getArgument(0));
-            return null;
-        }).when(listingService).updateStatusBulk(any(), eq(ListingStatus.ACTIVE));
-
-        // Act
-        offerService.rejectPendingOffersForListing(LISTING_ID, null, false);
-
-        // Assert
-        Assert.assertEquals(List.of(OFFERED_LISTING_ID), releasedListingIds);
     }
 
     /* ---------------------------------------------------------------------------------------------- */

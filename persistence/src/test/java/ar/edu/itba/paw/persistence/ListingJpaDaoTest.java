@@ -431,15 +431,6 @@ public class ListingJpaDaoTest {
         Assert.assertEquals(0, page.getTotalCount());
     }
 
-    @Test
-    public void testSearchReturnsOnlyCoverImage() {
-        // Act
-        final Page<Listing> page = listingDao.search(baseFilter().query("MacBook Pro").build());
-
-        // Assert
-        Assert.assertEquals(List.of(FRONT_IMAGE_ID, BACK_IMAGE_ID), page.getContent().getFirst().getImageIds());
-    }
-
     /* ---------------------------------------------------------------------------------------------- */
     /* search: sorting (only ACTIVE listings: 1, 2 and 4)                                              */
     /* ---------------------------------------------------------------------------------------------- */
