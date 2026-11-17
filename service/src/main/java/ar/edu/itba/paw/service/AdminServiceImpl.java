@@ -79,10 +79,11 @@ public class AdminServiceImpl implements AdminService {
         // Silently reject every pending or pending-payment offer the user participates in
         final int rejectedOffers = offerService.rejectAllForParticipant(userId);
 
-        final User suspendedUser = userService.suspend(userId);
-
         // Cancel every listing still owned by the user, leaving completed sales untouched
         final int canceledListings = listingCancellationService.cancelAllByCreator(userId);
+
+        // Suspend last so the account-suspension notification is dispatched after all other writes
+        final User suspendedUser = userService.suspend(userId);
 
         LOGGER.info("Suspension cleanup for user id={}: releasedOfferedListings={}, releasedHeldListings={}, "
                         + "rejectedOffers={}, canceledListings={}",
