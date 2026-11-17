@@ -63,7 +63,7 @@
 | 6.2 | [Hardcoded “KB” unit in proof components](#62-hardcoded-kb-unit-in-proof-components) | ✅ Resolved |
 | 6.3 | [Translated fragments concatenated instead of parameterized](#63-translated-fragments-concatenated-instead-of-parameterized) | 🕓 Open |
 | 6.4 | [Icon-only links, hidden radios and preference checkboxes are inaccessible](#64-icon-only-links-hidden-radios-and-preference-checkboxes-are-inaccessible) | 🕓 Open |
-| 6.5 | [Duplicate DOM ids in admin user forms](#65-duplicate-dom-ids-in-admin-user-forms) | 🕓 Open |
+| 6.5 | [Duplicate DOM ids in admin user forms](#65-duplicate-dom-ids-in-admin-user-forms) | ✅ Resolved |
 | 6.6 | [Reusable tags render raw attributes without c:out](#66-reusable-tags-render-raw-attributes-without-cout) | ✅ Resolved |
 | 7.1 | [No tests for the riskiest service flows](#71-no-tests-for-the-riskiest-service-flows) | 🕓 Open |
 | 7.2 | [Missing DAO tests and only negative UserJpaDao coverage](#72-missing-dao-tests-and-only-negative-userjpadao-coverage) | 🕓 Open |
@@ -404,9 +404,7 @@ Examples: `product.tag:16` joins category and subcategory with ` / `; `listing/i
 
 ### 6.5 Duplicate DOM ids in admin user forms
 
-`admin/users.jsp:24,112,125` and `admin/dashboard.jsp:118,131` use `paw:formInput` with the default id equal to `path`, so multiple `username` inputs share `id="username"`. Labels focus the wrong field and the HTML is invalid.
-
-**Action:** pass explicit unique ids (`filterUsername`, `suspendUsername`, `grantUsername`).
+**Resolved.** Passed explicit unique `id`s to every `paw:formInput path="username"` call site: `filterUsername` (search form, `admin/users.jsp`), `suspendUsername` (suspend form, `admin/users.jsp` and `admin/dashboard.jsp`) and `grantUsername` (grant-admin form, `admin/users.jsp` and `admin/dashboard.jsp`).
 
 ### 6.6 Reusable tags render raw attributes without `c:out`
 
