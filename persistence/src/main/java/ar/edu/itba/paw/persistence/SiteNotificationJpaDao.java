@@ -17,10 +17,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @Repository
 public class SiteNotificationJpaDao implements SiteNotificationDao {
@@ -145,19 +142,12 @@ public class SiteNotificationJpaDao implements SiteNotificationDao {
             return new Page<>(List.of(), page, pageSize, totalCount);
         }
 
-        // 3. Population query (1+1 model - Step 2: load entities with bodyArgs and preserve order)
-        final List<SiteNotification> fetched = em.createQuery(
-                        "SELECT DISTINCT n FROM SiteNotification n LEFT JOIN FETCH n.bodyArgs LEFT JOIN FETCH n.offer LEFT JOIN FETCH n.user WHERE n.id IN :ids",
+        // 3. Population query (1+1 model - Step 2: load entities with bodyArgs and re-apply the ID query ordering)
+        final List<SiteNotification> entities = em.createQuery(
+                        "SELECT DISTINCT n FROM SiteNotification n LEFT JOIN FETCH n.bodyArgs LEFT JOIN FETCH n.offer LEFT JOIN FETCH n.user WHERE n.id IN :ids ORDER BY n.createdAt DESC, n.id DESC",
                         SiteNotification.class)
                 .setParameter("ids", ids)
                 .getResultList();
-
-        final Map<Long, SiteNotification> byId = fetched.stream()
-                .collect(Collectors.toMap(SiteNotification::getId, Function.identity()));
-        final List<SiteNotification> entities = ids.stream()
-                .map(byId::get)
-                .filter(Objects::nonNull)
-                .toList();
 
         return new Page<>(entities, page, pageSize, totalCount);
     }
