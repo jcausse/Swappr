@@ -15,7 +15,6 @@ import org.springframework.stereotype.Repository;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
-import javax.persistence.TypedQuery;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -78,113 +77,83 @@ public class ListingJpaDao implements ListingDao {
     }
 
     private Page<Listing> search(ListingFilter filter, boolean fetchCreator) {
-        final StringBuilder whereClause = new StringBuilder(" WHERE 1=1");
-        final Map<String, Object> params = new HashMap<>();
         final StringBuilder nativeWhere = new StringBuilder(" WHERE 1=1");
         final Map<String, Object> nativeParams = new HashMap<>();
 
         if (filter.getCategoryId() != null) {
-            whereClause.append(" AND l.model.subcategory.category.id = :categoryId");
             nativeWhere.append(" AND s.category_id = :categoryId");
-            params.put("categoryId", filter.getCategoryId());
             nativeParams.put("categoryId", filter.getCategoryId());
         }
         if (filter.getSubcategoryId() != null) {
-            whereClause.append(" AND l.model.subcategory.id = :subcategoryId");
             nativeWhere.append(" AND m.subcategory_id = :subcategoryId");
-            params.put("subcategoryId", filter.getSubcategoryId());
             nativeParams.put("subcategoryId", filter.getSubcategoryId());
         }
         if (filter.getBrandId() != null) {
-            whereClause.append(" AND l.model.brand.id = :brandId");
             nativeWhere.append(" AND m.brand_id = :brandId");
-            params.put("brandId", filter.getBrandId());
             nativeParams.put("brandId", filter.getBrandId());
         }
         if (filter.getModelId() != null) {
-            whereClause.append(" AND l.model.id = :modelId");
             nativeWhere.append(" AND m.model_id = :modelId");
-            params.put("modelId", filter.getModelId());
             nativeParams.put("modelId", filter.getModelId());
         }
         if (filter.getYearMin() != null) {
-            whereClause.append(" AND l.year >= :yearMin");
             nativeWhere.append(" AND l.year >= :yearMin");
-            params.put("yearMin", filter.getYearMin());
             nativeParams.put("yearMin", filter.getYearMin());
         }
         if (filter.getYearMax() != null) {
-            whereClause.append(" AND l.year <= :yearMax");
             nativeWhere.append(" AND l.year <= :yearMax");
-            params.put("yearMax", filter.getYearMax());
             nativeParams.put("yearMax", filter.getYearMax());
         }
         if (filter.getMinPrice() != null) {
-            whereClause.append(" AND l.price.amount >= :minPrice");
             nativeWhere.append(" AND l.price >= :minPrice");
-            params.put("minPrice", filter.getMinPrice());
             nativeParams.put("minPrice", filter.getMinPrice());
         }
         if (filter.getMaxPrice() != null) {
-            whereClause.append(" AND l.price.amount <= :maxPrice");
             nativeWhere.append(" AND l.price <= :maxPrice");
-            params.put("maxPrice", filter.getMaxPrice());
             nativeParams.put("maxPrice", filter.getMaxPrice());
         }
         if (filter.getCondition() != null) {
-            whereClause.append(" AND l.condition = :condition");
             nativeWhere.append(" AND l.condition = :condition");
-            params.put("condition", filter.getCondition());
             nativeParams.put("condition", filter.getCondition().name());
         }
         if (filter.getAcceptsTrade() != null) {
-            whereClause.append(" AND l.acceptsTrade = :acceptsTrade");
             nativeWhere.append(" AND l.accepts_trade = :acceptsTrade");
-            params.put("acceptsTrade", filter.getAcceptsTrade());
             nativeParams.put("acceptsTrade", filter.getAcceptsTrade());
         }
         if (filter.getAcceptsShipping() != null) {
-            whereClause.append(" AND l.acceptsShipping = :acceptsShipping");
             nativeWhere.append(" AND l.accepts_shipping = :acceptsShipping");
-            params.put("acceptsShipping", filter.getAcceptsShipping());
             nativeParams.put("acceptsShipping", filter.getAcceptsShipping());
         }
         if (filter.getStatus() != null) {
-            whereClause.append(" AND l.status = :status");
             nativeWhere.append(" AND l.status = :status");
-            params.put("status", filter.getStatus());
             nativeParams.put("status", filter.getStatus().name());
         }
         if (filter.getCreatorId() != null) {
-            whereClause.append(" AND l.creator.id = :creatorId");
             nativeWhere.append(" AND l.creator_id = :creatorId");
-            params.put("creatorId", filter.getCreatorId());
             nativeParams.put("creatorId", filter.getCreatorId());
         }
         if (filter.getProvinceId() != null) {
-            whereClause.append(" AND l.creator.province.id = :provinceId");
             nativeWhere.append(" AND u.province_id = :provinceId");
-            params.put("provinceId", filter.getProvinceId());
             nativeParams.put("provinceId", filter.getProvinceId());
         }
         if (filter.getQuery() != null && !filter.getQuery().isBlank()) {
-            whereClause.append(" AND (LOWER(l.title) LIKE :query OR LOWER(l.description) LIKE :query)");
             nativeWhere.append(" AND (LOWER(l.title) LIKE :query OR LOWER(l.description) LIKE :query)");
             final String query = "%" + escapeLike(filter.getQuery().trim().toLowerCase()) + "%";
-            params.put("query", query);
             nativeParams.put("query", query);
         }
         if (Boolean.TRUE.equals(filter.getHasActiveOffers())) {
-            whereClause.append(" AND EXISTS (SELECT 1 FROM Offer o WHERE o.listing.id = l.id AND o.status = :pendingOfferStatus)");
             nativeWhere.append(" AND EXISTS (SELECT 1 FROM offers o WHERE o.listing_id = l.listing_id AND o.status = :pendingOfferStatus)");
-            params.put("pendingOfferStatus", OfferStatus.PENDING);
             nativeParams.put("pendingOfferStatus", OfferStatus.PENDING.name());
         }
 
-        final TypedQuery<Long> countQuery = em.createQuery(
-                "SELECT COUNT(l) FROM Listing l" + whereClause, Long.class);
-        params.forEach(countQuery::setParameter);
-        final long totalCount = countQuery.getSingleResult();
+        final String nativeFrom = " FROM listings l"
+                + " JOIN models m ON m.model_id = l.model_id"
+                + " JOIN subcategories s ON s.subcategory_id = m.subcategory_id"
+                + " JOIN users u ON u.user_id = l.creator_id";
+
+        final Query countQuery = em.createNativeQuery("SELECT COUNT(*)" + nativeFrom + nativeWhere);
+        nativeParams.forEach(countQuery::setParameter);
+        final long totalCount = ((Number) countQuery.getSingleResult()).longValue();
 
         final int page = filter.getPage();
         final int pageSize = filter.getPageSize();
@@ -194,11 +163,7 @@ public class ListingJpaDao implements ListingDao {
 
         // 1+1 pagination: page only listing IDs in a native query, then load those entities.
         final Query idQuery = em.createNativeQuery(
-                "SELECT l.listing_id FROM listings l"
-                + " JOIN models m ON m.model_id = l.model_id"
-                + " JOIN subcategories s ON s.subcategory_id = m.subcategory_id"
-                + " JOIN users u ON u.user_id = l.creator_id"
-                + nativeWhere
+                "SELECT l.listing_id" + nativeFrom + nativeWhere
                 + " ORDER BY " + resolveNativeOrderBy(filter.getSort()))
                 .setFirstResult((page - 1) * pageSize)
                 .setMaxResults(pageSize);

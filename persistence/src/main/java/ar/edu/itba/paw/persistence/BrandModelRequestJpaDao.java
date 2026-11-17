@@ -62,10 +62,9 @@ public class BrandModelRequestJpaDao implements BrandModelRequestDao {
 
     @Override
     public Page<BrandModelRequest> getMatching(int page, int pageSize) {
-        final long totalCount = em.createQuery(
-                "SELECT COUNT(r) FROM BrandModelRequest r",
-                Long.class)
-                .getSingleResult();
+        final long totalCount = ((Number) em.createNativeQuery(
+                "SELECT COUNT(*) FROM brand_model_requests")
+                .getSingleResult()).longValue();
 
         if (totalCount == 0) {
             return new Page<>(List.of(), page, pageSize, 0);

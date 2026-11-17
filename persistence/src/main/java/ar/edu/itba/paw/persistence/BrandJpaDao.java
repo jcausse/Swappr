@@ -48,8 +48,8 @@ public class BrandJpaDao implements BrandDao {
 
     @Override
     public Page<BrandInfo> getWithStats(BrandSort sort, int page, int pageSize) {
-        final long totalCount = em.createQuery("SELECT COUNT(b) FROM Brand b", Long.class)
-                .getSingleResult();
+        final long totalCount = ((Number) em.createNativeQuery("SELECT COUNT(*) FROM brands b")
+                .getSingleResult()).longValue();
 
         if (totalCount == 0) {
             return new Page<>(List.of(), page, pageSize, 0);

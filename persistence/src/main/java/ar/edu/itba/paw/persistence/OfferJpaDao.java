@@ -51,36 +51,30 @@ public class OfferJpaDao implements OfferDao {
 
     @Override
     public Page<Offer> search(OfferFilter filter) {
-        final StringBuilder whereClause = new StringBuilder(" WHERE 1=1");
-        final Map<String, Object> params = new HashMap<>();
         final StringBuilder nativeWhere = new StringBuilder(" WHERE 1=1");
         final Map<String, Object> nativeParams = new HashMap<>();
 
         if (filter.getBuyerId() != null) {
-            whereClause.append(" AND o.buyer.id = :buyerId");
             nativeWhere.append(" AND o.buyer_id = :buyerId");
-            params.put("buyerId", filter.getBuyerId());
             nativeParams.put("buyerId", filter.getBuyerId());
         }
 
         if (filter.getSellerId() != null) {
-            whereClause.append(" AND o.listing.creator.id = :sellerId");
             nativeWhere.append(" AND l.creator_id = :sellerId");
-            params.put("sellerId", filter.getSellerId());
             nativeParams.put("sellerId", filter.getSellerId());
         }
 
         if (filter.getStatus() != null && !filter.getStatus().isEmpty()) {
-            whereClause.append(" AND o.status IN (:statuses)");
             nativeWhere.append(" AND o.status IN (:statuses)");
-            params.put("statuses", filter.getStatus());
             nativeParams.put("statuses", filter.getStatus().stream().map(Enum::name).toList());
         }
 
-        final TypedQuery<Long> countQuery = em.createQuery(
-                "SELECT COUNT(o) FROM Offer o" + whereClause, Long.class);
-        params.forEach(countQuery::setParameter);
-        final long totalCount = countQuery.getSingleResult();
+        final String nativeFrom = " FROM offers o"
+                + " JOIN listings l ON l.listing_id = o.listing_id";
+
+        final Query countQuery = em.createNativeQuery("SELECT COUNT(*)" + nativeFrom + nativeWhere);
+        nativeParams.forEach(countQuery::setParameter);
+        final long totalCount = ((Number) countQuery.getSingleResult()).longValue();
 
         final int page = filter.getPage();
         final int pageSize = filter.getPageSize();
@@ -90,9 +84,7 @@ public class OfferJpaDao implements OfferDao {
 
         // 1+1 pagination: page only offer IDs in a native query, then load those entities.
         final Query idQuery = em.createNativeQuery(
-                "SELECT o.offer_id FROM offers o"
-                + " JOIN listings l ON l.listing_id = o.listing_id"
-                + nativeWhere
+                "SELECT o.offer_id" + nativeFrom + nativeWhere
                 + " ORDER BY o.created_at DESC, o.offer_id DESC")
                 .setFirstResult((page - 1) * pageSize)
                 .setMaxResults(pageSize);
