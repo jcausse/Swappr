@@ -412,7 +412,7 @@ public class AdminController {
         LOGGER.debug("Admin {} accessed listings page: page={}, query={}, status={}", currentUser.getId(), page, filterForm.getQuery(), filterForm.getStatus());
         ModelAndView mav = new ModelAndView("admin/listings");
         var filter = filterForm.toDto(page, DEFAULT_PAGE_SIZE);
-        mav.addObject("listingsPage", listingService.search(filter));
+        mav.addObject("listingsPage", listingService.searchForAdmin(filter));
         mav.addObject("statusOptions", Arrays.stream(ListingStatus.values())
                 .map(status -> new StringSelectOption(status.name(), "listing.status." + status.name()))
                 .toList());
@@ -599,9 +599,10 @@ public class AdminController {
             Optional<User> targetUser = userService.getByUsernameOrEmail(username);
             if (targetUser.isPresent()) {
                 User user = targetUser.get();
+                final List<Role> targetUserRoles = userService.getRoles(user);
                 mav.addObject("targetUser", user);
-                mav.addObject("targetUserRoles", user.getRoles());
-                mav.addObject("isTargetUserAdmin", user.hasRole(Role.ADMIN));
+                mav.addObject("targetUserRoles", targetUserRoles);
+                mav.addObject("isTargetUserAdmin", targetUserRoles.contains(Role.ADMIN));
                 suspendUserForm.setUsername(user.getUsername());
                 grantRoleForm.setUsername(user.getUsername());
             } else {
