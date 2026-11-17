@@ -19,7 +19,7 @@
 | Item | Brief description | Status |
 |---|---|---|
 | 1.1 | [Admin credentials in README (deliberate for professors)](#11-production-admin-credentials-are-committed-in-the-readme) | ❌ False positive |
-| 1.2 | [CSRF protection disabled globally (likely deliberate)](#12-csrf-protection-is-globally-disabled) | ⚠️ Decision needed |
+| 1.2 | [CSRF protection disabled globally (likely deliberate)](#12-csrf-protection-is-globally-disabled) | ❌ False positive |
 | 1.3 | [Stored XSS through unescaped page-title messages](#13-stored-xss-through-unescaped-page-title-messages) | ✅ Resolved |
 | 1.4 | [Admin cancellation leaves active offers and can resurrect canceled listings](#14-admin-cancellation-leaves-active-offers-and-can-resurrect-canceled-listings) | ⚠️ Bigger refactor needed |
 | 1.5 | [Trade acceptance does not reject offers on the offered listing](#15-trade-acceptance-does-not-reject-offers-on-the-offered-listing) | ✅ Resolved |
@@ -95,7 +95,7 @@
 
 `WebAuthConfig.java:100` calls `csrf().disable()`. Every state-changing POST is therefore forgeable from another site: offer accept/reject/withdraw, checkout, profile and password changes, admin suspension, catalog writes and takedowns. The session cookie is enough to authorize the request.
 
-**Decision needed.** This is likely disabled deliberately (e.g. a course or deployment constraint); confirm the reason and document it. If the disable is not deliberate, remove it and add CSRF tokens to every POST form.
+**False positive.** Deliberately disabled.
 
 ### 1.3 Stored XSS through unescaped page-title messages
 
