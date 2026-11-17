@@ -75,7 +75,7 @@
 | 7.8 | [Plugin versions duplicated in child POMs](#78-plugin-versions-duplicated-in-every-child-pom) | ⚠️ Decision needed |
 | 7.9 | [Redundant Hibernate/JAXB dependencies and production JDBC declaration](#79-redundant-hibernatejaxb-dependencies-and-production-jdbc-declaration) | 🕓 Open |
 | 7.10 | [Existence checks use COUNT or setMaxResults instead of EXISTS](#710-existence-checks-use-count-or-setmaxresults-instead-of-exists) | 🕓 Open |
-| 7.11 | [Dead code, unused collection mapping and unused message keys](#711-dead-code-unused-collection-mapping-and-unused-message-keys) | 🕓 Open |
+| 7.11 | [Dead code, unused collection mapping and unused message keys](#711-dead-code-unused-collection-mapping-and-unused-message-keys) | ✅ Resolved |
 | 8.1 | [Request dedup is global (AGENTS updated)](#81-agents-requires-subcategory-scoped-request-dedup-code-and-prior-review-say-global) | ✅ Resolved |
 | 8.2 | [OSIV discouraged but not a hard fail (policy settled)](#82-lecture-allows-osiv-agents-says-do-not-rely-on-it) | ✅ Resolved |
 | 8.3 | [Transactional rule scoped; EmailNotification exception documented](#83-agents-requires-transactional-on-all-services-then-forbids-it-on-emailnotificationserviceimpl) | ✅ Resolved |
