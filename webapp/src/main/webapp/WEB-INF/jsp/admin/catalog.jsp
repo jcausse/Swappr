@@ -310,267 +310,269 @@
         </c:forEach>
 
         <c:url value="/admin/catalog" var="catalogUrl"/>
-        <paw:card title="${modelsTitle}" subtitle="${modelsSubtitle}">
-            <c:set var="modelIdSortIcon" value="${currentModelSort.key eq 'id' ? (currentModelSort.ascending ? 'chevron-up' : 'chevron-down') : 'chevrons-up-down'}"/>
-            <c:set var="modelIdNextSort" value="${currentModelSort.key eq 'id' and currentModelSort.ascending ? 'ID_DESC' : 'ID_ASC'}"/>
-            <c:set var="modelNameSortIcon" value="${currentModelSort.key eq 'name' ? (currentModelSort.ascending ? 'chevron-up' : 'chevron-down') : 'chevrons-up-down'}"/>
-            <c:set var="modelNameNextSort" value="${currentModelSort.key eq 'name' and currentModelSort.ascending ? 'NAME_DESC' : 'NAME_ASC'}"/>
+        <div id="models" class="scroll-mt-28">
+            <paw:card title="${modelsTitle}" subtitle="${modelsSubtitle}">
+                <c:set var="modelIdSortIcon" value="${currentModelSort.key eq 'id' ? (currentModelSort.ascending ? 'chevron-up' : 'chevron-down') : 'chevrons-up-down'}"/>
+                <c:set var="modelIdNextSort" value="${currentModelSort.key eq 'id' and currentModelSort.ascending ? 'ID_DESC' : 'ID_ASC'}"/>
+                <c:set var="modelNameSortIcon" value="${currentModelSort.key eq 'name' ? (currentModelSort.ascending ? 'chevron-up' : 'chevron-down') : 'chevrons-up-down'}"/>
+                <c:set var="modelNameNextSort" value="${currentModelSort.key eq 'name' and currentModelSort.ascending ? 'NAME_DESC' : 'NAME_ASC'}"/>
 
-            <form:form
-                id="modelFilterForm"
-                modelAttribute="modelFilterForm"
-                action="${catalogUrl}"
-                method="get"
-                class="mt-2 mb-3 flex flex-col sm:flex-row gap-3 items-end"
-            >
-                <input type="hidden" name="page" value="${brandsPage.page}"/>
-                <input type="hidden" name="sort" value="${currentSort.name()}"/>
-                <input type="hidden" name="modelSort" value="${currentModelSort.name()}"/>
-                <div class="flex-1 w-full">
-                    <paw:formSelect
-                        path="filterBrandId"
-                        label="${modelFilterBrandLabel}"
-                        placeholder="${modelFilterAllLabel}"
-                        items="${brandOptions}"
-                        itemLabel="name"
-                        itemValue="id"
-                    />
-                </div>
-                <div class="flex-1 w-full">
-                    <paw:formSelect
-                        id="modelFilterCategoryId"
-                        path="filterCategoryId"
-                        label="${modelFilterCategoryLabel}"
-                        placeholder="${modelFilterAllLabel}"
-                        items="${categoryOptions}"
-                        translateLabels="true"
-                    />
-                </div>
-                <div class="flex-1 w-full">
-                    <paw:formSelect
-                        id="modelFilterSubcategoryId"
-                        path="filterSubcategoryId"
-                        label="${modelFilterSubcategoryLabel}"
-                        placeholder="${modelFilterAllLabel}"
-                        items="${modelFilterSubcategoryOptions}"
-                        translateLabels="true"
-                        disabled="${empty modelFilterForm.filterCategoryId}"
-                    />
-                </div>
-                <paw:button text="${modelFilterApplyLabel}" type="submit" variant="default" role="default" icon="search" classname="w-full sm:w-auto"/>
-                <c:url value="/admin/catalog" var="clearModelFiltersUrl">
-                    <c:param name="page" value="${brandsPage.page}"/>
-                    <c:param name="sort" value="${currentSort.name()}"/>
-                    <c:param name="modelSort" value="${currentModelSort.name()}"/>
-                </c:url>
-                <paw:linkButton href="${clearModelFiltersUrl}" text="${modelFilterClearLabel}" variant="ghost" role="secondary" classname="w-full sm:w-auto"/>
-            </form:form>
-
-            <div class="overflow-x-auto">
-                <table class="w-full text-sm">
-                    <thead>
-                        <tr class="border-b border-black/10 text-left text-xs uppercase tracking-wide text-black/50">
-                            <th class="py-2 pr-4 font-medium">
-                                <c:url value="/admin/catalog" var="modelIdSortUrl">
-                                    <c:if test="${not empty modelFilterForm.filterBrandId}"><c:param name="filterBrandId" value="${modelFilterForm.filterBrandId}"/></c:if>
-                                    <c:if test="${not empty modelFilterForm.filterCategoryId}"><c:param name="filterCategoryId" value="${modelFilterForm.filterCategoryId}"/></c:if>
-                                    <c:if test="${not empty modelFilterForm.filterSubcategoryId}"><c:param name="filterSubcategoryId" value="${modelFilterForm.filterSubcategoryId}"/></c:if>
-                                    <c:param name="page" value="${brandsPage.page}"/>
-                                    <c:param name="sort" value="${currentSort.name()}"/>
-                                    <c:param name="modelSort" value="${modelIdNextSort}"/>
-                                </c:url>
-                                <a href="${modelIdSortUrl}" class="inline-flex items-center gap-1 hover:text-black transition">
-                                    <c:out value="${modelIdLabel}"/>
-                                    <paw:icon name="${modelIdSortIcon}"/>
-                                </a>
-                            </th>
-                            <th class="py-2 pr-4 font-medium">
-                                <c:url value="/admin/catalog" var="modelNameSortUrl">
-                                    <c:if test="${not empty modelFilterForm.filterBrandId}"><c:param name="filterBrandId" value="${modelFilterForm.filterBrandId}"/></c:if>
-                                    <c:if test="${not empty modelFilterForm.filterCategoryId}"><c:param name="filterCategoryId" value="${modelFilterForm.filterCategoryId}"/></c:if>
-                                    <c:if test="${not empty modelFilterForm.filterSubcategoryId}"><c:param name="filterSubcategoryId" value="${modelFilterForm.filterSubcategoryId}"/></c:if>
-                                    <c:param name="page" value="${brandsPage.page}"/>
-                                    <c:param name="sort" value="${currentSort.name()}"/>
-                                    <c:param name="modelSort" value="${modelNameNextSort}"/>
-                                </c:url>
-                                <a href="${modelNameSortUrl}" class="inline-flex items-center gap-1 hover:text-black transition">
-                                    <c:out value="${modelNameLabel}"/>
-                                    <paw:icon name="${modelNameSortIcon}"/>
-                                </a>
-                            </th>
-                            <th class="py-2 pr-4 font-medium"><c:out value="${modelBrandLabel}"/></th>
-                            <th class="py-2 pr-4 font-medium"><c:out value="${modelSubcategoryLabel}"/></th>
-                            <th class="py-2 text-right font-medium"><c:out value="${modelActionsLabel}"/></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <c:forEach var="model" items="${models}">
-                            <c:url value="/admin/catalog/models/${model.id}/edit" var="editModelUrl"/>
-                            <tr class="border-b border-black/5 last:border-0 align-top"
-                                data-edit-action="${editModelUrl}"
-                                data-model-name="<c:out value='${model.name}'/>"
-                                data-brand-id="${model.brandId}"
-                                data-subcategory-id="${model.subcategoryId}">
-                                <td class="py-3 pr-4">
-                                    <span class="text-xs font-mono font-medium px-1.5 py-0.5 rounded bg-black/5 text-black/70">
-                                        #<c:out value="${model.id}"/>
-                                    </span>
-                                </td>
-                                <td class="py-3 pr-4 font-medium"><c:out value="${model.name}"/></td>
-                                <td class="py-3 pr-4 text-black/70"><c:out value="${model.brandName}"/></td>
-                                <td class="py-3 pr-4 text-black/70">
-                                    <spring:message code="subcategory.${model.subcategoryName}"/>
-                                </td>
-                                <td class="py-3">
-                                    <div class="flex flex-col items-end gap-1">
-                                        <div class="flex items-center justify-end gap-2">
-                                            <paw:button
-                                                text="${editModelLabel}"
-                                                type="button"
-                                                variant="outline"
-                                                size="sm"
-                                                icon="pencil"
-                                                onclick="openEditModelDialog(this)"
-                                            />
-                                            <c:if test="${not empty modelReplacementOptions[model.id]}">
-                                                <paw:button
-                                                    text="${replaceModelLabel}"
-                                                    type="button"
-                                                    variant="outline"
-                                                    role="secondary"
-                                                    size="sm"
-                                                    icon="replace"
-                                                    onclick="document.getElementById('replaceModelDialog-${model.id}').showModal()"
-                                                />
-                                            </c:if>
-                                            <c:choose>
-                                                <c:when test="${model.hasListings}">
-                                                    <paw:button
-                                                        text="${deleteModelLabel}"
-                                                        type="button"
-                                                        variant="outline"
-                                                        role="danger"
-                                                        size="sm"
-                                                        icon="trash-2"
-                                                        disabled="true"
-                                                    />
-                                                </c:when>
-                                                <c:otherwise>
-                                                    <paw:button
-                                                        text="${deleteModelLabel}"
-                                                        type="button"
-                                                        variant="outline"
-                                                        role="danger"
-                                                        size="sm"
-                                                        icon="trash-2"
-                                                        onclick="document.getElementById('deleteModelDialog-${model.id}').showModal()"
-                                                    />
-                                                </c:otherwise>
-                                            </c:choose>
-                                        </div>
-                                        <c:if test="${model.hasListings}">
-                                            <p class="text-xs text-black/50 text-right">
-                                                <c:out value="${deleteModelBlocked}"/>
-                                            </p>
-                                        </c:if>
-                                    </div>
-                                </td>
-                            </tr>
-                        </c:forEach>
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="-mt-8 mb-4">
-                <paw:pagination page="${modelsPage}" baseUrl="/admin/catalog" pageParam="modelPage"/>
-            </div>
-
-            <paw:divider />
-
-            <div class="mt-4 flex flex-col gap-2">
-                <h3 class="text-sm font-semibold"><c:out value="${createModelTitle}"/></h3>
                 <form:form
-                    id="createModelFilterForm"
-                    modelAttribute="createModelFilterForm"
-                    action="${catalogUrl}"
+                    id="modelFilterForm"
+                    modelAttribute="modelFilterForm"
+                    action="${catalogUrl}#models"
                     method="get"
-                    class="flex flex-col sm:flex-row gap-3 items-end"
+                    class="mt-2 mb-3 flex flex-col sm:flex-row gap-3 items-end"
                 >
-                        <input type="hidden" name="page" value="${brandsPage.page}"/>
+                    <input type="hidden" name="page" value="${brandsPage.page}"/>
                     <input type="hidden" name="sort" value="${currentSort.name()}"/>
-                    <input type="hidden" name="modelPage" value="${modelsPage.page}"/>
                     <input type="hidden" name="modelSort" value="${currentModelSort.name()}"/>
-                    <input type="hidden" name="requestPage" value="${requestsPage.page}"/>
-                    <c:if test="${not empty modelFilterForm.filterBrandId}">
-                        <input type="hidden" name="filterBrandId" value="${modelFilterForm.filterBrandId}"/>
-                    </c:if>
-                    <c:if test="${not empty modelFilterForm.filterCategoryId}">
-                        <input type="hidden" name="filterCategoryId" value="${modelFilterForm.filterCategoryId}"/>
-                    </c:if>
-                    <c:if test="${not empty modelFilterForm.filterSubcategoryId}">
-                        <input type="hidden" name="filterSubcategoryId" value="${modelFilterForm.filterSubcategoryId}"/>
-                    </c:if>
                     <div class="flex-1 w-full">
                         <paw:formSelect
-                            id="createModelFilterCategoryId"
-                            path="categoryId"
-                            label="${createModelCategoryLabel}"
-                            placeholder="${createModelCategoryPlaceholder}"
-                            items="${categoryOptions}"
-                            translateLabels="true"
-                            variant="outline"
-                        />
-                    </div>
-                </form:form>
-                <c:url value="/admin/catalog/models" var="createModelUrl"/>
-                <form:form
-                    modelAttribute="createModelForm"
-                    action="${createModelUrl}"
-                    method="post"
-                    class="flex flex-col gap-3"
-                >
-                    <input type="hidden" name="redirect" value="<c:out value='${catalogReturnUrl}'/>"/>
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
-                        <paw:formInput
-                            path="name"
-                            label="${createModelNameLabel}"
-                            placeholder="${createModelNamePlaceholder}"
-                            variant="outline"
-                            disabled="${empty createModelFilterForm.categoryId}"
-                        />
-                        <paw:formSelect
-                            path="brandId"
-                            label="${createModelBrandLabel}"
-                            placeholder="${createModelBrandPlaceholder}"
+                            path="filterBrandId"
+                            label="${modelFilterBrandLabel}"
+                            placeholder="${modelFilterAllLabel}"
                             items="${brandOptions}"
                             itemLabel="name"
                             itemValue="id"
-                            variant="outline"
-                            disabled="${empty createModelFilterForm.categoryId}"
-                        />
-                        <paw:formSelect
-                            path="subcategoryId"
-                            label="${createModelSubcategoryLabel}"
-                            placeholder="${createModelSubcategoryPlaceholder}"
-                            items="${createModelSubcategoryOptions}"
-                            translateLabels="true"
-                            variant="outline"
-                            disabled="${empty createModelFilterForm.categoryId}"
-                        />
-                        <paw:button
-                            text="${createModelSubmit}"
-                            type="submit"
-                            variant="default"
-                            role="default"
-                            icon="plus"
-                            classname="w-full"
-                            disabled="${empty createModelFilterForm.categoryId}"
                         />
                     </div>
+                    <div class="flex-1 w-full">
+                        <paw:formSelect
+                            id="modelFilterCategoryId"
+                            path="filterCategoryId"
+                            label="${modelFilterCategoryLabel}"
+                            placeholder="${modelFilterAllLabel}"
+                            items="${categoryOptions}"
+                            translateLabels="true"
+                        />
+                    </div>
+                    <div class="flex-1 w-full">
+                        <paw:formSelect
+                            id="modelFilterSubcategoryId"
+                            path="filterSubcategoryId"
+                            label="${modelFilterSubcategoryLabel}"
+                            placeholder="${modelFilterAllLabel}"
+                            items="${modelFilterSubcategoryOptions}"
+                            translateLabels="true"
+                            disabled="${empty modelFilterForm.filterCategoryId}"
+                        />
+                    </div>
+                    <paw:button text="${modelFilterApplyLabel}" type="submit" variant="default" role="default" icon="search" classname="w-full sm:w-auto"/>
+                    <c:url value="/admin/catalog" var="clearModelFiltersUrl">
+                        <c:param name="page" value="${brandsPage.page}"/>
+                        <c:param name="sort" value="${currentSort.name()}"/>
+                        <c:param name="modelSort" value="${currentModelSort.name()}"/>
+                    </c:url>
+                    <paw:linkButton href="${clearModelFiltersUrl}" text="${modelFilterClearLabel}" variant="ghost" role="secondary" classname="w-full sm:w-auto"/>
                 </form:form>
-            </div>
-        </paw:card>
 
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="border-b border-black/10 text-left text-xs uppercase tracking-wide text-black/50">
+                                <th class="py-2 pr-4 font-medium">
+                                    <c:url value="/admin/catalog" var="modelIdSortUrl">
+                                        <c:if test="${not empty modelFilterForm.filterBrandId}"><c:param name="filterBrandId" value="${modelFilterForm.filterBrandId}"/></c:if>
+                                        <c:if test="${not empty modelFilterForm.filterCategoryId}"><c:param name="filterCategoryId" value="${modelFilterForm.filterCategoryId}"/></c:if>
+                                        <c:if test="${not empty modelFilterForm.filterSubcategoryId}"><c:param name="filterSubcategoryId" value="${modelFilterForm.filterSubcategoryId}"/></c:if>
+                                        <c:param name="page" value="${brandsPage.page}"/>
+                                        <c:param name="sort" value="${currentSort.name()}"/>
+                                        <c:param name="modelSort" value="${modelIdNextSort}"/>
+                                    </c:url>
+                                    <a href="${modelIdSortUrl}" class="inline-flex items-center gap-1 hover:text-black transition">
+                                        <c:out value="${modelIdLabel}"/>
+                                        <paw:icon name="${modelIdSortIcon}"/>
+                                    </a>
+                                </th>
+                                <th class="py-2 pr-4 font-medium">
+                                    <c:url value="/admin/catalog" var="modelNameSortUrl">
+                                        <c:if test="${not empty modelFilterForm.filterBrandId}"><c:param name="filterBrandId" value="${modelFilterForm.filterBrandId}"/></c:if>
+                                        <c:if test="${not empty modelFilterForm.filterCategoryId}"><c:param name="filterCategoryId" value="${modelFilterForm.filterCategoryId}"/></c:if>
+                                        <c:if test="${not empty modelFilterForm.filterSubcategoryId}"><c:param name="filterSubcategoryId" value="${modelFilterForm.filterSubcategoryId}"/></c:if>
+                                        <c:param name="page" value="${brandsPage.page}"/>
+                                        <c:param name="sort" value="${currentSort.name()}"/>
+                                        <c:param name="modelSort" value="${modelNameNextSort}"/>
+                                    </c:url>
+                                    <a href="${modelNameSortUrl}" class="inline-flex items-center gap-1 hover:text-black transition">
+                                        <c:out value="${modelNameLabel}"/>
+                                        <paw:icon name="${modelNameSortIcon}"/>
+                                    </a>
+                                </th>
+                                <th class="py-2 pr-4 font-medium"><c:out value="${modelBrandLabel}"/></th>
+                                <th class="py-2 pr-4 font-medium"><c:out value="${modelSubcategoryLabel}"/></th>
+                                <th class="py-2 text-right font-medium"><c:out value="${modelActionsLabel}"/></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <c:forEach var="model" items="${models}">
+                                <c:url value="/admin/catalog/models/${model.id}/edit" var="editModelUrl"/>
+                                <tr class="border-b border-black/5 last:border-0 align-top"
+                                    data-edit-action="${editModelUrl}"
+                                    data-model-name="<c:out value='${model.name}'/>"
+                                    data-brand-id="${model.brandId}"
+                                    data-subcategory-id="${model.subcategoryId}">
+                                    <td class="py-3 pr-4">
+                                        <span class="text-xs font-mono font-medium px-1.5 py-0.5 rounded bg-black/5 text-black/70">
+                                            #<c:out value="${model.id}"/>
+                                        </span>
+                                    </td>
+                                    <td class="py-3 pr-4 font-medium"><c:out value="${model.name}"/></td>
+                                    <td class="py-3 pr-4 text-black/70"><c:out value="${model.brandName}"/></td>
+                                    <td class="py-3 pr-4 text-black/70">
+                                        <spring:message code="subcategory.${model.subcategoryName}"/>
+                                    </td>
+                                    <td class="py-3">
+                                        <div class="flex flex-col items-end gap-1">
+                                            <div class="flex items-center justify-end gap-2">
+                                                <paw:button
+                                                    text="${editModelLabel}"
+                                                    type="button"
+                                                    variant="outline"
+                                                    size="sm"
+                                                    icon="pencil"
+                                                    onclick="openEditModelDialog(this)"
+                                                />
+                                                <c:if test="${not empty modelReplacementOptions[model.id]}">
+                                                    <paw:button
+                                                        text="${replaceModelLabel}"
+                                                        type="button"
+                                                        variant="outline"
+                                                        role="secondary"
+                                                        size="sm"
+                                                        icon="replace"
+                                                        onclick="document.getElementById('replaceModelDialog-${model.id}').showModal()"
+                                                    />
+                                                </c:if>
+                                                <c:choose>
+                                                    <c:when test="${model.hasListings}">
+                                                        <paw:button
+                                                            text="${deleteModelLabel}"
+                                                            type="button"
+                                                            variant="outline"
+                                                            role="danger"
+                                                            size="sm"
+                                                            icon="trash-2"
+                                                            disabled="true"
+                                                        />
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <paw:button
+                                                            text="${deleteModelLabel}"
+                                                            type="button"
+                                                            variant="outline"
+                                                            role="danger"
+                                                            size="sm"
+                                                            icon="trash-2"
+                                                            onclick="document.getElementById('deleteModelDialog-${model.id}').showModal()"
+                                                        />
+                                                    </c:otherwise>
+                                                </c:choose>
+                                            </div>
+                                            <c:if test="${model.hasListings}">
+                                                <p class="text-xs text-black/50 text-right">
+                                                    <c:out value="${deleteModelBlocked}"/>
+                                                </p>
+                                            </c:if>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </c:forEach>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="-mt-8 mb-4">
+                    <paw:pagination page="${modelsPage}" baseUrl="/admin/catalog" pageParam="modelPage"/>
+                </div>
+
+                <paw:divider />
+
+                <div id="create-model" class="mt-4 flex flex-col gap-2 scroll-mt-28">
+                    <h3 class="text-sm font-semibold"><c:out value="${createModelTitle}"/></h3>
+                    <form:form
+                        id="createModelFilterForm"
+                        modelAttribute="createModelFilterForm"
+                        action="${catalogUrl}#create-model"
+                        method="get"
+                        class="flex flex-col sm:flex-row gap-3 items-end"
+                    >
+                            <input type="hidden" name="page" value="${brandsPage.page}"/>
+                        <input type="hidden" name="sort" value="${currentSort.name()}"/>
+                        <input type="hidden" name="modelPage" value="${modelsPage.page}"/>
+                        <input type="hidden" name="modelSort" value="${currentModelSort.name()}"/>
+                        <input type="hidden" name="requestPage" value="${requestsPage.page}"/>
+                        <c:if test="${not empty modelFilterForm.filterBrandId}">
+                            <input type="hidden" name="filterBrandId" value="${modelFilterForm.filterBrandId}"/>
+                        </c:if>
+                        <c:if test="${not empty modelFilterForm.filterCategoryId}">
+                            <input type="hidden" name="filterCategoryId" value="${modelFilterForm.filterCategoryId}"/>
+                        </c:if>
+                        <c:if test="${not empty modelFilterForm.filterSubcategoryId}">
+                            <input type="hidden" name="filterSubcategoryId" value="${modelFilterForm.filterSubcategoryId}"/>
+                        </c:if>
+                        <div class="flex-1 w-full">
+                            <paw:formSelect
+                                id="createModelFilterCategoryId"
+                                path="categoryId"
+                                label="${createModelCategoryLabel}"
+                                placeholder="${createModelCategoryPlaceholder}"
+                                items="${categoryOptions}"
+                                translateLabels="true"
+                                variant="outline"
+                            />
+                        </div>
+                    </form:form>
+                    <c:url value="/admin/catalog/models" var="createModelUrl"/>
+                    <form:form
+                        modelAttribute="createModelForm"
+                        action="${createModelUrl}"
+                        method="post"
+                        class="flex flex-col gap-3"
+                    >
+                        <input type="hidden" name="redirect" value="<c:out value='${catalogReturnUrl}'/>"/>
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
+                            <paw:formInput
+                                path="name"
+                                label="${createModelNameLabel}"
+                                placeholder="${createModelNamePlaceholder}"
+                                variant="outline"
+                                disabled="${empty createModelFilterForm.categoryId}"
+                            />
+                            <paw:formSelect
+                                path="brandId"
+                                label="${createModelBrandLabel}"
+                                placeholder="${createModelBrandPlaceholder}"
+                                items="${brandOptions}"
+                                itemLabel="name"
+                                itemValue="id"
+                                variant="outline"
+                                disabled="${empty createModelFilterForm.categoryId}"
+                            />
+                            <paw:formSelect
+                                path="subcategoryId"
+                                label="${createModelSubcategoryLabel}"
+                                placeholder="${createModelSubcategoryPlaceholder}"
+                                items="${createModelSubcategoryOptions}"
+                                translateLabels="true"
+                                variant="outline"
+                                disabled="${empty createModelFilterForm.categoryId}"
+                            />
+                            <paw:button
+                                text="${createModelSubmit}"
+                                type="submit"
+                                variant="default"
+                                role="default"
+                                icon="plus"
+                                classname="w-full"
+                                disabled="${empty createModelFilterForm.categoryId}"
+                            />
+                        </div>
+                    </form:form>
+                </div>
+            </paw:card>
+        </div>
+        
         <c:forEach var="model" items="${models}">
             <c:url value="/admin/catalog/models/${model.id}/replace" var="replaceModelUrl"/>
             <c:url value="/admin/catalog/models/${model.id}/delete" var="deleteModelUrl"/>
