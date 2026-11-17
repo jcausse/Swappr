@@ -69,6 +69,15 @@ public class ListingServiceImpl implements ListingService {
 
     @Override
     public Page<Listing> search(ListingFilterDto dto) {
+        return search(dto, false);
+    }
+
+    @Override
+    public Page<Listing> searchForAdmin(ListingFilterDto dto) {
+        return search(dto, true);
+    }
+
+    private Page<Listing> search(ListingFilterDto dto, boolean forAdmin) {
         Objects.requireNonNull(dto, "ListingFilterDto cannot be null");
         LOGGER.debug("Searching listings: query='{}', categoryId={}, status={}, sort={}, page={}",
                 dto.query(), dto.categoryId(), dto.status(), dto.sort(), dto.page());
@@ -99,7 +108,7 @@ public class ListingServiceImpl implements ListingService {
             .yearMax(dto.yearMax())
             .build();
 
-        return listingDao.search(filter);
+        return forAdmin ? listingDao.searchForAdmin(filter) : listingDao.search(filter);
     }
 
     @Override

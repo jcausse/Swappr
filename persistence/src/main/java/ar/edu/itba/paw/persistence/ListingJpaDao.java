@@ -69,6 +69,15 @@ public class ListingJpaDao implements ListingDao {
 
     @Override
     public Page<Listing> search(ListingFilter filter) {
+        return search(filter, false);
+    }
+
+    @Override
+    public Page<Listing> searchForAdmin(ListingFilter filter) {
+        return search(filter, true);
+    }
+
+    private Page<Listing> search(ListingFilter filter, boolean fetchCreator) {
         final StringBuilder whereClause = new StringBuilder(" WHERE 1=1");
         final Map<String, Object> params = new HashMap<>();
         final StringBuilder nativeWhere = new StringBuilder(" WHERE 1=1");
@@ -202,12 +211,14 @@ public class ListingJpaDao implements ListingDao {
             return new Page<>(List.of(), page, pageSize, totalCount);
         }
 
+        final String creatorFetch = fetchCreator ? " JOIN FETCH l.creator" : "";
         final List<Listing> content = em.createQuery(
                 "SELECT l FROM Listing l"
                 + " JOIN FETCH l.model m"
                 + " JOIN FETCH m.brand"
                 + " JOIN FETCH m.subcategory s"
                 + " JOIN FETCH s.category"
+                + creatorFetch
                 + " WHERE l.id IN :ids"
                 + " ORDER BY " + resolveOrderBy(filter.getSort()), Listing.class)
                 .setParameter("ids", ids)
