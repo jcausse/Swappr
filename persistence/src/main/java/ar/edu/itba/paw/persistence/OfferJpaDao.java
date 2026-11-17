@@ -184,13 +184,15 @@ public class OfferJpaDao implements OfferDao {
      * them only for their immutable data (buyer, listing, offered listing), never to read the status.
      */
     @Override
-    public List<Offer> rejectPendingOffers(Long listingId, Long exceptOfferId) {
+    public List<Offer> rejectPendingOffers(Long listingId, Long exceptOfferId, boolean includePendingPayment) {
         final String pendingClause = exceptOfferId != null
-                ? " FROM Offer o WHERE o.listing.id = :listingId AND o.status = :status AND o.id <> :exceptOfferId"
-                : " FROM Offer o WHERE o.listing.id = :listingId AND o.status = :status";
+                ? " FROM Offer o WHERE o.listing.id = :listingId AND o.status IN :statuses AND o.id <> :exceptOfferId"
+                : " FROM Offer o WHERE o.listing.id = :listingId AND o.status IN :statuses";
         final TypedQuery<Long> idQuery = em.createQuery("SELECT o.id" + pendingClause, Long.class)
                 .setParameter("listingId", listingId)
-                .setParameter("status", OfferStatus.PENDING);
+                .setParameter("statuses", includePendingPayment
+                        ? List.of(OfferStatus.PENDING, OfferStatus.PENDING_PAYMENT)
+                        : List.of(OfferStatus.PENDING));
         if (exceptOfferId != null) {
             idQuery.setParameter("exceptOfferId", exceptOfferId);
         }
@@ -208,6 +210,17 @@ public class OfferJpaDao implements OfferDao {
         return em.createQuery("FROM Offer o WHERE o.id IN :ids", Offer.class)
                 .setParameter("ids", ids)
                 .getResultList();
+    }
+
+    @Override
+    public int rejectCancellableOffersForOfferedListing(Long offeredListingId) {
+        return em.createQuery(
+                        "UPDATE Offer o SET o.status = :rejected"
+                        + " WHERE o.offeredListing.id = :offeredListingId AND o.status IN :statuses")
+                .setParameter("rejected", OfferStatus.REJECTED)
+                .setParameter("offeredListingId", offeredListingId)
+                .setParameter("statuses", List.of(OfferStatus.PENDING, OfferStatus.PENDING_PAYMENT))
+                .executeUpdate();
     }
 
     @Override

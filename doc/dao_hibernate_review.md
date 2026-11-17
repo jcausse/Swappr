@@ -13,9 +13,9 @@ Severity groups: **1 = High**, **2 = Medium**, **3 = Low**.
 | Item | Brief description | Status |
 |---|---|---|
 | 1.1 | [SiteNotification page order restored in memory](#11-sitenotificationjpadaogetmatching-rebuilds-pagination-order-in-memory) | ✅ Done |
-| 1.2 | [Eager User.roles secondary selects](#12-eager-userroles-produces-a-hidden-secondary-select-per-distinct-user) | ❓ Decision needed |
+| 1.2 | [Eager User.roles secondary selects](#12-eager-userroles-produces-a-hidden-secondary-select-per-distinct-user) | 🕓 Open |
 | 1.3 | [Listing search does not fetch creator](#13-listingjpadaosearch-does-not-fetch-creator-but-admin-listings-renders-it) | 🕓 Open |
-| 1.4 | [rejectPendingOffers notification N+1](#14-offerjpadaorejectpendingoffers--notification-loop-is-an-n1) | ❓ Decision needed |
+| 1.4 | [rejectPendingOffers notification N+1](#14-offerjpadaorejectpendingoffers--notification-loop-is-an-n1) | 🕓 Open |
 | 2.1 | [hasListings JPQL pagination](#21-haslistings-paginates-a-jpql-query-rule-violation) | 🕓 Open |
 | 2.2 | [Unfetched associations (latent risk)](#22-returnedpaginated-entities-rely-on-callers-not-touching-unfetched-associations-latent-risk) | 🚫 Won't fix |
 | 2.3 | [Bulk writes bypass persistence context](#23-bulk-jpql-writes-bypass-the-persistence-context) | 🕓 Open |

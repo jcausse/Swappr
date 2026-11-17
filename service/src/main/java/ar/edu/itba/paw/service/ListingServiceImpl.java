@@ -335,4 +335,10 @@ public class ListingServiceImpl implements ListingService {
     public int releaseListingsHeldByBuyerPaymentOffers(Long userId) {
         return listingDao.releaseListingsHeldByBuyerPaymentOffers(userId);
     }
+
+    @Override
+    @Transactional
+    public int releaseListingsHeldByPendingPaymentTradeOffersForOfferedListing(Long offeredListingId) {
+        return listingDao.releaseListingsHeldByPendingPaymentTradeOffersForOfferedListing(offeredListingId);
+    }
 }
