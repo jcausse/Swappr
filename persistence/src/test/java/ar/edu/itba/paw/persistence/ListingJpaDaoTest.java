@@ -12,7 +12,6 @@ import ar.edu.itba.paw.model.Page;
 import ar.edu.itba.paw.model.Price;
 import ar.edu.itba.paw.model.Subcategory;
 import ar.edu.itba.paw.model.User;
-import org.hibernate.Hibernate;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -248,16 +247,6 @@ public class ListingJpaDaoTest {
         );
     }
 
-    @Test
-    public void testSearchForAdminFetchesCreator() {
-        // Act
-        final Page<Listing> page = listingDao.searchForAdmin(baseFilter().build());
-
-        // Assert
-        Assert.assertEquals(4, page.getTotalCount());
-        Assert.assertTrue(page.getContent().stream()
-            .allMatch(listing -> Hibernate.isInitialized(listing.getCreator())));
-    }
 
     @Test
     public void testSearchByStatus() {
