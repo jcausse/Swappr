@@ -16,7 +16,7 @@
             <span class="text-xs text-black/60 font-normal">
                 <c:out value="${offer.getProofOfPaymentExtension()}"/>
                 &nbsp;|&nbsp;
-                <c:out value="${offer.getProofOfPaymentSizeKb()}"/> KB
+                <spring:message code="file.size.kb"><spring:argument value="${offer.getProofOfPaymentSizeKb()}"/></spring:message>
             </span>
         </div>
     </paw:linkButton>
