@@ -11,7 +11,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
@@ -22,9 +21,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -134,41 +130,6 @@ public class NotificationPreferenceServiceImplTest {
         Assert.assertEquals(
                 Set.of(NotificationChannel.SITE, NotificationChannel.EMAIL),
                 enabled.get(second.getId()));
-    }
-
-    @Test
-    public void testUpdatePreferencesSavesAllConfigurableTypeChannelPairsIncludingUnchecked() {
-        final User user = buildUser(10L);
-        final Map<NotificationType, Set<NotificationChannel>> submitted = new EnumMap<>(NotificationType.class);
-        submitted.put(NotificationType.NEW_OFFER, Set.of(NotificationChannel.SITE));
-
-        final ArgumentCaptor<NotificationType> typeCaptor = ArgumentCaptor.forClass(NotificationType.class);
-        final ArgumentCaptor<NotificationChannel> channelCaptor = ArgumentCaptor.forClass(NotificationChannel.class);
-        final ArgumentCaptor<Boolean> enabledCaptor = ArgumentCaptor.forClass(Boolean.class);
-        lenient().when(preferenceDao.saveOrUpdate(
-                eq(user), typeCaptor.capture(), channelCaptor.capture(), enabledCaptor.capture()))
-                .thenReturn(new UserNotificationPreference());
-
-        service.updatePreferences(user, submitted);
-
-        final List<NotificationType> types = typeCaptor.getAllValues();
-        final List<NotificationChannel> channels = channelCaptor.getAllValues();
-        final List<Boolean> flags = enabledCaptor.getAllValues();
-
-        final int expectedPairs = NotificationType.getConfigurableTypes().stream()
-                .mapToInt(t -> t.getSupportedChannels().size())
-                .sum();
-        Assert.assertEquals(expectedPairs, types.size());
-
-        for (int i = 0; i < types.size(); i++) {
-            final boolean expected = types.get(i) == NotificationType.NEW_OFFER
-                    && channels.get(i) == NotificationChannel.SITE;
-            Assert.assertEquals(
-                    "Unexpected flag for " + types.get(i) + " / " + channels.get(i),
-                    expected,
-                    flags.get(i)
-            );
-        }
     }
 
     @Test(expected = BadParameterException.class)

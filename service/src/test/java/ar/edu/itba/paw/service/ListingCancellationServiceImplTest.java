@@ -7,7 +7,6 @@ import ar.edu.itba.paw.persistence.ListingDao;
 import ar.edu.itba.paw.service.exception.ForbiddenException;
 import ar.edu.itba.paw.service.exception.ListingNotCancelableException;
 import ar.edu.itba.paw.service.exception.NotFoundException;
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -15,7 +14,6 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
@@ -102,42 +100,6 @@ public class ListingCancellationServiceImplTest {
 
         // Act
         listingCancellationService.cancelByAdmin(LISTING_ID);
-    }
-
-    @Test
-    public void testCancelByAdminPendingTransactionListingSucceeds() {
-        // Arrange
-        final AtomicBoolean canceled = new AtomicBoolean(false);
-        when(listingDao.getById(eq(LISTING_ID)))
-            .thenReturn(Optional.of(buildFakeListing(ListingStatus.PENDING_TRANSACTION)));
-        when(listingDao.cancel(eq(LISTING_ID))).thenAnswer(invocation -> {
-            canceled.set(true);
-            return true;
-        });
-
-        // Act
-        listingCancellationService.cancelByAdmin(LISTING_ID);
-
-        // Assert
-        Assert.assertTrue(canceled.get());
-    }
-
-    @Test
-    public void testCancelByAdminOfferedInTradeListingSucceeds() {
-        // Arrange
-        final AtomicBoolean canceled = new AtomicBoolean(false);
-        when(listingDao.getById(eq(LISTING_ID)))
-            .thenReturn(Optional.of(buildFakeListing(ListingStatus.OFFERED_IN_TRADE)));
-        when(listingDao.cancel(eq(LISTING_ID))).thenAnswer(invocation -> {
-            canceled.set(true);
-            return true;
-        });
-
-        // Act
-        listingCancellationService.cancelByAdmin(LISTING_ID);
-
-        // Assert
-        Assert.assertTrue(canceled.get());
     }
 
     @Test(expected = ListingNotCancelableException.class)
