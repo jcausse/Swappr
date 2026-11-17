@@ -205,7 +205,21 @@ public class OfferJpaDao implements OfferDao {
                 .setParameter("ids", ids);
         update.executeUpdate();
 
-        return em.createQuery("FROM Offer o WHERE o.id IN :ids", Offer.class)
+        // Fetch every association the rejection notifications and emails read, so notifying each
+        // rejected offer does not trigger lazy loads (N+1).
+        return em.createQuery(
+                "SELECT DISTINCT o FROM Offer o"
+                + " JOIN FETCH o.listing l"
+                + " JOIN FETCH o.buyer"
+                + " LEFT JOIN FETCH o.offeredListing ol"
+                + " LEFT JOIN FETCH ol.model om"
+                + " LEFT JOIN FETCH om.brand"
+                + " LEFT JOIN FETCH ol.imageIds"
+                + " JOIN FETCH l.creator"
+                + " JOIN FETCH l.model m"
+                + " JOIN FETCH m.brand"
+                + " LEFT JOIN FETCH l.imageIds"
+                + " WHERE o.id IN :ids", Offer.class)
                 .setParameter("ids", ids)
                 .getResultList();
     }
