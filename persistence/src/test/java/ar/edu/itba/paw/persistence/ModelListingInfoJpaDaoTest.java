@@ -134,4 +134,28 @@ public class ModelListingInfoJpaDaoTest {
         Assert.assertEquals(Condition.EXCELLENT, info.getCondition());
         Assert.assertEquals(0, new BigDecimal("2000.00").compareTo(info.getMinPrice().getAmount()));
     }
+
+    @Test
+    public void testGetListingInfoSummaryPaginatesModelsAndOutOfRangeKeepsTotal() {
+        jdbcTemplate.update(
+                "INSERT INTO models (model_id, model_name, brand_id, subcategory_id) VALUES (?, ?, ?, ?)",
+                101L, "A Model", APPLE_BRAND_ID, LAPTOPS_SUBCATEGORY_ID);
+        jdbcTemplate.update(
+                "INSERT INTO listings (listing_id, title, description, creator_id, model_id, year, price, status, condition, accepts_trade)"
+                + " VALUES (?, ?, NULL, ?, ?, ?, ?, 'ACTIVE', 'GOOD', FALSE)",
+                901L, "A listing", 1L, 101L, 2023, new BigDecimal("100.00"));
+
+        final Page<ModelListingInfo> first = modelDao.getListingInfoSummary(
+                null, null, null, null, LAPTOPS_SUBCATEGORY_ID, 1, 1);
+        final Page<ModelListingInfo> second = modelDao.getListingInfoSummary(
+                null, null, null, null, LAPTOPS_SUBCATEGORY_ID, 2, 1);
+        final Page<ModelListingInfo> outOfRange = modelDao.getListingInfoSummary(
+                null, null, null, null, LAPTOPS_SUBCATEGORY_ID, 10, 1);
+
+        Assert.assertEquals(2, first.getTotalCount());
+        Assert.assertEquals(101L, (long) first.getContent().getFirst().getModelId());
+        Assert.assertEquals(1L, (long) second.getContent().getFirst().getModelId());
+        Assert.assertTrue(outOfRange.isEmpty());
+        Assert.assertEquals(2, outOfRange.getTotalCount());
+    }
 }

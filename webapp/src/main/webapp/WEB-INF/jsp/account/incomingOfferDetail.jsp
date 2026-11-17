@@ -32,7 +32,8 @@
                                 <spring:argument value="${offeredListing.brand.name}"/>
                                 <spring:argument value="${offeredListing.model.name}"/>
                                 <spring:argument value="${offeredListing.year}"/>
-                                <spring:argument value="${currencySymbol} ${offerAmount}"/>
+                                <spring:argument value="${currencySymbol}"/>
+                                <spring:argument value="${offerAmount}"/>
                                 <spring:argument value="${offer.listing.brand.name}"/>
                                 <spring:argument value="${offer.listing.model.name}"/>
                                 <spring:argument value="${offer.listing.year}"/>
@@ -62,7 +63,8 @@
                 <c:otherwise>
                     <spring:message code="offer.detail.title" var="title">
                         <spring:argument value="${offer.buyer.displayName}"/>
-                        <spring:argument value="${currencySymbol} ${offer.amount}"/>
+                        <spring:argument value="${currencySymbol}"/>
+                        <spring:argument value="${offer.amount}"/>
                         <spring:argument value="${offer.listing.brand.name}"/>
                         <spring:argument value="${offer.listing.model.name}"/>
                         <spring:argument value="${offer.listing.year}"/>
@@ -125,7 +127,10 @@
                     </div>
                 </div>
                 <c:if test="${offer.amount != null and offer.amount > 0.0}">
-                    <spring:message code="offer.tradePlusAmount" arguments="${currencySymbol} ${offer.amount}" var="plusAmountLabel"/>
+                    <spring:message code="offer.tradePlusAmount" var="plusAmountLabel">
+                        <spring:argument value="${currencySymbol}"/>
+                        <spring:argument value="${offer.amount}"/>
+                    </spring:message>
                     <span class="text-2xl text-end font-bold mt-2"><c:out value="${plusAmountLabel}"/></span>
                 </c:if>
             </c:if>

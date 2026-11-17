@@ -332,4 +332,21 @@ public class ModelJpaDaoTest {
         Assert.assertEquals(0, JdbcTestUtils.countRowsInTableWhere(
                 jdbcTemplate, "models", "brand_id = " + DELL_BRAND_ID));
     }
+
+    @Test
+    public void testGetWithInfoSecondPageSortedByName() {
+        final Page<ModelInfo> page = modelDao.getWithInfo(null, null, null, ModelSort.NAME_ASC, 2, 2);
+
+        Assert.assertEquals(2, page.getPage());
+        Assert.assertEquals(List.of("MacBook Air", "MacBook Pro"),
+                page.getContent().stream().map(ModelInfo::getName).toList());
+    }
+
+    @Test
+    public void testGetWithInfoOutOfRangePageIsEmptyButKeepsTotal() {
+        final Page<ModelInfo> page = modelDao.getWithInfo(null, null, null, ModelSort.NAME_ASC, 10, 2);
+
+        Assert.assertTrue(page.isEmpty());
+        Assert.assertEquals(6, page.getTotalCount());
+    }
 }

@@ -166,6 +166,22 @@ public class UserServiceImplTest {
         Assert.assertTrue(userService.isEmailTaken(USER_EMAIL));
     }
 
+    @Test
+    public void testGetByUsernameOrEmailUsesEmailWhenInputContainsAt() {
+        final User user = buildFakeUser();
+        when(userDao.getByEmail(eq(USER_EMAIL))).thenReturn(Optional.of(user));
+
+        Assert.assertEquals(Optional.of(user), userService.getByUsernameOrEmail(USER_EMAIL));
+    }
+
+    @Test
+    public void testGetByUsernameOrEmailUsesUsernameOtherwise() {
+        final User user = buildFakeUser();
+        when(userDao.getByUsername(eq(USER_USERNAME))).thenReturn(Optional.of(user));
+
+        Assert.assertEquals(Optional.of(user), userService.getByUsernameOrEmail(USER_USERNAME));
+    }
+
     /* ---------------------------------------------------------------------------------------------- */
     /* create                                                                                          */
     /* ---------------------------------------------------------------------------------------------- */
