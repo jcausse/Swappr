@@ -226,6 +226,8 @@ public class OfferJpaDao implements OfferDao {
                 .getResultList();
     }
 
+    // Bulk JPQL update: does not refresh offers already in the persistence context. Re-fetch
+    // (or refresh/detach) affected offers before reading them later in this transaction.
     @Override
     public int rejectCancellableOffersForOfferedListing(Long offeredListingId) {
         return em.createQuery(
@@ -237,6 +239,8 @@ public class OfferJpaDao implements OfferDao {
                 .executeUpdate();
     }
 
+    // Bulk JPQL update: does not refresh offers already in the persistence context. Re-fetch
+    // (or refresh/detach) affected offers before reading them later in this transaction.
     @Override
     public int rejectAllForParticipant(Long userId) {
         return em.createQuery(
@@ -329,6 +333,8 @@ public class OfferJpaDao implements OfferDao {
         return true;
     }
 
+    // Bulk JPQL update: does not refresh offers already in the persistence context. Re-fetch
+    // (or refresh/detach) affected offers before reading them later in this transaction.
     @Override
     public int setSellerRatings(List<Long> offerIds, OfferRating rating) {
         if (offerIds == null || offerIds.isEmpty()) return 0;
@@ -339,6 +345,8 @@ public class OfferJpaDao implements OfferDao {
                 .executeUpdate();
     }
 
+    // Bulk JPQL update: does not refresh offers already in the persistence context. Re-fetch
+    // (or refresh/detach) affected offers before reading them later in this transaction.
     @Override
     public int setBuyerRatings(List<Long> offerIds, OfferRating rating) {
         if (offerIds == null || offerIds.isEmpty()) return 0;

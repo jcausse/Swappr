@@ -282,6 +282,8 @@ public class ModelJpaDao implements ModelDao {
         return new Page<>(content, page, pageSize, totalCount);
     }
 
+    // Bulk JPQL writes: they do not refresh models already in the persistence context. Re-fetch
+    // (or refresh/detach) affected models before reading them later in this transaction.
     @Override
     public int replaceBrand(Long fromBrandId, Long toBrandId) {
         em.createQuery(

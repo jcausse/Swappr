@@ -196,6 +196,8 @@ public class UserJpaDao implements UserDao {
         incrementRatingCounters(increments, rating, false);
     }
 
+    // Bulk JPQL update: does not refresh users already in the persistence context. Re-fetch
+    // (or refresh/detach) affected users before reading them later in this transaction.
     private void incrementRatingCounters(Map<Long, Long> increments, OfferRating rating, boolean seller) {
         if (increments == null || increments.isEmpty()) return;
 

@@ -289,6 +289,8 @@ public class ListingJpaDao implements ListingDao {
         return true;
     }
 
+    // Bulk JPQL update: does not refresh listings already in the persistence context. Re-fetch
+    // (or refresh/detach) affected listings before reading them later in this transaction.
     @Override
     public int releaseOfferedListingsForParticipant(Long userId) {
         return em.createQuery(
@@ -303,6 +305,8 @@ public class ListingJpaDao implements ListingDao {
                 .executeUpdate();
     }
 
+    // Bulk JPQL update: does not refresh listings already in the persistence context. Re-fetch
+    // (or refresh/detach) affected listings before reading them later in this transaction.
     @Override
     public int releaseListingsHeldByBuyerPaymentOffers(Long userId) {
         return em.createQuery(
@@ -315,6 +319,8 @@ public class ListingJpaDao implements ListingDao {
                 .executeUpdate();
     }
 
+    // Bulk JPQL update: does not refresh listings already in the persistence context. Re-fetch
+    // (or refresh/detach) affected listings before reading them later in this transaction.
     @Override
     public int releaseListingsHeldByPendingPaymentTradeOffersForOfferedListing(Long offeredListingId) {
         return em.createQuery(
@@ -328,6 +334,8 @@ public class ListingJpaDao implements ListingDao {
                 .executeUpdate();
     }
 
+    // Bulk JPQL update: does not refresh listings already in the persistence context. Re-fetch
+    // (or refresh/detach) affected listings before reading them later in this transaction.
     @Override
     public int cancelAllByCreator(Long userId) {
         return em.createQuery(
@@ -340,6 +348,8 @@ public class ListingJpaDao implements ListingDao {
                 .executeUpdate();
     }
 
+    // Bulk JPQL update: does not refresh listings already in the persistence context. Re-fetch
+    // (or refresh/detach) affected listings before reading them later in this transaction.
     @Override
     public int replaceModel(Long fromModelId, Long toModelId) {
         final Model from = em.getReference(Model.class, fromModelId);
@@ -350,6 +360,8 @@ public class ListingJpaDao implements ListingDao {
                 .executeUpdate();
     }
 
+    // Bulk JPQL update: does not refresh listings already in the persistence context. Re-fetch
+    // (or refresh/detach) affected listings before reading them later in this transaction.
     @Override
     public int replaceSameNameModelsForBrands(Long fromBrandId, Long toBrandId) {
         // This is JPQL, not native SQL: the subquery in SET is a Hibernate extension that standard
@@ -380,6 +392,8 @@ public class ListingJpaDao implements ListingDao {
         }
     }
 
+    // Bulk JPQL update: does not refresh listings already in the persistence context. Re-fetch
+    // (or refresh/detach) affected listings before reading them later in this transaction.
     @Override
     public void updateStatusBulk(List<Long> ids, ListingStatus status) {
         if (ids == null || ids.isEmpty()) {
