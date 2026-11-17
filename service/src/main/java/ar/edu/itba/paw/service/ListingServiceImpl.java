@@ -323,4 +323,16 @@ public class ListingServiceImpl implements ListingService {
         LOGGER.debug("Bulk updating listing status: ids={}, newStatus={}", ids, status);
         listingDao.updateStatusBulk(ids, status);
     }
+
+    @Override
+    @Transactional
+    public int releaseOfferedListingsForParticipant(Long userId) {
+        return listingDao.releaseOfferedListingsForParticipant(userId);
+    }
+
+    @Override
+    @Transactional
+    public int releaseListingsHeldByBuyerPaymentOffers(Long userId) {
+        return listingDao.releaseListingsHeldByBuyerPaymentOffers(userId);
+    }
 }

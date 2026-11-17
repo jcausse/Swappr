@@ -33,12 +33,12 @@
                 <span class="text-xs text-black/60 font-normal">
                     <c:out value="${offer.getProofOfShippingExtension()}"/>
                     &nbsp;|&nbsp;
-                    <c:out value="${offer.getProofOfShippingSizeKb()}"/> KB
+                    <spring:message code="file.size.kb"><spring:argument value="${offer.getProofOfShippingSizeKb()}"/></spring:message>
                 </span>
             </div>
         </paw:linkButton>
         <c:if test="${offer.proofOfShippingIsImage()}">
-            <img src="${downloadUrl}" alt="<c:out value='${shippingLabel}'/>" class="max-w-full h-auto rounded-lg border border-black/10" />
+            <img src="<c:out value='${downloadUrl}'/>" alt="<c:out value='${shippingLabel}'/>" class="max-w-full h-auto rounded-lg border border-black/10" />
         </c:if>
     </c:if>
 </div>

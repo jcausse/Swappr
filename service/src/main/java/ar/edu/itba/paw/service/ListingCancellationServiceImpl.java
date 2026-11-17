@@ -54,4 +54,10 @@ public class ListingCancellationServiceImpl implements ListingCancellationServic
         }
         LOGGER.info("Listing canceled by Admin: id={}", id);
     }
+
+    @Override
+    @Transactional
+    public int cancelAllByCreator(Long userId) {
+        return listingDao.cancelAllByCreator(userId);
+    }
 }
