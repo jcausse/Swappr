@@ -94,7 +94,7 @@
     <c:if test="${isDisabled}">disabled</c:if>
     <c:if test="${isOn}">data-state="on"</c:if>
     <c:if test="${not empty onclick}">onclick="${onclick}"</c:if>
-    <c:if test="${not empty ariaLabel}">aria-label="${ariaLabel}"</c:if>
+    <c:if test="${not empty ariaLabel}">aria-label="<c:out value='${ariaLabel}'/>"</c:if>
     <c:if test="${not empty popovertarget}">popovertarget="${popovertarget}"</c:if>
 >
     <c:if test="${not empty icon}">

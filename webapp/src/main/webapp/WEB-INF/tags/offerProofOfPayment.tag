@@ -16,11 +16,11 @@
             <span class="text-xs text-black/60 font-normal">
                 <c:out value="${offer.getProofOfPaymentExtension()}"/>
                 &nbsp;|&nbsp;
-                <c:out value="${offer.getProofOfPaymentSizeKb()}"/> KB
+                <spring:message code="file.size.kb"><spring:argument value="${offer.getProofOfPaymentSizeKb()}"/></spring:message>
             </span>
         </div>
     </paw:linkButton>
     <c:if test="${offer.proofOfPaymentIsImage()}">
-        <img src="${downloadUrl}" alt="<c:out value='${proofOfPaymentLabel}'/>" class="max-w-full h-auto rounded-lg border border-black/10" />
+        <img src="<c:out value='${downloadUrl}'/>" alt="<c:out value='${proofOfPaymentLabel}'/>" class="max-w-full h-auto rounded-lg border border-black/10" />
     </c:if>
 </div>

@@ -29,4 +29,8 @@ public interface ListingService {
     void updateStatusBulk(List<Long> ids, ListingStatus status);
 
     Listing update(ListingUpdateDto dto, Long currentUserId);
+
+    int releaseOfferedListingsForParticipant(Long userId);
+
+    int releaseListingsHeldByBuyerPaymentOffers(Long userId);
 }

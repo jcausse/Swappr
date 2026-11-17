@@ -43,12 +43,12 @@
 | 3.10 | [No container error-page mappings for render-time exceptions](#310-no-container-error-page-mappings-for-render-time-exceptions) | 🕓 Open |
 | 3.11 | [Error JSPs declare DOCTYPE twice](#311-error-jsps-declare-doctype-twice) | ✅ Resolved |
 | 4.1 | [Emails/notifications dispatched before the transaction commits](#41-emails-and-notifications-are-dispatched-before-the-transaction-commits) | 🕓 Open |
-| 4.2 | [OfferService injects foreign DAOs and mutates user counters directly](#42-offerservice-injects-foreign-daos-and-mutates-user-counters-directly) | 🕓 Open |
+| 4.2 | [OfferService injects foreign DAOs and mutates user counters directly](#42-offerservice-injects-foreign-daos-and-mutates-user-counters-directly) | ✅ Resolved |
 | 4.3 | [OfferService.rate accepts a detached entity and relies on OSIV](#43-offerservicerate-accepts-a-detached-entity-and-relies-on-osiv) | ✅ Resolved |
 | 4.4 | [Notification loops query preferences once per recipient](#44-notification-loops-query-preferences-once-per-recipient) | ✅ Resolved |
 | 4.5 | [Business-action logging lives in controllers, before the action succeeds](#45-business-action-logging-lives-in-controllers-before-the-action-succeeds) | ✅ Resolved |
 | 4.6 | [ListingDao purchase/pendingTransaction have unused parameters and fake returns](#46-listingdao-purchasependingtransaction-have-unused-parameters-and-fake-returns) | ✅ Resolved |
-| 4.7 | [Move AdminServiceImpl bulk cleanup into owning services](#47-move-adminserviceimpl-bulk-cleanup-into-the-owning-services) | 🕓 Open |
+| 4.7 | [Move AdminServiceImpl bulk cleanup into owning services](#47-move-adminserviceimpl-bulk-cleanup-into-the-owning-services) | ✅ Resolved |
 | 5.1 | [Clearing display name on profile edit causes a 500](#51-clearing-display-name-on-profile-edit-causes-a-500) | ✅ Resolved |
 | 5.2 | [Missing users throw IllegalArgumentException instead of NotFoundException](#52-missing-users-throw-illegalargumentexception-instead-of-notfoundexception) | ✅ Resolved |
 | 5.3 | [Shipping tracking number has no max length](#53-shipping-tracking-number-has-no-max-length) | ✅ Resolved |
@@ -60,17 +60,17 @@
 | 5.9 | [Raw filename and unvalidated content type in response headers](#59-raw-filename-and-unvalidated-content-type-in-response-headers) | ✅ Resolved |
 | 5.10 | [Emails/usernames logged in clear text](#510-emails-and-usernames-are-logged-in-clear-text) | ✅ Resolved |
 | 6.1 | [Comma-containing display names are truncated in message arguments](#61-comma-containing-display-names-are-truncated-in-message-arguments) | 🕓 Open |
-| 6.2 | [Hardcoded “KB” unit in proof components](#62-hardcoded-kb-unit-in-proof-components) | 🕓 Open |
+| 6.2 | [Hardcoded “KB” unit in proof components](#62-hardcoded-kb-unit-in-proof-components) | ✅ Resolved |
 | 6.3 | [Translated fragments concatenated instead of parameterized](#63-translated-fragments-concatenated-instead-of-parameterized) | ✅ Resolved |
 | 6.4 | [Icon-only links, hidden radios and preference checkboxes are inaccessible](#64-icon-only-links-hidden-radios-and-preference-checkboxes-are-inaccessible) | 🕓 Open |
 | 6.5 | [Duplicate DOM ids in admin user forms](#65-duplicate-dom-ids-in-admin-user-forms) | 🕓 Open |
-| 6.6 | [Reusable tags render raw attributes without c:out](#66-reusable-tags-render-raw-attributes-without-cout) | 🕓 Open |
+| 6.6 | [Reusable tags render raw attributes without c:out](#66-reusable-tags-render-raw-attributes-without-cout) | ✅ Resolved |
 | 7.1 | [No tests for the riskiest service flows](#71-no-tests-for-the-riskiest-service-flows) | 🕓 Open |
 | 7.2 | [Missing DAO tests and only negative UserJpaDao coverage](#72-missing-dao-tests-and-only-negative-userjpadao-coverage) | 🕓 Open |
 | 7.3 | [Pagination tests do not exercise page 2 or RatingJpaDao](#73-pagination-tests-do-not-exercise-page-2-or-ratingjpadao) | 🕓 Open |
 | 7.4 | [HSQLDB test schema diverges from PostgreSQL](#74-hsqldb-test-schema-diverges-from-postgresql) | 🕓 Open |
 | 7.5 | [Migration edited before production push (unaffected DB)](#75-an-already-committed-migration-was-edited) | ✅ Resolved |
-| 7.6 | [Test Hibernate config dumps SQL and misspells format_sql](#76-test-hibernate-config-dumps-sql-and-misspells-format_sql) | 🕓 Open |
+| 7.6 | [Test Hibernate config dumps SQL and misspells format_sql](#76-test-hibernate-config-dumps-sql-and-misspells-format_sql) | ✅ Resolved |
 | 7.7 | [Outdated SLF4J/Logback and redundant logging deps](#77-obsolete-slf4jlogback-versions-and-redundant-logging-deps) | ⚠️ Decision needed |
 | 7.8 | [Plugin versions duplicated in child POMs](#78-plugin-versions-duplicated-in-every-child-pom) | ⚠️ Decision needed |
 | 7.9 | [Redundant Hibernate/JAXB dependencies and production JDBC declaration](#79-redundant-hibernatejaxb-dependencies-and-production-jdbc-declaration) | 🕓 Open |
@@ -386,9 +386,7 @@ Examples: `ListingController:370`, `OfferController:29,38,49,64`, `AdminControll
 
 ### 6.2 Hardcoded KB unit in proof components
 
-`offerProofOfPayment.tag:19` and `offerProofOfShipping.tag:34` render `<c:out value="${...SizeKb}"/> KB`. The unit is not localizable and the number is not locale-formatted.
-
-**Action:** add a message such as `file.size.kb={0} KB` and pass the size as an argument.
+**Resolved.** Added `file.size.kb={0} KB` to both bundles and used `<spring:message code="file.size.kb"><spring:argument .../></spring:message>` in `offerProofOfPayment.tag` and `offerProofOfShipping.tag` instead of the hardcoded `KB` suffix.
 
 ### 6.3 Translated fragments concatenated instead of parameterized
 
@@ -410,9 +408,7 @@ Examples: `ListingController:370`, `OfferController:29,38,49,64`, `AdminControll
 
 ### 6.6 Reusable tags render raw attributes without `c:out`
 
-Examples: `imageGallery.tag:21,27,52` (`src`, `id`), `listingCard.tag:29,34`, `listingImage.tag:30`, `offerProofOfPayment.tag:24`, `offerProofOfShipping.tag:39`, `button.tag:97` (`aria-label`), `listingCarousel.tag:36,62`. Current callers mostly pass `c:url` output or messages, so this is not currently exploitable, but the tag contract is not XSS-safe.
-
-**Action:** wrap attribute values in `<c:out>` inside the tags.
+**Resolved.** Wrapped the previously-raw `${...}` attribute values in `<c:out>` inside `imageGallery.tag` (`src`, `id` on both main images and thumbnails), `listingCard.tag` (`href`, `src`), `listingImage.tag` (`src`), `offerProofOfPayment.tag`/`offerProofOfShipping.tag` (the image preview `src`), `button.tag` (`aria-label`) and `listingCarousel.tag` (the scroll container `id` attribute). The `${id}` interpolations inside `onclick`/`<script>` JS string literals in `imageGallery.tag` and `listingCarousel.tag` were left as-is: `id` is always a literal passed by the calling page, never user input, and `<c:out>`'s HTML escaping is the wrong escaping strategy for a JS string context.
 
 ---
 
