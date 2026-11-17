@@ -10,6 +10,7 @@
 <div class="flex flex-col gap-2">
     <c:if test="${not empty offer.trackingNumber}">
         <spring:message code="offer.proofOfShipping.trackingNumberLabel" var="trackingLabel"/>
+        <spring:message code="offer.proofOfShipping.copyTrackingNumber" var="copyTrackingNumberLabel"/>
         <div class="flex-1 min-w-0">
             <p class="text-xs font-medium text-black/60"><c:out value="${trackingLabel}"/></p>
             <div class="flex items-center gap-2 mt-2">
@@ -17,6 +18,7 @@
                     <span id="trackingNumberText-${offer.id}"><c:out value="${offer.trackingNumber}"/></span>
                     <paw:button variant="ghost" icon="copy" classname="flex-shrink-0 ml-auto"
                         onclick="navigator.clipboard.writeText(document.querySelector('#trackingNumberText-${offer.id}').textContent); this.querySelector('i').className='icon-check'; setTimeout(() => this.querySelector('i').className='icon-copy', 2000);"
+                        ariaLabel="${copyTrackingNumberLabel}"
                     />
                 </div>
             </div>
@@ -31,12 +33,12 @@
                 <span class="text-xs text-black/60 font-normal">
                     <c:out value="${offer.getProofOfShippingExtension()}"/>
                     &nbsp;|&nbsp;
-                    <c:out value="${offer.getProofOfShippingSizeKb()}"/> KB
+                    <spring:message code="file.size.kb"><spring:argument value="${offer.getProofOfShippingSizeKb()}"/></spring:message>
                 </span>
             </div>
         </paw:linkButton>
         <c:if test="${offer.proofOfShippingIsImage()}">
-            <img src="${downloadUrl}" alt="<c:out value='${shippingLabel}'/>" class="max-w-full h-auto rounded-lg border border-black/10" />
+            <img src="<c:out value='${downloadUrl}'/>" alt="<c:out value='${shippingLabel}'/>" class="max-w-full h-auto rounded-lg border border-black/10" />
         </c:if>
     </c:if>
 </div>

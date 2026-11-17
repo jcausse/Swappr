@@ -13,7 +13,7 @@
 
 <div class="flex flex-row w-full gap-2 relative" id="${path}_base">
     <c:forEach var="option" items="${items}">
-        <form:radiobutton path="${path}" id="${path}_${option.getValue()}" value="${option.getValue()}" cssClass="hidden" />
+        <form:radiobutton path="${path}" id="${path}_${option.getValue()}" value="${option.getValue()}" cssClass="sr-only peer" />
         <c:choose>
             <c:when test="${isTranslateLabels}">
                 <spring:message code="${option.getLabel()}" var="optionLabel"/>

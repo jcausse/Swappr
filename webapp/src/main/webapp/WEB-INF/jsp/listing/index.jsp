@@ -41,7 +41,11 @@
                     <spring:message code="condition.${listing.condition}" var="conditionLabel"/>
                     <spring:message code="condition.description.${listing.condition}" var="conditionDescription"/>
                     <spring:message code="listing.detail.condition" var="conditionTitle"/>
-                    <paw:collapsible title="${conditionTitle} ${conditionLabel}" classname="w-full">
+                    <spring:message code="listing.detail.conditionWithLabel" var="conditionTitleWithLabel">
+                        <spring:argument value="${conditionTitle}"/>
+                        <spring:argument value="${conditionLabel}"/>
+                    </spring:message>
+                    <paw:collapsible title="${conditionTitleWithLabel}" classname="w-full">
                         <p class="text-sm text-black/70"><c:out value="${conditionDescription}"/></p>
                     </paw:collapsible>
 
@@ -97,7 +101,10 @@
                                     </c:when>
                                     <c:otherwise>
                                         <spring:message code="currency.symbol" var="currencySymbol"/>
-                                        <spring:message code="listing.detail.pendingOffer" arguments="${currencySymbol} ${userPendingOffer.get().amount}" var="pendingOfferMsg"/>
+                                        <spring:message code="listing.detail.pendingOffer" var="pendingOfferMsg">
+                                            <spring:argument value="${currencySymbol}"/>
+                                            <spring:argument value="${userPendingOffer.get().amount}"/>
+                                        </spring:message>
                                     </c:otherwise>
                                 </c:choose>
                                 <p class="text-black/60 text-sm"><c:out value="${pendingOfferMsg}"/></p>

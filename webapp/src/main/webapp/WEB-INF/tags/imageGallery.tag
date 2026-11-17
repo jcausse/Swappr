@@ -17,21 +17,21 @@
         <c:when test="${not empty images}">
             <div class="relative aspect-square w-full rounded-lg overflow-hidden border border-black/10 bg-neutral-200">
                 <img
-                    id="${id}_main_bg"
-                    src="${images[0]}"
+                    id="<c:out value='${id}'/>_main_bg"
+                    src="<c:out value='${images[0]}'/>"
                     alt=""
                     class="object-cover absolute inset-0 w-full h-full blur-2xl opacity-30"
                 />
                 <img
-                    id="${id}_main"
-                    src="${images[0]}"
+                    id="<c:out value='${id}'/>_main"
+                    src="<c:out value='${images[0]}'/>"
                     alt="<c:out value='${mainImageAlt}'/>"
                     class="w-full h-full object-contain relative"
                 />
             </div>
 
             <div
-                id="${id}_thumbnails"
+                id="<c:out value='${id}'/>_thumbnails"
                 class="flex gap-2 overflow-x-auto scroll-smooth p-2 -mx-2 [scrollbar-width:none]"
                 role="list"
                 aria-label="<c:out value='${thumbnailsLabel}'/>"
@@ -49,7 +49,7 @@
                         role="listitem"
                     >
                         <img
-                            src="${cleanImageUrl}"
+                            src="<c:out value='${cleanImageUrl}'/>"
                             alt=""
                             class="w-full h-full object-cover group-hover:scale-[1.05] transition"
                         />
