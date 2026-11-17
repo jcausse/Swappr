@@ -12,7 +12,7 @@ Severity groups: **1 = High**, **2 = Medium**, **3 = Low**.
 
 | Item | Brief description | Status |
 |---|---|---|
-| 1.1 | [SiteNotification page order restored in memory](#11-sitenotificationjpadaogetmatching-rebuilds-pagination-order-in-memory) | 🕓 Open |
+| 1.1 | [SiteNotification page order restored in memory](#11-sitenotificationjpadaogetmatching-rebuilds-pagination-order-in-memory) | ✅ Done |
 | 1.2 | [Eager User.roles secondary selects](#12-eager-userroles-produces-a-hidden-secondary-select-per-distinct-user) | ❓ Decision needed |
 | 1.3 | [Listing search does not fetch creator](#13-listingjpadaosearch-does-not-fetch-creator-but-admin-listings-renders-it) | 🕓 Open |
 | 1.4 | [rejectPendingOffers notification N+1](#14-offerjpadaorejectpendingoffers--notification-loop-is-an-n1) | ❓ Decision needed |
@@ -49,6 +49,8 @@ final List<SiteNotification> entities = ids.stream()
 `AGENTS.md` explicitly forbids restoring pagination order in memory. The population query must re-apply the same `ORDER BY created_at DESC, notification_id DESC` as the ID query.
 
 **Risk:** any future mapping/ordering change silently desynchronises the ID page order from the rendered order; the current code masks the missing SQL ordering instead of enforcing it.
+
+**Status:** resolved — the population query now re-applies the same `ORDER BY n.createdAt DESC, n.id DESC` as the ID query, and the in-memory reordering was removed.
 
 ### 1.2 Eager `User.roles` produces a hidden secondary SELECT per distinct user
 
