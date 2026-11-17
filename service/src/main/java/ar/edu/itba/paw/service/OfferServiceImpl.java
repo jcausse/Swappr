@@ -287,12 +287,12 @@ public class OfferServiceImpl implements OfferService {
         // Handle trade offer: set the offered listing to SOLD, then reject its competing offers
         if (offer.getOfferedListingId() != null) {
             listingService.updateStatus(offer.getOfferedListingId(), ListingStatus.SOLD);
-            rejectPendingOffersForListing(offer.getOfferedListingId(), null);
+            rejectPendingOffersForListing(offer.getOfferedListingId(), null, false);
         }
 
         listingService.pendingTransaction(offer.getListing().getId(), offer.getBuyer().getId(), offer.getMessage());
         offerDao.updateStatus(offerId, OfferStatus.PENDING_PAYMENT);
-        rejectPendingOffersForListing(offer.getListing().getId(), offerId);
+        rejectPendingOffersForListing(offer.getListing().getId(), offerId, false);
 
         LOGGER.info("Offer accepted: offerId={}, listingId={}, buyerId={}, sellerId={}",
                 offerId, offer.getListing().getId(), offer.getBuyer().getId(), currentUserId);
@@ -372,10 +372,11 @@ public class OfferServiceImpl implements OfferService {
         return offer;
     }
 
+    // Listing cancellation path: admin cancellation also rejects the PENDING_PAYMENT offer holding the listing.
     @Override
     @Transactional
-    public void rejectPendingOffersForListing(Long listingId, Long exceptOfferId) {
-        final List<Offer> rejected = offerDao.rejectPendingOffers(listingId, exceptOfferId);
+    public void rejectPendingOffersForListing(Long listingId, Long exceptOfferId, boolean includePendingPayment) {
+        final List<Offer> rejected = offerDao.rejectPendingOffers(listingId, exceptOfferId, includePendingPayment);
         LOGGER.info("Rejected {} pending offers for listing id={} (except offerId={})", rejected.size(), listingId, exceptOfferId);
         // Collect offered listing IDs to bulk update
         final List<Long> offeredListingIds = rejected.stream()
@@ -391,6 +392,19 @@ public class OfferServiceImpl implements OfferService {
         for (Offer offer : rejected) {
             notificationDispatcherService.notifyOfferRejected(offer);
         }
+    }
+
+    // Admin-cancellation edge case: an OFFERED_IN_TRADE listing may still be referenced by a trade
+    // offer; reject it silently (no notifications) and release any target listing it was holding.
+    @Override
+    @Transactional
+    public void rejectTradeOffersForOfferedListing(Long offeredListingId) {
+        // Reset the target listings of pending-payment trade offers before rejecting the offers
+        final int releasedListings = listingService
+                .releaseListingsHeldByPendingPaymentTradeOffersForOfferedListing(offeredListingId);
+        final int rejectedOffers = offerDao.rejectCancellableOffersForOfferedListing(offeredListingId);
+        LOGGER.info("Rejected {} trade offers referencing offered listing id={} and released {} listings",
+                rejectedOffers, offeredListingId, releasedListings);
     }
 
     private static void validateProofFile(final File partialFile) {

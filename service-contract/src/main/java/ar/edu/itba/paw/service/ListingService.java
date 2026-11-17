@@ -33,4 +33,10 @@ public interface ListingService {
     int releaseOfferedListingsForParticipant(Long userId);
 
     int releaseListingsHeldByBuyerPaymentOffers(Long userId);
+
+    /**
+     * Admin-cancellation edge case: releases the target listings held by PENDING_PAYMENT trade
+     * offers whose offered listing is the one being canceled.
+     */
+    int releaseListingsHeldByPendingPaymentTradeOffersForOfferedListing(Long offeredListingId);
 }
