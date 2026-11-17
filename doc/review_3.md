@@ -64,7 +64,7 @@
 | 6.3 | [Translated fragments concatenated instead of parameterized](#63-translated-fragments-concatenated-instead-of-parameterized) | 🕓 Open |
 | 6.4 | [Icon-only links, hidden radios and preference checkboxes are inaccessible](#64-icon-only-links-hidden-radios-and-preference-checkboxes-are-inaccessible) | 🕓 Open |
 | 6.5 | [Duplicate DOM ids in admin user forms](#65-duplicate-dom-ids-in-admin-user-forms) | 🕓 Open |
-| 6.6 | [Reusable tags render raw attributes without c:out](#66-reusable-tags-render-raw-attributes-without-cout) | 🕓 Open |
+| 6.6 | [Reusable tags render raw attributes without c:out](#66-reusable-tags-render-raw-attributes-without-cout) | ✅ Resolved |
 | 7.1 | [No tests for the riskiest service flows](#71-no-tests-for-the-riskiest-service-flows) | 🕓 Open |
 | 7.2 | [Missing DAO tests and only negative UserJpaDao coverage](#72-missing-dao-tests-and-only-negative-userjpadao-coverage) | 🕓 Open |
 | 7.3 | [Pagination tests do not exercise page 2 or RatingJpaDao](#73-pagination-tests-do-not-exercise-page-2-or-ratingjpadao) | 🕓 Open |
@@ -410,9 +410,7 @@ Examples: `product.tag:16` joins category and subcategory with ` / `; `listing/i
 
 ### 6.6 Reusable tags render raw attributes without `c:out`
 
-Examples: `imageGallery.tag:21,27,52` (`src`, `id`), `listingCard.tag:29,34`, `listingImage.tag:30`, `offerProofOfPayment.tag:24`, `offerProofOfShipping.tag:39`, `button.tag:97` (`aria-label`), `listingCarousel.tag:36,62`. Current callers mostly pass `c:url` output or messages, so this is not currently exploitable, but the tag contract is not XSS-safe.
-
-**Action:** wrap attribute values in `<c:out>` inside the tags.
+**Resolved.** Wrapped the previously-raw `${...}` attribute values in `<c:out>` inside `imageGallery.tag` (`src`, `id` on both main images and thumbnails), `listingCard.tag` (`href`, `src`), `listingImage.tag` (`src`), `offerProofOfPayment.tag`/`offerProofOfShipping.tag` (the image preview `src`), `button.tag` (`aria-label`) and `listingCarousel.tag` (the scroll container `id` attribute). The `${id}` interpolations inside `onclick`/`<script>` JS string literals in `imageGallery.tag` and `listingCarousel.tag` were left as-is: `id` is always a literal passed by the calling page, never user input, and `<c:out>`'s HTML escaping is the wrong escaping strategy for a JS string context.
 
 ---
 

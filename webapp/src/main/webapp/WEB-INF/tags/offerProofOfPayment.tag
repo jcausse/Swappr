@@ -21,6 +21,6 @@
         </div>
     </paw:linkButton>
     <c:if test="${offer.proofOfPaymentIsImage()}">
-        <img src="${downloadUrl}" alt="<c:out value='${proofOfPaymentLabel}'/>" class="max-w-full h-auto rounded-lg border border-black/10" />
+        <img src="<c:out value='${downloadUrl}'/>" alt="<c:out value='${proofOfPaymentLabel}'/>" class="max-w-full h-auto rounded-lg border border-black/10" />
     </c:if>
 </div>
