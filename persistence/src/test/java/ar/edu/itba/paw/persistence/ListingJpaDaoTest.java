@@ -247,7 +247,6 @@ public class ListingJpaDaoTest {
         );
     }
 
-
     @Test
     public void testSearchByStatus() {
         // Act
