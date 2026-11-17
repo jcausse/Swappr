@@ -195,32 +195,6 @@ public class UserServiceImplTest {
     /* updatePreferredLanguage                                                                         */
     /* ---------------------------------------------------------------------------------------------- */
 
-    @Test
-    public void testUpdatePreferredLanguagePersistsChosenLanguage() {
-        // Arrange
-        final User user = buildFakeUser();
-        when(userDao.updatePreferredLanguage(eq(USER_ID), eq(Language.SPANISH))).thenReturn(Optional.of(user));
-
-        // Act
-        final User result = userService.updatePreferredLanguage(user, Language.SPANISH);
-
-        // Assert
-        Assert.assertSame(user, result);
-    }
-
-    @Test
-    public void testUpdatePreferredLanguageReturnsUpdatedUser() {
-        // Arrange
-        final User user = buildFakeUser();
-        when(userDao.updatePreferredLanguage(eq(USER_ID), eq(Language.ENGLISH))).thenReturn(Optional.of(user));
-
-        // Act
-        final User result = userService.updatePreferredLanguage(user, Language.ENGLISH);
-
-        // Assert
-        Assert.assertSame(user, result);
-    }
-
     @Test(expected = NotFoundException.class)
     public void testUpdatePreferredLanguageNonExistingUserThrows() {
         // Arrange

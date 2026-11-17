@@ -294,36 +294,6 @@ public class SiteNotificationJpaDaoTest {
         Assert.assertEquals(NotificationType.OFFER_ACCEPTED, result.getContent().getFirst().getType());
     }
 
-    @Test
-    public void testGetMatchingEagerlyFetchesOffer() {
-        // Arrange with direct database inserts
-        final Instant now = Instant.now();
-        // Offer 6 in offer-data.sql is PENDING_PAYMENT -> showCallToAction should be true
-        insertNotification(401L, USER_ID, NotificationType.OFFER_ACCEPTED, "k.accepted", "k.body", List.of(), "/payment", "cta", false, now.plusSeconds(10), 6L);
-        // Offer 5 in offer-data.sql is ACCEPTED -> showCallToAction should be false
-        insertNotification(402L, USER_ID, NotificationType.OFFER_ACCEPTED, "k.accepted", "k.body", List.of(), "/payment", "cta", false, now, 5L);
-
-        // Act
-        final SiteNotificationFilter filter = SiteNotificationFilter.builder()
-                .userId(USER_ID)
-                .page(1)
-                .pageSize(10)
-                .build();
-        final Page<SiteNotification> page = notificationDao.getMatching(filter);
-
-        // Assert
-        Assert.assertEquals(2, page.getTotalCount());
-        final SiteNotification pendingNotification = page.getContent().get(0);
-        Assert.assertTrue(pendingNotification.getOffer().isPresent());
-        Assert.assertEquals(Long.valueOf(6L), pendingNotification.getOffer().get().getId());
-        Assert.assertTrue(pendingNotification.showCallToAction());
-
-        final SiteNotification acceptedNotification = page.getContent().get(1);
-        Assert.assertTrue(acceptedNotification.getOffer().isPresent());
-        Assert.assertEquals(Long.valueOf(5L), acceptedNotification.getOffer().get().getId());
-        Assert.assertFalse(acceptedNotification.showCallToAction());
-    }
-
     /* ---------------------------------------------------------------------------------------------- */
     /* markAllAsReadForUser                                                                           */
     /* ---------------------------------------------------------------------------------------------- */

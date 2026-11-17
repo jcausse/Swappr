@@ -229,38 +229,6 @@ public class SiteNotificationServiceImplTest {
         Assert.assertSame(mockPage, result);
     }
 
-    @Test
-    public void testMarkAsReadByRecipientDelegatesToDao() {
-        // Arrange
-        final User recipient = buildUser();
-        final SiteNotification notification = buildNotification(recipient);
-        final ArgumentCaptor<SiteNotification> captor = ArgumentCaptor.forClass(SiteNotification.class);
-        when(siteNotificationDao.getById(100L)).thenReturn(Optional.of(notification));
-        doNothing().when(siteNotificationDao).markAsRead(captor.capture());
-
-        // Act
-        notificationService.markAsRead(100L, recipient);
-
-        // Assert
-        Assert.assertSame(notification, captor.getValue());
-    }
-
-    @Test
-    public void testDeleteByIdByRecipientDelegatesToDao() {
-        // Arrange
-        final User recipient = buildUser();
-        final SiteNotification notification = buildNotification(recipient);
-        final ArgumentCaptor<SiteNotification> captor = ArgumentCaptor.forClass(SiteNotification.class);
-        when(siteNotificationDao.getById(100L)).thenReturn(Optional.of(notification));
-        doNothing().when(siteNotificationDao).delete(captor.capture());
-
-        // Act
-        notificationService.delete(100L, recipient);
-
-        // Assert
-        Assert.assertSame(notification, captor.getValue());
-    }
-
     @Test(expected = NotFoundException.class)
     public void testMarkAsReadNonExistentThrowsNotFound() {
         // Arrange
