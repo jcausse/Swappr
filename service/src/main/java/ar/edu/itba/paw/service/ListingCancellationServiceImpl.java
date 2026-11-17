@@ -32,10 +32,10 @@ public class ListingCancellationServiceImpl implements ListingCancellationServic
         if (!listing.isActive()) {
             throw new ListingNotCancelableException(id);
         }
-        offerService.rejectPendingOffersForListing(id, null);
         if (!listingDao.cancel(id)) {
             throw NotFoundException.createFor("Listing with ID " + id);
         }
+        offerService.rejectPendingOffersForListing(id, null);
         LOGGER.info("Listing canceled: id={}", id);
     }
 
@@ -48,10 +48,10 @@ public class ListingCancellationServiceImpl implements ListingCancellationServic
         if (!listing.canBeCanceledByAdmin()) {
             throw new ListingNotCancelableException(id);
         }
-        offerService.rejectPendingOffersForListing(id, null);
         if (!listingDao.cancel(id)) {
             throw NotFoundException.createFor("Listing with ID " + id);
         }
+        offerService.rejectPendingOffersForListing(id, null);
         LOGGER.info("Listing canceled by Admin: id={}", id);
     }
 
