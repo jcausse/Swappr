@@ -143,7 +143,7 @@
                     </c:forEach>
 
                     <%-- Pagination --%>
-                    <paw:pagination page="${listingsPage}" baseUrl="${listingsBaseUrl}"/>
+                    <paw:pagination page="${listingsPage}" baseUrl="/admin/listings"/>
                 </div>
             </c:otherwise>
         </c:choose>
