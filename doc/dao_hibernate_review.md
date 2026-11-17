@@ -15,7 +15,7 @@ Severity groups: **1 = High**, **2 = Medium**, **3 = Low**.
 | 1.1 | [SiteNotification page order restored in memory](#11-sitenotificationjpadaogetmatching-rebuilds-pagination-order-in-memory) | ✅ Done |
 | 1.2 | [Eager User.roles secondary selects](#12-eager-userroles-produces-a-hidden-secondary-select-per-distinct-user) | 🕓 Open |
 | 1.3 | [Listing search does not fetch creator](#13-listingjpadaosearch-does-not-fetch-creator-but-admin-listings-renders-it) | 🕓 Open |
-| 1.4 | [rejectPendingOffers notification N+1](#14-offerjpadaorejectpendingoffers--notification-loop-is-an-n1) | 🕓 Open |
+| 1.4 | [rejectPendingOffers notification N+1](#14-offerjpadaorejectpendingoffers--notification-loop-is-an-n1) | ✅ Done |
 | 2.1 | [hasListings JPQL pagination](#21-haslistings-paginates-a-jpql-query-rule-violation) | 🕓 Open |
 | 2.2 | [Unfetched associations (latent risk)](#22-returnedpaginated-entities-rely-on-callers-not-touching-unfetched-associations-latent-risk) | 🚫 Won't fix |
 | 2.3 | [Bulk writes bypass persistence context](#23-bulk-jpql-writes-bypass-the-persistence-context) | 🕓 Open |
@@ -86,6 +86,8 @@ return em.createQuery("FROM Offer o WHERE o.id IN :ids", Offer.class)
 ```
 
 It fetches no associations. `rejectPendingOffersForListing` then loops over every rejected offer and calls `notifyOfferRejected`, which reaches `OfferMailDto.from(offer)`: `buyer` (different per offer), `listing.creator`, `listing.model/brand`, `offeredListing` and `offeredListing.model/brand` are initialised lazily. Per-offer buyer and offered-listing loads make this an N+1 in the cancellation/rejection path.
+
+**Status:** resolved — the population query now `JOIN FETCH`es `buyer`, `listing` + `creator`/`model`/`brand`, `offeredListing` + `model`/`brand`, and both listings' `imageIds` (read by `ListingMailDto`), so the notification loop no longer lazy-loads per offer.
 
 ---
 
