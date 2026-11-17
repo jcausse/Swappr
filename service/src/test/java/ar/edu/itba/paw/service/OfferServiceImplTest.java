@@ -467,7 +467,7 @@ public class OfferServiceImplTest {
         givenOffer(tradeOffer);
 
         final List<Long> rejectedListingIds = new ArrayList<>();
-        when(offerDao.rejectPendingOffers(any(), isNull())).thenAnswer(invocation -> {
+        when(offerDao.rejectPendingOffers(any(), isNull(), eq(false))).thenAnswer(invocation -> {
             rejectedListingIds.add(invocation.getArgument(0));
             return List.of();
         });
@@ -563,7 +563,7 @@ public class OfferServiceImplTest {
                 ListingStatus.OFFERED_IN_TRADE, false))
             .build();
         final Offer cashOffer = offerBuilder(OfferStatus.REJECTED).id(OTHER_OFFER_ID).build();
-        when(offerDao.rejectPendingOffers(eq(LISTING_ID), isNull()))
+        when(offerDao.rejectPendingOffers(eq(LISTING_ID), isNull(), eq(false)))
             .thenReturn(List.of(tradeOffer, cashOffer));
 
         final List<Long> releasedListingIds = new ArrayList<>();
@@ -573,7 +573,7 @@ public class OfferServiceImplTest {
         }).when(listingService).updateStatusBulk(any(), eq(ListingStatus.ACTIVE));
 
         // Act
-        offerService.rejectPendingOffersForListing(LISTING_ID, null);
+        offerService.rejectPendingOffersForListing(LISTING_ID, null, false);
 
         // Assert
         Assert.assertEquals(List.of(OFFERED_LISTING_ID), releasedListingIds);

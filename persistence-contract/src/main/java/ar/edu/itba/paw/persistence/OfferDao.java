@@ -33,7 +33,9 @@ public interface OfferDao {
 
     boolean withdraw(Long offerId, Long buyerId);
 
-    List<Offer> rejectPendingOffers(Long listingId, Long exceptOfferId);
+    List<Offer> rejectPendingOffers(Long listingId, Long exceptOfferId, boolean includePendingPayment);
+
+    List<Offer> getCancellableOffersForOfferedListing(Long offeredListingId);
 
     int rejectAllForParticipant(Long userId);
 

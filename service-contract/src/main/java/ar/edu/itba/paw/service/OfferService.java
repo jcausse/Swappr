@@ -33,7 +33,9 @@ public interface OfferService {
 
     Offer withdraw(Long offerId, Long currentUserId);
 
-    void rejectPendingOffersForListing(Long listingId, Long exceptOfferId);
+    void rejectPendingOffersForListing(Long listingId, Long exceptOfferId, boolean includePendingPayment);
+
+    void rejectTradeOffersForOfferedListing(Long offeredListingId);
 
     int getPendingOffersCount(User seller);
 

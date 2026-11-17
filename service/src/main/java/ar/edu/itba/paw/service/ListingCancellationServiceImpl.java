@@ -1,5 +1,6 @@
 package ar.edu.itba.paw.service;
 
+import ar.edu.itba.paw.model.ListingStatus;
 import ar.edu.itba.paw.persistence.ListingDao;
 import ar.edu.itba.paw.service.exception.ForbiddenException;
 import ar.edu.itba.paw.service.exception.ListingNotCancelableException;
@@ -32,7 +33,7 @@ public class ListingCancellationServiceImpl implements ListingCancellationServic
         if (!listing.isActive()) {
             throw new ListingNotCancelableException(id);
         }
-        offerService.rejectPendingOffersForListing(id, null);
+        offerService.rejectPendingOffersForListing(id, null, false);
         if (!listingDao.cancel(id)) {
             throw NotFoundException.createFor("Listing with ID " + id);
         }
@@ -48,7 +49,7 @@ public class ListingCancellationServiceImpl implements ListingCancellationServic
         if (!listing.canBeCanceledByAdmin()) {
             throw new ListingNotCancelableException(id);
         }
-        offerService.rejectPendingOffersForListing(id, null);
+        offerService.rejectPendingOffersForListing(id, null, false);
         if (!listingDao.cancel(id)) {
             throw NotFoundException.createFor("Listing with ID " + id);
         }

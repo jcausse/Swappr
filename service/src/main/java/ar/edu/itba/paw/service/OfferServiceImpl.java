@@ -286,12 +286,12 @@ public class OfferServiceImpl implements OfferService {
 
         // Handle trade offer: reject competing offers on the offered listing, then set it to SOLD
         if (offer.getOfferedListingId() != null) {
-            rejectPendingOffersForListing(offer.getOfferedListingId(), null);
+            rejectPendingOffersForListing(offer.getOfferedListingId(), null, false);
             listingService.updateStatus(offer.getOfferedListingId(), ListingStatus.SOLD);
         }
 
         listingService.pendingTransaction(offer.getListing().getId(), offer.getBuyer().getId(), offer.getMessage());
-        rejectPendingOffersForListing(offer.getListing().getId(), offerId);
+        rejectPendingOffersForListing(offer.getListing().getId(), offerId, false);
         offerDao.updateStatus(offerId, OfferStatus.PENDING_PAYMENT);
 
         LOGGER.info("Offer accepted: offerId={}, listingId={}, buyerId={}, sellerId={}",
@@ -374,8 +374,8 @@ public class OfferServiceImpl implements OfferService {
 
     @Override
     @Transactional
-    public void rejectPendingOffersForListing(Long listingId, Long exceptOfferId) {
-        final List<Offer> rejected = offerDao.rejectPendingOffers(listingId, exceptOfferId);
+    public void rejectPendingOffersForListing(Long listingId, Long exceptOfferId, boolean includePendingPayment) {
+        final List<Offer> rejected = offerDao.rejectPendingOffers(listingId, exceptOfferId, includePendingPayment);
         LOGGER.info("Rejected {} pending offers for listing id={} (except offerId={})", rejected.size(), listingId, exceptOfferId);
         // Collect offered listing IDs to bulk update
         final List<Long> offeredListingIds = rejected.stream()
@@ -390,6 +390,20 @@ public class OfferServiceImpl implements OfferService {
 
         for (Offer offer : rejected) {
             notificationDispatcherService.notifyOfferRejected(offer);
+        }
+    }
+
+    @Override
+    @Transactional
+    public void rejectTradeOffersForOfferedListing(Long offeredListingId) {
+        final List<Offer> rejected = offerDao.getCancellableOffersForOfferedListing(offeredListingId);
+        LOGGER.info("Rejecting {} trade offers referencing offered listing id={}", rejected.size(), offeredListingId);
+
+        for (Offer offer : rejected) {
+            if (offer.isPendingPayment()) {
+                listingService.updateStatus(offer.getListing().getId(), ListingStatus.ACTIVE);
+            }
+            offerDao.updateStatus(offer.getId(), OfferStatus.REJECTED);
         }
     }
 
