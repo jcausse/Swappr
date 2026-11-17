@@ -12,7 +12,12 @@
 
 <div class="flex flex-col">
     <div class="${sizeClassnamesName} truncate"><c:out value="${model.brand.name}"/> <c:out value="${model.name}"/> (<c:out value="${year}"/>)</div>
+    <spring:message code="category.${model.subcategory.category.name}" var="categoryLabel"/>
+    <spring:message code="subcategory.${model.subcategory.name}" var="subcategoryLabel"/>
     <div class="${sizeClassnamesCategory} text-black/60 truncate">
-        <spring:message code="category.${model.subcategory.category.name}"/> / <spring:message code="subcategory.${model.subcategory.name}"/>
+        <spring:message code="product.categoryAndSubcategory">
+            <spring:argument value="${categoryLabel}"/>
+            <spring:argument value="${subcategoryLabel}"/>
+        </spring:message>
     </div>
 </div>

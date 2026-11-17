@@ -58,7 +58,10 @@
                             </paw:linkButton>
                             <c:if test="${offer.amount != null and offer.amount > 0.0}">
                                 <spring:message code="currency.symbol" var="currencySymbol"/>
-                                <spring:message code="offer.tradePlusAmount" arguments="${currencySymbol} ${offer.amount}" var="plusAmountLabel"/>
+                                <spring:message code="offer.tradePlusAmount" var="plusAmountLabel">
+                                    <spring:argument value="${currencySymbol}"/>
+                                    <spring:argument value="${offer.amount}"/>
+                                </spring:message>
                                 <span class="text-2xl font-bold"><c:out value="${plusAmountLabel}"/></span>
                             </c:if>
                         </div>

@@ -286,7 +286,6 @@ While you as an AI agent are allowed to edit this file on your own, you must **a
 - PostgreSQL with snake_case column names.
 - Table names are plural (e.g., `users`, `listings`).
 - `USER` is a reserved keyword in PostgreSQL — always use `users`.
-- Existence checks use `SELECT EXISTS(SELECT 1 FROM ...)` returning `Boolean.class`.
 - Table creations always use `CREATE TABLE IF NOT EXISTS`.
 
 ### Database Migrations (Flyway)

@@ -16,7 +16,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -57,6 +60,67 @@ public class OneTimePasswordServiceImplTest {
     /* ---------------------------------------------------------------------------------------------- */
     /* create                                                                                          */
     /* ---------------------------------------------------------------------------------------------- */
+
+    @Test
+    public void testVerifyAcceptsMatchingUnexpiredOtp() {
+        // Arrange
+        final User user = buildUser();
+        when(otpDao.getByUser(user)).thenReturn(Optional.of(buildOtp(Instant.now())));
+        when(passwordEncoder.matches(eq(PLAIN_OTP), eq(ENCODED_OTP))).thenReturn(true);
+
+        // Act
+        final var result = otpService.verify(user, PLAIN_OTP);
+
+        // Assert
+        Assert.assertEquals(OneTimePasswordVerificationResult.ACCEPTED, result);
+    }
+
+    @Test
+    public void testVerifyExpiresOldOtpAndDeletesIt() {
+        // Arrange
+        final User user = buildUser();
+        final AtomicBoolean deleted = new AtomicBoolean(false);
+        when(otpDao.getByUser(user)).thenReturn(Optional.of(
+            buildOtp(Instant.now().minus(16, ChronoUnit.MINUTES))));
+        doAnswer(invocation -> {
+            deleted.set(true);
+            return null;
+        }).when(otpDao).deleteIfPresentByUser(user);
+
+        // Act
+        final var result = otpService.verify(user, PLAIN_OTP);
+
+        // Assert
+        Assert.assertEquals(OneTimePasswordVerificationResult.EXPIRED, result);
+        Assert.assertTrue(deleted.get());
+    }
+
+    @Test
+    public void testVerifyRejectsWrongOtp() {
+        // Arrange
+        final User user = buildUser();
+        when(otpDao.getByUser(user)).thenReturn(Optional.of(buildOtp(Instant.now())));
+        when(passwordEncoder.matches(eq(PLAIN_OTP), eq(ENCODED_OTP))).thenReturn(false);
+
+        // Act
+        final var result = otpService.verify(user, PLAIN_OTP);
+
+        // Assert
+        Assert.assertEquals(OneTimePasswordVerificationResult.REJECTED, result);
+    }
+
+    @Test
+    public void testVerifyWithoutStoredOtpIsRejected() {
+        // Arrange
+        final User user = buildUser();
+        when(otpDao.getByUser(user)).thenReturn(Optional.empty());
+
+        // Act
+        final var result = otpService.verify(user, PLAIN_OTP);
+
+        // Assert
+        Assert.assertEquals(OneTimePasswordVerificationResult.REJECTED, result);
+    }
 
     @Test
     public void testCreateReturnsPlainOtpToCaller() {

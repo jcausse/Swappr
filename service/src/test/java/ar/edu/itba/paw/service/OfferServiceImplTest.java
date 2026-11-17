@@ -36,6 +36,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doAnswer;
@@ -793,6 +794,26 @@ public class OfferServiceImplTest {
 
         // Act
         offerService.rate(OFFER_ID, buildFakeUser(BUYER_ID), OfferRating.POSITIVE);
+    }
+
+    @Test
+    public void testRateByBuyerSetsSellerRatingAndIncrementsCounter() {
+        // Arrange
+        final Offer offer = buildFakeOffer(OfferStatus.ACCEPTED);
+        givenOffer(offer);
+        when(offerDao.setSellerRating(eq(OFFER_ID), eq(OfferRating.POSITIVE))).thenReturn(true);
+        final AtomicBoolean incremented = new AtomicBoolean(false);
+        doAnswer(invocation -> {
+            incremented.set(true);
+            return null;
+        }).when(userService).incrementSellerRatingCounter(eq(SELLER_ID), eq(OfferRating.POSITIVE));
+
+        // Act
+        final Offer result = offerService.rate(OFFER_ID, buildFakeUser(BUYER_ID), OfferRating.POSITIVE);
+
+        // Assert
+        Assert.assertEquals(Optional.of(OfferRating.POSITIVE), result.getSellerRating());
+        Assert.assertTrue(incremented.get());
     }
 
     @Test(expected = ForbiddenException.class)

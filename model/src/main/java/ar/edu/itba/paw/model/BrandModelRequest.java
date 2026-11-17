@@ -81,10 +81,6 @@ public class BrandModelRequest {
         return brand != null ? brand.getId() : null;
     }
 
-    public boolean isNewBrand() {
-        return type == BrandModelRequestType.NEW_BRAND;
-    }
-
     public String getRequestedBrandName() {
         return brand != null ? brand.getName() : brandName;
     }
