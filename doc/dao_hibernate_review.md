@@ -14,7 +14,7 @@ Severity groups: **1 = High**, **2 = Medium**, **3 = Low**.
 |---|---|---|
 | 1.1 | [SiteNotification page order restored in memory](#11-sitenotificationjpadaogetmatching-rebuilds-pagination-order-in-memory) | 🕓 Open |
 | 1.2 | [Eager User.roles secondary selects](#12-eager-userroles-produces-a-hidden-secondary-select-per-distinct-user) | 🕓 Open |
-| 1.3 | [Listing search does not fetch creator](#13-listingjpadaosearch-does-not-fetch-creator-but-admin-listings-renders-it) | 🕓 Open |
+| 1.3 | [Listing search does not fetch creator](#13-listingjpadaosearch-does-not-fetch-creator-but-admin-listings-renders-it) | ✅ Done |
 | 1.4 | [rejectPendingOffers notification N+1](#14-offerjpadaorejectpendingoffers--notification-loop-is-an-n1) | 🕓 Open |
 | 2.1 | [hasListings JPQL pagination](#21-haslistings-paginates-a-jpql-query-rule-violation) | 🕓 Open |
 | 2.2 | [Unfetched associations (latent risk)](#22-returnedpaginated-entities-rely-on-callers-not-touching-unfetched-associations-latent-risk) | 🚫 Won't fix |
@@ -70,6 +70,8 @@ final List<SiteNotification> entities = ids.stream()
 The population query fetch-joins model → brand → subcategory → category, but not `creator`. `AdminController#listings` uses `ListingService#search`, and the admin JSP reads `listing.creator.id` / `listing.creator.username`. That is a lazy load (plus the eager-roles select from 1.2) per listing row.
 
 Discovery/account/profile pages happen not to touch `creator`, so this is currently visible only on the admin page. With OSIV enabled it is an N+1; without OSIV it becomes a `LazyInitializationException`.
+
+**Status:** resolved — `ListingDao`/`ListingService` now expose `searchForAdmin` alongside `search`, both delegating to one private implementation with a `fetchCreator` intent flag; only the admin population query adds `JOIN FETCH l.creator`, so discovery/account/profile searches keep the previous query shape. `AdminController#listings` uses `searchForAdmin`.
 
 ### 1.4 `OfferJpaDao.rejectPendingOffers` + notification loop is an N+1
 
