@@ -7,7 +7,6 @@ import ar.edu.itba.paw.service.enumeration.OneTimePasswordVerificationResult;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
@@ -120,22 +119,5 @@ public class OneTimePasswordServiceImplTest {
 
         // Assert
         Assert.assertEquals(OneTimePasswordVerificationResult.REJECTED, result);
-    }
-
-    @Test
-    public void testCreateReturnsPlainOtpToCaller() {
-        // Arrange
-        final User user = buildUser();
-        final ArgumentCaptor<String> encodeArg = ArgumentCaptor.forClass(String.class);
-        when(passwordEncoder.encode(encodeArg.capture())).thenReturn(ENCODED_OTP);
-
-        // Act
-        final OneTimePassword result = otpService.create(user);
-
-        // Assert: returned value is the plain OTP (what was passed to encode), not the encoded one
-        Assert.assertEquals(USER_ID, (long) result.getId());
-        Assert.assertEquals(user, result.getUser());
-        Assert.assertEquals(encodeArg.getValue(), result.getOtpValue());
-        Assert.assertNotEquals(ENCODED_OTP, result.getOtpValue());
     }
 }

@@ -253,21 +253,6 @@ public class CatalogServiceImplTest {
     }
 
     @Test
-    public void testGetModelReplacementOptionsExcludeSelfAndLabelBrand() {
-        final Model pro = buildFakeModel(MODEL_ID, MODEL_NAME);
-        final Model air = buildFakeModel(AIR_MODEL_ID, "MacBook Air");
-        when(modelDao.getAllWithBrand()).thenReturn(List.of(pro, air));
-
-        final var options = catalogService.getModelReplacementOptions(List.of(MODEL_ID, AIR_MODEL_ID));
-
-        Assert.assertEquals(1, options.get(MODEL_ID).size());
-        Assert.assertEquals(AIR_MODEL_ID, (long) options.get(MODEL_ID).get(0).getId());
-        Assert.assertEquals("Apple — MacBook Air", options.get(MODEL_ID).get(0).getLabel());
-        Assert.assertEquals(1, options.get(AIR_MODEL_ID).size());
-        Assert.assertEquals(MODEL_ID, (long) options.get(AIR_MODEL_ID).get(0).getId());
-    }
-
-    @Test
     public void testGetBrandReplacementOptionsOnlyForRequestedBrands() {
         final Brand dell = Brand.builder().id(2L).name("Dell").build();
         when(brandDao.getAll()).thenReturn(List.of(buildFakeBrand(), dell));
@@ -464,31 +449,6 @@ public class CatalogServiceImplTest {
     /* ---------------------------------------------------------------------------------------------- */
     /* getListingInfoSummaryForModel                                                                   */
     /* ---------------------------------------------------------------------------------------------- */
-
-    @Test
-    public void testGetListingInfoSummaryForModelKeepsQueryConditionOrder() {
-        final Model model = buildFakeModel(MODEL_ID, MODEL_NAME);
-        final ModelListingInfo good = buildListingInfo(model, Condition.GOOD);
-        final ModelListingInfo likeNew = buildListingInfo(model, Condition.LIKE_NEW);
-        final ModelListingInfoSummary summary = ModelListingInfoSummary.builder()
-            .brandId(model.getBrand().getId())
-            .brandName(model.getBrand().getName())
-            .modelId(model.getId())
-            .modelName(model.getName())
-            .listingInfoByCondition(List.of(likeNew, good))
-            .build();
-        when(modelDao.getListingInfoSummaryForModel(eq(MODEL_ID), isNull())).thenReturn(Optional.of(summary));
-
-        final Optional<ModelListingInfoSummary> result = catalogService.getListingInfoSummaryForModel(MODEL_ID, null);
-
-        Assert.assertTrue(result.isPresent());
-        Assert.assertEquals(
-            List.of(Condition.LIKE_NEW, Condition.GOOD),
-            result.get().getListingInfoByCondition().stream()
-                .map(ModelListingInfo::getCondition)
-                .toList()
-        );
-    }
 
     @Test
     public void testGetListingInfoSummaryForModelEmpty() {

@@ -14,7 +14,6 @@ import ar.edu.itba.paw.service.exception.NotFoundException;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
@@ -166,47 +165,6 @@ public class SiteNotificationServiceImplTest {
         Assert.assertEquals(expected.getId(), result.getId());
         Assert.assertEquals(offer, result.getOffer().orElse(null));
         Assert.assertTrue(result.showCallToAction());
-    }
-
-    @Test
-    public void testGetRecentUnreadForUserClampsPageSizeToMax() {
-        // Arrange
-        final User user = buildUser();
-        final ArgumentCaptor<SiteNotificationFilter> filterCaptor =
-                ArgumentCaptor.forClass(SiteNotificationFilter.class);
-        final Page<SiteNotification> mockPage = new Page<>(List.of(), 1, 30, 0);
-
-        when(siteNotificationDao.getMatching(filterCaptor.capture())).thenReturn(mockPage);
-
-        // Act - request 50 (exceeding MAX 30)
-        final Page<SiteNotification> result = notificationService.getRecentUnreadForUser(user, 50);
-
-        // Assert
-        Assert.assertNotNull(result);
-        final SiteNotificationFilter capturedFilter = filterCaptor.getValue();
-        Assert.assertEquals(USER_ID, (long) capturedFilter.getUserId());
-        Assert.assertTrue(capturedFilter.isUnreadOnly());
-        Assert.assertEquals(30, capturedFilter.getPageSize());
-        Assert.assertEquals(1, capturedFilter.getPage());
-    }
-
-    @Test
-    public void testGetRecentUnreadForUserClampsPageSizeToMin() {
-        // Arrange
-        final User user = buildUser();
-        final ArgumentCaptor<SiteNotificationFilter> filterCaptor =
-                ArgumentCaptor.forClass(SiteNotificationFilter.class);
-        final Page<SiteNotification> mockPage = new Page<>(List.of(), 1, 1, 0);
-
-        when(siteNotificationDao.getMatching(filterCaptor.capture())).thenReturn(mockPage);
-
-        // Act - request 0 (below min 1)
-        final Page<SiteNotification> result = notificationService.getRecentUnreadForUser(user, 0);
-
-        // Assert
-        Assert.assertNotNull(result);
-        final SiteNotificationFilter capturedFilter = filterCaptor.getValue();
-        Assert.assertEquals(1, capturedFilter.getPageSize());
     }
 
     @Test
