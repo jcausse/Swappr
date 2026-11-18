@@ -42,7 +42,10 @@
                     path="categoryId"
                     label="${categoryLabel}"
                     placeholder="${categoryPlaceholder}"
-                    items="${categoryOptions}"
+                    items="${categories}"
+                    itemLabel="name"
+                    itemValue="id"
+                    labelPrefix="category."
                     translateLabels="true"
                 />
 
@@ -51,7 +54,10 @@
                         path="subcategoryId"
                         label="${subcategoryLabel}"
                         placeholder="${subcategoryPlaceholder}"
-                        items="${subcategoryOptions}"
+                        items="${subcategories}"
+                        itemLabel="name"
+                        itemValue="id"
+                        labelPrefix="subcategory."
                         translateLabels="true"
                     />
                 </c:if>

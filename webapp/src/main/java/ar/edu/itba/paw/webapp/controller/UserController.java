@@ -18,8 +18,6 @@ import ar.edu.itba.paw.webapp.auth.CurrentUser;
 import ar.edu.itba.paw.service.exception.UserNotFoundException;
 import ar.edu.itba.paw.webapp.form.RatingFilterForm;
 import ar.edu.itba.paw.webapp.form.StringSelectOption;
-import ar.edu.itba.paw.webapp.form.SelectOption;
-import ar.edu.itba.paw.webapp.form.SelectOptionFactory;
 import ar.edu.itba.paw.webapp.form.UserEditForm;
 import ar.edu.itba.paw.webapp.form.UserForm;
 import javax.validation.Valid;
@@ -138,7 +136,7 @@ public class UserController {
     private ModelAndView profileEditView(final User currentUser) {
         return new ModelAndView("profileEdit")
                 .addObject("user", currentUser)
-                .addObject("provinces", buildProvinceOptions())
+                .addObject("provinces", provinceService.getAll())
                 .addObject("languages", buildLanguageOptions());
     }
 
@@ -151,9 +149,6 @@ public class UserController {
                 .toList();
     }
 
-    private List<SelectOption> buildProvinceOptions() {
-        return SelectOptionFactory.provinces(provinceService.getAll());
-    }
 
     @PostMapping("/profile/edit")
     @PreAuthorize("isAuthenticated()")

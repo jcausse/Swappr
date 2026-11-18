@@ -41,7 +41,6 @@ import ar.edu.itba.paw.webapp.form.OfferFilterForm;
 import ar.edu.itba.paw.webapp.form.ProofOfPaymentUploadForm;
 import ar.edu.itba.paw.webapp.form.ProofOfShippingUploadForm;
 import ar.edu.itba.paw.webapp.form.RateForm;
-import ar.edu.itba.paw.webapp.form.SelectOptionFactory;
 import ar.edu.itba.paw.webapp.form.StringSelectOption;
 import lombok.RequiredArgsConstructor;
 
@@ -104,13 +103,13 @@ public class AccountController {
         final var filter = filterForm.toDto(currentUser.getId(), null, ACCOUNT_OFFERS_PAGE_SIZE);
         final var offerPage = offerService.get(filter, filter.statusGroup() == OfferStatusGroup.PENDING);
 
-        final var statusGroupOptions = SelectOptionFactory.offerStatusGroups();
+        final var statusGroups = Arrays.stream(OfferStatusGroup.values()).toList();
 
         var offerCountByStatus = getOfferCountByStatus(currentUser, true);
         return new ModelAndView("account/incomingOffers")
                 .addObject("offerPage", offerPage)
                 .addObject("offers", offerPage.getContent())
-                .addObject("statusGroupOptions", statusGroupOptions)
+                .addObject("statusGroups", statusGroups)
                 .addObject("offerCountByStatus", offerCountByStatus)
                 .addObject("pendingOffersCount", offerCountByStatus.get(OfferStatusGroup.PENDING.name()));
     }
@@ -123,12 +122,12 @@ public class AccountController {
         final var filter = filterForm.toDto(null, currentUser.getId(), ACCOUNT_OFFERS_PAGE_SIZE);
         final var offerPage = offerService.get(filter, false);
 
-        final var statusGroupOptions = SelectOptionFactory.offerStatusGroups();
+        final var statusGroups = Arrays.stream(OfferStatusGroup.values()).toList();
 
         return new ModelAndView("account/myOffers")
                 .addObject("offerPage", offerPage)
                 .addObject("offers", offerPage.getContent())
-                .addObject("statusGroupOptions", statusGroupOptions)
+                .addObject("statusGroups", statusGroups)
                 .addObject("offerCountByStatus", getOfferCountByStatus(currentUser, false))
                 .addObject("pendingOffersCount", offerService.getPendingOffersCount(currentUser));
     }

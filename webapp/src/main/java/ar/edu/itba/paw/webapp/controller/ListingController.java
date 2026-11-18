@@ -34,7 +34,6 @@ import ar.edu.itba.paw.webapp.form.ChooseProductForm;
 import ar.edu.itba.paw.webapp.form.ListingDetailsForm;
 import ar.edu.itba.paw.webapp.form.ListingFilterForm;
 import ar.edu.itba.paw.webapp.form.ProductSearchForm;
-import ar.edu.itba.paw.webapp.form.SelectOptionFactory;
 import ar.edu.itba.paw.webapp.form.StringSelectOption;
 import lombok.RequiredArgsConstructor;
 
@@ -74,12 +73,11 @@ public class ListingController {
 
         var categories = catalogService.getAllCategories();
         mav.addObject("categories", categories);
-        mav.addObject("categoryOptions", SelectOptionFactory.categories(categories));
-        mav.addObject("provinceOptions", SelectOptionFactory.provinces(provinceService.getAll()));
+        mav.addObject("provinces", provinceService.getAll());
 
         if (filterForm.getCategoryId() != null) {
-            mav.addObject("subcategoryOptions", SelectOptionFactory.subcategories(
-                catalogService.getSubcategoriesByCategory(filterForm.getCategoryId())));
+            mav.addObject("subcategories",
+                catalogService.getSubcategoriesByCategory(filterForm.getCategoryId()));
 
             if (filterForm.getSubcategoryId() != null) {
                 mav.addObject("brandOptions", catalogService.getBrandsBySubcategory(filterForm.getSubcategoryId()));
@@ -245,11 +243,10 @@ public class ListingController {
     private void populateModel(ModelAndView mav, ChooseProductForm form) {
         var categories = catalogService.getAllCategories();
         mav.addObject("categories", categories);
-        mav.addObject("categoryOptions", SelectOptionFactory.categories(categories));
 
         if (form.getCategoryId() != null) {
             var subcategories = catalogService.getSubcategoriesByCategory(form.getCategoryId());
-            mav.addObject("subcategoryOptions", SelectOptionFactory.subcategories(subcategories));
+            mav.addObject("subcategories", subcategories);
         }
 
         if (form.getSubcategoryId() != null) {
