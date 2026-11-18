@@ -111,7 +111,7 @@
                         <div class="relative" id="userMenu">
                             <paw:button id="userButton" variant="ghost" classname="justify-start text-start gap-3 h-14 min-w-40!" type="button">
                                 <div class="flex flex-row gap-2 items-center text-sm">
-                                    <paw:userAvatar user="${currentUser.get()}" size="8" />
+                                    <paw:userAvatar user="${currentUser.get()}" />
                                     <div class="flex flex-col">
                                         <p class="text-sm text-black font-normal"><c:out value="${currentUser.get().displayName}"/></p>
                                         <p class="text-xs text-black/60 font-normal"><c:out value="${currentUser.get().username}"/></p>
