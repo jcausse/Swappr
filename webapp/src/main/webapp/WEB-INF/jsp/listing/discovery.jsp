@@ -40,9 +40,9 @@
                 <div class="sticky top-24">
                     <paw:card title="${filtersTitle}">
                         <div class="flex flex-col gap-4">
-                            <paw:formSelect path="categoryId" label="${categoryLabel}" placeholder="${allLabel}" items="${categoryOptions}" translateLabels="true" />
-                            <c:if test="${not empty subcategoryOptions}">
-                                <paw:formSelect path="subcategoryId" label="${subcategoryLabel}" placeholder="${allLabel}" items="${subcategoryOptions}" translateLabels="true" />
+                            <paw:formSelect path="categoryId" label="${categoryLabel}" placeholder="${allLabel}" items="${categories}" itemLabel="name" itemValue="id" labelPrefix="category." translateLabels="true" />
+                            <c:if test="${not empty subcategories}">
+                                <paw:formSelect path="subcategoryId" label="${subcategoryLabel}" placeholder="${allLabel}" items="${subcategories}" itemLabel="name" itemValue="id" labelPrefix="subcategory." translateLabels="true" />
                             </c:if>
                             <c:if test="${not empty brandOptions}">
                                 <paw:formSelect path="brandId" label="${brandLabel}" placeholder="${allLabel}" items="${brandOptions}" />
@@ -53,7 +53,7 @@
 
                             <paw:formSelect path="condition" label="${conditionLabel}" placeholder="${allLabel}" items="${conditionOptions}" itemLabel="label" itemValue="value" translateLabels="true" />
 
-                            <paw:formSelect path="provinceId" label="${provinceLabel}" placeholder="${allLabel}" items="${provinceOptions}" translateLabels="true" />
+                            <paw:formSelect path="provinceId" label="${provinceLabel}" placeholder="${allLabel}" items="${provinces}" itemLabel="name" itemValue="id" labelPrefix="province." translateLabels="true" />
 
                             <c:if test="${not filterForm.onlyFree}">
                                 <div class="flex flex-row gap-2">

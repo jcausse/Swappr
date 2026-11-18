@@ -15,6 +15,10 @@ public enum OfferStatusGroup {
     @Getter
     private final String status;
 
+    public String getName() {
+        return name();
+    }
+
     public static OfferStatusGroup fromStatus(final OfferStatus status) {
         return Arrays.stream(OfferStatusGroup.values())
                 .filter(s -> s.toStatusList().contains(status))

@@ -8,6 +8,7 @@ import ar.edu.itba.paw.model.ListingStatus;
 import ar.edu.itba.paw.model.ModelSort;
 import ar.edu.itba.paw.model.OfferStatusGroup;
 import ar.edu.itba.paw.model.Role;
+import ar.edu.itba.paw.model.Subcategory;
 import ar.edu.itba.paw.model.User;
 import ar.edu.itba.paw.service.AdminService;
 import ar.edu.itba.paw.service.BrandModelRequestService;
@@ -34,7 +35,6 @@ import ar.edu.itba.paw.webapp.form.AdminRenameBrandForm;
 import ar.edu.itba.paw.webapp.form.AdminReplaceBrandForm;
 import ar.edu.itba.paw.webapp.form.AdminReplaceModelForm;
 import ar.edu.itba.paw.webapp.form.AdminUserFilterForm;
-import ar.edu.itba.paw.webapp.form.SelectOption;
 import ar.edu.itba.paw.webapp.form.StringSelectOption;
 import ar.edu.itba.paw.webapp.form.AdminSuspendUserForm;
 import ar.edu.itba.paw.webapp.form.AdminTakeDownListingForm;
@@ -128,16 +128,10 @@ public class AdminController {
                 .addObject("brandReplacementOptions", catalogService.getBrandReplacementOptions(
                         brandsPage.getContent().stream().map(BrandInfo::getId).toList()))
                 .addObject("brandOptions", allBrands)
-                .addObject("editModelSubcategoryOptions", catalogService.getAllSubcategories().stream()
-                        .map(subcategory -> new SelectOption(
-                                subcategory.getId(), "subcategory." + subcategory.getName()))
-                        .toList())
+                .addObject("editModelSubcategories", catalogService.getAllSubcategories())
                 .addObject("categories", categories)
-                .addObject("categoryOptions", categories.stream()
-                        .map(category -> new SelectOption(category.getId(), "category." + category.getName()))
-                        .toList())
-                .addObject("modelFilterSubcategoryOptions", subcategoryOptions(modelFilterForm.getFilterCategoryId()))
-                .addObject("createModelSubcategoryOptions", subcategoryOptions(createModelFilterForm.getCategoryId()))
+                .addObject("modelFilterSubcategories", subcategoryOptions(modelFilterForm.getFilterCategoryId()))
+                .addObject("createModelSubcategories", subcategoryOptions(createModelFilterForm.getCategoryId()))
                 .addObject("models", modelsPage.getContent())
                 .addObject("modelsPage", modelsPage)
                 .addObject("currentModelSort", modelSort)
@@ -194,14 +188,11 @@ public class AdminController {
         return new ModelAndView("redirect:" + RedirectHelper.appendQueryParam(target, key, code));
     }
 
-    private List<SelectOption> subcategoryOptions(Long categoryId) {
+    private List<Subcategory> subcategoryOptions(Long categoryId) {
         if (categoryId == null) {
             return List.of();
         }
-        return catalogService.getSubcategoriesByCategory(categoryId).stream()
-                .map(subcategory -> new SelectOption(
-                        subcategory.getId(), "subcategory." + subcategory.getName()))
-                .toList();
+        return catalogService.getSubcategoriesByCategory(categoryId);
     }
 
     @PostMapping("/catalog/requests/{id}/accept")
@@ -506,9 +497,7 @@ public class AdminController {
         ModelAndView mav = new ModelAndView("admin/offers");
         var filter = filterForm.toDto(page, DEFAULT_PAGE_SIZE);
         mav.addObject("offersPage", offerService.get(filter, false));
-        mav.addObject("statusGroupOptions", Arrays.stream(OfferStatusGroup.values())
-                .map(statusGroup -> new StringSelectOption(statusGroup.name(), "offer.statusGroup." + statusGroup.getStatus()))
-                .toList());
+        mav.addObject("statusGroups", Arrays.stream(OfferStatusGroup.values()).toList());
         mav.addObject("offersReturnUrl", buildOffersReturnUrl(page, filterForm));
         return mav;
     }

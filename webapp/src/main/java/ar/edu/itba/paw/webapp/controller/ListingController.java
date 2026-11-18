@@ -34,7 +34,6 @@ import ar.edu.itba.paw.webapp.form.ChooseProductForm;
 import ar.edu.itba.paw.webapp.form.ListingDetailsForm;
 import ar.edu.itba.paw.webapp.form.ListingFilterForm;
 import ar.edu.itba.paw.webapp.form.ProductSearchForm;
-import ar.edu.itba.paw.webapp.form.SelectOption;
 import ar.edu.itba.paw.webapp.form.StringSelectOption;
 import lombok.RequiredArgsConstructor;
 
@@ -74,18 +73,11 @@ public class ListingController {
 
         var categories = catalogService.getAllCategories();
         mav.addObject("categories", categories);
-        mav.addObject("categoryOptions", categories.stream()
-            .map(cat -> new SelectOption(cat.getId(), "category." + cat.getName()))
-            .toList());
-
-        mav.addObject("provinceOptions", provinceService.getAll().stream()
-            .map(province -> new SelectOption(province.getId(), "province." + province.getName()))
-            .toList());
+        mav.addObject("provinces", provinceService.getAll());
 
         if (filterForm.getCategoryId() != null) {
-            mav.addObject("subcategoryOptions", catalogService.getSubcategoriesByCategory(filterForm.getCategoryId()).stream()
-                .map(sub -> new SelectOption(sub.getId(), "subcategory." + sub.getName()))
-                .toList());
+            mav.addObject("subcategories",
+                catalogService.getSubcategoriesByCategory(filterForm.getCategoryId()));
 
             if (filterForm.getSubcategoryId() != null) {
                 mav.addObject("brandOptions", catalogService.getBrandsBySubcategory(filterForm.getSubcategoryId()));
@@ -251,15 +243,10 @@ public class ListingController {
     private void populateModel(ModelAndView mav, ChooseProductForm form) {
         var categories = catalogService.getAllCategories();
         mav.addObject("categories", categories);
-        mav.addObject("categoryOptions", categories.stream()
-            .map(cat -> new SelectOption(cat.getId(), "category." + cat.getName()))
-            .toList());
 
         if (form.getCategoryId() != null) {
             var subcategories = catalogService.getSubcategoriesByCategory(form.getCategoryId());
-            mav.addObject("subcategoryOptions", subcategories.stream()
-                .map(sub -> new SelectOption(sub.getId(), "subcategory." + sub.getName()))
-                .toList());
+            mav.addObject("subcategories", subcategories);
         }
 
         if (form.getSubcategoryId() != null) {

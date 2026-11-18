@@ -7,7 +7,6 @@ import ar.edu.itba.paw.service.exception.BrandModelRequestAlreadyExistsException
 import ar.edu.itba.paw.service.exception.ModelAlreadyExistsException;
 import ar.edu.itba.paw.webapp.auth.CurrentUser;
 import ar.edu.itba.paw.webapp.form.BrandModelRequestForm;
-import ar.edu.itba.paw.webapp.form.SelectOption;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -96,16 +95,11 @@ public class BrandModelRequestController {
         final var categories = catalogService.getAllCategories();
         final ModelAndView mav = new ModelAndView("catalogRequest/new")
                 .addObject("categories", categories)
-                .addObject("categoryOptions", categories.stream()
-                        .map(category -> new SelectOption(category.getId(), "category." + category.getName()))
-                        .toList())
                 .addObject("brandOptions", catalogService.getAllBrands());
 
         if (form.getCategoryId() != null) {
-            mav.addObject("subcategoryOptions", catalogService.getSubcategoriesByCategory(form.getCategoryId())
-                    .stream()
-                    .map(subcategory -> new SelectOption(subcategory.getId(), "subcategory." + subcategory.getName()))
-                    .toList());
+            mav.addObject("subcategories",
+                    catalogService.getSubcategoriesByCategory(form.getCategoryId()));
         }
 
         return mav;
