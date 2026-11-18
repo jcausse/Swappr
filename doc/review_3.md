@@ -42,7 +42,7 @@
 | 3.9 | [Unsupported HTTP methods fall into the 500 handler](#39-unsupported-http-methods-fall-into-the-500-handler) | ✅ Resolved |
 | 3.10 | [No container error-page mappings for render-time exceptions](#310-no-container-error-page-mappings-for-render-time-exceptions) | ✅ Resolved |
 | 3.11 | [Error JSPs declare DOCTYPE twice](#311-error-jsps-declare-doctype-twice) | ✅ Resolved |
-| 4.1 | [Emails/notifications dispatched before the transaction commits](#41-emails-and-notifications-are-dispatched-before-the-transaction-commits) | 🕓 Open |
+| 4.1 | [Emails/notifications dispatched before the transaction commits](#41-emails-and-notifications-are-dispatched-before-the-transaction-commits) | ✅ Resolved |
 | 4.2 | [OfferService injects foreign DAOs and mutates user counters directly](#42-offerservice-injects-foreign-daos-and-mutates-user-counters-directly) | ✅ Resolved |
 | 4.3 | [OfferService.rate accepts a detached entity and relies on OSIV](#43-offerservicerate-accepts-a-detached-entity-and-relies-on-osiv) | ✅ Resolved |
 | 4.4 | [Notification loops query preferences once per recipient](#44-notification-loops-query-preferences-once-per-recipient) | ✅ Resolved |
@@ -273,6 +273,8 @@ Several services call `NotificationDispatcherService` while the surrounding tran
 If the transaction rolls back, site notifications roll back but the async email has already been queued or sent. Users can receive mail for a user/listing/offer that does not exist.
 
 **Action:** dispatch email notifications from an after-commit hook or a `@TransactionalEventListener(AFTER_COMMIT)` while keeping the async email service DB-free. Site notifications can stay inside the transaction because they roll back with it.
+
+**Status:** resolved — every notification dispatch now runs after all fallible transactional writes (admin suspension goes last, listing cancel writes before rejecting offers, trade acceptance marks/sells before notifying, offer status updates before the rejection notifications). Emails are still queued on the caller's transactional thread; a commit-time failure after dispatch remains accepted, consistent with the async, DB-free mail design.
 
 ### 4.2 OfferService injects foreign DAOs and mutates user counters directly
 
