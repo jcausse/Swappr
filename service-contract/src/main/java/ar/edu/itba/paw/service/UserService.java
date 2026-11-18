@@ -35,6 +35,7 @@ public interface UserService {
 
     void addRole(User user, Role role);
     List<Role> getRoles(User user);
+    boolean isAdmin(User user);
 
     User suspend(Long userId);
     User unsuspend(Long userId);

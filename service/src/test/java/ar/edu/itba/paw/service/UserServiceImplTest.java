@@ -1,6 +1,7 @@
 package ar.edu.itba.paw.service;
 
 import ar.edu.itba.paw.model.Image;
+import ar.edu.itba.paw.model.Role;
 import ar.edu.itba.paw.model.User;
 import ar.edu.itba.paw.model.Language;
 import ar.edu.itba.paw.model.OneTimePassword;
@@ -332,5 +333,21 @@ public class UserServiceImplTest {
     public void testVerifyEmailNullOtpThrows() {
         // Act
         userService.verifyEmail(USER_USERNAME, null);
+    }
+
+    @Test
+    public void testIsAdminReturnsTrueWhenUserHasAdminRole() {
+        final User user = buildFakeUser();
+        when(userRoleDao.hasRole(eq(user), eq(Role.ADMIN))).thenReturn(true);
+
+        Assert.assertTrue(userService.isAdmin(user));
+    }
+
+    @Test
+    public void testIsAdminReturnsFalseWhenUserLacksAdminRole() {
+        final User user = buildFakeUser();
+        when(userRoleDao.hasRole(eq(user), eq(Role.ADMIN))).thenReturn(false);
+
+        Assert.assertFalse(userService.isAdmin(user));
     }
 }

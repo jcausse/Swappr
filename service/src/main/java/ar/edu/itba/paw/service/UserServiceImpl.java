@@ -255,6 +255,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public boolean isAdmin(@NonNull User user) {
+        return userRoleDao.hasRole(user, Role.ADMIN);
+    }
+
+    @Override
     @Transactional
     public User suspend(@NonNull Long userId) {
         LOGGER.info("Suspending user id={}", userId);
