@@ -46,6 +46,10 @@ public final class RedirectHelper {
      * Resolves the {@code Referer} header of {@code request} into a normalized context-relative path (preserving query
      * parameters) when it targets this host and context path and its decoded path satisfies
      * {@code allowedPathPredicate}; otherwise returns {@code fallbackPath}.
+     * <p>
+     * Scheme and port differences on the same host (e.g., {@code https://...:443} at a TLS-terminating reverse proxy
+     * vs {@code http://...:8080} on the app container) are intentionally allowed because the returned target is always
+     * stripped to a context-relative path.
      */
     public static String resolveReferer(
             final @NonNull HttpServletRequest request,
@@ -218,7 +222,7 @@ public final class RedirectHelper {
             return false;
         }
         final String forwardedHost = stripPort(firstHeaderToken(request.getHeader(FORWARDED_HOST_HEADER)));
-        return refererHost.equalsIgnoreCase(request.getServerName()) || (refererHost.equalsIgnoreCase(forwardedHost));
+        return refererHost.equalsIgnoreCase(request.getServerName()) || refererHost.equalsIgnoreCase(forwardedHost);
     }
 
     private static String stripPort(final String hostHeader) {

@@ -35,7 +35,7 @@ public class RedirectHelperTest {
     /* ---------------------------------------------------------------------------------------------- */
 
     @Test
-    public void testResolveRefererValidSameOriginCustomPortPreservesQuery() {
+    public void testResolveRefererValidSameHostCustomPortPreservesQuery() {
         final var request = buildDevRequest();
         request.addHeader("Referer", "http://localhost:8080/listing?categoryId=2&page=3");
 
@@ -99,6 +99,27 @@ public class RedirectHelperTest {
     }
 
     @Test
+    public void testResolveRefererBehindReverseProxyWithIpv6ForwardedHost() {
+        final var request = new MockHttpServletRequest();
+        request.setScheme("http");
+        request.setServerName("internal-backend");
+        request.setServerPort(8080);
+        request.setContextPath("");
+        request.addHeader("X-Forwarded-Host", "[::1]:443");
+        request.addHeader("Referer", "https://[::1]/listing?page=1");
+
+        Assert.assertEquals("/listing?page=1", RedirectHelper.resolveReferer(request, FALLBACK));
+    }
+
+    @Test
+    public void testResolveRefererAllowsSchemeAndPortDifferenceOnSameHost() {
+        final var request = buildDevRequest();
+        request.addHeader("Referer", "https://localhost:3000/listing");
+
+        Assert.assertEquals("/listing", RedirectHelper.resolveReferer(request, FALLBACK));
+    }
+
+    @Test
     public void testResolveRefererStripsUrlFragment() {
         final var request = buildDevRequest();
         request.addHeader("Referer", "http://localhost:8080/listing/10?tab=details#offers");
@@ -134,6 +155,12 @@ public class RedirectHelperTest {
         request.addHeader("Referer", "https://evil.com/phishing");
 
         Assert.assertEquals(FALLBACK, RedirectHelper.resolveReferer(request, FALLBACK));
+
+        final var proxiedRequest = buildDevRequest();
+        proxiedRequest.setContextPath(PAW_CONTEXT);
+        proxiedRequest.addHeader("X-Forwarded-Host", PAW_HOST);
+        proxiedRequest.addHeader("Referer", "https://evil.com/paw-2026b-08/listing");
+        Assert.assertEquals(FALLBACK, RedirectHelper.resolveReferer(proxiedRequest, FALLBACK));
     }
 
     @Test
