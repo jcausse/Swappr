@@ -129,7 +129,7 @@
                                 <spring:message code="navbar.profile" var="profileLabel" />
                                 <paw:linkButton href="${profileUrl}" text="${profileLabel}" variant="ghost" role="secondary" />
 
-                                <c:if test="${pageContext.request.isUserInRole('ADMIN')}">
+                                <c:if test="${isAdmin}">
                                     <c:url value="/admin" var="adminUrl"/>
                                     <spring:message code="navbar.admin" var="adminLabel" />
                                     <paw:linkButton href="${adminUrl}" text="${adminLabel}" variant="ghost" role="secondary" />

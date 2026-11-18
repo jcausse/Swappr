@@ -14,6 +14,7 @@ public class PermissionServiceImpl implements PermissionService {
     private final ListingService listingService;
     private final OfferService offerService;
     private final SiteNotificationService siteNotificationService;
+    private final UserService userService;
 
     @Override
     public boolean canManageListing(User user, long listingId) {
@@ -47,5 +48,10 @@ public class PermissionServiceImpl implements PermissionService {
         var notification = siteNotificationService.getById(notificationId)
                 .orElseThrow(() -> NotFoundException.createFor("Notification with ID " + notificationId));
         return notification.isRecipient(user);
+    }
+
+    @Override
+    public boolean isAdmin(User user) {
+        return user != null && userService.isAdmin(user);
     }
 }
