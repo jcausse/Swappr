@@ -489,6 +489,22 @@ public class ListingJpaDaoTest {
     }
 
     @Test
+    public void testSearchSortByNameIsCaseInsensitive() {
+        // Arrange: case-sensitive ordering would put "Banana" before "apple".
+        jdbcTemplate.update("UPDATE listings SET title = 'apple' WHERE listing_id = ?", MACBOOK_LISTING_ID);
+        jdbcTemplate.update("UPDATE listings SET title = 'Banana' WHERE listing_id = ?", GALAXY_LISTING_ID);
+        jdbcTemplate.update("UPDATE listings SET title = 'cherry' WHERE listing_id = ?", GAMING_LISTING_ID);
+
+        // Act
+        final Page<Listing> page = listingDao.search(
+            baseFilter().status(ListingStatus.ACTIVE).sort(ListingSort.NAME_ASC).build()
+        );
+
+        // Assert
+        Assert.assertEquals(List.of(MACBOOK_LISTING_ID, GALAXY_LISTING_ID, GAMING_LISTING_ID), idsOf(page));
+    }
+
+    @Test
     public void testSearchSortByMostPendingOffers() {
         // Act
         final Page<Listing> page = listingDao.search(
