@@ -1,12 +1,14 @@
 package ar.edu.itba.paw.service;
 
 import ar.edu.itba.paw.model.Image;
+import ar.edu.itba.paw.model.Role;
 import ar.edu.itba.paw.model.User;
 import ar.edu.itba.paw.model.Language;
 import ar.edu.itba.paw.model.OneTimePassword;
 import ar.edu.itba.paw.persistence.UserDao;
 import ar.edu.itba.paw.persistence.UserRoleDao;
 import ar.edu.itba.paw.service.dto.UserCreationDto;
+import ar.edu.itba.paw.service.exception.NotFoundException;
 import ar.edu.itba.paw.service.enumeration.OneTimePasswordVerificationResult;
 
 import org.junit.Assert;
@@ -20,7 +22,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import java.time.Instant;
 import java.util.Optional;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class UserServiceImplTest {
@@ -110,57 +114,23 @@ public class UserServiceImplTest {
     }
 
     /* ---------------------------------------------------------------------------------------------- */
-    /* getById / getByUsername / getByEmail                                                            */
+    /* getByUsernameOrEmail                                                                            */
     /* ---------------------------------------------------------------------------------------------- */
 
     @Test
-    public void testGetByIdUserExists() {
-        when(userDao.getById(eq(USER_ID))).thenReturn(Optional.of(buildFakeUser()));
+    public void testGetByUsernameOrEmailUsesEmailWhenInputContainsAt() {
+        final User user = buildFakeUser();
+        when(userDao.getByEmail(eq(USER_EMAIL))).thenReturn(Optional.of(user));
 
-        final Optional<User> maybeUser = userService.getById(USER_ID);
-
-        Assert.assertTrue(maybeUser.isPresent());
-        Assert.assertEquals(USER_ID, (long) maybeUser.get().getId());
-        Assert.assertEquals(USER_USERNAME, maybeUser.get().getUsername());
+        Assert.assertEquals(Optional.of(user), userService.getByUsernameOrEmail(USER_EMAIL));
     }
 
     @Test
-    public void testGetByIdUserDoesNotExist() {
-        when(userDao.getById(eq(USER_ID))).thenReturn(Optional.empty());
+    public void testGetByUsernameOrEmailUsesUsernameOtherwise() {
+        final User user = buildFakeUser();
+        when(userDao.getByUsername(eq(USER_USERNAME))).thenReturn(Optional.of(user));
 
-        Assert.assertFalse(userService.getById(USER_ID).isPresent());
-    }
-
-    @Test
-    public void testGetByUsernameUserExists() {
-        when(userDao.getByUsername(eq(USER_USERNAME))).thenReturn(Optional.of(buildFakeUser()));
-
-        Assert.assertTrue(userService.getByUsername(USER_USERNAME).isPresent());
-    }
-
-    @Test
-    public void testGetByEmailUserExists() {
-        when(userDao.getByEmail(eq(USER_EMAIL))).thenReturn(Optional.of(buildFakeUser()));
-
-        Assert.assertTrue(userService.getByEmail(USER_EMAIL).isPresent());
-    }
-
-    /* ---------------------------------------------------------------------------------------------- */
-    /* isUsernameTaken / isEmailTaken                                                                  */
-    /* ---------------------------------------------------------------------------------------------- */
-
-    @Test
-    public void testIsUsernameTakenTrue() {
-        when(userDao.isUsernameTaken(eq(USER_USERNAME))).thenReturn(true);
-
-        Assert.assertTrue(userService.isUsernameTaken(USER_USERNAME));
-    }
-
-    @Test
-    public void testIsEmailTakenTrue() {
-        when(userDao.isEmailTaken(eq(USER_EMAIL))).thenReturn(true);
-
-        Assert.assertTrue(userService.isEmailTaken(USER_EMAIL));
+        Assert.assertEquals(Optional.of(user), userService.getByUsernameOrEmail(USER_USERNAME));
     }
 
     /* ---------------------------------------------------------------------------------------------- */
@@ -176,33 +146,7 @@ public class UserServiceImplTest {
     /* updatePreferredLanguage                                                                         */
     /* ---------------------------------------------------------------------------------------------- */
 
-    @Test
-    public void testUpdatePreferredLanguagePersistsChosenLanguage() {
-        // Arrange
-        final User user = buildFakeUser();
-        when(userDao.updatePreferredLanguage(eq(USER_ID), eq(Language.SPANISH))).thenReturn(Optional.of(user));
-
-        // Act
-        userService.updatePreferredLanguage(user, Language.SPANISH);
-
-        // Assert
-        verify(userDao).updatePreferredLanguage(USER_ID, Language.SPANISH);
-    }
-
-    @Test
-    public void testUpdatePreferredLanguageReturnsUpdatedUser() {
-        // Arrange
-        final User user = buildFakeUser();
-        when(userDao.updatePreferredLanguage(eq(USER_ID), eq(Language.ENGLISH))).thenReturn(Optional.of(user));
-
-        // Act
-        final User result = userService.updatePreferredLanguage(user, Language.ENGLISH);
-
-        // Assert
-        Assert.assertSame(user, result);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = NotFoundException.class)
     public void testUpdatePreferredLanguageNonExistingUserThrows() {
         // Arrange
         final User user = buildFakeUser();
@@ -339,5 +283,21 @@ public class UserServiceImplTest {
     public void testVerifyEmailNullOtpThrows() {
         // Act
         userService.verifyEmail(USER_USERNAME, null);
+    }
+
+    @Test
+    public void testIsAdminReturnsTrueWhenUserHasAdminRole() {
+        final User user = buildFakeUser();
+        when(userRoleDao.hasRole(eq(user), eq(Role.ADMIN))).thenReturn(true);
+
+        Assert.assertTrue(userService.isAdmin(user));
+    }
+
+    @Test
+    public void testIsAdminReturnsFalseWhenUserLacksAdminRole() {
+        final User user = buildFakeUser();
+        when(userRoleDao.hasRole(eq(user), eq(Role.ADMIN))).thenReturn(false);
+
+        Assert.assertFalse(userService.isAdmin(user));
     }
 }

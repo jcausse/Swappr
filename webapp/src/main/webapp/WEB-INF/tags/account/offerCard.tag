@@ -20,7 +20,7 @@
             </c:when>
             <c:when test="${offer.status.name() == 'PENDING_PAYMENT'}">
                 <c:set var="statusClass" value="text-blue-600"/>
-                <spring:message code="${offer.offeredListing.present ? 'offer.status.PENDING_TRADE' : 'offer.status.PENDING_PAYMENT'}" var="statusLabel"/>
+                <spring:message code="${offer.forFreeListing ? 'offer.status.PENDING_DELIVERY' : (offer.offeredListing.present ? 'offer.status.PENDING_TRADE' : 'offer.status.PENDING_PAYMENT')}" var="statusLabel"/>
             </c:when>
         </c:choose>
         <paw:badge text="${statusLabel}" classname="ml-auto ${statusClass}" />
@@ -34,7 +34,7 @@
         <paw:listingImage listing="${offer.listing}" />
 
         <div class="flex-1 min-w-0 flex flex-col justify-between">
-            <paw:product product="${offer.listing.product}" size="sm" />
+            <paw:product model="${offer.listing.model}" year="${offer.listing.year}" size="sm" />
 
             <div class="mt-2 flex flex-row gap-4 items-end">
                 <div class="flex-1">
@@ -49,16 +49,19 @@
                                 <div class="flex-1 min-w-0">
                                     <p class="text-sm font-medium text-black truncate"><c:out value="${offeredListing.title}"/></p>
                                     <p class="text-xs text-black/60 font-normal">
-                                        <c:out value="${offeredListing.product.brand}"/>
-                                        <c:out value="${offeredListing.product.model}"/>
-                                        (<c:out value="${offeredListing.product.year}"/>)
+                                        <c:out value="${offeredListing.brand.name}"/>
+                                        <c:out value="${offeredListing.model.name}"/>
+                                        (<c:out value="${offeredListing.year}"/>)
                                     </p>
                                     <p class="text-xs text-black/60 font-normal"><paw:price amount="${offeredListing.price.amount}"/></p>
                                 </div>
                             </paw:linkButton>
                             <c:if test="${offer.amount != null and offer.amount > 0.0}">
                                 <spring:message code="currency.symbol" var="currencySymbol"/>
-                                <spring:message code="offer.tradePlusAmount" arguments="${currencySymbol} ${offer.amount}" var="plusAmountLabel"/>
+                                <spring:message code="offer.tradePlusAmount" var="plusAmountLabel">
+                                    <spring:argument value="${currencySymbol}"/>
+                                    <spring:argument value="${offer.amount}"/>
+                                </spring:message>
                                 <span class="text-2xl font-bold"><c:out value="${plusAmountLabel}"/></span>
                             </c:if>
                         </div>
@@ -97,12 +100,12 @@
         </div>
     </div>
 
-    <c:if test="${offer.hasOtherOffers && user == 'buyer'}">
+    <c:if test="${offer.hasOtherOffers && offer.isPending() && user == 'buyer'}">
         <spring:message code="${offer.hasBetterOffers ? 'offer.warning.betterOffers' : 'offer.warning.otherOffers'}" var="warningMsg"/>
         <paw:banner text="${warningMsg}" icon="triangle-alert" role="warning" />
     </c:if>
 
-    <c:if test="${offer.status.name() == 'PENDING_PAYMENT'}">
+    <c:if test="${offer.isPendingPayment()}">
         <c:choose>
             <c:when test="${user == 'buyer'}">
                 <spring:message code="offer.contactInfo.buyerEmail" var="buyerEmailLabel"/>

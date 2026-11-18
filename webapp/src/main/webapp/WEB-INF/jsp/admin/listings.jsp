@@ -18,7 +18,7 @@
         <spring:message code="admin.listings.takedown.desc" var="takedownCardDesc"/>
         <paw:card title="${takedownCardTitle}" subtitle="${takedownCardDesc}">
             <form:form method="post" action="${takedownListingUrl}" modelAttribute="takeDownListingForm" class="flex flex-col sm:flex-row gap-3 items-end mt-2">
-                <input type="hidden" name="redirect" value="/admin/listings?success=listing_takedown"/>
+                <input type="hidden" name="redirect" value="<c:out value='${listingsReturnUrl}'/>"/>
                 <div class="flex-1 w-full">
                     <spring:message code="admin.listings.takedown.idLabel" var="listingIdLabel"/>
                     <spring:message code="admin.listings.takedown.idPlaceholder" var="listingIdPlaceholder"/>
@@ -31,43 +31,22 @@
 
         <%-- Search and Filters --%>
         <paw:card>
-            <form method="get" action="${listingsBaseUrl}" class="flex flex-col sm:flex-row gap-3 items-end">
+            <form:form modelAttribute="filterForm" action="${listingsBaseUrl}" method="get" class="flex flex-col sm:flex-row gap-3 items-end">
                 <div class="flex-1 w-full">
                     <spring:message code="admin.listings.search.label" var="searchLabel"/>
                     <spring:message code="admin.listings.search.placeholder" var="searchPlaceholder"/>
-                    <div class="flex flex-col gap-1">
-                        <label for="admin-listing-search" class="text-xs text-black/70 font-medium">
-                            <c:out value="${searchLabel}"/>
-                        </label>
-                        <input id="admin-listing-search" name="query" type="text" value="<c:out value='${currentQuery}'/>" placeholder="${searchPlaceholder}"
-                               class="w-full px-3 py-2 rounded-lg text-sm border border-black/20 focus-visible:border-lime-600 focus-visible:outline-2"/>
-                    </div>
+                    <paw:formInput path="query" label="${searchLabel}" placeholder="${searchPlaceholder}" variant="outline"/>
                 </div>
 
                 <div class="w-full sm:w-48">
                     <spring:message code="admin.listings.status.label" var="statusFilterLabel"/>
-                    <div class="flex flex-col gap-1">
-                        <label for="admin-listing-status" class="text-xs text-black/70 font-medium">
-                            <c:out value="${statusFilterLabel}"/>
-                        </label>
-                        <select id="admin-listing-status" name="status" class="w-full px-3 py-2 rounded-lg text-sm border border-black/20 focus-visible:border-lime-600 focus-visible:outline-2 bg-white">
-                            <spring:message code="admin.listings.status.all" var="allStatusText"/>
-                            <spring:message code="listing.status.ACTIVE" var="statusActiveText"/>
-                            <spring:message code="listing.status.SOLD" var="statusSoldText"/>
-                            <spring:message code="listing.status.PENDING_TRANSACTION" var="statusPendingTxText"/>
-                            <spring:message code="listing.status.CANCELED" var="statusCanceledText"/>
-                            <option value="" ${empty currentStatus ? 'selected' : ''}><c:out value="${allStatusText}"/></option>
-                            <option value="ACTIVE" ${currentStatus.name() eq 'ACTIVE' ? 'selected' : ''}><c:out value="${statusActiveText}"/></option>
-                            <option value="SOLD" ${currentStatus.name() eq 'SOLD' ? 'selected' : ''}><c:out value="${statusSoldText}"/></option>
-                            <option value="PENDING_TRANSACTION" ${currentStatus.name() eq 'PENDING_TRANSACTION' ? 'selected' : ''}><c:out value="${statusPendingTxText}"/></option>
-                            <option value="CANCELED" ${currentStatus.name() eq 'CANCELED' ? 'selected' : ''}><c:out value="${statusCanceledText}"/></option>
-                        </select>
-                    </div>
+                    <spring:message code="admin.listings.status.all" var="allStatusText"/>
+                    <paw:formSelect path="status" label="${statusFilterLabel}" placeholder="${allStatusText}" items="${statusOptions}" itemLabel="label" itemValue="value" translateLabels="true"/>
                 </div>
 
                 <spring:message code="admin.listings.search.submit" var="submitSearch"/>
                 <paw:button text="${submitSearch}" type="submit" variant="default" role="default" icon="search" classname="w-full sm:w-auto"/>
-            </form>
+            </form:form>
         </paw:card>
 
         <%-- Listings List --%>
@@ -103,6 +82,10 @@
                             <c:when test="${listing.status.name() == 'PENDING_TRANSACTION'}">
                                 <c:set var="statusBadgeClass" value="text-blue-600 bg-blue-50 border-blue-200"/>
                                 <spring:message code="listing.status.PENDING_TRANSACTION" var="statusBadgeText"/>
+                            </c:when>
+                            <c:when test="${listing.status.name() == 'OFFERED_IN_TRADE'}">
+                                <c:set var="statusBadgeClass" value="text-purple-600 bg-purple-50 border-purple-200"/>
+                                <spring:message code="listing.status.OFFERED_IN_TRADE" var="statusBadgeText"/>
                             </c:when>
                             <c:when test="${listing.status.name() == 'CANCELED'}">
                                 <c:set var="statusBadgeClass" value="text-red-600 bg-red-50 border-red-200"/>
@@ -147,9 +130,9 @@
                                     <spring:message code="admin.listings.view" var="viewListingText"/>
                                     <paw:linkButton href="${listingViewUrl}" text="${viewListingText}" variant="outline" size="sm" icon="external-link"/>
 
-                                    <c:if test="${listing.status.name() ne 'CANCELED' and listing.status.name() ne 'SOLD'}">
+                                    <c:if test="${listing.canBeCanceledByAdmin()}">
                                         <form method="post" action="${takedownActionUrl}">
-                                            <input type="hidden" name="redirect" value="/admin/listings?page=${listingsPage.page}&query=<c:out value='${currentQuery}'/>&status=<c:out value='${currentStatus}'/>"/>
+                                            <input type="hidden" name="redirect" value="<c:out value='${listingsReturnUrl}'/>"/>
                                             <spring:message code="admin.listings.takedown.btn" var="takeDownBtnText"/>
                                             <paw:button text="${takeDownBtnText}" type="submit" variant="outline" role="danger" size="sm" icon="trash-2"/>
                                         </form>
@@ -160,7 +143,7 @@
                     </c:forEach>
 
                     <%-- Pagination --%>
-                    <paw:pagination page="${listingsPage}" baseUrl="${listingsBaseUrl}"/>
+                    <paw:pagination page="${listingsPage}" baseUrl="/admin/listings"/>
                 </div>
             </c:otherwise>
         </c:choose>

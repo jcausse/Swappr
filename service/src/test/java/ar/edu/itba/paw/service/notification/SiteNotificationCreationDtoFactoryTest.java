@@ -1,6 +1,17 @@
 package ar.edu.itba.paw.service.notification;
 
-import ar.edu.itba.paw.model.*;
+import ar.edu.itba.paw.model.Brand;
+import ar.edu.itba.paw.model.BrandModelRequest;
+import ar.edu.itba.paw.model.BrandModelRequestType;
+import ar.edu.itba.paw.model.Condition;
+import ar.edu.itba.paw.model.Listing;
+import ar.edu.itba.paw.model.ListingStatus;
+import ar.edu.itba.paw.model.Model;
+import ar.edu.itba.paw.model.Offer;
+import ar.edu.itba.paw.model.OfferStatus;
+import ar.edu.itba.paw.model.Price;
+import ar.edu.itba.paw.model.User;
+import ar.edu.itba.paw.model.notification.NotificationType;
 import ar.edu.itba.paw.service.dto.SiteNotificationCreationDto;
 import org.junit.Assert;
 import org.junit.Test;
@@ -28,6 +39,7 @@ public class SiteNotificationCreationDtoFactoryTest {
         Assert.assertEquals(List.of("Seller Ana", "MacBook Pro 14"), dto.bodyArgs());
         Assert.assertEquals("/account/my-offers?statusGroup=RESOLVED", dto.actionUrl());
         Assert.assertEquals("notification.purchaseConfirmed.cta", dto.actionLabelKey());
+        Assert.assertNull(dto.offer());
     }
 
     @Test
@@ -38,6 +50,8 @@ public class SiteNotificationCreationDtoFactoryTest {
         Assert.assertEquals("notification.newOffer.body", cashDto.bodyKey());
         Assert.assertEquals(List.of("Buyer Bob", "250.00", "MacBook Pro 14"), cashDto.bodyArgs());
         Assert.assertEquals("/account/incoming-offers/500", cashDto.actionUrl());
+        Assert.assertNotNull(cashDto.offer());
+        Assert.assertEquals(Long.valueOf(500L), cashDto.offer().getId());
 
         final SiteNotificationCreationDto pureTradeDto =
                 SiteNotificationCreationDtoFactory.newOffer(buildOffer(501L, OFFERED_LISTING, BigDecimal.ZERO, null));
@@ -51,6 +65,36 @@ public class SiteNotificationCreationDtoFactoryTest {
     }
 
     @Test
+    public void testOfferAcceptedForFreeListingUsesDeliveryKeysAndSkipsPaymentPage() {
+        final Listing freeListing = Listing.builder()
+                .id(101L)
+                .title("Free Bookshelf")
+                .creator(SELLER)
+                .price(new Price(BigDecimal.ZERO))
+                .condition(Condition.LIKE_NEW)
+                .status(ListingStatus.ACTIVE)
+                .build();
+        final Offer interest = Offer.builder()
+                .id(603L)
+                .listing(freeListing)
+                .buyer(BUYER)
+                .amount(BigDecimal.ZERO)
+                .isFullPrice(true)
+                .status(OfferStatus.PENDING_PAYMENT)
+                .createdAt(Instant.now())
+                .build();
+
+        final SiteNotificationCreationDto dto = SiteNotificationCreationDtoFactory.offerAccepted(interest);
+
+        Assert.assertSame(BUYER, dto.notificationRecipient());
+        Assert.assertEquals("notification.offerAccepted.title", dto.titleKey());
+        Assert.assertEquals("notification.offerAccepted.free.body", dto.bodyKey());
+        Assert.assertEquals(List.of("Free Bookshelf", "Seller Ana"), dto.bodyArgs());
+        Assert.assertEquals("/account/my-offers?statusGroup=PENDING_PAYMENT", dto.actionUrl());
+        Assert.assertEquals("notification.offerAccepted.free.cta", dto.actionLabelKey());
+    }
+
+    @Test
     public void testOfferAcceptedCashPureTradeAndTradeWithCash() {
         final SiteNotificationCreationDto cashDto =
                 SiteNotificationCreationDtoFactory.offerAccepted(buildOffer(600L, null, new BigDecimal("280.00"), null));
@@ -58,6 +102,8 @@ public class SiteNotificationCreationDtoFactoryTest {
         Assert.assertEquals("notification.offerAccepted.body", cashDto.bodyKey());
         Assert.assertEquals(List.of("280.00", "MacBook Pro 14", "Seller Ana"), cashDto.bodyArgs());
         Assert.assertEquals("/account/my-offers/600/payment", cashDto.actionUrl());
+        Assert.assertNotNull(cashDto.offer());
+        Assert.assertEquals(Long.valueOf(600L), cashDto.offer().getId());
 
         final SiteNotificationCreationDto pureTradeDto =
                 SiteNotificationCreationDtoFactory.offerAccepted(buildOffer(601L, OFFERED_LISTING, null, null));
@@ -71,42 +117,49 @@ public class SiteNotificationCreationDtoFactoryTest {
     }
 
     @Test
-    public void testOfferRejectedAndWithdrawnTradeBranches() {
-        final SiteNotificationCreationDto rejectedTradeWithCash =
-                SiteNotificationCreationDtoFactory.offerRejected(buildOffer(700L, OFFERED_LISTING, new BigDecimal("50.00"), null));
-        Assert.assertSame(BUYER, rejectedTradeWithCash.notificationRecipient());
-        Assert.assertEquals("notification.offerRejected.body.tradeWithCash", rejectedTradeWithCash.bodyKey());
-        Assert.assertEquals(List.of("iPad Pro M2", "50.00", "MacBook Pro 14"), rejectedTradeWithCash.bodyArgs());
-        Assert.assertEquals("/listing", rejectedTradeWithCash.actionUrl());
+    public void testBrandModelRequestAcceptedBuildsExpectedDto() {
+        final Brand brand = Brand.builder().id(30L).name("Acme").build();
+        final Model model = Model.builder().id(40L).name("Phone").brand(brand).build();
+        final BrandModelRequest request = BrandModelRequest.builder()
+                .id(50L)
+                .type(BrandModelRequestType.NEW_BRAND)
+                .brandName("Acme")
+                .modelName("Phone")
+                .build();
 
-        final SiteNotificationCreationDto withdrawnPureTrade =
-                SiteNotificationCreationDtoFactory.offerWithdrawn(buildOffer(701L, OFFERED_LISTING, BigDecimal.ZERO, null));
-        Assert.assertSame(SELLER, withdrawnPureTrade.notificationRecipient());
-        Assert.assertEquals("notification.offerWithdrawn.body.trade", withdrawnPureTrade.bodyKey());
-        Assert.assertEquals(List.of("Buyer Bob", "iPad Pro M2", "MacBook Pro 14"), withdrawnPureTrade.bodyArgs());
-        Assert.assertEquals("/listing/100", withdrawnPureTrade.actionUrl());
+        final SiteNotificationCreationDto dto =
+                SiteNotificationCreationDtoFactory.brandModelRequestAccepted(request, BUYER, brand, model);
+
+        Assert.assertSame(BUYER, dto.notificationRecipient());
+        Assert.assertEquals(NotificationType.BRAND_MODEL_REQUEST_ACCEPTED, dto.notificationType());
+        Assert.assertEquals("notification.brandModelRequest.accepted.title", dto.titleKey());
+        Assert.assertEquals("notification.brandModelRequest.accepted.body", dto.bodyKey());
+        Assert.assertEquals(List.of("Acme", "Phone"), dto.bodyArgs());
+        Assert.assertEquals("/listing/new/choose-product?modelId=40", dto.actionUrl());
+        Assert.assertEquals("notification.brandModelRequest.accepted.cta", dto.actionLabelKey());
+        Assert.assertNull(dto.offer());
     }
 
     @Test
-    public void testProofOfPaymentAndProofOfShippingWithAndWithoutTracking() {
-        final SiteNotificationCreationDto paymentDto =
-                SiteNotificationCreationDtoFactory.proofOfPaymentUploaded(buildOffer(800L, null, new BigDecimal("300.00"), null));
-        Assert.assertSame(SELLER, paymentDto.notificationRecipient());
-        Assert.assertEquals("notification.proofOfPaymentUploaded.body", paymentDto.bodyKey());
-        Assert.assertEquals(List.of("Buyer Bob", "MacBook Pro 14"), paymentDto.bodyArgs());
-        Assert.assertEquals("/account/incoming-offers/800", paymentDto.actionUrl());
+    public void testBrandModelRequestRejectedBuildsExpectedDto() {
+        final BrandModelRequest request = BrandModelRequest.builder()
+                .id(51L)
+                .type(BrandModelRequestType.NEW_BRAND)
+                .brandName("Acme")
+                .modelName("Phone")
+                .build();
 
-        final SiteNotificationCreationDto shippingNoTrackingDto =
-                SiteNotificationCreationDtoFactory.proofOfShippingUploaded(buildOffer(801L, null, new BigDecimal("300.00"), "   "));
-        Assert.assertSame(BUYER, shippingNoTrackingDto.notificationRecipient());
-        Assert.assertEquals("notification.proofOfShippingUploaded.body", shippingNoTrackingDto.bodyKey());
-        Assert.assertEquals(List.of("Seller Ana", "MacBook Pro 14"), shippingNoTrackingDto.bodyArgs());
+        final SiteNotificationCreationDto dto =
+                SiteNotificationCreationDtoFactory.brandModelRequestRejected(request, BUYER);
 
-        final SiteNotificationCreationDto shippingWithTrackingDto =
-                SiteNotificationCreationDtoFactory.proofOfShippingUploaded(buildOffer(802L, null, new BigDecimal("300.00"), " AR-12345 "));
-        Assert.assertEquals("notification.proofOfShippingUploaded.body.tracking", shippingWithTrackingDto.bodyKey());
-        Assert.assertEquals(List.of("Seller Ana", "MacBook Pro 14", "AR-12345"), shippingWithTrackingDto.bodyArgs());
-        Assert.assertEquals("/account/my-offers?statusGroup=PENDING_PAYMENT", shippingWithTrackingDto.actionUrl());
+        Assert.assertSame(BUYER, dto.notificationRecipient());
+        Assert.assertEquals(NotificationType.BRAND_MODEL_REQUEST_REJECTED, dto.notificationType());
+        Assert.assertEquals("notification.brandModelRequest.rejected.title", dto.titleKey());
+        Assert.assertEquals("notification.brandModelRequest.rejected.body", dto.bodyKey());
+        Assert.assertEquals(List.of("Acme", "Phone"), dto.bodyArgs());
+        Assert.assertEquals("/listing", dto.actionUrl());
+        Assert.assertEquals("notification.brandModelRequest.rejected.cta", dto.actionLabelKey());
+        Assert.assertNull(dto.offer());
     }
 
     private static User buildUser(final long id, final String displayName) {

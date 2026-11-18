@@ -18,18 +18,14 @@
                         <spring:message code="currency.symbol" var="currencySymbol"/>
                         <div class="flex flex-col gap-3">
                             <div class="flex flex-col gap-2">
-                                <label class="flex items-center gap-2 min-h-8 cursor-pointer">
-                                    <form:radiobutton path="offerType" value="FULL" class="w-4 h-4 text-lime-600 border-black/20 focus:ring-lime-500"/>
-                                    <spring:message code="checkout.form.fullPrice" var="fullPriceLabel"/>
-                                    <span class="text-sm text-black/90"><c:out value="${fullPriceLabel}"/> - <paw:price amount="${listing.price.amount}"/></span>
-                                </label>
+                                <spring:message code="checkout.form.fullPrice" var="fullPriceLabel"/>
+                                <paw:radio path="offerType" id="offerType_FULL" value="FULL" label="${fullPriceLabel}" classname="min-h-8">
+                                    <span class="text-black/90"> - <paw:price amount="${listing.price.amount}"/></span>
+                                </paw:radio>
 
                                 <div class="flex flex-row gap-2 items-center justify-between">
-                                    <label class="flex items-center gap-2 min-h-8 cursor-pointer">
-                                        <form:radiobutton path="offerType" value="CUSTOM" class="w-4 h-4 text-lime-600 border-black/20 focus:ring-lime-500"/>
-                                        <spring:message code="checkout.form.customPrice" var="customPriceLabel"/>
-                                        <span class="text-sm text-black/90"><c:out value="${customPriceLabel}"/></span>
-                                    </label>
+                                    <spring:message code="checkout.form.customPrice" var="customPriceLabel"/>
+                                    <paw:radio path="offerType" id="offerType_CUSTOM" value="CUSTOM" label="${customPriceLabel}" classname="min-h-8"/>
 
                                     <spring:message code="checkout.form.customAmount.placeholder" var="customAmountPlaceholder"/>
                                     <div id="customAmountField" class="hidden w-1/2">
@@ -42,11 +38,8 @@
 
                                 <c:if test="${listing.acceptsTrade and not empty userListings}">
                                     <div class="flex flex-col gap-2">
-                                        <label class="flex items-center gap-2 min-h-8 cursor-pointer">
-                                            <form:radiobutton path="offerType" value="TRADE" class="w-4 h-4 text-lime-600 border-black/20 focus:ring-lime-500"/>
-                                            <spring:message code="checkout.form.tradePrice" var="tradePriceLabel"/>
-                                            <span class="text-sm text-black/90"><c:out value="${tradePriceLabel}"/></span>
-                                        </label>
+                                        <spring:message code="checkout.form.tradePrice" var="tradePriceLabel"/>
+                                        <paw:radio path="offerType" id="offerType_TRADE" value="TRADE" label="${tradePriceLabel}" classname="min-h-8"/>
 
                                         <div id="tradeFields" class="hidden flex flex-col gap-3">
                                             <spring:message code="checkout.form.tradeSelectListing" var="tradeSelectListingLabel"/>
@@ -66,9 +59,9 @@
                                                         <span class="flex-1 min-w-0">
                                                             <span class="block truncate text-sm font-medium text-black"><c:out value="${userListing.title}"/></span>
                                                             <span class="block truncate text-xs text-black/60">
-                                                                <c:out value="${userListing.product.brand}"/>
-                                                                <c:out value="${userListing.product.model}"/>
-                                                                (<c:out value="${userListing.product.year}"/>)
+                                                                <c:out value="${userListing.brand.name}"/>
+                                                                <c:out value="${userListing.model.name}"/>
+                                                                (<c:out value="${userListing.year}"/>)
                                                             </span>
                                                         </span>
                                                         <span class="trade-listing-check flex-shrink-0 text-lime-600 ${checkoutForm.offeredListingId == userListing.id ? '' : 'hidden'}">
@@ -78,10 +71,7 @@
                                                 </c:forEach>
                                             </div>
 
-                                            <div id="tradeListingPagination" class="-mt-8 mb-4">
-                                                <c:url value="/checkout" var="checkoutBaseUrl"/>
-                                                <paw:pagination page="${userListingsPage}" baseUrl="${checkoutBaseUrl}"/>
-                                            </div>
+                                            <paw:pagination id="tradeListingPagination" page="${userListingsPage}" baseUrl="/checkout" classname="mb-4"/>
 
                                             <spring:message code="checkout.form.tradeAmount" var="tradeAmountLabel"/>
                                             <spring:message code="checkout.form.tradeAmount.placeholder" var="tradeAmountPlaceholder"/>
@@ -119,12 +109,12 @@
                 </c:if>
             </c:forEach>
 
-            <spring:message code="category.${listing.product.subcategory.category.name}" var="productCategory" />
-            <spring:message code="subcategory.${listing.product.subcategory.name}" var="productSubcategory" />
+            <spring:message code="category.${listing.model.subcategory.category.name}" var="productCategory" />
+            <spring:message code="subcategory.${listing.model.subcategory.name}" var="productSubcategory" />
             <spring:message code="card.noImage" var="noImageLabel"/>
             <paw:card showImage="true"
                 title="${listing.title}"
-                subtitle="${listing.product.brand} ${listing.product.model} (${listing.product.year}) — ${productCategory} / ${productSubcategory}"
+                subtitle="${listing.brand.name} ${listing.model.name} (${listing.year}) — ${productCategory} / ${productSubcategory}"
                 imageUrl="${coverImageUrl}"
                 imageAlt="${listing.title}"
                 noImageLabel="${noImageLabel}"

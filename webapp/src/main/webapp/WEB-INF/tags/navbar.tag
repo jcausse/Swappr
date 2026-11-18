@@ -111,7 +111,7 @@
                         <div class="relative" id="userMenu">
                             <paw:button id="userButton" variant="ghost" classname="justify-start text-start gap-3 h-14 min-w-40!" type="button">
                                 <div class="flex flex-row gap-2 items-center text-sm">
-                                    <paw:userAvatar user="${currentUser.get()}" size="8" />
+                                    <paw:userAvatar user="${currentUser.get()}" />
                                     <div class="flex flex-col">
                                         <p class="text-sm text-black font-normal"><c:out value="${currentUser.get().displayName}"/></p>
                                         <p class="text-xs text-black/60 font-normal"><c:out value="${currentUser.get().username}"/></p>
@@ -129,7 +129,7 @@
                                 <spring:message code="navbar.profile" var="profileLabel" />
                                 <paw:linkButton href="${profileUrl}" text="${profileLabel}" variant="ghost" role="secondary" />
 
-                                <c:if test="${pageContext.request.isUserInRole('ADMIN')}">
+                                <c:if test="${isAdmin}">
                                     <c:url value="/admin" var="adminUrl"/>
                                     <spring:message code="navbar.admin" var="adminLabel" />
                                     <paw:linkButton href="${adminUrl}" text="${adminLabel}" variant="ghost" role="secondary" />

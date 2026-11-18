@@ -1,8 +1,19 @@
 package ar.edu.itba.paw.model;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.util.Optional;
 
 @Getter
@@ -36,6 +47,15 @@ public class Image {
 
     public Optional<String> getContentType() {
         return Optional.ofNullable(contentType);
+    }
+
+    public String getMediaType() {
+        if (contentType != null
+                && contentType.startsWith("image/")
+                && contentType.matches("[A-Za-z0-9!#$&^_.+-]+/[A-Za-z0-9!#$&^_.+-]+")) {
+            return contentType;
+        }
+        return "application/octet-stream";
     }
 }
 

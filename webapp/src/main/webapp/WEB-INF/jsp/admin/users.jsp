@@ -17,22 +17,16 @@
     <div class="flex flex-col gap-6">
         <%-- Search User by Username --%>
         <paw:card>
-            <form method="get" action="${usersBaseUrl}" class="flex flex-col sm:flex-row gap-3 items-end">
+            <form:form modelAttribute="filterForm" action="${usersBaseUrl}" method="get" class="flex flex-col sm:flex-row gap-3 items-end">
                 <div class="flex-1 w-full">
                     <spring:message code="admin.users.search.label" var="searchLabel"/>
                     <spring:message code="admin.users.search.placeholder" var="searchPlaceholder"/>
-                    <div class="flex flex-col gap-1">
-                        <label for="admin-user-search" class="text-xs text-black/70 font-medium">
-                            <c:out value="${searchLabel}"/>
-                        </label>
-                        <input id="admin-user-search" name="username" type="text" value="<c:out value='${searchedUsername}'/>" placeholder="${searchPlaceholder}"
-                               class="w-full px-3 py-2 rounded-lg text-sm border border-black/20 focus-visible:border-lime-600 focus-visible:outline-2"/>
-                    </div>
+                    <paw:formInput path="username" id="filterUsername" label="${searchLabel}" placeholder="${searchPlaceholder}" variant="outline"/>
                 </div>
 
                 <spring:message code="admin.users.search.submit" var="submitSearch"/>
                 <paw:button text="${submitSearch}" type="submit" variant="default" role="default" icon="search" classname="w-full sm:w-auto"/>
-            </form>
+            </form:form>
         </paw:card>
 
         <%-- Search Result --%>
@@ -115,7 +109,7 @@
                 <form:form method="post" action="${suspendUserUrl}" modelAttribute="suspendUserForm" class="flex flex-col gap-4 mt-2">
                     <spring:message code="admin.users.usernameLabel" var="usernameLabel"/>
                     <spring:message code="admin.users.usernamePlaceholder" var="usernamePlaceholder"/>
-                    <paw:formInput path="username" label="${usernameLabel}" placeholder="${usernamePlaceholder}" variant="outline"/>
+                    <paw:formInput path="username" id="suspendUsername" label="${usernameLabel}" placeholder="${usernamePlaceholder}" variant="outline"/>
                     <spring:message code="admin.users.suspend.submit" var="submitUserSuspend"/>
                     <paw:button text="${submitUserSuspend}" type="submit" variant="default" role="danger" icon="user-x" classname="self-end"/>
                 </form:form>
@@ -128,7 +122,7 @@
                 <form:form method="post" action="${grantAdminUrl}" modelAttribute="grantRoleForm" class="flex flex-col gap-4 mt-2">
                     <spring:message code="admin.users.grantAdmin.usernameLabel" var="grantUsernameLabel"/>
                     <spring:message code="admin.users.usernamePlaceholder" var="grantUsernamePlaceholder"/>
-                    <paw:formInput path="username" label="${grantUsernameLabel}" placeholder="${grantUsernamePlaceholder}" variant="outline"/>
+                    <paw:formInput path="username" id="grantUsername" label="${grantUsernameLabel}" placeholder="${grantUsernamePlaceholder}" variant="outline"/>
                     <spring:message code="admin.users.grantAdmin.submit" var="submitGrantAdmin"/>
                     <paw:button text="${submitGrantAdmin}" type="submit" variant="default" role="default" icon="shield" classname="self-end"/>
                 </form:form>

@@ -16,6 +16,10 @@ public interface ListingService {
 
     Page<Listing> search(ListingFilterDto filter);
 
+    Page<Listing> searchForAdmin(ListingFilterDto filter);
+
+    Page<Listing> getActiveByCreator(Long creatorId, Integer page, int pageSize);
+
     LandingListingsDto getForLanding();
 
     Listing purchase(Long id, Long buyerId, String message);
@@ -28,7 +32,13 @@ public interface ListingService {
 
     Listing update(ListingUpdateDto dto, Long currentUserId);
 
-    void cancel(Long id, Long currentUserId);
+    int releaseOfferedListingsForParticipant(Long userId);
 
-    void cancelByAdmin(Long id);
+    int releaseListingsHeldByBuyerPaymentOffers(Long userId);
+
+    /**
+     * Admin-cancellation edge case: releases the target listings held by PENDING_PAYMENT trade
+     * offers whose offered listing is the one being canceled.
+     */
+    int releaseListingsHeldByPendingPaymentTradeOffersForOfferedListing(Long offeredListingId);
 }

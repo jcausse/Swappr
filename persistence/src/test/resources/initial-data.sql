@@ -7,5 +7,8 @@ VALUES (1, 'Electronics'), (2, 'Mobile Devices');
 INSERT INTO subcategories (subcategory_id, name, category_id)
 VALUES (1, 'Laptops', 1), (2, 'Phones', 2);
 
-INSERT INTO products (product_id, brand, model, year, subcategory_id)
-VALUES (1, 'Apple', 'MacBook Pro', 2023, 1);
+INSERT INTO brands (brand_id, brand_name)
+VALUES (1, 'Apple');
+
+INSERT INTO models (model_id, model_name, brand_id, subcategory_id)
+VALUES (1, 'MacBook Pro', 1, 1);

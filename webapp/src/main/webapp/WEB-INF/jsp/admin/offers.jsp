@@ -18,7 +18,7 @@
         <spring:message code="admin.offers.takedown.desc" var="takedownCardDesc"/>
         <paw:card title="${takedownCardTitle}" subtitle="${takedownCardDesc}">
             <form:form method="post" action="${takedownOfferUrl}" modelAttribute="takeDownOfferForm" class="flex flex-col sm:flex-row gap-3 items-end mt-2">
-                <input type="hidden" name="redirect" value="/admin/offers?success=offer_takedown"/>
+                <input type="hidden" name="redirect" value="<c:out value='${offersReturnUrl}'/>"/>
                 <div class="flex-1 w-full">
                     <spring:message code="admin.offers.takedown.idLabel" var="offerIdLabel"/>
                     <spring:message code="admin.offers.takedown.idPlaceholder" var="offerIdPlaceholder"/>
@@ -31,29 +31,16 @@
 
         <%-- Filters --%>
         <paw:card>
-            <form method="get" action="${offersBaseUrl}" class="flex flex-col sm:flex-row gap-3 items-end">
+            <form:form modelAttribute="filterForm" action="${offersBaseUrl}" method="get" class="flex flex-col sm:flex-row gap-3 items-end">
                 <div class="flex-1 w-full">
                     <spring:message code="admin.offers.statusGroup.label" var="statusGroupLabel"/>
-                    <div class="flex flex-col gap-1">
-                        <label for="admin-offer-status" class="text-xs text-black/70 font-medium">
-                            <c:out value="${statusGroupLabel}"/>
-                        </label>
-                        <select id="admin-offer-status" name="statusGroup" class="w-full px-3 py-2 rounded-lg text-sm border border-black/20 focus-visible:border-lime-600 focus-visible:outline-2 bg-white">
-                            <spring:message code="admin.offers.statusGroup.all" var="allStatusGroupText"/>
-                            <spring:message code="admin.offers.statusGroup.pending" var="pendingStatusGroupText"/>
-                            <spring:message code="admin.offers.statusGroup.pendingPayment" var="pendingPaymentStatusGroupText"/>
-                            <spring:message code="admin.offers.statusGroup.resolved" var="resolvedStatusGroupText"/>
-                            <option value="" ${empty currentStatusGroup ? 'selected' : ''}><c:out value="${allStatusGroupText}"/></option>
-                            <option value="PENDING" ${currentStatusGroup.name() eq 'PENDING' ? 'selected' : ''}><c:out value="${pendingStatusGroupText}"/></option>
-                            <option value="PENDING_PAYMENT" ${currentStatusGroup.name() eq 'PENDING_PAYMENT' ? 'selected' : ''}><c:out value="${pendingPaymentStatusGroupText}"/></option>
-                            <option value="RESOLVED" ${currentStatusGroup.name() eq 'RESOLVED' ? 'selected' : ''}><c:out value="${resolvedStatusGroupText}"/></option>
-                        </select>
-                    </div>
+                    <spring:message code="admin.offers.statusGroup.all" var="allStatusGroupText"/>
+                    <paw:formSelect path="statusGroup" label="${statusGroupLabel}" placeholder="${allStatusGroupText}" items="${statusGroups}" itemLabel="status" itemValue="name" labelPrefix="offer.statusGroup." translateLabels="true"/>
                 </div>
 
                 <spring:message code="admin.offers.filter.submit" var="submitFilter"/>
                 <paw:button text="${submitFilter}" type="submit" variant="default" role="default" icon="filter" classname="w-full sm:w-auto"/>
-            </form>
+            </form:form>
         </paw:card>
 
         <%-- Offers List --%>
@@ -85,7 +72,7 @@
                             </c:when>
                             <c:when test="${offer.status.name() == 'PENDING_PAYMENT'}">
                                 <c:set var="statusBadgeClass" value="text-blue-700 bg-blue-50 border-blue-200"/>
-                                <spring:message code="${offer.offeredListing.present ? 'offer.status.PENDING_TRADE' : 'offer.status.PENDING_PAYMENT'}" var="statusBadgeText"/>
+                                <spring:message code="${offer.forFreeListing ? 'offer.status.PENDING_DELIVERY' : (offer.offeredListing.present ? 'offer.status.PENDING_TRADE' : 'offer.status.PENDING_PAYMENT')}" var="statusBadgeText"/>
                             </c:when>
                             <c:when test="${offer.status.name() == 'ACCEPTED'}">
                                 <c:set var="statusBadgeClass" value="text-green-700 bg-green-50 border-green-200"/>
@@ -161,9 +148,9 @@
                                     <spring:message code="admin.offers.viewListing" var="viewListingBtnText"/>
                                     <paw:linkButton href="${listingViewUrl}" text="${viewListingBtnText}" variant="outline" size="sm" icon="external-link"/>
 
-                                    <c:if test="${offer.status.name() == 'PENDING' || offer.status.name() == 'PENDING_PAYMENT'}">
+                                    <c:if test="${offer.canBeCanceledByAdmin()}">
                                         <form method="post" action="${takedownOfferActionUrl}">
-                                            <input type="hidden" name="redirect" value="/admin/offers?page=${offersPage.page}&statusGroup=<c:out value='${currentStatusGroup}'/>"/>
+                                            <input type="hidden" name="redirect" value="<c:out value='${offersReturnUrl}'/>"/>
                                             <spring:message code="admin.offers.takedown.btn" var="takeDownOfferBtnText"/>
                                             <paw:button text="${takeDownOfferBtnText}" type="submit" variant="outline" role="danger" size="sm" icon="trash-2"/>
                                         </form>
@@ -174,7 +161,7 @@
                     </c:forEach>
 
                     <%-- Pagination --%>
-                    <paw:pagination page="${offersPage}" baseUrl="${offersBaseUrl}"/>
+                    <paw:pagination page="${offersPage}" baseUrl="/admin/offers"/>
                 </div>
             </c:otherwise>
         </c:choose>

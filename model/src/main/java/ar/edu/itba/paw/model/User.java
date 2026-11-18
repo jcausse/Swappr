@@ -1,11 +1,29 @@
 package ar.edu.itba.paw.model;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
-import javax.persistence.*;
+import javax.persistence.CollectionTable;
+import javax.persistence.Column;
+import javax.persistence.ElementCollection;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
 import java.time.Instant;
 import java.util.HashSet;
-import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
 
@@ -50,27 +68,27 @@ public class User {
 
     @Builder.Default
     @Column(name = "seller_positive_ratings", nullable = false)
-    private Integer sellerPositiveRatings = 0;
+    private int sellerPositiveRatings = 0;
 
     @Builder.Default
     @Column(name = "seller_neutral_ratings", nullable = false)
-    private Integer sellerNeutralRatings = 0;
+    private int sellerNeutralRatings = 0;
 
     @Builder.Default
     @Column(name = "seller_negative_ratings", nullable = false)
-    private Integer sellerNegativeRatings = 0;
+    private int sellerNegativeRatings = 0;
 
     @Builder.Default
     @Column(name = "buyer_positive_ratings", nullable = false)
-    private Integer buyerPositiveRatings = 0;
+    private int buyerPositiveRatings = 0;
 
     @Builder.Default
     @Column(name = "buyer_neutral_ratings", nullable = false)
-    private Integer buyerNeutralRatings = 0;
+    private int buyerNeutralRatings = 0;
 
     @Builder.Default
     @Column(name = "buyer_negative_ratings", nullable = false)
-    private Integer buyerNegativeRatings = 0;
+    private int buyerNegativeRatings = 0;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "province_id")
@@ -88,7 +106,7 @@ public class User {
     private Instant suspendedAt;
 
     @Builder.Default
-    @ElementCollection(fetch = FetchType.EAGER)
+    @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "users_roles", joinColumns = @JoinColumn(name = "user_id"))
     @Column(name = "role_name")
     @Enumerated(EnumType.STRING)
@@ -104,16 +122,8 @@ public class User {
         return Optional.ofNullable(image != null ? image.getId() : null);
     }
 
-    public Optional<Instant> getEmailVerifiedAt() {
-        return Optional.ofNullable(emailVerifiedAt);
-    }
-
     public boolean isVerified() {
         return emailVerifiedAt != null;
-    }
-
-    public Optional<Instant> getSuspendedAt() {
-        return Optional.ofNullable(suspendedAt);
     }
 
     public boolean isSuspended() {
@@ -140,10 +150,6 @@ public class User {
         return preferredLanguage != null ? preferredLanguage : Language.getDefault();
     }
 
-    public Locale getPreferredLocale() {
-        return getPreferredLanguageOrDefault().toLocale();
-    }
-
     public Optional<Province> getProvince() {
         return Optional.ofNullable(province);
     }
@@ -153,28 +159,18 @@ public class User {
     }
 
     public int getSellerTotalRatings() {
-        int pos = sellerPositiveRatings != null ? sellerPositiveRatings : 0;
-        int neu = sellerNeutralRatings != null ? sellerNeutralRatings : 0;
-        int neg = sellerNegativeRatings != null ? sellerNegativeRatings : 0;
-        return pos + neu + neg;
+        return sellerPositiveRatings + sellerNeutralRatings + sellerNegativeRatings;
     }
 
     public int getBuyerTotalRatings() {
-        int pos = buyerPositiveRatings != null ? buyerPositiveRatings : 0;
-        int neu = buyerNeutralRatings != null ? buyerNeutralRatings : 0;
-        int neg = buyerNegativeRatings != null ? buyerNegativeRatings : 0;
-        return pos + neu + neg;
+        return buyerPositiveRatings + buyerNeutralRatings + buyerNegativeRatings;
     }
 
     public int getSellerRatingBalance() {
-        int pos = sellerPositiveRatings != null ? sellerPositiveRatings : 0;
-        int neg = sellerNegativeRatings != null ? sellerNegativeRatings : 0;
-        return pos - neg;
+        return sellerPositiveRatings - sellerNegativeRatings;
     }
 
     public int getBuyerRatingBalance() {
-        int pos = buyerPositiveRatings != null ? buyerPositiveRatings : 0;
-        int neg = buyerNegativeRatings != null ? buyerNegativeRatings : 0;
-        return pos - neg;
+        return buyerPositiveRatings - buyerNegativeRatings;
     }
 }

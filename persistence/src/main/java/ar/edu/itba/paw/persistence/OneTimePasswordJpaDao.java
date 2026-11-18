@@ -46,6 +46,8 @@ public class OneTimePasswordJpaDao implements OneTimePasswordDao {
         }
     }
 
+    // Bulk JPQL delete: does not refresh one-time passwords already in the persistence context.
+    // Re-fetch (or refresh/detach) affected rows before reading them later in this transaction.
     @Override
     public void deleteOlderThan(Instant cutoff) {
         em.createQuery("DELETE FROM OneTimePassword otp WHERE otp.createdAt < :cutoff")

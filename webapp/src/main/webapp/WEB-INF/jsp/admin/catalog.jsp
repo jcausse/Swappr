@@ -1,0 +1,873 @@
+<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" language="java" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
+<%@ taglib prefix="spring" uri="http://www.springframework.org/tags" %>
+<%@ taglib prefix="paw" tagdir="/WEB-INF/tags" %>
+<%@ taglib prefix="admin" tagdir="/WEB-INF/tags/admin" %>
+
+<spring:message code="admin.catalog.title" var="catalogTitle"/>
+<spring:message code="admin.catalog.subtitle" var="catalogSubtitle"/>
+<spring:message code="admin.catalog.brands.title" var="brandsTitle"/>
+<spring:message code="admin.catalog.brands.subtitle" var="brandsSubtitle"/>
+<spring:message code="admin.catalog.brands.id" var="brandIdLabel"/>
+<spring:message code="admin.catalog.brands.name" var="brandNameLabel"/>
+<spring:message code="admin.catalog.brands.modelCount" var="brandModelCountLabel"/>
+<spring:message code="admin.catalog.brands.actions" var="brandActionsLabel"/>
+<spring:message code="admin.catalog.brands.edit" var="editBrandLabel"/>
+<spring:message code="admin.catalog.brands.delete" var="deleteBrandLabel"/>
+<spring:message code="admin.catalog.brands.replace" var="replaceBrandLabel"/>
+<spring:message code="admin.catalog.brands.replace.title" var="replaceBrandTitle"/>
+<spring:message code="admin.catalog.brands.replace.label" var="replaceBrandSelectLabel"/>
+<spring:message code="admin.catalog.brands.replace.placeholder" var="replaceBrandPlaceholder"/>
+<spring:message code="admin.catalog.brands.replace.warning" var="replaceBrandWarning"/>
+<spring:message code="admin.catalog.brands.replace.confirm" var="replaceBrandConfirm"/>
+<spring:message code="admin.catalog.brands.replace.cancel" var="replaceBrandCancel"/>
+<spring:message code="admin.catalog.brands.rename.title" var="renameBrandTitle"/>
+<spring:message code="admin.catalog.brands.rename.confirm" var="renameBrandConfirm"/>
+<spring:message code="admin.catalog.brands.rename.cancel" var="renameBrandCancel"/>
+<spring:message code="admin.catalog.brands.delete.title" var="deleteBrandTitle"/>
+<spring:message code="admin.catalog.brands.delete.message" var="deleteBrandMessage"/>
+<spring:message code="admin.catalog.brands.delete.confirm" var="deleteBrandConfirm"/>
+<spring:message code="admin.catalog.brands.delete.cancel" var="deleteBrandCancel"/>
+<spring:message code="admin.catalog.brands.delete.blocked" var="deleteBrandBlocked"/>
+<spring:message code="admin.catalog.brands.create.title" var="createBrandTitle"/>
+<spring:message code="admin.catalog.brands.create.placeholder" var="createBrandPlaceholder"/>
+<spring:message code="admin.catalog.brands.create.submit" var="createBrandSubmit"/>
+<spring:message code="admin.catalog.models.title" var="modelsTitle"/>
+<spring:message code="admin.catalog.models.subtitle" var="modelsSubtitle"/>
+<spring:message code="admin.catalog.models.id" var="modelIdLabel"/>
+<spring:message code="admin.catalog.models.name" var="modelNameLabel"/>
+<spring:message code="admin.catalog.models.brand" var="modelBrandLabel"/>
+<spring:message code="admin.catalog.models.subcategory" var="modelSubcategoryLabel"/>
+<spring:message code="admin.catalog.models.actions" var="modelActionsLabel"/>
+<spring:message code="admin.catalog.models.edit" var="editModelLabel"/>
+<spring:message code="admin.catalog.models.replace" var="replaceModelLabel"/>
+<spring:message code="admin.catalog.models.delete" var="deleteModelLabel"/>
+<spring:message code="admin.catalog.models.filter.brand" var="modelFilterBrandLabel"/>
+<spring:message code="admin.catalog.models.filter.category" var="modelFilterCategoryLabel"/>
+<spring:message code="admin.catalog.models.filter.subcategory" var="modelFilterSubcategoryLabel"/>
+<spring:message code="admin.catalog.models.filter.all" var="modelFilterAllLabel"/>
+<spring:message code="admin.catalog.models.filter.apply" var="modelFilterApplyLabel"/>
+<spring:message code="admin.catalog.models.filter.clear" var="modelFilterClearLabel"/>
+<spring:message code="admin.catalog.models.create.title" var="createModelTitle"/>
+<spring:message code="admin.catalog.models.create.nameLabel" var="createModelNameLabel"/>
+<spring:message code="admin.catalog.models.create.namePlaceholder" var="createModelNamePlaceholder"/>
+<spring:message code="admin.catalog.models.create.brandLabel" var="createModelBrandLabel"/>
+<spring:message code="admin.catalog.models.create.brandPlaceholder" var="createModelBrandPlaceholder"/>
+<spring:message code="admin.catalog.models.create.categoryLabel" var="createModelCategoryLabel"/>
+<spring:message code="admin.catalog.models.create.categoryPlaceholder" var="createModelCategoryPlaceholder"/>
+<spring:message code="admin.catalog.models.create.subcategoryLabel" var="createModelSubcategoryLabel"/>
+<spring:message code="admin.catalog.models.create.subcategoryPlaceholder" var="createModelSubcategoryPlaceholder"/>
+<spring:message code="admin.catalog.models.create.submit" var="createModelSubmit"/>
+<spring:message code="admin.catalog.models.edit.title" var="editModelTitle"/>
+<spring:message code="admin.catalog.models.edit.confirm" var="editModelConfirm"/>
+<spring:message code="admin.catalog.models.edit.cancel" var="editModelCancel"/>
+<spring:message code="admin.catalog.models.replace.title" var="replaceModelTitle"/>
+<spring:message code="admin.catalog.models.replace.label" var="replaceModelSelectLabel"/>
+<spring:message code="admin.catalog.models.replace.placeholder" var="replaceModelPlaceholder"/>
+<spring:message code="admin.catalog.models.replace.warning" var="replaceModelWarning"/>
+<spring:message code="admin.catalog.models.replace.confirm" var="replaceModelConfirm"/>
+<spring:message code="admin.catalog.models.replace.cancel" var="replaceModelCancel"/>
+<spring:message code="admin.catalog.models.delete.title" var="deleteModelTitle"/>
+<spring:message code="admin.catalog.models.delete.message" var="deleteModelMessage"/>
+<spring:message code="admin.catalog.models.delete.confirm" var="deleteModelConfirm"/>
+<spring:message code="admin.catalog.models.delete.cancel" var="deleteModelCancel"/>
+<spring:message code="admin.catalog.models.delete.blocked" var="deleteModelBlocked"/>
+<spring:message code="admin.catalog.requests.title" var="requestsTitle"/>
+<spring:message code="admin.catalog.requests.subtitle" var="requestsSubtitle"/>
+<spring:message code="admin.catalog.requests.type" var="requestTypeLabel"/>
+<spring:message code="admin.catalog.requests.type.newBrand" var="requestNewBrandType"/>
+<spring:message code="admin.catalog.requests.type.existingBrand" var="requestExistingBrandType"/>
+<spring:message code="admin.catalog.requests.brand" var="requestBrandLabel"/>
+<spring:message code="admin.catalog.requests.model" var="requestModelLabel"/>
+<spring:message code="admin.catalog.requests.subcategory" var="requestSubcategoryLabel"/>
+<spring:message code="admin.catalog.requests.requester" var="requestRequesterLabel"/>
+<spring:message code="admin.catalog.requests.actions" var="requestActionsLabel"/>
+<spring:message code="admin.catalog.requests.empty" var="requestsEmptyLabel"/>
+<spring:message code="admin.catalog.requests.accept" var="acceptRequestLabel"/>
+<spring:message code="admin.catalog.requests.reject" var="rejectRequestLabel"/>
+<spring:message code="admin.catalog.requests.accept.title" var="acceptRequestTitle"/>
+<spring:message code="admin.catalog.requests.accept.confirm" var="acceptRequestConfirm"/>
+<spring:message code="admin.catalog.requests.accept.cancel" var="acceptRequestCancel"/>
+<spring:message code="admin.catalog.requests.reject.title" var="rejectRequestTitle"/>
+<spring:message code="admin.catalog.requests.reject.message" var="rejectRequestMessage"/>
+<spring:message code="admin.catalog.requests.reject.confirm" var="rejectRequestConfirm"/>
+<spring:message code="admin.catalog.requests.reject.cancel" var="rejectRequestCancel"/>
+<spring:message code="admin.catalog.requests.typeLabel" var="acceptRequestTypeLabel"/>
+<spring:message code="admin.catalog.requests.newBrandLabel" var="acceptRequestNewBrandLabel"/>
+<spring:message code="admin.catalog.requests.existingBrandLabel" var="acceptRequestExistingBrandLabel"/>
+<spring:message code="admin.catalog.requests.modelLabel" var="acceptRequestModelLabel"/>
+
+
+<admin:layout titleKey="admin.catalog.title" title="${catalogTitle}" subtitle="${catalogSubtitle}">
+    <div class="flex flex-col gap-6">
+        <paw:card title="${brandsTitle}" subtitle="${brandsSubtitle}">
+            <c:set var="idSortIcon" value="${currentSort.key eq 'id' ? (currentSort.ascending ? 'chevron-up' : 'chevron-down') : 'chevrons-up-down'}"/>
+            <c:set var="idNextSort" value="${currentSort.key eq 'id' and currentSort.ascending ? 'ID_DESC' : 'ID_ASC'}"/>
+            <c:set var="brandSortIcon" value="${currentSort.key eq 'brand' ? (currentSort.ascending ? 'chevron-up' : 'chevron-down') : 'chevrons-up-down'}"/>
+            <c:set var="brandNextSort" value="${currentSort.key eq 'brand' and currentSort.ascending ? 'BRAND_DESC' : 'BRAND_ASC'}"/>
+
+            <div class="mt-4 overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="border-b border-black/10 text-left text-xs uppercase tracking-wide text-black/50">
+                            <th class="py-2 pr-4 font-medium">
+                                <c:url value="/admin/catalog" var="idSortUrl">
+                                    <c:if test="${not empty modelFilterForm.filterBrandId}"><c:param name="filterBrandId" value="${modelFilterForm.filterBrandId}"/></c:if>
+                                    <c:if test="${not empty modelFilterForm.filterCategoryId}"><c:param name="filterCategoryId" value="${modelFilterForm.filterCategoryId}"/></c:if>
+                                    <c:if test="${not empty modelFilterForm.filterSubcategoryId}"><c:param name="filterSubcategoryId" value="${modelFilterForm.filterSubcategoryId}"/></c:if>
+                                    <c:param name="modelPage" value="${modelsPage.page}"/>
+                                    <c:param name="modelSort" value="${currentModelSort.name()}"/>
+                                    <c:param name="sort" value="${idNextSort}"/>
+                                </c:url>
+                                <a href="${idSortUrl}" class="inline-flex items-center gap-1 hover:text-black transition">
+                                    <c:out value="${brandIdLabel}"/>
+                                    <paw:icon name="${idSortIcon}"/>
+                                </a>
+                            </th>
+                            <th class="py-2 pr-4 font-medium">
+                                <c:url value="/admin/catalog" var="brandSortUrl">
+                                    <c:if test="${not empty modelFilterForm.filterBrandId}"><c:param name="filterBrandId" value="${modelFilterForm.filterBrandId}"/></c:if>
+                                    <c:if test="${not empty modelFilterForm.filterCategoryId}"><c:param name="filterCategoryId" value="${modelFilterForm.filterCategoryId}"/></c:if>
+                                    <c:if test="${not empty modelFilterForm.filterSubcategoryId}"><c:param name="filterSubcategoryId" value="${modelFilterForm.filterSubcategoryId}"/></c:if>
+                                    <c:param name="modelPage" value="${modelsPage.page}"/>
+                                    <c:param name="modelSort" value="${currentModelSort.name()}"/>
+                                    <c:param name="sort" value="${brandNextSort}"/>
+                                </c:url>
+                                <a href="${brandSortUrl}" class="inline-flex items-center gap-1 hover:text-black transition">
+                                    <c:out value="${brandNameLabel}"/>
+                                    <paw:icon name="${brandSortIcon}"/>
+                                </a>
+                            </th>
+                            <th class="py-2 pr-4 font-medium"><c:out value="${brandModelCountLabel}"/></th>
+                            <th class="py-2 text-right font-medium"><c:out value="${brandActionsLabel}"/></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <c:forEach var="brand" items="${brands}">
+                            <tr class="border-b border-black/5 last:border-0 align-top">
+                                <td class="py-3 pr-4">
+                                    <span class="text-xs font-mono font-medium px-1.5 py-0.5 rounded bg-black/5 text-black/70">
+                                        #<c:out value="${brand.id}"/>
+                                    </span>
+                                </td>
+                                <td class="py-3 pr-4 font-medium">
+                                    <c:out value="${brand.name}"/>
+                                </td>
+                                <td class="py-3 pr-4 ${brand.modelCount == 0 ? 'text-red-600 font-bold' : 'text-black/70'}">
+                                    <c:out value="${brand.modelCount}"/>
+                                </td>
+                                <td class="py-3">
+                                    <div class="flex flex-col items-end gap-1">
+                                        <div class="flex items-center justify-end gap-2">
+                                            <paw:button
+                                                text="${editBrandLabel}"
+                                                type="button"
+                                                variant="outline"
+                                                size="sm"
+                                                icon="pencil"
+                                                onclick="document.getElementById('renameBrandDialog-${brand.id}').showModal()"
+                                            />
+
+                                            <c:if test="${not empty brandReplacementOptions[brand.id]}">
+                                                <paw:button
+                                                    text="${replaceBrandLabel}"
+                                                    type="button"
+                                                    variant="outline"
+                                                    role="secondary"
+                                                    size="sm"
+                                                    icon="replace"
+                                                    onclick="document.getElementById('replaceBrandDialog-${brand.id}').showModal()"
+                                                />
+                                            </c:if>
+
+                                            <c:choose>
+                                                <c:when test="${brand.hasListings}">
+                                                    <paw:button
+                                                        text="${deleteBrandLabel}"
+                                                        type="button"
+                                                        variant="outline"
+                                                        role="danger"
+                                                        size="sm"
+                                                        icon="trash-2"
+                                                        disabled="true"
+                                                    />
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <paw:button
+                                                        text="${deleteBrandLabel}"
+                                                        type="button"
+                                                        variant="outline"
+                                                        role="danger"
+                                                        size="sm"
+                                                        icon="trash-2"
+                                                        onclick="document.getElementById('deleteBrandDialog-${brand.id}').showModal()"
+                                                    />
+                                                </c:otherwise>
+                                            </c:choose>
+                                        </div>
+                                        <c:if test="${brand.hasListings}">
+                                            <p class="text-xs text-black/50 text-right">
+                                                <c:out value="${deleteBrandBlocked}"/>
+                                            </p>
+                                        </c:if>
+                                    </div>
+                                </td>
+                            </tr>
+                        </c:forEach>
+                    </tbody>
+                </table>
+            </div>
+
+            <paw:pagination page="${brandsPage}" baseUrl="/admin/catalog" classname="mb-4"/>
+
+            <paw:divider />
+
+            <div class="mt-4 flex flex-col gap-2">
+                <h3 class="text-sm font-semibold"><c:out value="${createBrandTitle}"/></h3>
+                <c:url value="/admin/catalog/brands" var="createBrandUrl"/>
+                <form action="${createBrandUrl}" method="post" class="flex flex-col sm:flex-row gap-3 items-end">
+                    <input type="hidden" name="redirect" value="<c:out value='${catalogReturnUrl}'/>"/>
+                    <div class="flex-1 w-full">
+                        <paw:input
+                            id="newBrandName"
+                            name="name"
+                            label="${brandNameLabel}"
+                            placeholder="${createBrandPlaceholder}"
+                            variant="outline"
+                        />
+                    </div>
+                    <paw:button
+                        text="${createBrandSubmit}"
+                        type="submit"
+                        variant="default"
+                        role="default"
+                        icon="plus"
+                        classname="w-full sm:w-auto"
+                    />
+                </form>
+            </div>
+        </paw:card>
+
+        <c:forEach var="brand" items="${brands}">
+            <c:url value="/admin/catalog/brands/${brand.id}/rename" var="renameBrandUrl"/>
+            <c:url value="/admin/catalog/brands/${brand.id}/delete" var="deleteBrandUrl"/>
+            <c:url value="/admin/catalog/brands/${brand.id}/replace" var="replaceBrandUrl"/>
+
+            <paw:formDialog
+                id="renameBrandDialog-${brand.id}"
+                title="${renameBrandTitle}"
+                confirmText="${renameBrandConfirm}"
+                cancelText="${renameBrandCancel}"
+                formAction="${renameBrandUrl}"
+                redirect="${catalogReturnUrl}"
+            >
+                <div class="flex flex-col gap-3 text-black">
+                    <paw:input
+                        id="brandName-${brand.id}"
+                        name="name"
+                        value="${brand.name}"
+                        label="${brandNameLabel}"
+                    />
+                </div>
+            </paw:formDialog>
+
+            <paw:formDialog
+                id="replaceBrandDialog-${brand.id}"
+                title="${replaceBrandTitle}"
+                confirmText="${replaceBrandConfirm}"
+                cancelText="${replaceBrandCancel}"
+                formAction="${replaceBrandUrl}"
+                modelAttribute="replaceBrandForm"
+                redirect="${catalogReturnUrl}"
+            >
+                <div class="flex flex-col gap-3">
+                    <paw:formSelect
+                        id="replacementBrandId-${brand.id}"
+                        path="replacementBrandId"
+                        label="${replaceBrandSelectLabel}"
+                        placeholder="${replaceBrandPlaceholder}"
+                        items="${brandReplacementOptions[brand.id]}"
+                        itemLabel="name"
+                        itemValue="id"
+                    />
+                    <p class="text-xs text-red-600"><c:out value="${replaceBrandWarning}"/></p>
+                </div>
+            </paw:formDialog>
+
+            <paw:confirmDialog
+                id="deleteBrandDialog-${brand.id}"
+                title="${deleteBrandTitle}"
+                confirmText="${deleteBrandConfirm}"
+                cancelText="${deleteBrandCancel}"
+                formAction="${deleteBrandUrl}"
+                redirect="${catalogReturnUrl}"
+            >
+                <c:out value="${deleteBrandMessage}"/>
+            </paw:confirmDialog>
+        </c:forEach>
+
+        <c:url value="/admin/catalog" var="catalogUrl"/>
+        <div id="models" class="scroll-mt-28">
+            <paw:card title="${modelsTitle}" subtitle="${modelsSubtitle}">
+                <c:set var="modelIdSortIcon" value="${currentModelSort.key eq 'id' ? (currentModelSort.ascending ? 'chevron-up' : 'chevron-down') : 'chevrons-up-down'}"/>
+                <c:set var="modelIdNextSort" value="${currentModelSort.key eq 'id' and currentModelSort.ascending ? 'ID_DESC' : 'ID_ASC'}"/>
+                <c:set var="modelNameSortIcon" value="${currentModelSort.key eq 'name' ? (currentModelSort.ascending ? 'chevron-up' : 'chevron-down') : 'chevrons-up-down'}"/>
+                <c:set var="modelNameNextSort" value="${currentModelSort.key eq 'name' and currentModelSort.ascending ? 'NAME_DESC' : 'NAME_ASC'}"/>
+
+                <form:form
+                    id="modelFilterForm"
+                    modelAttribute="modelFilterForm"
+                    action="${catalogUrl}#models"
+                    method="get"
+                    class="mt-2 mb-3 flex flex-col sm:flex-row gap-3 items-end"
+                >
+                    <input type="hidden" name="page" value="${brandsPage.page}"/>
+                    <input type="hidden" name="sort" value="${currentSort.name()}"/>
+                    <input type="hidden" name="modelSort" value="${currentModelSort.name()}"/>
+                    <div class="flex-1 w-full">
+                        <paw:formSelect
+                            path="filterBrandId"
+                            label="${modelFilterBrandLabel}"
+                            placeholder="${modelFilterAllLabel}"
+                            items="${brandOptions}"
+                            itemLabel="name"
+                            itemValue="id"
+                        />
+                    </div>
+                    <div class="flex-1 w-full">
+                        <paw:formSelect
+                            id="modelFilterCategoryId"
+                            path="filterCategoryId"
+                            label="${modelFilterCategoryLabel}"
+                            placeholder="${modelFilterAllLabel}"
+                            items="${categories}"
+                            itemLabel="name"
+                            itemValue="id"
+                            labelPrefix="category."
+                            translateLabels="true"
+                        />
+                    </div>
+                    <div class="flex-1 w-full">
+                        <paw:formSelect
+                            id="modelFilterSubcategoryId"
+                            path="filterSubcategoryId"
+                            label="${modelFilterSubcategoryLabel}"
+                            placeholder="${modelFilterAllLabel}"
+                            items="${modelFilterSubcategories}"
+                            itemLabel="name"
+                            itemValue="id"
+                            labelPrefix="subcategory."
+                            translateLabels="true"
+                            disabled="${empty modelFilterForm.filterCategoryId}"
+                        />
+                    </div>
+                    <paw:button text="${modelFilterApplyLabel}" type="submit" variant="default" role="default" icon="search" classname="w-full sm:w-auto"/>
+                    <c:url value="/admin/catalog" var="clearModelFiltersUrl">
+                        <c:param name="page" value="${brandsPage.page}"/>
+                        <c:param name="sort" value="${currentSort.name()}"/>
+                        <c:param name="modelSort" value="${currentModelSort.name()}"/>
+                    </c:url>
+                    <paw:linkButton href="${clearModelFiltersUrl}" text="${modelFilterClearLabel}" variant="ghost" role="secondary" classname="w-full sm:w-auto"/>
+                </form:form>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="border-b border-black/10 text-left text-xs uppercase tracking-wide text-black/50">
+                                <th class="py-2 pr-4 font-medium">
+                                    <c:url value="/admin/catalog" var="modelIdSortUrl">
+                                        <c:if test="${not empty modelFilterForm.filterBrandId}"><c:param name="filterBrandId" value="${modelFilterForm.filterBrandId}"/></c:if>
+                                        <c:if test="${not empty modelFilterForm.filterCategoryId}"><c:param name="filterCategoryId" value="${modelFilterForm.filterCategoryId}"/></c:if>
+                                        <c:if test="${not empty modelFilterForm.filterSubcategoryId}"><c:param name="filterSubcategoryId" value="${modelFilterForm.filterSubcategoryId}"/></c:if>
+                                        <c:param name="page" value="${brandsPage.page}"/>
+                                        <c:param name="sort" value="${currentSort.name()}"/>
+                                        <c:param name="modelSort" value="${modelIdNextSort}"/>
+                                    </c:url>
+                                    <a href="${modelIdSortUrl}" class="inline-flex items-center gap-1 hover:text-black transition">
+                                        <c:out value="${modelIdLabel}"/>
+                                        <paw:icon name="${modelIdSortIcon}"/>
+                                    </a>
+                                </th>
+                                <th class="py-2 pr-4 font-medium">
+                                    <c:url value="/admin/catalog" var="modelNameSortUrl">
+                                        <c:if test="${not empty modelFilterForm.filterBrandId}"><c:param name="filterBrandId" value="${modelFilterForm.filterBrandId}"/></c:if>
+                                        <c:if test="${not empty modelFilterForm.filterCategoryId}"><c:param name="filterCategoryId" value="${modelFilterForm.filterCategoryId}"/></c:if>
+                                        <c:if test="${not empty modelFilterForm.filterSubcategoryId}"><c:param name="filterSubcategoryId" value="${modelFilterForm.filterSubcategoryId}"/></c:if>
+                                        <c:param name="page" value="${brandsPage.page}"/>
+                                        <c:param name="sort" value="${currentSort.name()}"/>
+                                        <c:param name="modelSort" value="${modelNameNextSort}"/>
+                                    </c:url>
+                                    <a href="${modelNameSortUrl}" class="inline-flex items-center gap-1 hover:text-black transition">
+                                        <c:out value="${modelNameLabel}"/>
+                                        <paw:icon name="${modelNameSortIcon}"/>
+                                    </a>
+                                </th>
+                                <th class="py-2 pr-4 font-medium"><c:out value="${modelBrandLabel}"/></th>
+                                <th class="py-2 pr-4 font-medium"><c:out value="${modelSubcategoryLabel}"/></th>
+                                <th class="py-2 text-right font-medium"><c:out value="${modelActionsLabel}"/></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <c:forEach var="model" items="${models}">
+                                <c:url value="/admin/catalog/models/${model.id}/edit" var="editModelUrl"/>
+                                <tr class="border-b border-black/5 last:border-0 align-top"
+                                    data-edit-action="${editModelUrl}"
+                                    data-model-name="<c:out value='${model.name}'/>"
+                                    data-brand-id="${model.brandId}"
+                                    data-subcategory-id="${model.subcategoryId}">
+                                    <td class="py-3 pr-4">
+                                        <span class="text-xs font-mono font-medium px-1.5 py-0.5 rounded bg-black/5 text-black/70">
+                                            #<c:out value="${model.id}"/>
+                                        </span>
+                                    </td>
+                                    <td class="py-3 pr-4 font-medium"><c:out value="${model.name}"/></td>
+                                    <td class="py-3 pr-4 text-black/70"><c:out value="${model.brandName}"/></td>
+                                    <td class="py-3 pr-4 text-black/70">
+                                        <spring:message code="subcategory.${model.subcategoryName}"/>
+                                    </td>
+                                    <td class="py-3">
+                                        <div class="flex flex-col items-end gap-1">
+                                            <div class="flex items-center justify-end gap-2">
+                                                <paw:button
+                                                    text="${editModelLabel}"
+                                                    type="button"
+                                                    variant="outline"
+                                                    size="sm"
+                                                    icon="pencil"
+                                                    onclick="openEditModelDialog(this)"
+                                                />
+                                                <c:if test="${not empty modelReplacementOptions[model.id]}">
+                                                    <paw:button
+                                                        text="${replaceModelLabel}"
+                                                        type="button"
+                                                        variant="outline"
+                                                        role="secondary"
+                                                        size="sm"
+                                                        icon="replace"
+                                                        onclick="document.getElementById('replaceModelDialog-${model.id}').showModal()"
+                                                    />
+                                                </c:if>
+                                                <c:choose>
+                                                    <c:when test="${model.hasListings}">
+                                                        <paw:button
+                                                            text="${deleteModelLabel}"
+                                                            type="button"
+                                                            variant="outline"
+                                                            role="danger"
+                                                            size="sm"
+                                                            icon="trash-2"
+                                                            disabled="true"
+                                                        />
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <paw:button
+                                                            text="${deleteModelLabel}"
+                                                            type="button"
+                                                            variant="outline"
+                                                            role="danger"
+                                                            size="sm"
+                                                            icon="trash-2"
+                                                            onclick="document.getElementById('deleteModelDialog-${model.id}').showModal()"
+                                                        />
+                                                    </c:otherwise>
+                                                </c:choose>
+                                            </div>
+                                            <c:if test="${model.hasListings}">
+                                                <p class="text-xs text-black/50 text-right">
+                                                    <c:out value="${deleteModelBlocked}"/>
+                                                </p>
+                                            </c:if>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </c:forEach>
+                        </tbody>
+                    </table>
+                </div>
+
+                <paw:pagination page="${modelsPage}" baseUrl="/admin/catalog" pageParam="modelPage" classname="mb-4"/>
+
+                <paw:divider />
+
+                <div id="create-model" class="mt-4 flex flex-col gap-2 scroll-mt-28">
+                    <h3 class="text-sm font-semibold"><c:out value="${createModelTitle}"/></h3>
+                    <form:form
+                        id="createModelFilterForm"
+                        modelAttribute="createModelFilterForm"
+                        action="${catalogUrl}#create-model"
+                        method="get"
+                        class="flex flex-col sm:flex-row gap-3 items-end"
+                    >
+                            <input type="hidden" name="page" value="${brandsPage.page}"/>
+                        <input type="hidden" name="sort" value="${currentSort.name()}"/>
+                        <input type="hidden" name="modelPage" value="${modelsPage.page}"/>
+                        <input type="hidden" name="modelSort" value="${currentModelSort.name()}"/>
+                        <input type="hidden" name="requestPage" value="${requestsPage.page}"/>
+                        <c:if test="${not empty modelFilterForm.filterBrandId}">
+                            <input type="hidden" name="filterBrandId" value="${modelFilterForm.filterBrandId}"/>
+                        </c:if>
+                        <c:if test="${not empty modelFilterForm.filterCategoryId}">
+                            <input type="hidden" name="filterCategoryId" value="${modelFilterForm.filterCategoryId}"/>
+                        </c:if>
+                        <c:if test="${not empty modelFilterForm.filterSubcategoryId}">
+                            <input type="hidden" name="filterSubcategoryId" value="${modelFilterForm.filterSubcategoryId}"/>
+                        </c:if>
+                        <div class="flex-1 w-full">
+                            <paw:formSelect
+                                id="createModelFilterCategoryId"
+                                path="categoryId"
+                                label="${createModelCategoryLabel}"
+                                placeholder="${createModelCategoryPlaceholder}"
+                                items="${categories}"
+                                itemLabel="name"
+                                itemValue="id"
+                                labelPrefix="category."
+                                translateLabels="true"
+                                variant="outline"
+                            />
+                        </div>
+                    </form:form>
+                    <c:url value="/admin/catalog/models" var="createModelUrl"/>
+                    <form:form
+                        modelAttribute="createModelForm"
+                        action="${createModelUrl}"
+                        method="post"
+                        class="flex flex-col gap-3"
+                    >
+                        <input type="hidden" name="redirect" value="<c:out value='${catalogReturnUrl}'/>"/>
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
+                            <paw:formInput
+                                path="name"
+                                label="${createModelNameLabel}"
+                                placeholder="${createModelNamePlaceholder}"
+                                variant="outline"
+                                disabled="${empty createModelFilterForm.categoryId}"
+                            />
+                            <paw:formSelect
+                                path="brandId"
+                                label="${createModelBrandLabel}"
+                                placeholder="${createModelBrandPlaceholder}"
+                                items="${brandOptions}"
+                                itemLabel="name"
+                                itemValue="id"
+                                variant="outline"
+                                disabled="${empty createModelFilterForm.categoryId}"
+                            />
+                            <paw:formSelect
+                                path="subcategoryId"
+                                label="${createModelSubcategoryLabel}"
+                                placeholder="${createModelSubcategoryPlaceholder}"
+                                items="${createModelSubcategories}"
+                                itemLabel="name"
+                                itemValue="id"
+                                labelPrefix="subcategory."
+                                translateLabels="true"
+                                variant="outline"
+                                disabled="${empty createModelFilterForm.categoryId}"
+                            />
+                            <paw:button
+                                text="${createModelSubmit}"
+                                type="submit"
+                                variant="default"
+                                role="default"
+                                icon="plus"
+                                classname="w-full"
+                                disabled="${empty createModelFilterForm.categoryId}"
+                            />
+                        </div>
+                    </form:form>
+                </div>
+            </paw:card>
+        </div>
+
+        <c:forEach var="model" items="${models}">
+            <c:url value="/admin/catalog/models/${model.id}/replace" var="replaceModelUrl"/>
+            <c:url value="/admin/catalog/models/${model.id}/delete" var="deleteModelUrl"/>
+
+            <paw:formDialog
+                id="replaceModelDialog-${model.id}"
+                title="${replaceModelTitle}"
+                confirmText="${replaceModelConfirm}"
+                cancelText="${replaceModelCancel}"
+                formAction="${replaceModelUrl}"
+                modelAttribute="replaceModelForm"
+                redirect="${catalogReturnUrl}"
+            >
+                <div class="flex flex-col gap-3">
+                    <paw:formSelect
+                        id="replacementModelId-${model.id}"
+                        path="replacementModelId"
+                        label="${replaceModelSelectLabel}"
+                        placeholder="${replaceModelPlaceholder}"
+                        items="${modelReplacementOptions[model.id]}"
+                        itemLabel="label"
+                        itemValue="id"
+                    />
+                    <p class="text-xs text-red-600"><c:out value="${replaceModelWarning}"/></p>
+                </div>
+            </paw:formDialog>
+
+            <paw:confirmDialog
+                id="deleteModelDialog-${model.id}"
+                title="${deleteModelTitle}"
+                confirmText="${deleteModelConfirm}"
+                cancelText="${deleteModelCancel}"
+                formAction="${deleteModelUrl}"
+                redirect="${catalogReturnUrl}"
+            >
+                <c:out value="${deleteModelMessage}"/>
+            </paw:confirmDialog>
+        </c:forEach>
+
+        <paw:card title="${requestsTitle}" subtitle="${requestsSubtitle}">
+            <div class="mt-4 overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="border-b border-black/10 text-left text-xs uppercase tracking-wide text-black/50">
+                            <th class="py-2 pr-4 font-medium"><c:out value="${requestTypeLabel}"/></th>
+                            <th class="py-2 pr-4 font-medium"><c:out value="${requestBrandLabel}"/></th>
+                            <th class="py-2 pr-4 font-medium"><c:out value="${requestModelLabel}"/></th>
+                            <th class="py-2 pr-4 font-medium"><c:out value="${requestSubcategoryLabel}"/></th>
+                            <th class="py-2 pr-4 font-medium"><c:out value="${requestRequesterLabel}"/></th>
+                            <th class="py-2 text-right font-medium"><c:out value="${requestActionsLabel}"/></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <c:if test="${empty requests}">
+                            <tr>
+                                <td colspan="6" class="py-6 text-center text-black/50"><c:out value="${requestsEmptyLabel}"/></td>
+                            </tr>
+                        </c:if>
+                        <c:forEach var="request" items="${requests}">
+                            <c:url value="/admin/catalog/requests/${request.id}/accept" var="acceptRequestUrl"/>
+                            <c:url value="/admin/catalog/requests/${request.id}/reject" var="rejectRequestUrl"/>
+                            <tr class="border-b border-black/5 last:border-0 align-top"
+                                data-accept-action="${acceptRequestUrl}"
+                                data-request-type="${request.type.name()}"
+                                data-brand-id="${request.brandId}"
+                                data-brand-name="<c:out value='${request.requestedBrandName}'/>"
+                                data-model-name="<c:out value='${request.modelName}'/>">
+                                <td class="py-3 pr-4">
+                                    <c:choose>
+                                        <c:when test="${request.newBrand}">
+                                            <paw:badge text="${requestNewBrandType}" classname="text-amber-700 bg-amber-100" size="sm"/>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <paw:badge text="${requestExistingBrandType}" classname="text-blue-700 bg-blue-100" size="sm"/>
+                                        </c:otherwise>
+                                    </c:choose>
+                                </td>
+                                <td class="py-3 pr-4 font-medium"><c:out value="${request.requestedBrandName}"/></td>
+                                <td class="py-3 pr-4 text-black/70"><c:out value="${request.modelName}"/></td>
+                                <td class="py-3 pr-4 text-black/70">
+                                    <spring:message code="subcategory.${request.subcategory.name}"/>
+                                </td>
+                                <td class="py-3 pr-4">
+                                    <paw:user user="${request.requester}" variant="compact"/>
+                                    <c:if test="${request.additionalRequesterCount > 0}">
+                                        <div class="text-xs text-black/50 mt-1">
+                                            <spring:message code="admin.catalog.requests.additionalOthers" arguments="${request.additionalRequesterCount}"/>
+                                        </div>
+                                    </c:if>
+                                </td>
+                                <td class="py-3">
+                                    <div class="flex items-center justify-end gap-2">
+                                        <paw:button
+                                            text="${acceptRequestLabel}"
+                                            type="button"
+                                            variant="outline"
+                                            role="default"
+                                            size="sm"
+                                            icon="check"
+                                            onclick="openAcceptRequestDialog(this)"
+                                        />
+                                        <paw:button
+                                            text="${rejectRequestLabel}"
+                                            type="button"
+                                            variant="outline"
+                                            role="danger"
+                                            size="sm"
+                                            icon="x"
+                                            onclick="document.getElementById('rejectRequestDialog-${request.id}').showModal()"
+                                        />
+                                    </div>
+                                </td>
+                            </tr>
+                        </c:forEach>
+                    </tbody>
+                </table>
+            </div>
+
+            <paw:pagination page="${requestsPage}" baseUrl="/admin/catalog" pageParam="requestPage" classname="mb-4"/>
+        </paw:card>
+
+        <c:forEach var="request" items="${requests}">
+            <c:url value="/admin/catalog/requests/${request.id}/reject" var="rejectRequestUrl"/>
+            <paw:confirmDialog
+                id="rejectRequestDialog-${request.id}"
+                title="${rejectRequestTitle}"
+                confirmText="${rejectRequestConfirm}"
+                cancelText="${rejectRequestCancel}"
+                formAction="${rejectRequestUrl}"
+                redirect="${catalogReturnUrl}"
+            >
+                <c:out value="${rejectRequestMessage}"/>
+            </paw:confirmDialog>
+        </c:forEach>
+
+        <paw:formDialog
+            id="acceptRequestDialog"
+            title="${acceptRequestTitle}"
+            confirmText="${acceptRequestConfirm}"
+            cancelText="${acceptRequestCancel}"
+            formAction="${catalogUrl}"
+            modelAttribute="acceptRequestForm"
+            redirect="${catalogReturnUrl}"
+        >
+            <div class="flex flex-col gap-3 text-black">
+                <div class="flex flex-col gap-2">
+                    <span class="text-xs text-black/70 font-medium"><c:out value="${acceptRequestTypeLabel}"/></span>
+                    <div class="flex flex-col sm:flex-row gap-2">
+                        <paw:radio path="type" id="acceptRequestTypeNew" value="NEW_BRAND" label="${requestNewBrandType}"/>
+                        <paw:radio path="type" id="acceptRequestTypeExisting" value="EXISTING_BRAND" label="${requestExistingBrandType}"/>
+                    </div>
+                </div>
+                <div id="acceptNewBrandFields" class="flex flex-col gap-3">
+                    <paw:formInput
+                        id="acceptRequestNewBrandName"
+                        path="newBrandName"
+                        label="${acceptRequestNewBrandLabel}"
+                    />
+                </div>
+                <div id="acceptExistingBrandFields" class="flex flex-col gap-3">
+                    <paw:formSelect
+                        id="acceptRequestBrandId"
+                        path="brandId"
+                        label="${acceptRequestExistingBrandLabel}"
+                        items="${brandOptions}"
+                        itemLabel="name"
+                        itemValue="id"
+                    />
+                </div>
+                <paw:formInput
+                    id="acceptRequestModelName"
+                    path="modelName"
+                    label="${acceptRequestModelLabel}"
+                />
+            </div>
+        </paw:formDialog>
+
+        <paw:formDialog
+            id="editModelDialog"
+            title="${editModelTitle}"
+            confirmText="${editModelConfirm}"
+            cancelText="${editModelCancel}"
+            formAction="${catalogUrl}"
+            modelAttribute="editModelForm"
+            redirect="${catalogReturnUrl}"
+        >
+            <div class="flex flex-col gap-3 text-black">
+                <paw:formInput
+                    id="editModelName"
+                    path="name"
+                    label="${modelNameLabel}"
+                />
+                <paw:formSelect
+                    id="editModelBrandId"
+                    path="brandId"
+                    label="${modelBrandLabel}"
+                    items="${brandOptions}"
+                    itemLabel="name"
+                    itemValue="id"
+                />
+                <paw:formSelect
+                    id="editModelSubcategoryId"
+                    path="subcategoryId"
+                    label="${modelSubcategoryLabel}"
+                    items="${editModelSubcategories}"
+                    itemLabel="name"
+                    itemValue="id"
+                    labelPrefix="subcategory."
+                    translateLabels="true"
+                />
+            </div>
+        </paw:formDialog>
+
+        <script>
+            function openEditModelDialog(button) {
+                var dialog = document.getElementById('editModelDialog');
+                var modelRow = button.closest('tr');
+                var form = dialog.querySelector('form');
+
+                form.action = modelRow.dataset.editAction;
+                form.querySelector('input[name="name"]').value = modelRow.dataset.modelName || '';
+                form.querySelector('select[name="brandId"]').value = modelRow.dataset.brandId || '';
+                form.querySelector('select[name="subcategoryId"]').value = modelRow.dataset.subcategoryId || '';
+
+                dialog.showModal();
+            }
+
+            function updateAcceptRequestFields() {
+                var existingRadio = document.getElementById('acceptRequestTypeExisting');
+                var isExisting = existingRadio && existingRadio.checked;
+                var newBrandFields = document.getElementById('acceptNewBrandFields');
+                var existingBrandFields = document.getElementById('acceptExistingBrandFields');
+                if (newBrandFields) {
+                    newBrandFields.style.display = isExisting ? 'none' : '';
+                }
+                if (existingBrandFields) {
+                    existingBrandFields.style.display = isExisting ? '' : 'none';
+                }
+            }
+
+            function openAcceptRequestDialog(button) {
+                var dialog = document.getElementById('acceptRequestDialog');
+                var requestRow = button.closest('tr');
+                var form = dialog.querySelector('form');
+                var type = requestRow.dataset.requestType || 'NEW_BRAND';
+
+                form.action = requestRow.dataset.acceptAction;
+                form.querySelector('input[name="modelName"]').value = requestRow.dataset.modelName || '';
+                form.querySelector('input[name="newBrandName"]').value = requestRow.dataset.brandName || '';
+                form.querySelector('select[name="brandId"]').value = requestRow.dataset.brandId || '';
+                form.querySelector('input[name="type"][value="' + type + '"]').checked = true;
+
+                updateAcceptRequestFields();
+                dialog.showModal();
+            }
+
+            document.addEventListener('DOMContentLoaded', function () {
+                var newRadio = document.getElementById('acceptRequestTypeNew');
+                var existingRadio = document.getElementById('acceptRequestTypeExisting');
+                if (newRadio) {
+                    newRadio.addEventListener('change', updateAcceptRequestFields);
+                }
+                if (existingRadio) {
+                    existingRadio.addEventListener('change', updateAcceptRequestFields);
+                }
+
+                var filterForm = document.getElementById('modelFilterForm');
+                var filterCategory = document.getElementById('modelFilterCategoryId');
+                var filterSubcategory = document.getElementById('modelFilterSubcategoryId');
+                if (filterForm && filterCategory) {
+                    filterCategory.addEventListener('change', function () {
+                        if (filterSubcategory) {
+                            filterSubcategory.value = '';
+                        }
+                        filterForm.submit();
+                    });
+                }
+
+                var createModelFilterForm = document.getElementById('createModelFilterForm');
+                var createModelFilterCategory = document.getElementById('createModelFilterCategoryId');
+                if (createModelFilterForm && createModelFilterCategory) {
+                    createModelFilterCategory.addEventListener('change', function () {
+                        createModelFilterForm.submit();
+                    });
+                }
+            });
+        </script>
+
+    </div>
+</admin:layout>

@@ -7,8 +7,8 @@ import ar.edu.itba.paw.model.ListingFilter;
 import ar.edu.itba.paw.model.ListingSort;
 import ar.edu.itba.paw.model.Page;
 import ar.edu.itba.paw.model.ListingStatus;
+import ar.edu.itba.paw.model.Model;
 import ar.edu.itba.paw.model.Price;
-import ar.edu.itba.paw.model.Product;
 import ar.edu.itba.paw.model.User;
 import ar.edu.itba.paw.persistence.ListingDao;
 import ar.edu.itba.paw.service.dto.ImageData;
@@ -23,6 +23,9 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Stream;
+import java.util.stream.IntStream;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,31 +43,56 @@ public class ListingServiceImpl implements ListingService {
     private final ListingDao listingDao;
 
     private final UserService userService;
-    private final ProductService productService;
+    private final CatalogService catalogService;
     private final ImageService imageService;
     private final NotificationDispatcherService notificationDispatcherService;
-    private final OfferService offerService;
 
     @Override
     public Listing getById(Long id) {
+        if (id == null) {
+            throw BadParameterException.create("id", "Listing id is required");
+        }
         return listingDao
             .getById(id)
             .orElseThrow(() -> NotFoundException.createFor("Listing with ID " + id));
     }
 
     @Override
+    public Page<Listing> getActiveByCreator(Long creatorId, Integer page, int pageSize) {
+        return search(ListingFilterDto.builder()
+            .creatorId(creatorId)
+            .status(ListingStatus.ACTIVE)
+            .page(page == null || page < 1 ? 1 : page)
+            .pageSize(pageSize)
+            .build());
+    }
+
+    @Override
     public Page<Listing> search(ListingFilterDto dto) {
+        return search(dto, false);
+    }
+
+    @Override
+    public Page<Listing> searchForAdmin(ListingFilterDto dto) {
+        return search(dto, true);
+    }
+
+    private Page<Listing> search(ListingFilterDto dto, boolean forAdmin) {
         Objects.requireNonNull(dto, "ListingFilterDto cannot be null");
         LOGGER.debug("Searching listings: query='{}', categoryId={}, status={}, sort={}, page={}",
                 dto.query(), dto.categoryId(), dto.status(), dto.sort(), dto.page());
 
+        final boolean onlyFree = Boolean.TRUE.equals(dto.onlyFree());
+
+        // "only free" is a price range of exactly zero. The price range and the trade filter are hidden in the UI
+        // while it is active, and a free listing never accepts trade, so both are ignored here
         final var filter = ListingFilter.builder()
             .categoryId(dto.categoryId())
             .subcategoryId(dto.subcategoryId())
-            .minPrice(sanitizePrice(dto.minPrice()))
-            .maxPrice(sanitizePrice(dto.maxPrice()))
+            .minPrice(onlyFree ? BigDecimal.ZERO : sanitizePrice(dto.minPrice()))
+            .maxPrice(onlyFree ? BigDecimal.ZERO : sanitizePrice(dto.maxPrice()))
             .condition(dto.condition())
-            .acceptsTrade(Boolean.TRUE.equals(dto.acceptsTrade()) ? Boolean.TRUE : null)
+            .acceptsTrade(!onlyFree && Boolean.TRUE.equals(dto.acceptsTrade()) ? Boolean.TRUE : null)
             .query(dto.query())
             .sort(dto.sort())
             .page(sanitizePage(dto.page()))
@@ -74,13 +102,13 @@ public class ListingServiceImpl implements ListingService {
             .hasActiveOffers(dto.hasActiveOffers())
             .provinceId(dto.provinceId())
             .acceptsShipping(Boolean.TRUE.equals(dto.acceptsShipping()) ? Boolean.TRUE : null)
-            .brand(dto.brand())
-            .model(dto.model())
+            .brandId(dto.brandId())
+            .modelId(dto.modelId())
             .yearMin(dto.yearMin())
             .yearMax(dto.yearMax())
             .build();
 
-        return listingDao.search(filter);
+        return forAdmin ? listingDao.searchForAdmin(filter) : listingDao.search(filter);
     }
 
     @Override
@@ -111,46 +139,66 @@ public class ListingServiceImpl implements ListingService {
         return value != null && value.signum() >= 0 ? value : null;
     }
 
+    private List<Long> createImages(final List<ImageData> images, final String title, final int firstIndex) {
+        if (images == null) {
+            return List.of();
+        }
+        final List<ImageData> validImages = images.stream()
+            .filter(imageData -> imageData != null && imageData.imageBytes() != null && imageData.imageBytes().length > 0)
+            .toList();
+        if (validImages.isEmpty()) {
+            return List.of();
+        }
+
+        final List<Image> toCreate = IntStream.range(0, validImages.size())
+            .mapToObj(i -> Image.builder()
+                .filename(validImages.get(i).imageFilename())
+                .alt("Image " + (firstIndex + i + 1) + " for listing: " + title)
+                .contentType(validImages.get(i).imageContentType())
+                .data(validImages.get(i).imageBytes())
+                .build())
+            .toList();
+
+        return imageService.createAll(toCreate).stream()
+            .map(Image::getId)
+            .toList();
+    }
+
     @Override
     @Transactional
     public Listing create(ListingCreationDto dto) {
         Objects.requireNonNull(dto, "ListingCreationDto cannot be null");
-        LOGGER.debug("Creating listing: title='{}', creatorId={}, productId={}", dto.title(), dto.creatorId(), dto.productId());
+        LOGGER.debug("Creating listing: title='{}', creatorId={}, modelId={}, year={}", dto.title(), dto.creatorId(), dto.modelId(), dto.year());
 
         User creator = userService.getById(dto.creatorId())
                 .orElseThrow(() -> new BadParameterException("Invalid creatorId"));
 
-        Product product;
+        Model model;
         try {
-            product = productService.getById(dto.productId());
+            model = catalogService.getModelById(dto.modelId());
         } catch (NotFoundException e) {
-            throw BadParameterException.create("productId", e.getMessage());
+            throw BadParameterException.create("modelId", e.getMessage());
+        }
+        if (!Listing.isValidYear(dto.year())) {
+            throw BadParameterException.create("year", "Year must be between " + Listing.MIN_YEAR + " and the current year");
         }
 
-        List<Long> imageIds = new ArrayList<>();
-        if (dto.images() != null) {
-            for (int i = 0; i < dto.images().size(); i++) {
-                ImageData imageData = dto.images().get(i);
-                if (imageData != null && imageData.imageBytes() != null && imageData.imageBytes().length > 0) {
-                    String alt = "Image " + (i + 1) + " for listing: " + dto.title();
-                    Image image = imageService.create(imageData.imageFilename(), alt, imageData.imageContentType(), imageData.imageBytes());
-                    imageIds.add(image.getId());
-                }
-            }
-        }
+        final List<Long> imageIds = createImages(dto.images(), dto.title(), 0);
 
         if (dto.condition() == null) {
             throw BadParameterException.create("condition", "Condition is required");
         }
         final Condition condition = dto.condition();
 
+        final Price price = new Price(dto.price());
         var listing = listingDao.create(
             dto.title(),
-            new Price(dto.price()),
+            price,
             creator,
-            product,
+            model,
+            dto.year(),
             condition,
-            dto.acceptsTrade(),
+            acceptsTradeFor(price, dto.acceptsTrade()),
             dto.acceptsShipping(),
             dto.description(),
             imageIds
@@ -162,6 +210,11 @@ public class ListingServiceImpl implements ListingService {
         notificationDispatcherService.notifyListingPublished(listing);
 
         return listing;
+    }
+
+    // A free listing can't be traded: there is no value to exchange against, so the request is silently dropped.
+    private static boolean acceptsTradeFor(final Price price, final boolean requested) {
+        return requested && price.getAmount().signum() > 0;
     }
 
     @Override
@@ -177,7 +230,7 @@ public class ListingServiceImpl implements ListingService {
             throw new BadParameterException("Listing is not in a pending transaction state");
         }
 
-        listingDao.purchase(id, buyerId);
+        listingDao.purchase(id);
 
         final User buyer = userService.getById(buyerId)
             .orElseThrow(() -> new BadParameterException("Invalid buyerId"));
@@ -198,7 +251,7 @@ public class ListingServiceImpl implements ListingService {
             .getById(id)
             .orElseThrow(() -> NotFoundException.createFor("Listing with ID " + id));
 
-        listingDao.pendingTransaction(id, buyerId);
+        listingDao.pendingTransaction(id);
 
         return listing;
     }
@@ -218,11 +271,14 @@ public class ListingServiceImpl implements ListingService {
             throw new ForbiddenException("Cannot edit a canceled listing");
         }
 
-        Product product;
+        Model model;
         try {
-            product = productService.getById(dto.productId());
+            model = catalogService.getModelById(dto.modelId());
         } catch (NotFoundException e) {
-            throw BadParameterException.create("productId", e.getMessage());
+            throw BadParameterException.create("modelId", e.getMessage());
+        }
+        if (!Listing.isValidYear(dto.year())) {
+            throw BadParameterException.create("year", "Year must be between " + Listing.MIN_YEAR + " and the current year");
         }
 
         if (dto.condition() == null) {
@@ -230,44 +286,37 @@ public class ListingServiceImpl implements ListingService {
         }
         final Condition condition = dto.condition();
 
+        final Price price = new Price(dto.price());
         var updated = listingDao.update(
             existing.getId(),
             dto.title(),
-            new Price(dto.price()),
-            product,
+            price,
+            model,
+            dto.year(),
             condition,
-            dto.acceptsTrade(),
+            acceptsTradeFor(price, dto.acceptsTrade()),
             dto.acceptsShipping(),
             dto.description()
-        );
+        ).orElseThrow(() -> NotFoundException.createFor("Listing with ID " + existing.getId()));
+
+        final var currentImageIds = existing.getImageIds();
+        final var removedImageIds = Optional.ofNullable(dto.removedImageIds()).orElse(List.of()).stream()
+            .filter(currentImageIds::contains)
+            .distinct()
+            .toList();
+        final var keptImageIds = currentImageIds.stream()
+            .filter(imageId -> !removedImageIds.contains(imageId))
+            .toList();
+        final var newImageIds = createImages(dto.newImages(), dto.title(), keptImageIds.size());
+
+        if (!removedImageIds.isEmpty() || !newImageIds.isEmpty()) {
+            final var finalImageIds = Stream.concat(keptImageIds.stream(), newImageIds.stream()).toList();
+            listingDao.updateImages(existing.getId(), finalImageIds);
+            imageService.deleteAll(removedImageIds);
+        }
+
         LOGGER.info("Listing updated: id={}, title='{}'", updated.getId(), updated.getTitle());
         return updated;
-    }
-
-    @Override
-    @Transactional
-    public void cancel(Long id, Long currentUserId) {
-        LOGGER.info("Canceling listing id={} by user {}", id, currentUserId);
-        var listing = getById(id);
-        if (!listing.isCreator(currentUserId)) {
-            throw new ForbiddenException("Not authorized to cancel this listing");
-        }
-        offerService.rejectPendingOffersForListing(id, null);
-        if (!listingDao.cancel(id)) {
-            throw NotFoundException.createFor("Listing with ID " + id);
-        }
-        LOGGER.info("Listing canceled: id={}", id);
-    }
-
-    @Override
-    @Transactional
-    public void cancelByAdmin(Long id) {
-        LOGGER.info("Canceling listing id={} by Admin", id);
-        offerService.rejectPendingOffersForListing(id, null);
-        if (!listingDao.cancel(id)) {
-            throw NotFoundException.createFor("Listing with ID " + id);
-        }
-        LOGGER.info("Listing canceled by Admin: id={}", id);
     }
 
     @Override
@@ -282,5 +331,23 @@ public class ListingServiceImpl implements ListingService {
     public void updateStatusBulk(List<Long> ids, ListingStatus status) {
         LOGGER.debug("Bulk updating listing status: ids={}, newStatus={}", ids, status);
         listingDao.updateStatusBulk(ids, status);
+    }
+
+    @Override
+    @Transactional
+    public int releaseOfferedListingsForParticipant(Long userId) {
+        return listingDao.releaseOfferedListingsForParticipant(userId);
+    }
+
+    @Override
+    @Transactional
+    public int releaseListingsHeldByBuyerPaymentOffers(Long userId) {
+        return listingDao.releaseListingsHeldByBuyerPaymentOffers(userId);
+    }
+
+    @Override
+    @Transactional
+    public int releaseListingsHeldByPendingPaymentTradeOffersForOfferedListing(Long offeredListingId) {
+        return listingDao.releaseListingsHeldByPendingPaymentTradeOffersForOfferedListing(offeredListingId);
     }
 }

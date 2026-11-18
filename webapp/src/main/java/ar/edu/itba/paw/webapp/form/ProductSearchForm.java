@@ -12,22 +12,12 @@ public class ProductSearchForm {
 
     private Long categoryId;
     private Long subcategoryId;
-    private String brand;
-    private String model;
+    private Long brandId;
+    private Long modelId;
     private Integer yearMin;
     private Integer yearMax;
     @Min(1)
     private Integer page;
-
-    public String getBrand() {
-        if (brand == null || brand.isBlank()) return null;
-        return brand;
-    }
-
-    public String getModel() {
-        if (model == null || model.isBlank()) return null;
-        return model;
-    }
 
     public Integer getPage() {
         return page == null || page < 1 ? 1 : page;

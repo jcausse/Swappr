@@ -1,8 +1,26 @@
 package ar.edu.itba.paw.model;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
+import javax.persistence.Transient;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Optional;
@@ -36,7 +54,7 @@ public class Offer {
     private BigDecimal amount;
 
     @Column(name = "is_full_price", nullable = false)
-    private Boolean isFullPrice;
+    private boolean isFullPrice;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 20)
@@ -80,6 +98,12 @@ public class Offer {
     @Transient
     private boolean hasBetterOffers;
 
+    @Transient
+    private FileMetadata proofOfPaymentMetadata;
+
+    @Transient
+    private FileMetadata proofOfShippingMetadata;
+
     // -------------------------------------------------------------------------------------------------
 
     public Optional<File> getProofOfPayment() {
@@ -94,10 +118,6 @@ public class Offer {
         return Optional.ofNullable(offeredListing);
     }
 
-    public Optional<Instant> getAcceptedAt() {
-        return Optional.ofNullable(acceptedAt);
-    }
-
     public Optional<OfferRating> getBuyerRating() {
         return Optional.ofNullable(buyerRating);
     }
@@ -106,60 +126,51 @@ public class Offer {
         return Optional.ofNullable(sellerRating);
     }
 
-    // -- Transitional getters for Service / Webapp compatibility --
-    // TODO: [JPA Migration Cleanup] Transitional getters for compatibility.
+    // -- Convenience getters for Service / Webapp compatibility --
     public Long getOfferedListingId() {
         return offeredListing != null ? offeredListing.getId() : null;
     }
 
     public Long getProofOfPaymentId() {
+        if (proofOfPaymentMetadata != null) return proofOfPaymentMetadata.getId();
         return proofOfPayment != null ? proofOfPayment.getId() : null;
     }
 
     public String getProofOfPaymentFilename() {
-        return proofOfPayment != null ? proofOfPayment.getFilename() : null;
+        return proofOfPaymentMetadata != null ? proofOfPaymentMetadata.getFilename() : null;
     }
 
     public Long getProofOfPaymentSizeKb() {
-        if (proofOfPayment == null || proofOfPayment.getSize() <= 0) return 0L;
-        return proofOfPayment.getSize() / 1024;
+        return proofOfPaymentMetadata != null ? proofOfPaymentMetadata.getSizeKb() : 0L;
     }
 
     public boolean proofOfPaymentIsImage() {
-        return proofOfPayment != null && proofOfPayment.getContentType().map(ct -> ct.startsWith("image/")).orElse(false);
+        return proofOfPaymentMetadata != null && proofOfPaymentMetadata.isImage();
     }
 
     public String getProofOfPaymentExtension() {
-        if (proofOfPayment == null || proofOfPayment.getFilename() == null || proofOfPayment.getFilename().isBlank()) return "";
-        String filename = proofOfPayment.getFilename();
-        int lastDot = filename.lastIndexOf('.');
-        if (lastDot == -1 || lastDot == filename.length() - 1) return "";
-        return filename.substring(lastDot + 1).toLowerCase();
+        return proofOfPaymentMetadata != null ? proofOfPaymentMetadata.getExtension() : "";
     }
 
     public Long getProofOfShippingId() {
+        if (proofOfShippingMetadata != null) return proofOfShippingMetadata.getId();
         return proofOfShipping != null ? proofOfShipping.getId() : null;
     }
 
     public String getProofOfShippingFilename() {
-        return proofOfShipping != null ? proofOfShipping.getFilename() : null;
+        return proofOfShippingMetadata != null ? proofOfShippingMetadata.getFilename() : null;
     }
 
     public Long getProofOfShippingSizeKb() {
-        if (proofOfShipping == null || proofOfShipping.getSize() <= 0) return 0L;
-        return proofOfShipping.getSize() / 1024;
+        return proofOfShippingMetadata != null ? proofOfShippingMetadata.getSizeKb() : 0L;
     }
 
     public boolean proofOfShippingIsImage() {
-        return proofOfShipping != null && proofOfShipping.getContentType().map(ct -> ct.startsWith("image/")).orElse(false);
+        return proofOfShippingMetadata != null && proofOfShippingMetadata.isImage();
     }
 
     public String getProofOfShippingExtension() {
-        if (proofOfShipping == null || proofOfShipping.getFilename() == null || proofOfShipping.getFilename().isBlank()) return "";
-        String filename = proofOfShipping.getFilename();
-        int lastDot = filename.lastIndexOf('.');
-        if (lastDot == -1 || lastDot == filename.length() - 1) return "";
-        return filename.substring(lastDot + 1).toLowerCase();
+        return proofOfShippingMetadata != null ? proofOfShippingMetadata.getExtension() : "";
     }
 
     public boolean isPending() {
@@ -172,6 +183,19 @@ public class Offer {
 
     public boolean isAccepted() {
         return status == OfferStatus.ACCEPTED;
+    }
+
+    public boolean canBeCanceledByAdmin() {
+        return isPending() || isPendingPayment();
+    }
+
+    public boolean isForFreeListing() {
+        return listing != null && listing.isFree();
+    }
+
+    // This getter may semm useless but actually we need it because JSP is dumb and doesn't see the one generated by Lombok
+    public boolean getIsFullPrice() {
+        return isFullPrice;
     }
 
     public boolean isBuyer(Long userId) {
@@ -198,18 +222,18 @@ public class Offer {
         return user != null && isParticipant(user.getId());
     }
 
-    public RatingRole getUserRole(User user) {
-        if (isBuyer(user)) return RatingRole.BUYER;
-        if (isSeller(user)) return RatingRole.SELLER;
-        return null;
+    private Optional<RatingRole> getUserRole(User user) {
+        if (isBuyer(user)) return Optional.of(RatingRole.BUYER);
+        if (isSeller(user)) return Optional.of(RatingRole.SELLER);
+        return Optional.empty();
     }
 
     public boolean canUploadDocuments() {
-        return isPendingPayment();
+        return isPendingPayment() && !isForFreeListing();
     }
 
-    public boolean canBeRatedBy(RatingRole userRole) {
-        if (!isAccepted() || userRole == null) return false;
+    private boolean canBeRatedBy(RatingRole userRole) {
+        if (!isAccepted()) return false;
         return switch (userRole) {
             case BUYER -> sellerRating == null;
             case SELLER -> buyerRating == null;
@@ -217,6 +241,6 @@ public class Offer {
     }
 
     public boolean canBeRatedBy(User user) {
-        return canBeRatedBy(getUserRole(user));
+        return getUserRole(user).map(this::canBeRatedBy).orElse(false);
     }
 }

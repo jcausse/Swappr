@@ -1,8 +1,8 @@
 package ar.edu.itba.paw.service.notification;
 
 import ar.edu.itba.paw.model.Page;
-import ar.edu.itba.paw.model.SiteNotification;
-import ar.edu.itba.paw.model.SiteNotificationFilter;
+import ar.edu.itba.paw.model.notification.SiteNotification;
+import ar.edu.itba.paw.model.notification.SiteNotificationFilter;
 import ar.edu.itba.paw.model.User;
 import ar.edu.itba.paw.persistence.SiteNotificationDao;
 import ar.edu.itba.paw.service.SiteNotificationService;
@@ -73,7 +73,8 @@ public class SiteNotificationServiceImpl implements SiteNotificationService {
                 creationDto.bodyArgs(),
                 creationDto.actionUrl(),
                 creationDto.actionLabelKey(),
-                Instant.now()
+                Instant.now(),
+                creationDto.offer()
         );
 
         LOGGER.info("Created site notification id={} of type {} for user id={}",

@@ -1,5 +1,5 @@
 <%@ tag language="java" pageEncoding="UTF-8" %>
-<%@ attribute name="notification" required="true" type="ar.edu.itba.paw.model.SiteNotification" %>
+<%@ attribute name="notification" required="true" type="ar.edu.itba.paw.model.notification.SiteNotification" %>
 <%@ attribute name="compact" required="false" type="java.lang.Boolean" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="spring" uri="http://www.springframework.org/tags" %>
@@ -28,6 +28,12 @@
     </c:when>
     <c:when test="${notification.type.name() eq 'PURCHASE_CONFIRMED'}">
         <c:set var="typeBadgeClass" value="text-green-600"/>
+    </c:when>
+    <c:when test="${notification.type.name() eq 'BRAND_MODEL_REQUEST_ACCEPTED'}">
+        <c:set var="typeBadgeClass" value="text-lime-600"/>
+    </c:when>
+    <c:when test="${notification.type.name() eq 'BRAND_MODEL_REQUEST_REJECTED'}">
+        <c:set var="typeBadgeClass" value="text-red-600"/>
     </c:when>
     <c:otherwise>
         <c:set var="typeBadgeClass" value="text-neutral-600"/>
@@ -64,7 +70,7 @@
                 <c:out value="${notificationBody}"/>
             </p>
 
-            <c:if test="${notification.actionUrl.isPresent()}">
+            <c:if test="${notification.actionUrl.isPresent() and notification.showCallToAction()}">
                 <c:url value="${notification.actionUrl.get()}" var="ctaUrl"/>
                 <c:set var="ctaKey" value="${notification.actionLabelKey.isPresent() ? notification.actionLabelKey.get() : 'notifications.action.open'}"/>
                 <spring:message code="${ctaKey}" var="ctaLabel"/>

@@ -17,7 +17,7 @@
 <account:layout titleKey="account.myOffers.title" title="${titleMsg}" subtitle="${subtitleMsg}">
     <form:form modelAttribute="filterForm" action="${filterAction}" method="get" id="filterForm">
         <paw:card classname="p-2! mb-4">
-            <paw:formButtonToggle path="statusGroup" items="${statusGroupOptions}" badgeCounts="${offerCountByStatus}" selectedOption="${filterForm.getStatusGroup().name()}" translateLabels="true" />
+            <paw:formButtonToggle path="statusGroup" items="${statusGroups}" itemLabel="status" itemValue="name" labelPrefix="offer.statusGroup." badgeCounts="${offerCountByStatus}" selectedOption="${filterForm.getStatusGroup().name()}" translateLabels="true" />
         </paw:card>
     </form:form>
 
@@ -34,20 +34,24 @@
         <c:when test="${filterForm.getStatusGroup().name() == 'PENDING' || filterForm.getStatusGroup().name() == 'PENDING_PAYMENT'}">
             <div class="flex flex-col gap-4 mb-8">
                 <%-- statusGroup values (pending, pending_payment) match the OfferStatus names used by the hint keys --%>
-                <account:offerHint role="buyer" status="${fn:toUpperCase(filterForm.statusGroup)}"/>
+                <account:offerHint role="buyer" status="${fn:toUpperCase(filterForm.statusGroup)}" list="true"/>
                 <c:forEach var="offer" items="${offers}">
                     <account:offerCard offer="${offer}" user="seller">
-                        <paw:menu id="my${offer.id}" variant="outline" icon="ellipsis" panelWidth="w-56" panelAlign="right">
-                            <c:if test="${offer.status.name() == 'PENDING_PAYMENT'}">
-                                <c:url value="/account/my-offers/${offer.id}/payment" var="proofUrl"/>
-                                <spring:message code="offer.proofOfPayment.uploadLabel" var="proofLabel"/>
-                                <paw:linkButton href="${proofUrl}" variant="ghost" icon="upload" text="${proofLabel}" classname="w-full justify-start" />
-                            </c:if>
-                            <spring:message code="account.myOffers.withdraw" var="withdrawLabel"/>
-                            <form action="<c:url value='/offer/${offer.id}/withdraw'/>" method="POST">
-                                <paw:button type="submit" variant="ghost" icon="x" role="danger" text="${withdrawLabel}" classname="w-full justify-start" />
-                            </form>
-                        </paw:menu>
+                        <c:if test="${(offer.isPendingPayment() and not offer.forFreeListing) or offer.isPending()}">
+                            <paw:menu id="my${offer.id}" variant="outline" icon="ellipsis" panelWidth="w-56" panelAlign="right">
+                                <c:if test="${offer.isPendingPayment() and not offer.forFreeListing}">
+                                    <c:url value="/account/my-offers/${offer.id}/payment" var="proofUrl"/>
+                                    <spring:message code="offer.proofOfPayment.uploadLabel" var="proofLabel"/>
+                                    <paw:linkButton href="${proofUrl}" variant="ghost" icon="upload" text="${proofLabel}" classname="w-full justify-start" />
+                                </c:if>
+                                <c:if test="${offer.isPending()}">
+                                    <spring:message code="account.myOffers.withdraw" var="withdrawLabel"/>
+                                    <form action="<c:url value='/offer/${offer.id}/withdraw'/>" method="POST">
+                                        <paw:button type="submit" variant="ghost" icon="x" role="danger" text="${withdrawLabel}" classname="w-full justify-start" />
+                                    </form>
+                                </c:if>
+                            </paw:menu>
+                        </c:if>
                     </account:offerCard>
                 </c:forEach>
 

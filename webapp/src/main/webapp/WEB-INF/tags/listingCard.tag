@@ -12,12 +12,12 @@
 
 <c:set var="listingCardVariant" value="${not empty variant ? variant : 'default'}"/>
 <c:set var="imageUrl" value=""/>
-<c:if test="${not empty listing.imageIds}">
-    <c:url value="/image/${listing.imageIds[0]}" var="imageUrl"/>
+<c:if test="${not empty listing.coverImageId}">
+    <c:url value="/image/${listing.coverImageId}" var="imageUrl"/>
 </c:if>
 <c:set var="subLabel" value=""/>
-<c:if test="${not empty listing.product and not empty listing.product.subcategory}">
-    <spring:message code="subcategory.${listing.product.subcategory.name}" var="subLabel"/>
+<c:if test="${not empty listing.model and not empty listing.model.subcategory}">
+    <spring:message code="subcategory.${listing.model.subcategory.name}" var="subLabel"/>
 </c:if>
 
 <c:set var="variantClassnames" value="${
@@ -26,12 +26,12 @@
     : ''
 }"/>
 
-<a href="${listingUrl}" class="block hover:-translate-y-0.5 transition ${linkClassname}">
+<a href="<c:out value='${listingUrl}'/>" class="block hover:-translate-y-0.5 transition ${linkClassname}">
     <paw:card classname="h-full relative ${variantClassnames} ${cardClassname}">
         <div class="w-full aspect-square rounded-lg overflow-hidden border border-black/10 mb-1 bg-neutral-200 relative">
           <c:choose>
             <c:when test="${not empty imageUrl}">
-              <img src="${imageUrl}" alt="<c:out value='${listing.title}'/>" class="w-full h-full object-cover"/>
+              <img src="<c:out value='${imageUrl}'/>" alt="<c:out value='${listing.title}'/>" class="w-full h-full object-cover"/>
             </c:when>
             <c:otherwise>
               <div class="w-full h-full grid place-items-center text-black/30 text-xs px-2 text-center">

@@ -26,7 +26,7 @@
             <spring:message code="profileEdit.province" var="provinceLabel"/>
             <spring:message code="profileEdit.province.select" var="provincePlaceholder"/>
             <paw:formSelect path="provinceId" label="${provinceLabel}" placeholder="${provincePlaceholder}"
-                            items="${provinces}" itemLabel="name" itemValue="id" variant="outline" translateLabels="true"/>
+                            items="${provinces}" itemLabel="name" itemValue="id" labelPrefix="province." variant="outline" translateLabels="true"/>
 
             <spring:message code="profileEdit.locationDetail" var="locationDetailLabel"/>
             <spring:message code="profileEdit.locationDetail.placeholder" var="locationDetailPlaceholder"/>

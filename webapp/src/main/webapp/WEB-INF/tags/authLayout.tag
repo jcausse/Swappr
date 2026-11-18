@@ -28,7 +28,17 @@
         </div>
 
         <h2 class="text-3xl font-bold mb-4 text-white drop-shadow-md mt-8">
-            <spring:message code="${titleKey}" arguments="${titleParams}"/>
+            <c:choose>
+                <c:when test="${not empty titleParams}">
+                    <spring:message code="${titleKey}" var="resolvedTitle">
+                        <spring:argument value="${titleParams}"/>
+                    </spring:message>
+                </c:when>
+                <c:otherwise>
+                    <spring:message code="${titleKey}" var="resolvedTitle"/>
+                </c:otherwise>
+            </c:choose>
+            <c:out value="${resolvedTitle}"/>
         </h2>
 
         <div class="w-96 bg-white border border-black/10 shadow-2xl rounded-2xl p-6 flex-shrink-1 overflow-y-auto">

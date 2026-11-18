@@ -1,9 +1,12 @@
 package ar.edu.itba.paw.service.notification;
 
 import ar.edu.itba.paw.model.Listing;
-import ar.edu.itba.paw.model.NotificationType;
+import ar.edu.itba.paw.model.notification.NotificationType;
 import ar.edu.itba.paw.model.Offer;
 import ar.edu.itba.paw.model.User;
+import ar.edu.itba.paw.model.Brand;
+import ar.edu.itba.paw.model.BrandModelRequest;
+import ar.edu.itba.paw.model.Model;
 import ar.edu.itba.paw.service.dto.SiteNotificationCreationDto;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -27,11 +30,14 @@ final class SiteNotificationCreationDtoFactory {
             @NonNull final User buyer
     ) {
         final User seller = listing.getCreator();
+        final String bodyKey = listing.isFree()
+                ? "notification.purchaseConfirmed.free.body"
+                : "notification.purchaseConfirmed.body";
         return SiteNotificationCreationDto.builder()
                 .notificationRecipient(buyer)
                 .notificationType(NotificationType.PURCHASE_CONFIRMED)
                 .titleKey("notification.purchaseConfirmed.title")
-                .bodyKey("notification.purchaseConfirmed.body")
+                .bodyKey(bodyKey)
                 .bodyArgs(List.of(seller.getDisplayName(), listing.getTitle()))
                 .actionUrl("/account/my-offers?statusGroup=RESOLVED")
                 .actionLabelKey("notification.purchaseConfirmed.cta")
@@ -45,7 +51,10 @@ final class SiteNotificationCreationDtoFactory {
 
         final String bodyKey;
         final List<String> bodyArgs;
-        if (offer.getOfferedListing().isPresent()) {
+        if (offer.isForFreeListing()) {
+            bodyKey = "notification.newOffer.free.body";
+            bodyArgs = List.of(buyer.getDisplayName(), listing.getTitle());
+        } else if (offer.getOfferedListing().isPresent()) {
             final Listing offered = offer.getOfferedListing().get();
             if (hasCashSupplement(offer.getAmount())) {
                 bodyKey = "notification.newOffer.body.tradeWithCash";
@@ -80,6 +89,7 @@ final class SiteNotificationCreationDtoFactory {
                 .bodyArgs(bodyArgs)
                 .actionUrl("/account/incoming-offers/" + offer.getId())
                 .actionLabelKey("notification.newOffer.cta")
+                .offer(offer)
                 .build();
     }
 
@@ -89,7 +99,10 @@ final class SiteNotificationCreationDtoFactory {
 
         final String bodyKey;
         final List<String> bodyArgs;
-        if (offer.getOfferedListing().isPresent()) {
+        if (offer.isForFreeListing()) {
+            bodyKey = "notification.offerRejected.free.body";
+            bodyArgs = List.of(listing.getTitle());
+        } else if (offer.getOfferedListing().isPresent()) {
             final Listing offered = offer.getOfferedListing().get();
             if (hasCashSupplement(offer.getAmount())) {
                 bodyKey = "notification.offerRejected.body.tradeWithCash";
@@ -121,6 +134,7 @@ final class SiteNotificationCreationDtoFactory {
                 .bodyArgs(bodyArgs)
                 .actionUrl("/listing")
                 .actionLabelKey("notification.offerRejected.cta")
+                .offer(offer)
                 .build();
     }
 
@@ -131,7 +145,10 @@ final class SiteNotificationCreationDtoFactory {
 
         final String bodyKey;
         final List<String> bodyArgs;
-        if (offer.getOfferedListing().isPresent()) {
+        if (offer.isForFreeListing()) {
+            bodyKey = "notification.offerWithdrawn.free.body";
+            bodyArgs = List.of(buyer.getDisplayName(), listing.getTitle());
+        } else if (offer.getOfferedListing().isPresent()) {
             final Listing offered = offer.getOfferedListing().get();
             if (hasCashSupplement(offer.getAmount())) {
                 bodyKey = "notification.offerWithdrawn.body.tradeWithCash";
@@ -166,6 +183,7 @@ final class SiteNotificationCreationDtoFactory {
                 .bodyArgs(bodyArgs)
                 .actionUrl("/listing/" + listing.getId())
                 .actionLabelKey("notification.offerWithdrawn.cta")
+                .offer(offer)
                 .build();
     }
 
@@ -174,9 +192,13 @@ final class SiteNotificationCreationDtoFactory {
         final User buyer = offer.getBuyer();
         final User seller = listing.getCreator();
 
+        final boolean free = offer.isForFreeListing();
         final String bodyKey;
         final List<String> bodyArgs;
-        if (offer.getOfferedListing().isPresent()) {
+        if (free) {
+            bodyKey = "notification.offerAccepted.free.body";
+            bodyArgs = List.of(listing.getTitle(), seller.getDisplayName());
+        } else if (offer.getOfferedListing().isPresent()) {
             final Listing offered = offer.getOfferedListing().get();
             if (hasCashSupplement(offer.getAmount())) {
                 bodyKey = "notification.offerAccepted.body.tradeWithCash";
@@ -209,8 +231,12 @@ final class SiteNotificationCreationDtoFactory {
                 .titleKey("notification.offerAccepted.title")
                 .bodyKey(bodyKey)
                 .bodyArgs(bodyArgs)
-                .actionUrl("/account/my-offers/" + offer.getId() + "/payment")
-                .actionLabelKey("notification.offerAccepted.cta")
+                // A free listing has no payment page, so the buyer is sent to the list of offers in progress instead
+                .actionUrl(free
+                        ? "/account/my-offers?statusGroup=PENDING_PAYMENT"
+                        : "/account/my-offers/" + offer.getId() + "/payment")
+                .actionLabelKey(free ? "notification.offerAccepted.free.cta" : "notification.offerAccepted.cta")
+                .offer(offer)
                 .build();
     }
 
@@ -227,6 +253,7 @@ final class SiteNotificationCreationDtoFactory {
                 .bodyArgs(List.of(buyer.getDisplayName(), listing.getTitle()))
                 .actionUrl("/account/incoming-offers/" + offer.getId())
                 .actionLabelKey("notification.proofOfPaymentUploaded.cta")
+                .offer(offer)
                 .build();
     }
 
@@ -251,6 +278,39 @@ final class SiteNotificationCreationDtoFactory {
                 .bodyArgs(bodyArgs)
                 .actionUrl("/account/my-offers?statusGroup=PENDING_PAYMENT")
                 .actionLabelKey("notification.proofOfShippingUploaded.cta")
+                .offer(offer)
+                .build();
+    }
+
+    static SiteNotificationCreationDto brandModelRequestAccepted(
+            @NonNull final BrandModelRequest request,
+            @NonNull final User recipient,
+            @NonNull final Brand brand,
+            @NonNull final Model model
+    ) {
+        return SiteNotificationCreationDto.builder()
+                .notificationRecipient(recipient)
+                .notificationType(NotificationType.BRAND_MODEL_REQUEST_ACCEPTED)
+                .titleKey("notification.brandModelRequest.accepted.title")
+                .bodyKey("notification.brandModelRequest.accepted.body")
+                .bodyArgs(List.of(brand.getName(), model.getName()))
+                .actionUrl("/listing/new/choose-product?modelId=" + model.getId())
+                .actionLabelKey("notification.brandModelRequest.accepted.cta")
+                .build();
+    }
+
+    static SiteNotificationCreationDto brandModelRequestRejected(
+            @NonNull final BrandModelRequest request,
+            @NonNull final User recipient
+    ) {
+        return SiteNotificationCreationDto.builder()
+                .notificationRecipient(recipient)
+                .notificationType(NotificationType.BRAND_MODEL_REQUEST_REJECTED)
+                .titleKey("notification.brandModelRequest.rejected.title")
+                .bodyKey("notification.brandModelRequest.rejected.body")
+                .bodyArgs(List.of(request.getRequestedBrandName(), request.getModelName()))
+                .actionUrl("/listing")
+                .actionLabelKey("notification.brandModelRequest.rejected.cta")
                 .build();
     }
 

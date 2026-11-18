@@ -20,6 +20,14 @@ public class SubcategoryJpaDao implements SubcategoryDao {
     }
 
     @Override
+    public List<Subcategory> getAll() {
+        return em.createQuery(
+                "SELECT s FROM Subcategory s JOIN FETCH s.category ORDER BY s.category.name, s.name, s.id",
+                Subcategory.class)
+                .getResultList();
+    }
+
+    @Override
     public List<Subcategory> getByCategoryId(Long categoryId) {
         return em.createQuery("FROM Subcategory s WHERE s.category.id = :categoryId", Subcategory.class)
                 .setParameter("categoryId", categoryId)

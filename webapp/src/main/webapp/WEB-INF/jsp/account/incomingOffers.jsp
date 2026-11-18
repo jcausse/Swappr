@@ -13,11 +13,12 @@
 <spring:message code="account.incomingOffers.pendingTitle" var="pendingTitleMsg"/>
 <spring:message code="account.incomingOffers.pendingPaymentTitle" var="pendingPaymentTitleMsg"/>
 <spring:message code="account.incomingOffers.resolvedTitle" var="resolvedTitleMsg"/>
+<spring:message code="account.incomingOffers.view" var="viewOfferLabel"/>
 
 <account:layout titleKey="account.incomingOffers.title" title="${titleMsg}" subtitle="${subtitleMsg}">
     <form:form modelAttribute="filterForm" action="${filterAction}" method="get" id="filterForm">
         <paw:card classname="p-2! mb-4">
-            <paw:formButtonToggle path="statusGroup" items="${statusGroupOptions}" badgeCounts="${offerCountByStatus}" selectedOption="${filterForm.getStatusGroup().name()}" translateLabels="true" />
+            <paw:formButtonToggle path="statusGroup" items="${statusGroups}" itemLabel="status" itemValue="name" labelPrefix="offer.statusGroup." badgeCounts="${offerCountByStatus}" selectedOption="${filterForm.getStatusGroup().name()}" translateLabels="true" />
         </paw:card>
     </form:form>
 
@@ -31,27 +32,29 @@
         <c:when test="${filterForm.getStatusGroup().name() == 'PENDING' || filterForm.getStatusGroup().name() == 'PENDING_PAYMENT'}">
             <div class="flex flex-col gap-4 mb-8">
                 <%-- statusGroup values (pending, pending_payment) match the OfferStatus names used by the hint keys --%>
-                <account:offerHint role="seller" status="${fn:toUpperCase(filterForm.statusGroup)}"/>
+                <account:offerHint role="seller" status="${fn:toUpperCase(filterForm.statusGroup)}" list="true"/>
                 <c:forEach var="offer" items="${offers}">
                     <account:offerCard offer="${offer}" user="buyer">
                         <c:url value="/account/incoming-offers/${offer.id}" var="offerUrl"/>
-                        <paw:linkButton variant="outline" href="${offerUrl}" icon="eye" />
+                        <paw:linkButton variant="outline" href="${offerUrl}" icon="eye" ariaLabel="${viewOfferLabel}" />
                         <paw:menu id="incoming${offer.id}" variant="outline" icon="ellipsis" panelWidth="w-66" panelAlign="right">
                             <c:if test="${offer.offeredListing.present}">
                                 <c:url value="/listing/${offer.offeredListing.get().id}" var="offeredListingUrl"/>
                                 <spring:message code="offer.viewOfferedListing" var="viewOfferedListingLabel"/>
                                 <paw:linkButton href="${offeredListingUrl}" variant="ghost" icon="eye" text="${viewOfferedListingLabel}" classname="w-full justify-start" />
                             </c:if>
-                            <c:if test="${offer.status.name() == 'PENDING_PAYMENT'}">
-                                <c:url value="/account/my-offers/${offer.id}/shipping" var="shippingUrl"/>
-                                <spring:message code="offer.proofOfShipping.uploadLabel" var="shippingLabel"/>
-                                <paw:linkButton href="${shippingUrl}" variant="ghost" icon="truck" text="${shippingLabel}" classname="w-full justify-start" />
+                            <c:if test="${offer.isPendingPayment()}">
+                                <c:if test="${not offer.forFreeListing}">
+                                    <c:url value="/account/my-offers/${offer.id}/shipping" var="shippingUrl"/>
+                                    <spring:message code="offer.proofOfShipping.uploadLabel" var="shippingLabel"/>
+                                    <paw:linkButton href="${shippingUrl}" variant="ghost" icon="truck" text="${shippingLabel}" classname="w-full justify-start" />
+                                </c:if>
                                 <form action="<c:url value='/offer/${offer.id}/confirm-payment'/>" method="POST">
-                                    <spring:message code="offer.action.confirmPayment" var="confirmLabel"/>
+                                    <spring:message code="${offer.forFreeListing ? 'offer.action.confirmDelivery' : 'offer.action.confirmPayment'}" var="confirmLabel"/>
                                     <paw:button type="submit" variant="ghost" icon="check" text="${confirmLabel}" classname="w-full justify-start" />
                                 </form>
                             </c:if>
-                            <c:if test="${offer.status.name() == 'PENDING'}">
+                            <c:if test="${offer.isPending()}">
                                 <spring:message code="offer.action.accept" var="acceptLabel"/>
                                 <form action="<c:url value='/offer/${offer.id}/accept'/>" method="POST">
                                     <paw:button type="submit" variant="ghost" icon="check" text="${acceptLabel}" classname="w-full justify-start" />

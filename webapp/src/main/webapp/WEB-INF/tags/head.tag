@@ -13,7 +13,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <c:choose>
         <c:when test="${not empty titleKey}">
-            <title><spring:message code="${titleKey}" arguments="${titleParams}"/></title>
+            <c:choose>
+                <c:when test="${not empty titleParams}">
+                    <spring:message code="${titleKey}" var="resolvedTitle">
+                        <spring:argument value="${titleParams}"/>
+                    </spring:message>
+                </c:when>
+                <c:otherwise>
+                    <spring:message code="${titleKey}" var="resolvedTitle"/>
+                </c:otherwise>
+            </c:choose>
+            <title><c:out value="${resolvedTitle}"/></title>
         </c:when>
         <c:when test="${not empty title}">
             <title><c:out value="${title}"/></title>
@@ -23,6 +33,10 @@
     <link rel="icon" type="image/svg+xml" href="<c:url value="/static-image/favicon.svg"/>"/>
     <link rel="alternate icon" type="image/png" href="<c:url value="/static-image/favicon.png"/>"/>
     <link rel="shortcut icon" href="<c:url value="/favicon.ico"/>"/>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=JetBrains+Mono:wght@100..800&display=swap"/>
 
     <link rel="stylesheet" href="<c:url value="/css/tailwind.css"/>"/>
     <link rel="stylesheet" href="https://unpkg.com/lucide-static@${lucideVersion}/font/lucide.css" />

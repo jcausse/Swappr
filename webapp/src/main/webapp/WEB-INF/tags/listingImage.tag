@@ -20,14 +20,14 @@
 }"/>
 
 <c:set var="coverUrl" value=""/>
-<c:if test="${not empty listing.imageIds}">
-    <c:url value="/image/${listing.imageIds[0]}" var="coverUrl"/>
+<c:if test="${not empty listing.coverImageId}">
+    <c:url value="/image/${listing.coverImageId}" var="coverUrl"/>
 </c:if>
 
 <div class="flex-shrink-0 rounded-lg overflow-hidden border border-black/10 bg-neutral-200 ${sizeClassnames}">
     <c:choose>
         <c:when test="${not empty coverUrl}">
-            <img src="${coverUrl}" alt="<c:out value='${listing.title}'/>" class="w-full h-full object-cover"/>
+            <img src="<c:out value='${coverUrl}'/>" alt="<c:out value='${listing.title}'/>" class="w-full h-full object-cover"/>
         </c:when>
         <c:otherwise>
             <div class="w-full h-full grid place-items-center text-black/30 text-xs px-2 text-center">

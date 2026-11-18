@@ -1,5 +1,6 @@
 <%@ tag language="java" pageEncoding="UTF-8" %>
 <%@ attribute name="path" required="true" %>
+<%@ attribute name="id" required="false" %>
 <%@ attribute name="type" required="false" %>
 <%@ attribute name="min" required="false" %>
 <%@ attribute name="max" required="false" %>
@@ -19,6 +20,7 @@
 <%@ taglib prefix="spring" uri="http://www.springframework.org/tags" %>
 
 <c:set var="inputVariant" value="${not empty variant ? variant : 'default'}"/>
+<c:set var="inputId" value="${not empty id ? id : path}"/>
 <c:set var="inputType" value="${not empty type ? type : 'text'}"/>
 <c:set var="hasPasswordToggle" value="${showPasswordToggle ne null ? showPasswordToggle : (inputType eq 'password')}"/>
 <c:set var="inputMin" value="${not empty min ? min : ''}"/>
@@ -58,7 +60,7 @@
     <c:when test="${inputType eq 'textarea'}">
       <form:textarea
         path="${path}"
-        id="${path}"
+        id="${inputId}"
         placeholder="${placeholder}"
         disabled="${isDisabled}"
         cssClass="px-2 py-1 rounded-lg text-sm outline-0 transition duration-150 outline-lime-600/30 placeholder:text-black/40 ${variantClassnames} ${bindErrorClasses} ${innerClass}"
@@ -68,7 +70,7 @@
       <div class="relative flex items-center w-full peer-[.errors]/errors:[&_input]:border-red-600! peer-[.errors]/errors:[&_input]:outline-red-600/30">
         <form:input
           path="${path}"
-          id="${path}"
+          id="${inputId}"
           type="password"
           placeholder="${placeholder}"
           disabled="${isDisabled}"
@@ -94,7 +96,7 @@
     <c:otherwise>
       <form:input
         path="${path}"
-        id="${path}"
+        id="${inputId}"
         type="${inputType}"
         placeholder="${placeholder}"
         disabled="${isDisabled}"
@@ -109,7 +111,7 @@
   </c:choose>
 
   <c:if test="${not empty label}">
-    <label for="${path}" class="text-xs text-black/70 font-medium">
+    <label for="${inputId}" class="text-xs text-black/70 font-medium">
       <c:out value="${label}"/>
     </label>
   </c:if>

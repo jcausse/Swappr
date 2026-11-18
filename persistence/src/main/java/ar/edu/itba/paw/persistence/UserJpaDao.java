@@ -9,7 +9,10 @@ import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 @Repository
@@ -147,16 +150,18 @@ public class UserJpaDao implements UserDao {
 
     @Override
     public boolean isUsernameTaken(String username) {
-        return em.createQuery("SELECT COUNT(u) FROM User u WHERE u.username = :username", Long.class)
+        return Boolean.TRUE.equals(em.createNativeQuery(
+                        "SELECT EXISTS (SELECT 1 FROM users u WHERE u.username = :username)")
                 .setParameter("username", username)
-                .getSingleResult() > 0;
+                .getSingleResult());
     }
 
     @Override
     public boolean isEmailTaken(String email) {
-        return em.createQuery("SELECT COUNT(u) FROM User u WHERE u.email = :email", Long.class)
+        return Boolean.TRUE.equals(em.createNativeQuery(
+                        "SELECT EXISTS (SELECT 1 FROM users u WHERE u.email = :email)")
                 .setParameter("email", email)
-                .getSingleResult() > 0;
+                .getSingleResult());
     }
 
     @Override
@@ -164,9 +169,9 @@ public class UserJpaDao implements UserDao {
         final User user = em.find(User.class, userId);
         if (user != null) {
             switch (rating) {
-                case POSITIVE -> user.setSellerPositiveRatings((user.getSellerPositiveRatings() != null ? user.getSellerPositiveRatings() : 0) + 1);
-                case NEUTRAL -> user.setSellerNeutralRatings((user.getSellerNeutralRatings() != null ? user.getSellerNeutralRatings() : 0) + 1);
-                case NEGATIVE -> user.setSellerNegativeRatings((user.getSellerNegativeRatings() != null ? user.getSellerNegativeRatings() : 0) + 1);
+                case POSITIVE -> user.setSellerPositiveRatings(user.getSellerPositiveRatings() + 1);
+                case NEUTRAL -> user.setSellerNeutralRatings(user.getSellerNeutralRatings() + 1);
+                case NEGATIVE -> user.setSellerNegativeRatings(user.getSellerNegativeRatings() + 1);
             }
         }
     }
@@ -176,10 +181,49 @@ public class UserJpaDao implements UserDao {
         final User user = em.find(User.class, userId);
         if (user != null) {
             switch (rating) {
-                case POSITIVE -> user.setBuyerPositiveRatings((user.getBuyerPositiveRatings() != null ? user.getBuyerPositiveRatings() : 0) + 1);
-                case NEUTRAL -> user.setBuyerNeutralRatings((user.getBuyerNeutralRatings() != null ? user.getBuyerNeutralRatings() : 0) + 1);
-                case NEGATIVE -> user.setBuyerNegativeRatings((user.getBuyerNegativeRatings() != null ? user.getBuyerNegativeRatings() : 0) + 1);
+                case POSITIVE -> user.setBuyerPositiveRatings(user.getBuyerPositiveRatings() + 1);
+                case NEUTRAL -> user.setBuyerNeutralRatings(user.getBuyerNeutralRatings() + 1);
+                case NEGATIVE -> user.setBuyerNegativeRatings(user.getBuyerNegativeRatings() + 1);
             }
         }
+    }
+
+    @Override
+    public void incrementSellerRatingCounters(Map<Long, Long> increments, OfferRating rating) {
+        incrementRatingCounters(increments, rating, true);
+    }
+
+    @Override
+    public void incrementBuyerRatingCounters(Map<Long, Long> increments, OfferRating rating) {
+        incrementRatingCounters(increments, rating, false);
+    }
+
+    // Bulk JPQL update: does not refresh users already in the persistence context. Re-fetch
+    // (or refresh/detach) affected users before reading them later in this transaction.
+    private void incrementRatingCounters(Map<Long, Long> increments, OfferRating rating, boolean seller) {
+        if (increments == null || increments.isEmpty()) return;
+
+        final String field = switch (rating) {
+            case POSITIVE -> seller ? "sellerPositiveRatings" : "buyerPositiveRatings";
+            case NEUTRAL -> seller ? "sellerNeutralRatings" : "buyerNeutralRatings";
+            case NEGATIVE -> seller ? "sellerNegativeRatings" : "buyerNegativeRatings";
+        };
+
+        final StringBuilder incrementsCase = new StringBuilder("CASE u.id");
+        final Map<String, Object> params = new HashMap<>();
+        int index = 0;
+        for (final Map.Entry<Long, Long> entry : increments.entrySet()) {
+            final String param = "userId" + index++;
+            incrementsCase.append(" WHEN :").append(param).append(" THEN ").append(entry.getValue());
+            params.put(param, entry.getKey());
+        }
+        incrementsCase.append(" ELSE 0 END");
+
+        final Query update = em.createQuery(
+                "UPDATE User u SET u." + field + " = u." + field + " + "
+                        + incrementsCase + " WHERE u.id IN :ids")
+                .setParameter("ids", increments.keySet());
+        params.forEach(update::setParameter);
+        update.executeUpdate();
     }
 }

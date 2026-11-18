@@ -39,9 +39,9 @@
                 <div class="flex-1 min-w-0 flex flex-col justify-center">
                     <h3 class="text-base font-semibold truncate"><c:out value="${offer.listing.title}"/></h3>
                     <p class="text-sm text-black/60 mt-1">
-                        <c:out value="${offer.listing.product.brand}"/>
-                        <c:out value="${offer.listing.product.model}"/>
-                        (<c:out value="${offer.listing.product.year}"/>)
+                        <c:out value="${offer.listing.brand.name}"/>
+                        <c:out value="${offer.listing.model.name}"/>
+                        (<c:out value="${offer.listing.year}"/>)
                     </p>
                     <c:if test="${not offer.isFullPrice}">
                         <p class="text-sm line-through text-black/60 mt-1"><paw:price amount="${offer.listing.price.amount}"/></p>

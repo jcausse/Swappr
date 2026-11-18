@@ -64,6 +64,17 @@ public class SubcategoryJpaDaoTest {
     }
 
     @Test
+    public void testGetAllLoadsCategoriesAndIsSorted() {
+        final List<Subcategory> subcategories = subcategoryDao.getAll();
+
+        Assert.assertEquals(2, subcategories.size());
+        Assert.assertEquals(List.of("Laptops", "Phones"),
+                subcategories.stream().map(Subcategory::getName).toList());
+        Assert.assertEquals(List.of("Electronics", "Mobile Devices"),
+                subcategories.stream().map(s -> s.getCategory().getName()).toList());
+    }
+
+    @Test
     public void testGetByCategoryIdExists() {
         // Act
         final List<Subcategory> subcategories = subcategoryDao.getByCategoryId(CATEGORY_ID);

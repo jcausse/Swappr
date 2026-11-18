@@ -3,6 +3,7 @@ package ar.edu.itba.paw.persistence;
 import ar.edu.itba.paw.model.Listing;
 import ar.edu.itba.paw.model.Offer;
 import ar.edu.itba.paw.model.OfferFilter;
+import ar.edu.itba.paw.model.OfferPendingCount;
 import ar.edu.itba.paw.model.OfferStatus;
 import ar.edu.itba.paw.model.OfferStatusGroup;
 import ar.edu.itba.paw.model.Page;
@@ -11,6 +12,7 @@ import ar.edu.itba.paw.model.OfferRating;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -23,13 +25,26 @@ public interface OfferDao {
 
     Page<Offer> search(OfferFilter filter);
 
+    Map<Long, OfferPendingCount> getPendingCounts(Collection<Long> listingIds);
+
     Offer create(Long listingId, User buyer, BigDecimal amount, Boolean isFullPrice, OfferStatus status, String message, Instant createdAt, Long offeredListingId);
 
     boolean updateStatus(Long offerId, OfferStatus status);
 
     boolean withdraw(Long offerId, Long buyerId);
 
-    List<Offer> rejectPendingOffers(Long listingId, Long exceptOfferId);
+    /**
+     * Rejects PENDING offers on the listing; admin cancellation also rejects PENDING_PAYMENT offers.
+     */
+    List<Offer> rejectPendingOffers(Long listingId, Long exceptOfferId, boolean includePendingPayment);
+
+    /**
+     * Admin-cancellation edge case: bulk-rejects trade offers that reference the given listing as
+     * their offered item. Used together with the ListingDao release query below.
+     */
+    int rejectCancellableOffersForOfferedListing(Long offeredListingId);
+
+    int rejectAllForParticipant(Long userId);
 
     int countPendingBySeller(User seller);
 
@@ -44,6 +59,10 @@ public interface OfferDao {
     boolean setSellerRating(Long offerId, OfferRating rating);
 
     boolean setBuyerRating(Long offerId, OfferRating rating);
+
+    int setSellerRatings(List<Long> offerIds, OfferRating rating);
+
+    int setBuyerRatings(List<Long> offerIds, OfferRating rating);
 
     List<Offer> getAcceptedUnratedBefore(Instant cutoff);
 }

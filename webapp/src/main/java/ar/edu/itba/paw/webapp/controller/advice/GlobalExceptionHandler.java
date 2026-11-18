@@ -5,7 +5,7 @@ import ar.edu.itba.paw.service.exception.ForbiddenException;
 import ar.edu.itba.paw.service.exception.NotFoundException;
 import ar.edu.itba.paw.webapp.auth.AuthHelper;
 import ar.edu.itba.paw.webapp.exception.UserNotAuthenticatedException;
-import ar.edu.itba.paw.webapp.exception.UserNotFoundException;
+import ar.edu.itba.paw.service.exception.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
@@ -16,6 +16,9 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.validation.BindException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.HttpMediaTypeNotAcceptableException;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 
@@ -84,6 +87,27 @@ public class GlobalExceptionHandler {
 
         LOGGER.warn("Forbidden access: {}", ex.getMessage());
         return new ModelAndView("error/forbidden");
+    }
+
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    @ResponseStatus(HttpStatus.METHOD_NOT_ALLOWED)
+    public ModelAndView handleMethodNotSupported(HttpRequestMethodNotSupportedException ex) {
+        LOGGER.warn("Unsupported HTTP method: {}", ex.getMessage());
+        return new ModelAndView("error/badRequest");
+    }
+
+    @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
+    @ResponseStatus(HttpStatus.UNSUPPORTED_MEDIA_TYPE)
+    public ModelAndView handleMediaTypeNotSupported(HttpMediaTypeNotSupportedException ex) {
+        LOGGER.warn("Unsupported media type: {}", ex.getMessage());
+        return new ModelAndView("error/badRequest");
+    }
+
+    @ExceptionHandler(HttpMediaTypeNotAcceptableException.class)
+    @ResponseStatus(HttpStatus.NOT_ACCEPTABLE)
+    public ModelAndView handleMediaTypeNotAcceptable(HttpMediaTypeNotAcceptableException ex) {
+        LOGGER.warn("Not acceptable media type: {}", ex.getMessage());
+        return new ModelAndView("error/badRequest");
     }
 
     @ExceptionHandler(MaxUploadSizeExceededException.class)

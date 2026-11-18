@@ -4,8 +4,10 @@ import ar.edu.itba.paw.model.File;
 import ar.edu.itba.paw.model.Listing;
 import ar.edu.itba.paw.model.Offer;
 import ar.edu.itba.paw.model.OfferFilter;
+import ar.edu.itba.paw.model.OfferPendingCount;
 import ar.edu.itba.paw.model.OfferRating;
 import ar.edu.itba.paw.model.OfferStatus;
+import ar.edu.itba.paw.model.OfferStatusCount;
 import ar.edu.itba.paw.model.OfferStatusGroup;
 import ar.edu.itba.paw.model.Page;
 import ar.edu.itba.paw.model.User;
@@ -13,15 +15,16 @@ import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.Collection;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Repository
@@ -32,54 +35,46 @@ public class OfferJpaDao implements OfferDao {
 
     @Override
     public Optional<Offer> getById(Long id) {
-        final Offer offer = em.find(Offer.class, id);
-        if (offer != null) {
-            populateTransientFlags(List.of(offer));
-        }
-        return Optional.ofNullable(offer);
+        return Optional.ofNullable(em.find(Offer.class, id));
     }
 
     @Override
     public Optional<Offer> getByListingAndBuyer(Listing listing, User buyer) {
-        final List<Offer> result = em.createQuery(
+        return em.createQuery(
                 "FROM Offer o WHERE o.listing.id = :listingId AND o.buyer.id = :buyerId AND o.status IN (:statuses) ORDER BY o.id DESC",
                 Offer.class)
                 .setParameter("listingId", listing.getId())
                 .setParameter("buyerId", buyer.getId())
                 .setParameter("statuses", List.of(OfferStatus.PENDING, OfferStatus.PENDING_PAYMENT))
-                .getResultList();
-        if (result.isEmpty()) {
-            return Optional.empty();
-        }
-        final Offer offer = result.getFirst();
-        populateTransientFlags(List.of(offer));
-        return Optional.of(offer);
+                .getResultList().stream().findFirst();
     }
 
     @Override
     public Page<Offer> search(OfferFilter filter) {
-        final StringBuilder whereClause = new StringBuilder(" WHERE 1=1");
-        final Map<String, Object> params = new HashMap<>();
+        final StringBuilder nativeWhere = new StringBuilder(" WHERE 1=1");
+        final Map<String, Object> nativeParams = new HashMap<>();
 
         if (filter.getBuyerId() != null) {
-            whereClause.append(" AND o.buyer.id = :buyerId");
-            params.put("buyerId", filter.getBuyerId());
+            nativeWhere.append(" AND o.buyer_id = :buyerId");
+            nativeParams.put("buyerId", filter.getBuyerId());
         }
 
         if (filter.getSellerId() != null) {
-            whereClause.append(" AND o.listing.creator.id = :sellerId");
-            params.put("sellerId", filter.getSellerId());
+            nativeWhere.append(" AND l.creator_id = :sellerId");
+            nativeParams.put("sellerId", filter.getSellerId());
         }
 
         if (filter.getStatus() != null && !filter.getStatus().isEmpty()) {
-            whereClause.append(" AND o.status IN (:statuses)");
-            params.put("statuses", filter.getStatus());
+            nativeWhere.append(" AND o.status IN (:statuses)");
+            nativeParams.put("statuses", filter.getStatus().stream().map(Enum::name).toList());
         }
 
-        final TypedQuery<Long> countQuery = em.createQuery(
-                "SELECT COUNT(o) FROM Offer o" + whereClause, Long.class);
-        params.forEach(countQuery::setParameter);
-        final long totalCount = countQuery.getSingleResult();
+        final String nativeFrom = " FROM offers o"
+                + " JOIN listings l ON l.listing_id = o.listing_id";
+
+        final Query countQuery = em.createNativeQuery("SELECT COUNT(*)" + nativeFrom + nativeWhere);
+        nativeParams.forEach(countQuery::setParameter);
+        final long totalCount = ((Number) countQuery.getSingleResult()).longValue();
 
         final int page = filter.getPage();
         final int pageSize = filter.getPageSize();
@@ -87,15 +82,55 @@ public class OfferJpaDao implements OfferDao {
             return new Page<>(List.of(), page, pageSize, 0);
         }
 
-        final TypedQuery<Offer> query = em.createQuery(
-                "FROM Offer o" + whereClause + " ORDER BY o.createdAt DESC", Offer.class);
-        params.forEach(query::setParameter);
-        query.setFirstResult((page - 1) * pageSize);
-        query.setMaxResults(pageSize);
+        // 1+1 pagination: page only offer IDs in a native query, then load those entities.
+        final Query idQuery = em.createNativeQuery(
+                "SELECT o.offer_id" + nativeFrom + nativeWhere
+                + " ORDER BY o.created_at DESC, o.offer_id DESC")
+                .setFirstResult((page - 1) * pageSize)
+                .setMaxResults(pageSize);
+        nativeParams.forEach(idQuery::setParameter);
 
-        final List<Offer> content = query.getResultList();
-        populateTransientFlags(content);
+        final List<Long> ids = ((List<?>) idQuery.getResultList()).stream()
+                .map(row -> ((Number) row).longValue())
+                .toList();
+        if (ids.isEmpty()) {
+            return new Page<>(List.of(), page, pageSize, totalCount);
+        }
+
+        final List<Offer> content = em.createQuery(
+                "SELECT o FROM Offer o"
+                + " JOIN FETCH o.listing l"
+                + " JOIN FETCH o.buyer"
+                + " LEFT JOIN FETCH o.offeredListing ol"
+                + " LEFT JOIN FETCH ol.model om"
+                + " LEFT JOIN FETCH om.brand"
+                + " JOIN FETCH l.creator"
+                + " JOIN FETCH l.model m"
+                + " JOIN FETCH m.brand"
+                + " JOIN FETCH m.subcategory s"
+                + " JOIN FETCH s.category"
+                + " WHERE o.id IN :ids"
+                + " ORDER BY o.createdAt DESC, o.id DESC", Offer.class)
+                .setParameter("ids", ids)
+                .getResultList();
+
         return new Page<>(content, page, pageSize, totalCount);
+    }
+
+    @Override
+    public Map<Long, OfferPendingCount> getPendingCounts(Collection<Long> listingIds) {
+        if (listingIds == null || listingIds.isEmpty()) {
+            return Map.of();
+        }
+        return em.createQuery(
+                "SELECT new ar.edu.itba.paw.model.OfferPendingCount(o.listing.id, COUNT(o), MAX(o.amount)) " +
+                    "FROM Offer o WHERE o.listing.id IN :listingIds AND o.status = :pending " +
+                    "GROUP BY o.listing.id",
+                OfferPendingCount.class)
+                .setParameter("pending", OfferStatus.PENDING)
+                .setParameter("listingIds", listingIds)
+                .getResultStream()
+                .collect(Collectors.toMap(OfferPendingCount::listingId, count -> count));
     }
 
     @Override
@@ -114,7 +149,6 @@ public class OfferJpaDao implements OfferDao {
                 .offeredListing(offeredListing)
                 .build();
         em.persist(offer);
-        populateTransientFlags(List.of(offer));
         return offer;
     }
 
@@ -136,22 +170,80 @@ public class OfferJpaDao implements OfferDao {
         return true;
     }
 
+    /*
+     * The bulk UPDATE does not refresh entities already in the persistence context, so the returned
+     * instances may still report PENDING if they were loaded earlier in the same transaction. Use
+     * them only for their immutable data (buyer, listing, offered listing), never to read the status.
+     */
     @Override
-    public List<Offer> rejectPendingOffers(Long listingId, Long exceptOfferId) {
-        final String jpql = exceptOfferId != null
-                ? "FROM Offer o WHERE o.listing.id = :listingId AND o.status = :status AND o.id <> :exceptOfferId"
-                : "FROM Offer o WHERE o.listing.id = :listingId AND o.status = :status";
-        final TypedQuery<Offer> query = em.createQuery(jpql, Offer.class)
+    public List<Offer> rejectPendingOffers(Long listingId, Long exceptOfferId, boolean includePendingPayment) {
+        final String pendingClause = exceptOfferId != null
+                ? " FROM Offer o WHERE o.listing.id = :listingId AND o.status IN :statuses AND o.id <> :exceptOfferId"
+                : " FROM Offer o WHERE o.listing.id = :listingId AND o.status IN :statuses";
+        final TypedQuery<Long> idQuery = em.createQuery("SELECT o.id" + pendingClause, Long.class)
                 .setParameter("listingId", listingId)
-                .setParameter("status", OfferStatus.PENDING);
+                .setParameter("statuses", includePendingPayment
+                        ? List.of(OfferStatus.PENDING, OfferStatus.PENDING_PAYMENT)
+                        : List.of(OfferStatus.PENDING));
         if (exceptOfferId != null) {
-            query.setParameter("exceptOfferId", exceptOfferId);
+            idQuery.setParameter("exceptOfferId", exceptOfferId);
         }
-        final List<Offer> toReject = query.getResultList();
-        for (Offer o : toReject) {
-            o.setStatus(OfferStatus.REJECTED);
+        final List<Long> ids = idQuery.getResultList();
+        if (ids.isEmpty()) {
+            return List.of();
         }
-        return toReject;
+
+        final Query update = em.createQuery(
+                        "UPDATE Offer o SET o.status = :rejected WHERE o.id IN :ids")
+                .setParameter("rejected", OfferStatus.REJECTED)
+                .setParameter("ids", ids);
+        update.executeUpdate();
+
+        // Fetch every association the rejection notifications and emails read, so notifying each
+        // rejected offer does not trigger lazy loads (N+1).
+        return em.createQuery(
+                "SELECT DISTINCT o FROM Offer o"
+                + " JOIN FETCH o.listing l"
+                + " JOIN FETCH o.buyer"
+                + " LEFT JOIN FETCH o.offeredListing ol"
+                + " LEFT JOIN FETCH ol.model om"
+                + " LEFT JOIN FETCH om.brand"
+                + " LEFT JOIN FETCH ol.imageIds"
+                + " JOIN FETCH l.creator"
+                + " JOIN FETCH l.model m"
+                + " JOIN FETCH m.brand"
+                + " LEFT JOIN FETCH l.imageIds"
+                + " WHERE o.id IN :ids", Offer.class)
+                .setParameter("ids", ids)
+                .getResultList();
+    }
+
+    // Bulk JPQL update: does not refresh offers already in the persistence context. Re-fetch
+    // (or refresh/detach) affected offers before reading them later in this transaction.
+    @Override
+    public int rejectCancellableOffersForOfferedListing(Long offeredListingId) {
+        return em.createQuery(
+                        "UPDATE Offer o SET o.status = :rejected"
+                        + " WHERE o.offeredListing.id = :offeredListingId AND o.status IN :statuses")
+                .setParameter("rejected", OfferStatus.REJECTED)
+                .setParameter("offeredListingId", offeredListingId)
+                .setParameter("statuses", List.of(OfferStatus.PENDING, OfferStatus.PENDING_PAYMENT))
+                .executeUpdate();
+    }
+
+    // Bulk JPQL update: does not refresh offers already in the persistence context. Re-fetch
+    // (or refresh/detach) affected offers before reading them later in this transaction.
+    @Override
+    public int rejectAllForParticipant(Long userId) {
+        return em.createQuery(
+                        "UPDATE Offer o SET o.status = :rejected"
+                        + " WHERE o.status IN :cancellableStatuses"
+                        + " AND (o.buyer.id = :userId"
+                        + "   OR o.listing.id IN (SELECT l.id FROM Listing l WHERE l.creator.id = :userId))")
+                .setParameter("rejected", OfferStatus.REJECTED)
+                .setParameter("cancellableStatuses", List.of(OfferStatus.PENDING, OfferStatus.PENDING_PAYMENT))
+                .setParameter("userId", userId)
+                .executeUpdate();
     }
 
     @Override
@@ -170,21 +262,21 @@ public class OfferJpaDao implements OfferDao {
                   + " = :userId"
                   + " AND (NOT (o.status IN (:resolvedStatuses)) OR (o.status = :acceptedStatus AND " + (incoming ? "o.buyerRating" : "o.sellerRating") + " IS NULL))";
 
-        var query = "SELECT COUNT(o) AS offerCount, o.status FROM Offer o"
+        var query = "SELECT new ar.edu.itba.paw.model.OfferStatusCount(o.status, COUNT(o)) FROM Offer o"
                   + where
                   + " GROUP BY o.status";
 
         Map<OfferStatusGroup, Long> results = new EnumMap<>(OfferStatusGroup.class);
-        em.createQuery(query, Object[].class)
+        em.createQuery(query, OfferStatusCount.class)
                 .setParameter("userId", currentUser.getId())
                 .setParameter("resolvedStatuses", OfferStatusGroup.RESOLVED.toStatusList())
                 .setParameter("acceptedStatus", OfferStatus.ACCEPTED)
                 .getResultStream()
-                .forEach((result) -> {
-                    var count = (Long)result[0];
-                    var group = OfferStatusGroup.fromStatus((OfferStatus)result[1]);
-                    results.merge(group, count, Long::sum);
-                });
+                .forEach((result) -> results.merge(
+                        OfferStatusGroup.fromStatus(result.status()),
+                        result.count(),
+                        Long::sum
+                ));
 
         return results;
     }
@@ -233,53 +325,37 @@ public class OfferJpaDao implements OfferDao {
         return true;
     }
 
+    // Bulk JPQL update: does not refresh offers already in the persistence context. Re-fetch
+    // (or refresh/detach) affected offers before reading them later in this transaction.
+    @Override
+    public int setSellerRatings(List<Long> offerIds, OfferRating rating) {
+        if (offerIds == null || offerIds.isEmpty()) return 0;
+        return em.createQuery(
+                "UPDATE Offer o SET o.sellerRating = :rating WHERE o.id IN :ids AND o.sellerRating IS NULL")
+                .setParameter("rating", rating)
+                .setParameter("ids", offerIds)
+                .executeUpdate();
+    }
+
+    // Bulk JPQL update: does not refresh offers already in the persistence context. Re-fetch
+    // (or refresh/detach) affected offers before reading them later in this transaction.
+    @Override
+    public int setBuyerRatings(List<Long> offerIds, OfferRating rating) {
+        if (offerIds == null || offerIds.isEmpty()) return 0;
+        return em.createQuery(
+                "UPDATE Offer o SET o.buyerRating = :rating WHERE o.id IN :ids AND o.buyerRating IS NULL")
+                .setParameter("rating", rating)
+                .setParameter("ids", offerIds)
+                .executeUpdate();
+    }
+
     @Override
     public List<Offer> getAcceptedUnratedBefore(Instant cutoff) {
-        final List<Offer> offers = em.createQuery(
-                "FROM Offer o WHERE o.status = :status AND o.acceptedAt IS NOT NULL AND o.acceptedAt < :cutoff AND (o.sellerRating IS NULL OR o.buyerRating IS NULL)",
+        return em.createQuery(
+                "SELECT o FROM Offer o JOIN FETCH o.listing WHERE o.status = :status AND o.acceptedAt IS NOT NULL AND o.acceptedAt < :cutoff AND (o.sellerRating IS NULL OR o.buyerRating IS NULL)",
                 Offer.class)
                 .setParameter("status", OfferStatus.ACCEPTED)
                 .setParameter("cutoff", cutoff)
                 .getResultList();
-        populateTransientFlags(offers);
-        return offers;
-    }
-
-    // TODO: This should not be here. Move this to Service layer because this is business logic, not DAO logic.
-    private void populateTransientFlags(List<Offer> offers) {
-        if (offers == null || offers.isEmpty()) return;
-        final Set<Long> listingIds = offers.stream()
-                .map(o -> o.getListing().getId())
-                .collect(Collectors.toSet());
-
-        final List<Object[]> pending = em.createQuery(
-                "SELECT o.listing.id, o.id, o.amount FROM Offer o WHERE o.listing.id IN :listingIds AND o.status = :status",
-                Object[].class)
-                .setParameter("listingIds", listingIds)
-                .setParameter("status", OfferStatus.PENDING)
-                .getResultList();
-
-        for (Offer offer : offers) {
-            boolean hasOther = false;
-            boolean hasBetter = false;
-            final Long listingId = offer.getListing().getId();
-            final Long offerId = offer.getId();
-            final BigDecimal amount = offer.getAmount();
-
-            for (Object[] row : pending) {
-                final Long rowListingId = (Long) row[0];
-                final Long rowOfferId = (Long) row[1];
-                final BigDecimal rowAmount = (BigDecimal) row[2];
-
-                if (rowListingId.equals(listingId) && !rowOfferId.equals(offerId)) {
-                    hasOther = true;
-                    if (rowAmount != null && amount != null && rowAmount.compareTo(amount) > 0) {
-                        hasBetter = true;
-                    }
-                }
-            }
-            offer.setHasOtherOffers(hasOther);
-            offer.setHasBetterOffers(hasBetter);
-        }
     }
 }

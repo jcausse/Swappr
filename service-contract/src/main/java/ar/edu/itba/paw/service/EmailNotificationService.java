@@ -13,10 +13,12 @@ public interface EmailNotificationService {
     void sendListingPublishedEmail(UserMailDto seller, ListingMailDto listing);
 
     /** Notify the seller that their listing was purchased, including the buyer contact email and message. */
-    void sendPurchaseSellerEmail(UserMailDto seller, UserMailDto buyer, ListingMailDto listing, String message);
+    void sendPurchaseSellerEmail(UserMailDto seller, UserMailDto buyer, ListingMailDto listing, String message,
+                                boolean forFreeListing);
 
     /** Confirm the purchase to the buyer, including the seller contact email. */
-    void sendPurchaseBuyerEmail(UserMailDto buyer, UserMailDto seller, ListingMailDto listing);
+    void sendPurchaseBuyerEmail(UserMailDto buyer, UserMailDto seller, ListingMailDto listing,
+                                boolean forFreeListing);
 
     /** Notify the seller that they received a new offer on their listing. */
     void sendNewOfferEmail(OfferMailDto offer);
@@ -50,4 +52,10 @@ public interface EmailNotificationService {
 
     /** Notify user that their account has been unsuspended by an administrator. */
     void sendAccountUnsuspendedEmail(UserMailDto user);
+
+    /** Notify the requester that their brand/model request was accepted. */
+    void sendBrandModelRequestAcceptedEmail(UserMailDto user, String brandName, String modelName, Long modelId);
+
+    /** Notify the requester that their brand/model request was rejected. */
+    void sendBrandModelRequestRejectedEmail(UserMailDto user, String brandName, String modelName);
 }

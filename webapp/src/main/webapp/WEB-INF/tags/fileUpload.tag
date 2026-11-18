@@ -6,6 +6,9 @@
 <%@ attribute name="accept" required="false" %>
 <%@ attribute name="maxSizeBytes" required="false" type="java.lang.Long" %>
 <%@ attribute name="classname" required="false" %>
+<%@ attribute name="existingImageIds" required="false" type="java.util.List" %>
+<%@ attribute name="removedPath" required="false" %>
+<%@ attribute name="removedImageIds" required="false" type="java.util.List" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
 <%@ taglib prefix="paw" tagdir="/WEB-INF/tags" %>
@@ -66,6 +69,20 @@
             </c:if>
         </div>
 
+        <c:forEach items="${existingImageIds}" var="imageId">
+            <c:if test="${empty removedImageIds or not removedImageIds.contains(imageId)}">
+                <c:url value="/image/${imageId}" var="existingImageUrl"/>
+                <div id="${path}-existing-${imageId}" data-existing-id="${imageId}"
+                    class="relative group aspect-square rounded-lg border border-black/10 overflow-hidden">
+                    <img src="${existingImageUrl}" alt="" class="w-full h-full object-cover"/>
+                    <div class="absolute top-1 right-1 bg-white rounded-lg">
+                        <paw:button size="sm" variant="outline" icon="x" type="button" role="danger"
+                                    onclick="removeExistingFile('${path}', '${imageId}')" />
+                    </div>
+                </div>
+            </c:if>
+        </c:forEach>
+
         <label id="${path}-add" for="${path}-file" class="aspect-square rounded-lg border-2 border-dashed border-black/20 bg-neutral-50 flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-lime-600 hover:bg-lime-50 transition-all order-999">
             <c:choose>
                 <c:when test="${inputMultiple}">
@@ -81,6 +98,16 @@
             <span class="text-sm text-black/60 font-medium text-center px-2"><c:out value="${uploadLabel}"/></span>
         </label>
     </div>
+
+    <c:if test="${not empty removedPath}">
+        <div id="${path}-removed" class="hidden">
+            <c:forEach items="${existingImageIds}" var="imageId">
+                <c:set var="alreadyRemoved" value="${not empty removedImageIds and removedImageIds.contains(imageId)}"/>
+                <input type="hidden" id="${path}-removed-${imageId}" name="${removedPath}" value="${imageId}"
+                    <c:if test="${not alreadyRemoved}">disabled</c:if> />
+            </c:forEach>
+        </div>
+    </c:if>
 
     <div class="flex flex-wrap gap-2">
     </div>
@@ -103,6 +130,24 @@
         if (errorBanner) {
             errorBanner.classList.add('hidden');
         }
+    }
+
+    function removeExistingFile(fieldId, imageId) {
+        const preview = document.getElementById(fieldId + '-existing-' + imageId);
+        if (preview) preview.remove();
+
+        const removedInput = document.getElementById(fieldId + '-removed-' + imageId);
+        if (removedInput) removedInput.disabled = false;
+
+        refreshClearButton(fieldId);
+    }
+
+    function refreshClearButton(fieldId) {
+        const clearBtn = document.getElementById(fieldId + '-clear');
+        if (!clearBtn) return;
+        const previewsContainer = document.getElementById(fieldId + '-previews');
+        const hasPreviews = previewsContainer.querySelector('[data-index], [data-existing-id]') !== null;
+        clearBtn.classList.toggle('hidden', !hasPreviews);
     }
 
     function handleFileUpload(fileInput, fieldId) {
@@ -238,17 +283,19 @@
         const fileInput = document.getElementById(fieldId + '-file');
         updateFileInput(fileInput, fieldId, state);
 
-        const clearBtn = document.getElementById(fieldId + '-clear');
         const addBtn = document.getElementById(fieldId + '-add');
-        if (state.originalFiles.filter(f => f !== null).length === 0) {
-            if (clearBtn) clearBtn.classList.add('hidden');
-            if (addBtn) addBtn.classList.remove('hidden');
+        if (state.originalFiles.filter(f => f !== null).length === 0 && addBtn) {
+            addBtn.classList.remove('hidden');
         }
+        refreshClearButton(fieldId);
     }
 
     function clearAllFiles(fieldId) {
         const previewsContainer = document.getElementById(fieldId + '-previews');
         const state = fileUploadState.get(fieldId);
+
+        previewsContainer.querySelectorAll('[data-existing-id]')
+        .forEach(preview => removeExistingFile(fieldId, preview.dataset.existingId));
 
         if (state) {
             state.objectUrls.forEach(url => URL.revokeObjectURL(url));
@@ -289,4 +336,8 @@
             });
         });
     });
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => refreshClearButton('${path}'));
 </script>

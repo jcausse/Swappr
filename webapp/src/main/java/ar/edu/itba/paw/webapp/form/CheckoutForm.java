@@ -1,11 +1,13 @@
 package ar.edu.itba.paw.webapp.form;
 
 import ar.edu.itba.paw.model.OfferType;
+import ar.edu.itba.paw.service.dto.OfferCreationDto;
 import ar.edu.itba.paw.webapp.form.validation.ValidCheckout;
 import java.math.BigDecimal;
 import javax.validation.constraints.DecimalMin;
 import javax.validation.constraints.Digits;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -38,5 +40,18 @@ public class CheckoutForm {
     @Digits(integer = 9, fraction = 2)
     private BigDecimal tradeAmount;
 
+    @Size(max = 1000)
     private String message;
+
+    public OfferCreationDto toOfferDto(Long buyerId) {
+        return new OfferCreationDto(
+                listingId,
+                buyerId,
+                offerType,
+                customAmount,
+                tradeAmount,
+                message,
+                offeredListingId
+        );
+    }
 }

@@ -14,6 +14,9 @@
 <spring:message code="account.listings.filter.all" var="allLabel"/>
 <spring:message code="listing.sort.label" var="sortLabel"/>
 <spring:message code="account.listings.filter.default" var="defaultLabel"/>
+<spring:message code="account.listings.view" var="viewListingLabel"/>
+<spring:message code="account.listings.edit" var="editListingLabel"/>
+<spring:message code="account.listings.cancel" var="cancelListingLabel"/>
 <spring:message code="listing.status.ACTIVE" var="statusActive"/>
 <spring:message code="listing.status.SOLD" var="statusSold"/>
 <spring:message code="listing.status.CANCELED" var="statusCanceled"/>
@@ -95,20 +98,21 @@
                                 <paw:listingImage listing="${listing}" />
 
                                 <div class="flex-1 min-w-0 flex flex-col justify-between">
-                                    <paw:product product="${listing.product}" size="sm" />
+                                    <paw:product model="${listing.model}" year="${listing.year}" size="sm" />
                                     <div class="text-xl font-bold mt-2 sm:mt-0">
                                         <paw:price amount="${listing.price.amount}"/>
                                     </div>
                                 </div>
 
                                 <div class="flex flex-row gap-1 self-end">
-                                    <paw:linkButton variant="outline" href="${listingUrl}" icon="eye" />
-                                    <c:if test="${listing.status.name() == 'ACTIVE'}">
+                                    <paw:linkButton variant="outline" href="${listingUrl}" icon="eye" ariaLabel="${viewListingLabel}" />
+                                    <c:if test="${listing.isActive()}">
                                         <c:url value="/listing/${listing.id}/edit" var="editListingUrl"/>
-                                        <paw:linkButton variant="outline" href="${editListingUrl}" icon="pencil" />
+                                        <paw:linkButton variant="outline" href="${editListingUrl}" icon="pencil" ariaLabel="${editListingLabel}" />
 
                                         <paw:button variant="outline" role="danger" icon="trash-2"
-                                                    onclick="document.getElementById('cancelDialog-${listing.id}').showModal()"/>
+                                                    onclick="document.getElementById('cancelDialog-${listing.id}').showModal()"
+                                                    ariaLabel="${cancelListingLabel}"/>
 
                                         <spring:message code="listing.cancel.confirm.title" var="cancelTitle"/>
                                         <spring:message code="listing.cancel.confirm.confirm" var="cancelConfirm"/>
@@ -139,12 +143,8 @@
         document.addEventListener('DOMContentLoaded', function() {
             const statusSelect = document.getElementById('status');
             const sortSelect = document.getElementById('sort');
-            const isAutoSubmitInput = document.getElementById('isAutoSubmit');
 
             function submitForm() {
-                if (isAutoSubmitInput) {
-                    isAutoSubmitInput.value = 'true';
-                }
                 document.querySelector('form#filterForm').submit();
             }
 

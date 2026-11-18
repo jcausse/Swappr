@@ -1,6 +1,7 @@
 package ar.edu.itba.paw.webapp.form;
 
 import ar.edu.itba.paw.service.dto.ImageData;
+import ar.edu.itba.paw.service.dto.UserCreationDto;
 import ar.edu.itba.paw.webapp.form.validation.FieldMatch;
 import ar.edu.itba.paw.webapp.form.validation.UniqueEmail;
 import ar.edu.itba.paw.webapp.form.validation.UniqueUsername;
@@ -11,6 +12,7 @@ import java.io.IOException;
 import java.util.Optional;
 
 import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
 import lombok.Getter;
@@ -24,13 +26,13 @@ import org.springframework.web.multipart.MultipartFile;
 @FieldMatch(first = "password", second = "confirmPassword")
 public class UserForm {
 
-    @NotEmpty
+    @NotBlank
     @Size(min = 3, max = 24)
     @Username
     @UniqueUsername
     private String username;
 
-    @NotEmpty
+    @NotBlank
     @Size(max = 50)
     private String displayName;
 
@@ -67,5 +69,15 @@ public class UserForm {
             rte.initCause(e);
             throw rte;
         }
+    }
+
+    public UserCreationDto toDto() {
+        return new UserCreationDto(
+                username,
+                displayName,
+                email,
+                password,
+                getProfilePicture().orElse(null)
+        );
     }
 }

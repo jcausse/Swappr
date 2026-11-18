@@ -3,6 +3,7 @@ package ar.edu.itba.paw.webapp.form;
 import ar.edu.itba.paw.model.Condition;
 import ar.edu.itba.paw.model.ListingSort;
 import ar.edu.itba.paw.model.ListingStatus;
+import ar.edu.itba.paw.service.dto.ListingFilterDto;
 
 import java.math.BigDecimal;
 import javax.validation.constraints.Min;
@@ -21,6 +22,7 @@ public class ListingFilterForm {
     private BigDecimal maxPrice;
     private Condition condition;
     private Boolean acceptsTrade;
+    private Boolean onlyFree;
     private String query;
     private ListingSort sort = ListingSort.RECENT;
     private ListingStatus status;
@@ -28,12 +30,50 @@ public class ListingFilterForm {
     private Integer page;
     private Long provinceId;
     private Boolean acceptsShipping;
-    private String brand;
-    private String model;
+    private Long brandId;
+    private Long modelId;
     private Integer yearMin;
     private Integer yearMax;
 
     public Integer getPage() {
         return page == null || page < 1 ? 1 : page;
+    }
+
+    public ListingFilterDto toDto(Long creatorId, int pageSize) {
+        return toDto(creatorId, getStatus(), pageSize);
+    }
+
+    public ListingFilterDto toOwnedListingsDto(Long creatorId, int pageSize) {
+        return ListingFilterDto.builder()
+                .creatorId(creatorId)
+                .status(getStatus())
+                .sort(sort)
+                .page(getPage())
+                .pageSize(pageSize)
+                .build();
+    }
+
+    public ListingFilterDto toDto(Long creatorId, ListingStatus status, int pageSize) {
+        return ListingFilterDto.builder()
+                .categoryId(categoryId)
+                .subcategoryId(subcategoryId)
+                .minPrice(minPrice)
+                .maxPrice(maxPrice)
+                .condition(condition)
+                .acceptsTrade(acceptsTrade)
+                .onlyFree(onlyFree)
+                .query(query)
+                .sort(sort)
+                .creatorId(creatorId)
+                .status(status)
+                .page(getPage())
+                .pageSize(pageSize)
+                .provinceId(provinceId)
+                .acceptsShipping(acceptsShipping)
+                .brandId(brandId)
+                .modelId(modelId)
+                .yearMin(yearMin)
+                .yearMax(yearMax)
+                .build();
     }
 }

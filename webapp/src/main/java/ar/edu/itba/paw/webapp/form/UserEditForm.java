@@ -1,7 +1,9 @@
 package ar.edu.itba.paw.webapp.form;
 
 import ar.edu.itba.paw.model.Language;
+import ar.edu.itba.paw.model.User;
 import ar.edu.itba.paw.service.dto.ImageData;
+import ar.edu.itba.paw.service.dto.UserEditDto;
 import ar.edu.itba.paw.webapp.form.validation.EmptyOrSize;
 import ar.edu.itba.paw.webapp.form.validation.FieldMatch;
 import ar.edu.itba.paw.webapp.form.validation.ValidFile;
@@ -13,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.Optional;
 
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
@@ -22,6 +25,7 @@ import javax.validation.constraints.Size;
 @FieldMatch(first = "password", second = "confirmPassword")
 public class UserEditForm {
 
+    @NotBlank
     @Size(max = 50)
     private String displayName;
 
@@ -58,5 +62,18 @@ public class UserEditForm {
             rte.initCause(e);
             throw rte;
         }
+    }
+
+    public UserEditDto toDto(User user) {
+        return UserEditDto.builder()
+                .user(user)
+                .newDisplayName(displayName)
+                .newPassword(password)
+                .newImageData(getProfilePicture().orElse(null))
+                .updateLocationAndLanguage(true)
+                .newProvinceId(provinceId)
+                .newLocationDetail(locationDetail)
+                .newPreferredLanguage(preferredLanguage)
+                .build();
     }
 }

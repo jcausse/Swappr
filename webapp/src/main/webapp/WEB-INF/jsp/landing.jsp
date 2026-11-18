@@ -4,11 +4,7 @@
 <%@ taglib prefix="paw" tagdir="/WEB-INF/tags" %>
 
 <html lang="${pageContext.response.locale.language}">
-<paw:head titleKey="landing.title">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="<c:url value="/css/input.css"/>"/>
-</paw:head>
+<paw:head titleKey="landing.title"/>
 
 <body class="pb-24 bg-neutral-50">
     <paw:navbar/>

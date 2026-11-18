@@ -3,6 +3,7 @@ package ar.edu.itba.paw.service;
 import ar.edu.itba.paw.model.Image;
 import ar.edu.itba.paw.persistence.ImageDao;
 import java.util.Optional;
+import java.util.List;
 
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -39,5 +40,21 @@ public class ImageServiceImpl implements ImageService {
     public void delete(Long id) {
         LOGGER.info("Deleting image with id={}", id);
         imageDao.delete(id);
+    }
+
+    @Override
+    @Transactional
+    public List<Image> createAll(final List<Image> images) {
+        LOGGER.debug("Creating {} images", images.size());
+        final List<Image> created = imageDao.createAll(images);
+        LOGGER.info("Images created with ids={}", created.stream().map(Image::getId).toList());
+        return created;
+    }
+
+    @Override
+    @Transactional
+    public void deleteAll(final List<Long> ids) {
+        LOGGER.info("Deleting images with ids={}", ids);
+        imageDao.deleteAll(ids);
     }
 }

@@ -1,11 +1,16 @@
 package ar.edu.itba.paw.service.notification;
 
 import ar.edu.itba.paw.model.Listing;
-import ar.edu.itba.paw.model.NotificationType;
+import ar.edu.itba.paw.model.notification.NotificationChannel;
+import ar.edu.itba.paw.model.notification.NotificationType;
 import ar.edu.itba.paw.model.Offer;
 import ar.edu.itba.paw.model.User;
+import ar.edu.itba.paw.model.Brand;
+import ar.edu.itba.paw.model.BrandModelRequest;
+import ar.edu.itba.paw.model.Model;
 import ar.edu.itba.paw.service.EmailNotificationService;
 import ar.edu.itba.paw.service.NotificationDispatcherService;
+import ar.edu.itba.paw.service.NotificationPreferenceService;
 import ar.edu.itba.paw.service.SiteNotificationService;
 import ar.edu.itba.paw.service.dto.mail.ListingMailDto;
 import ar.edu.itba.paw.service.dto.mail.OfferMailDto;
@@ -17,6 +22,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -26,6 +35,7 @@ public class NotificationDispatcherServiceImpl implements NotificationDispatcher
 
     private final SiteNotificationService siteNotificationService;
     private final EmailNotificationService emailNotificationService;
+    private final NotificationPreferenceService notificationPreferenceService;
 
     @Override
     public void notifyWelcome(@NonNull User user) {
@@ -55,7 +65,8 @@ public class NotificationDispatcherServiceImpl implements NotificationDispatcher
                     UserMailDto.from(seller),
                     UserMailDto.from(buyer),
                     ListingMailDto.from(listing),
-                    message
+                    message,
+                    listing.isFree()
             );
         }
     }
@@ -75,7 +86,8 @@ public class NotificationDispatcherServiceImpl implements NotificationDispatcher
             emailNotificationService.sendPurchaseBuyerEmail(
                     UserMailDto.from(buyer),
                     UserMailDto.from(seller),
-                    ListingMailDto.from(listing)
+                    ListingMailDto.from(listing),
+                    listing.isFree()
             );
         }
     }
@@ -218,11 +230,76 @@ public class NotificationDispatcherServiceImpl implements NotificationDispatcher
         }
     }
 
+    @Override
+    @Transactional
+    public void notifyBrandModelRequestAccepted(
+            @NonNull BrandModelRequest request,
+            @NonNull List<User> recipients,
+            @NonNull Brand brand,
+            @NonNull Model model
+    ) {
+        final Map<Long, Set<NotificationChannel>> channelsByUser =
+                notificationPreferenceService.getEnabledChannelsForUsers(
+                        recipients, NotificationType.BRAND_MODEL_REQUEST_ACCEPTED);
+
+        for (final User recipient : recipients) {
+            LOGGER.debug("Dispatching {} notification for request id={}, recipient id={}",
+                    NotificationType.BRAND_MODEL_REQUEST_ACCEPTED, request.getId(), recipient.getId());
+            final Set<NotificationChannel> enabledChannels =
+                    channelsByUser.getOrDefault(recipient.getId(), Set.of());
+
+            if (enabledChannels.contains(NotificationChannel.SITE)) {
+                siteNotificationService.create(
+                        SiteNotificationCreationDtoFactory.brandModelRequestAccepted(request, recipient, brand, model));
+            }
+
+            if (enabledChannels.contains(NotificationChannel.EMAIL)) {
+                emailNotificationService.sendBrandModelRequestAcceptedEmail(
+                        UserMailDto.from(recipient),
+                        brand.getName(),
+                        model.getName(),
+                        model.getId()
+                );
+            }
+        }
+    }
+
+    @Override
+    @Transactional
+    public void notifyBrandModelRequestRejected(
+            @NonNull BrandModelRequest request,
+            @NonNull List<User> recipients
+    ) {
+        final Map<Long, Set<NotificationChannel>> channelsByUser =
+                notificationPreferenceService.getEnabledChannelsForUsers(
+                        recipients, NotificationType.BRAND_MODEL_REQUEST_REJECTED);
+
+        for (final User recipient : recipients) {
+            LOGGER.debug("Dispatching {} notification for request id={}, recipient id={}",
+                    NotificationType.BRAND_MODEL_REQUEST_REJECTED, request.getId(), recipient.getId());
+            final Set<NotificationChannel> enabledChannels =
+                    channelsByUser.getOrDefault(recipient.getId(), Set.of());
+
+            if (enabledChannels.contains(NotificationChannel.SITE)) {
+                siteNotificationService.create(
+                        SiteNotificationCreationDtoFactory.brandModelRequestRejected(request, recipient));
+            }
+
+            if (enabledChannels.contains(NotificationChannel.EMAIL)) {
+                emailNotificationService.sendBrandModelRequestRejectedEmail(
+                        UserMailDto.from(recipient),
+                        request.getRequestedBrandName(),
+                        request.getModelName()
+                );
+            }
+        }
+    }
+
     private boolean shouldSendSite(final User recipient, final NotificationType type) {
-        return recipient != null && type.supportsSite();
+        return notificationPreferenceService.isNotificationEnabled(recipient, type, NotificationChannel.SITE);
     }
 
     private boolean shouldSendEmail(final User recipient, final NotificationType type) {
-        return recipient != null && type.supportsEmail();
+        return notificationPreferenceService.isNotificationEnabled(recipient, type, NotificationChannel.EMAIL);
     }
 }

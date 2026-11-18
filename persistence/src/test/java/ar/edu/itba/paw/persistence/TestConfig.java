@@ -26,15 +26,15 @@ public class TestConfig {
 
     private static final String MIGRATIONS_PATTERN = "classpath*:db/migration-hsqldb/*.sql";
 
-	@Bean
-	public DataSource dataSource() {
-		final SimpleDriverDataSource dataSource = new SimpleDriverDataSource();
-		dataSource.setDriverClass(org.hsqldb.jdbc.JDBCDriver.class);
-		dataSource.setUrl("jdbc:hsqldb:mem:paw_" + UUID.randomUUID() + ";sql.syntax_pgs=true");                                  
-		dataSource.setUsername("sa");                                                             
-		dataSource.setPassword("");
-		return dataSource;
-	}
+    @Bean
+    public DataSource dataSource() {
+        final SimpleDriverDataSource dataSource = new SimpleDriverDataSource();
+        dataSource.setDriverClass(org.hsqldb.jdbc.JDBCDriver.class);
+        dataSource.setUrl("jdbc:hsqldb:mem:paw_" + UUID.randomUUID() + ";sql.syntax_pgs=true");                                  
+        dataSource.setUsername("sa");                                                             
+        dataSource.setPassword("");
+        return dataSource;
+    }
 
     @Bean
     public org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean entityManagerFactory(DataSource dataSource) {
@@ -46,8 +46,6 @@ public class TestConfig {
         final java.util.Properties properties = new java.util.Properties();
         properties.setProperty("hibernate.hbm2ddl.auto", "none");
         properties.setProperty("hibernate.dialect", "org.hibernate.dialect.HSQLDialect");
-        properties.setProperty("hibernate.show_sql", "true");
-        properties.setProperty("format_sql", "true");
         factoryBean.setJpaProperties(properties);
         
         return factoryBean;

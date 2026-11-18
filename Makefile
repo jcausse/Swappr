@@ -3,7 +3,7 @@
 MAVEN  := mvn
 PYTHON := python3
 
-.PHONY: dev dev-clean clean pack compile deploy db-start db-stop troubleshoot import-secrets help
+.PHONY: dev dev-clean clean pack compile deploy db-start db-stop troubleshoot import-secrets prod-db-clone help
 
 ########################################################################################################################
 # LOCAL DEVELOPMENT TARGETS
@@ -46,6 +46,9 @@ prod-deploy: ## Back-up production database, then build and deploy from working 
 
 prod-db-backup: ## Back-up production database via SSH (requires .script/deploy_secrets.properties)
 	@$(PYTHON) ./.script/deploy.py --db-backup-only
+
+prod-db-clone: ## Clone production database to a new local Docker container (requires .script/deploy_secrets.properties)
+	@$(PYTHON) ./.script/clone_prod_db.py
 
 ########################################################################################################################
 # MISCELLANEOUS TARGETS

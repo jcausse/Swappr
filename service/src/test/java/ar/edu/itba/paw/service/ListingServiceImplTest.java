@@ -1,21 +1,17 @@
 package ar.edu.itba.paw.service;
 
+import ar.edu.itba.paw.model.Brand;
 import ar.edu.itba.paw.model.Category;
 import ar.edu.itba.paw.model.Condition;
-import ar.edu.itba.paw.model.Image;
 import ar.edu.itba.paw.model.Listing;
-import ar.edu.itba.paw.model.ListingFilter;
-import ar.edu.itba.paw.model.ListingSort;
 import ar.edu.itba.paw.model.ListingStatus;
-import ar.edu.itba.paw.model.Page;
+import ar.edu.itba.paw.model.Model;
 import ar.edu.itba.paw.model.Price;
-import ar.edu.itba.paw.model.Product;
 import ar.edu.itba.paw.model.Subcategory;
 import ar.edu.itba.paw.model.User;
 import ar.edu.itba.paw.persistence.ListingDao;
 import ar.edu.itba.paw.service.dto.ImageData;
 import ar.edu.itba.paw.service.dto.ListingCreationDto;
-import ar.edu.itba.paw.service.dto.ListingFilterDto;
 import ar.edu.itba.paw.service.dto.ListingUpdateDto;
 import ar.edu.itba.paw.service.exception.BadParameterException;
 import ar.edu.itba.paw.service.exception.NotFoundException;
@@ -28,11 +24,14 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.Arrays;
+import java.time.Year;
 import java.util.List;
 import java.util.Optional;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.anyBoolean;
+import static org.mockito.Mockito.anyInt;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ListingServiceImplTest {
@@ -49,9 +48,9 @@ public class ListingServiceImplTest {
 
     private static final long CATEGORY_ID = 1L;
     private static final long SUBCATEGORY_ID = 1L;
-    private static final long PRODUCT_ID = 1L;
-    private static final long IMAGE_ID = 10L;
-    private static final int PAGE_SIZE = 12;
+    private static final long BRAND_ID = 1L;
+    private static final long MODEL_ID = 1L;
+    private static final int YEAR = 2023;
 
     @InjectMocks
     private ListingServiceImpl listingService;
@@ -60,13 +59,11 @@ public class ListingServiceImplTest {
     @Mock
     private UserService userService;
     @Mock
-    private ProductService productService;
+    private CatalogService catalogService;
     @Mock
     private ImageService imageService;
     @Mock
     private NotificationDispatcherService notificationDispatcherService;
-    @Mock
-    private OfferService offerService;
 
     /* ---------------------------------------------------------------------------------------------- */
     /* Fixtures                                                                                        */
@@ -83,14 +80,14 @@ public class ListingServiceImplTest {
             .build();
     }
 
-    private static Product buildFakeProduct() {
+    private static Model buildFakeModel() {
         final Category category = Category.builder().id(CATEGORY_ID).name("Electronics").build();
         final Subcategory subcategory = Subcategory.builder().id(SUBCATEGORY_ID).name("Laptops").category(category).build();
-        return Product.builder()
-            .id(PRODUCT_ID)
-            .brand("Apple")
-            .model("MacBook Pro")
-            .year(2023)
+        final Brand brand = Brand.builder().id(BRAND_ID).name("Apple").build();
+        return Model.builder()
+            .id(MODEL_ID)
+            .name("MacBook Pro")
+            .brand(brand)
             .subcategory(subcategory)
             .build();
     }
@@ -105,7 +102,8 @@ public class ListingServiceImplTest {
             .title(LISTING_TITLE)
             .creator(creator)
             .price(LISTING_PRICE)
-            .product(buildFakeProduct())
+            .model(buildFakeModel())
+            .year(YEAR)
             .description(LISTING_DESCRIPTION)
             .status(status)
             .condition(Condition.GOOD)
@@ -115,47 +113,33 @@ public class ListingServiceImplTest {
 
     private static ListingCreationDto buildCreationDto(final Condition condition, final List<ImageData> images) {
         return new ListingCreationDto(
-            LISTING_TITLE, LISTING_PRICE.getAmount(), SELLER_ID, PRODUCT_ID, condition, true, false, LISTING_DESCRIPTION, images
+            LISTING_TITLE, LISTING_PRICE.getAmount(), SELLER_ID, MODEL_ID, YEAR, condition, true, false, LISTING_DESCRIPTION, images
+        );
+    }
+
+    private static ListingCreationDto buildCreationDtoWithYear(final int year) {
+        return new ListingCreationDto(
+            LISTING_TITLE, LISTING_PRICE.getAmount(), SELLER_ID, MODEL_ID, year, Condition.GOOD, true, false, LISTING_DESCRIPTION, null
+        );
+    }
+
+    private static ListingUpdateDto buildUpdateDtoWithYear(final int year) {
+        return new ListingUpdateDto(
+            LISTING_ID, LISTING_TITLE, LISTING_PRICE.getAmount(), MODEL_ID, year, Condition.GOOD, true, false, LISTING_DESCRIPTION,
+            List.of(), List.of()
         );
     }
 
     private static ListingUpdateDto buildUpdateDto(final long listingId, final Condition condition) {
         return new ListingUpdateDto(
-            listingId, LISTING_TITLE, LISTING_PRICE.getAmount(), PRODUCT_ID, condition, true, false, LISTING_DESCRIPTION
-        );
-    }
-
-    private static ListingFilterDto buildFilterDto(
-        final Condition condition,
-        final ListingSort sort,
-        final ListingStatus status,
-        final Integer page,
-        final BigDecimal minPrice,
-        final BigDecimal maxPrice,
-        final Boolean acceptsTrade
-    ) {
-        return new ListingFilterDto(
-            null, null, minPrice, maxPrice, condition, acceptsTrade, null, sort, null, status, page, PAGE_SIZE, null, null, null, null, null, null, null
+            listingId, LISTING_TITLE, LISTING_PRICE.getAmount(), MODEL_ID, YEAR, condition, true, false, LISTING_DESCRIPTION,
+            List.of(), List.of()
         );
     }
 
     /* ---------------------------------------------------------------------------------------------- */
     /* getById                                                                                         */
     /* ---------------------------------------------------------------------------------------------- */
-
-    @Test
-    public void testGetByIdExists() {
-        // Arrange
-        final Listing listing = buildFakeListing(buildFakeUser(SELLER_ID, "seller"));
-        when(listingDao.getById(eq(LISTING_ID))).thenReturn(Optional.of(listing));
-
-        // Act
-        final Listing result = listingService.getById(LISTING_ID);
-
-        // Assert
-        Assert.assertEquals(LISTING_ID, (long) result.getId());
-        Assert.assertEquals(LISTING_TITLE, result.getTitle());
-    }
 
     @Test(expected = NotFoundException.class)
     public void testGetByIdDoesNotExistThrows() {
@@ -166,22 +150,14 @@ public class ListingServiceImplTest {
         listingService.getById(NON_EXISTING_ID);
     }
 
+    @Test(expected = BadParameterException.class)
+    public void testGetByIdNullThrows() {
+        listingService.getById(null);
+    }
+
     /* ---------------------------------------------------------------------------------------------- */
     /* search                                                                                          */
     /* ---------------------------------------------------------------------------------------------- */
-
-    @Test
-    public void testSearchReturnsDaoPage() {
-        // Arrange
-        final Page<Listing> page = new Page<>(List.of(buildFakeListing(buildFakeUser(SELLER_ID, "seller"))), 1, PAGE_SIZE, 1);
-        when(listingDao.search(any(ListingFilter.class))).thenReturn(page);
-
-        // Act
-        final Page<Listing> result = listingService.search(buildFilterDto(null, null, null, 1, null, null, null));
-
-        // Assert
-        Assert.assertSame(page, result);
-    }
 
     @Test(expected = NullPointerException.class)
     public void testSearchNullDtoThrows() {
@@ -197,43 +173,17 @@ public class ListingServiceImplTest {
     public void testCreateReturnsCreatedListing() {
         // Arrange
         final User seller = buildFakeUser(SELLER_ID, "seller");
-        final Product product = buildFakeProduct();
+        final Model model = buildFakeModel();
         final Listing listing = buildFakeListing(seller);
         when(userService.getById(eq(SELLER_ID))).thenReturn(Optional.of(seller));
-        when(productService.getById(eq(PRODUCT_ID))).thenReturn(product);
+        when(catalogService.getModelById(eq(MODEL_ID))).thenReturn(model);
         when(listingDao.create(
-            eq(LISTING_TITLE), eq(LISTING_PRICE), eq(seller), eq(product),
+            eq(LISTING_TITLE), eq(LISTING_PRICE), eq(seller), eq(model), eq(YEAR),
             eq(Condition.GOOD), eq(true), anyBoolean(), eq(LISTING_DESCRIPTION), eq(List.of())
         )).thenReturn(listing);
 
         // Act
         final Listing result = listingService.create(buildCreationDto(Condition.GOOD, null));
-
-        // Assert
-        Assert.assertEquals(LISTING_ID, (long) result.getId());
-    }
-
-    @Test
-    public void testCreateStoresOnlyNonEmptyImages() {
-        // Arrange
-        final User seller = buildFakeUser(SELLER_ID, "seller");
-        final Listing listing = buildFakeListing(seller);
-        final List<ImageData> images = Arrays.asList(
-            new ImageData(new byte[]{ 1, 2, 3 }, "photo.jpg", "image/jpeg"),
-            new ImageData(new byte[0], "empty.jpg", "image/jpeg"),
-            null
-        );
-        final Image storedImage = Image.builder().id(IMAGE_ID).filename("photo.jpg").alt("alt").build();
-        when(userService.getById(eq(SELLER_ID))).thenReturn(Optional.of(seller));
-        when(productService.getById(eq(PRODUCT_ID))).thenReturn(buildFakeProduct());
-        when(imageService.create(
-            eq("photo.jpg"), eq("Image 1 for listing: " + LISTING_TITLE), eq("image/jpeg"), any(byte[].class)
-        )).thenReturn(storedImage);
-        when(listingDao.create(any(), any(), any(), any(), any(), anyBoolean(), anyBoolean(), any(), eq(List.of(IMAGE_ID))))
-            .thenReturn(listing);
-
-        // Act
-        final Listing result = listingService.create(buildCreationDto(Condition.GOOD, images));
 
         // Assert
         Assert.assertEquals(LISTING_ID, (long) result.getId());
@@ -249,20 +199,38 @@ public class ListingServiceImplTest {
     }
 
     @Test(expected = BadParameterException.class)
-    public void testCreateUnknownProductThrows() {
+    public void testCreateUnknownModelThrows() {
         // Arrange
         when(userService.getById(eq(SELLER_ID))).thenReturn(Optional.of(buildFakeUser(SELLER_ID, "seller")));
-        when(productService.getById(eq(PRODUCT_ID))).thenThrow(NotFoundException.createFor("Product with ID " + PRODUCT_ID));
+        when(catalogService.getModelById(eq(MODEL_ID))).thenThrow(NotFoundException.createFor("Model with ID " + MODEL_ID));
 
         // Act
         listingService.create(buildCreationDto(Condition.GOOD, null));
     }
 
     @Test(expected = BadParameterException.class)
+    public void testCreateYearBeforeMinimumThrows() {
+        // Arrange
+        when(userService.getById(eq(SELLER_ID))).thenReturn(Optional.of(buildFakeUser(SELLER_ID, "seller")));
+        when(catalogService.getModelById(eq(MODEL_ID))).thenReturn(buildFakeModel());
+        // Act
+        listingService.create(buildCreationDtoWithYear(Listing.MIN_YEAR - 1));
+    }
+
+    @Test(expected = BadParameterException.class)
+    public void testCreateYearInTheFutureThrows() {
+        // Arrange
+        when(userService.getById(eq(SELLER_ID))).thenReturn(Optional.of(buildFakeUser(SELLER_ID, "seller")));
+        when(catalogService.getModelById(eq(MODEL_ID))).thenReturn(buildFakeModel());
+        // Act
+        listingService.create(buildCreationDtoWithYear(Year.now().getValue() + 1));
+    }
+
+    @Test(expected = BadParameterException.class)
     public void testCreateMissingConditionThrows() {
         // Arrange
         when(userService.getById(eq(SELLER_ID))).thenReturn(Optional.of(buildFakeUser(SELLER_ID, "seller")));
-        when(productService.getById(eq(PRODUCT_ID))).thenReturn(buildFakeProduct());
+        when(catalogService.getModelById(eq(MODEL_ID))).thenReturn(buildFakeModel());
 
         // Act
         listingService.create(buildCreationDto(null, null));
@@ -333,13 +301,13 @@ public class ListingServiceImplTest {
     public void testUpdateReturnsUpdatedListing() {
         // Arrange
         final Listing listing = buildFakeListing(buildFakeUser(SELLER_ID, "seller"));
-        final Product product = buildFakeProduct();
+        final Model model = buildFakeModel();
         when(listingDao.getById(eq(LISTING_ID))).thenReturn(Optional.of(listing));
-        when(productService.getById(eq(PRODUCT_ID))).thenReturn(product);
+        when(catalogService.getModelById(eq(MODEL_ID))).thenReturn(model);
         when(listingDao.update(
-            eq(LISTING_ID), eq(LISTING_TITLE), eq(LISTING_PRICE), eq(product),
+            eq(LISTING_ID), eq(LISTING_TITLE), eq(LISTING_PRICE), eq(model), eq(YEAR),
             eq(Condition.FAIR), eq(true), anyBoolean(), eq(LISTING_DESCRIPTION)
-        )).thenReturn(listing);
+        )).thenReturn(Optional.of(listing));
 
         // Act
         final Listing result = listingService.update(buildUpdateDto(LISTING_ID, Condition.FAIR), SELLER_ID);
@@ -358,35 +326,40 @@ public class ListingServiceImplTest {
     }
 
     @Test(expected = BadParameterException.class)
-    public void testUpdateUnknownProductThrows() {
+    public void testUpdateUnknownModelThrows() {
         // Arrange
         when(listingDao.getById(eq(LISTING_ID))).thenReturn(Optional.of(buildFakeListing(buildFakeUser(SELLER_ID, "seller"))));
-        when(productService.getById(eq(PRODUCT_ID))).thenThrow(NotFoundException.createFor("Product with ID " + PRODUCT_ID));
+        when(catalogService.getModelById(eq(MODEL_ID))).thenThrow(NotFoundException.createFor("Model with ID " + MODEL_ID));
 
         // Act
         listingService.update(buildUpdateDto(LISTING_ID, Condition.GOOD), SELLER_ID);
     }
 
     @Test(expected = BadParameterException.class)
+    public void testUpdateYearBeforeMinimumThrows() {
+        // Arrange
+        when(listingDao.getById(eq(LISTING_ID))).thenReturn(Optional.of(buildFakeListing(buildFakeUser(SELLER_ID, "seller"))));
+        when(catalogService.getModelById(eq(MODEL_ID))).thenReturn(buildFakeModel());
+        // Act
+        listingService.update(buildUpdateDtoWithYear(Listing.MIN_YEAR - 1), SELLER_ID);
+    }
+
+    @Test(expected = BadParameterException.class)
+    public void testUpdateYearInTheFutureThrows() {
+        // Arrange
+        when(listingDao.getById(eq(LISTING_ID))).thenReturn(Optional.of(buildFakeListing(buildFakeUser(SELLER_ID, "seller"))));
+        when(catalogService.getModelById(eq(MODEL_ID))).thenReturn(buildFakeModel());
+        // Act
+        listingService.update(buildUpdateDtoWithYear(Year.now().getValue() + 1), SELLER_ID);
+    }
+
+    @Test(expected = BadParameterException.class)
     public void testUpdateMissingConditionThrows() {
         // Arrange
         when(listingDao.getById(eq(LISTING_ID))).thenReturn(Optional.of(buildFakeListing(buildFakeUser(SELLER_ID, "seller"))));
-        when(productService.getById(eq(PRODUCT_ID))).thenReturn(buildFakeProduct());
+        when(catalogService.getModelById(eq(MODEL_ID))).thenReturn(buildFakeModel());
 
         // Act
         listingService.update(buildUpdateDto(LISTING_ID, null), SELLER_ID);
-    }
-
-    /* ---------------------------------------------------------------------------------------------- */
-    /* cancel / updateStatus                                                                           */
-    /* ---------------------------------------------------------------------------------------------- */
-
-    @Test(expected = NotFoundException.class)
-    public void testCancelNonExistingListingThrows() {
-        // Arrange
-        when(listingDao.getById(eq(NON_EXISTING_ID))).thenReturn(Optional.empty());
-
-        // Act
-        listingService.cancel(NON_EXISTING_ID, SELLER_ID);
     }
 }

@@ -1,17 +1,20 @@
 package ar.edu.itba.paw.persistence;
 
+import ar.edu.itba.paw.model.Brand;
 import ar.edu.itba.paw.model.Category;
 import ar.edu.itba.paw.model.Condition;
 import ar.edu.itba.paw.model.File;
 import ar.edu.itba.paw.model.Listing;
 import ar.edu.itba.paw.model.ListingStatus;
+import ar.edu.itba.paw.model.Model;
 import ar.edu.itba.paw.model.Offer;
 import ar.edu.itba.paw.model.OfferFilter;
+import ar.edu.itba.paw.model.OfferPendingCount;
 import ar.edu.itba.paw.model.OfferRating;
 import ar.edu.itba.paw.model.OfferStatus;
+import ar.edu.itba.paw.model.OfferStatusGroup;
 import ar.edu.itba.paw.model.Page;
 import ar.edu.itba.paw.model.Price;
-import ar.edu.itba.paw.model.Product;
 import ar.edu.itba.paw.model.Subcategory;
 import ar.edu.itba.paw.model.User;
 import org.junit.Assert;
@@ -33,6 +36,7 @@ import javax.sql.DataSource;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -105,11 +109,11 @@ public class OfferJpaDaoTest {
     private static Listing buildFakeListing(final long id) {
         final Category category = Category.builder().id(1L).name("Category").build();
         final Subcategory subcategory = Subcategory.builder().id(1L).name("Subcategory").category(category).build();
-        final Product product = Product.builder()
+        final Brand brand = Brand.builder().id(1L).name("Brand").build();
+        final Model model = Model.builder()
             .id(1L)
-            .brand("Brand")
-            .model("Model")
-            .year(2023)
+            .name("Model")
+            .brand(brand)
             .subcategory(subcategory)
             .build();
         return Listing.builder()
@@ -117,7 +121,8 @@ public class OfferJpaDaoTest {
             .title("Listing " + id)
             .creator(buildFakeUser(SELLER_ID))
             .price(new Price(new BigDecimal("100.00")))
-            .product(product)
+            .model(model)
+            .year(2023)
             .status(ListingStatus.ACTIVE)
             .condition(Condition.GOOD)
             .build();
@@ -182,7 +187,7 @@ public class OfferJpaDaoTest {
     }
 
     @Test
-    public void testGetByIdLoadsListingWithCreatorAndProduct() {
+    public void testGetByIdLoadsListingWithCreatorModelAndBrand() {
         // Act
         final Listing listing = offerDao.getById(LOW_OFFER_ID).orElseThrow().getListing();
 
@@ -191,9 +196,11 @@ public class OfferJpaDaoTest {
         Assert.assertEquals("MacBook Pro 2023", listing.getTitle());
         Assert.assertEquals(SELLER_ID, (long) listing.getCreator().getId());
         Assert.assertEquals("fake_user", listing.getCreator().getUsername());
-        Assert.assertEquals("Apple", listing.getProduct().getBrand());
-        Assert.assertEquals("Laptops", listing.getProduct().getSubcategory().getName());
-        Assert.assertEquals("Electronics", listing.getProduct().getSubcategory().getCategory().getName());
+        Assert.assertEquals("MacBook Pro", listing.getModel().getName());
+        Assert.assertEquals("Apple", listing.getBrand().getName());
+        Assert.assertEquals(2023, listing.getYear());
+        Assert.assertEquals("Laptops", listing.getModel().getSubcategory().getName());
+        Assert.assertEquals("Electronics", listing.getModel().getSubcategory().getCategory().getName());
     }
 
     @Test
@@ -278,8 +285,8 @@ public class OfferJpaDaoTest {
         Assert.assertEquals(MACBOOK_LISTING_ID, (long) offered.getId());
         Assert.assertEquals("MacBook Pro 2023", offered.getTitle());
         Assert.assertEquals(SELLER_ID, (long) offered.getCreator().getId());
-        Assert.assertEquals("Apple", offered.getProduct().getBrand());
-        Assert.assertEquals("Electronics", offered.getProduct().getSubcategory().getCategory().getName());
+        Assert.assertEquals("Apple", offered.getBrand().getName());
+        Assert.assertEquals("Electronics", offered.getModel().getSubcategory().getCategory().getName());
         Assert.assertEquals(List.of(FRONT_IMAGE_ID, BACK_IMAGE_ID), offered.getImageIds());
     }
 
@@ -293,34 +300,59 @@ public class OfferJpaDaoTest {
         Assert.assertTrue(offer.getListing().getImageIds().isEmpty());
     }
 
+    /* ---------------------------------------------------------------------------------------------- */
+    /* getPendingCounts                                                                                */
+    /* ---------------------------------------------------------------------------------------------- */
+
     @Test
-    public void testGetByIdLowerOfferHasOtherAndBetterOffers() {
+    public void testGetPendingCountsAggregatesPendingOffersPerListing() {
         // Act
-        final Offer offer = offerDao.getById(LOW_OFFER_ID).orElseThrow();
+        final Map<Long, OfferPendingCount> counts =
+            offerDao.getPendingCounts(List.of(MACBOOK_LISTING_ID));
 
         // Assert
-        Assert.assertTrue(offer.isHasOtherOffers());
-        Assert.assertTrue(offer.isHasBetterOffers());
+        Assert.assertEquals(1, counts.size());
+        Assert.assertEquals(2L, counts.get(MACBOOK_LISTING_ID).count());
+        Assert.assertEquals(0, new BigDecimal("1500.00").compareTo(counts.get(MACBOOK_LISTING_ID).maxAmount()));
     }
 
     @Test
-    public void testGetByIdHighestOfferHasOtherButNoBetterOffers() {
-        // Act
-        final Offer offer = offerDao.getById(FULL_PRICE_OFFER_ID).orElseThrow();
-
-        // Assert
-        Assert.assertTrue(offer.isHasOtherOffers());
-        Assert.assertFalse(offer.isHasBetterOffers());
-    }
-
-    @Test
-    public void testGetByIdOnlyCountsPendingOffersAsOtherOffers() {
+    public void testGetPendingCountsIgnoresNonPendingOffers() {
         // Act (listing 4 also has a rejected and a pending_payment offer, which must be ignored)
-        final Offer offer = offerDao.getById(GAMING_OFFER_ID).orElseThrow();
+        final Map<Long, OfferPendingCount> counts = offerDao.getPendingCounts(List.of(GAMING_LISTING_ID));
 
         // Assert
-        Assert.assertFalse(offer.isHasOtherOffers());
-        Assert.assertFalse(offer.isHasBetterOffers());
+        Assert.assertEquals(1, counts.size());
+        Assert.assertEquals(1L, counts.get(GAMING_LISTING_ID).count());
+        Assert.assertEquals(0, new BigDecimal("1900.00").compareTo(counts.get(GAMING_LISTING_ID).maxAmount()));
+    }
+
+    @Test
+    public void testGetPendingCountsIncludesEqualAmountOffersInMax() {
+        // Arrange (offer 2 drops to the same amount as offer 1)
+        jdbcTemplate.update("UPDATE offers SET amount = ? WHERE offer_id = ?",
+            new BigDecimal("1400.00"), FULL_PRICE_OFFER_ID);
+
+        // Act
+        final Map<Long, OfferPendingCount> counts =
+            offerDao.getPendingCounts(List.of(MACBOOK_LISTING_ID));
+
+        // Assert
+        Assert.assertEquals(1, counts.size());
+        Assert.assertEquals(2L, counts.get(MACBOOK_LISTING_ID).count());
+        Assert.assertEquals(0, new BigDecimal("1400.00").compareTo(counts.get(MACBOOK_LISTING_ID).maxAmount()));
+    }
+
+    @Test
+    public void testGetPendingCountsWithNoIdsReturnsEmpty() {
+        // Act / Assert
+        Assert.assertTrue(offerDao.getPendingCounts(List.of()).isEmpty());
+    }
+
+    @Test
+    public void testGetPendingCountsWithNullIdsReturnsEmpty() {
+        // Act / Assert
+        Assert.assertTrue(offerDao.getPendingCounts(null).isEmpty());
     }
 
     /* ---------------------------------------------------------------------------------------------- */
@@ -488,7 +520,6 @@ public class OfferJpaDaoTest {
         Assert.assertEquals("Is it unlocked?", offer.getMessage());
         Assert.assertEquals(NEW_OFFER_CREATED_AT, offer.getCreatedAt());
         Assert.assertEquals(Optional.empty(), offer.getOfferedListing());
-        Assert.assertFalse(offer.isHasOtherOffers());
     }
 
     @Test
@@ -593,7 +624,7 @@ public class OfferJpaDaoTest {
     @Test
     public void testRejectPendingOffersReturnsAllButTheExcludedOne() {
         // Act
-        final List<Offer> rejected = offerDao.rejectPendingOffers(MACBOOK_LISTING_ID, FULL_PRICE_OFFER_ID);
+        final List<Offer> rejected = offerDao.rejectPendingOffers(MACBOOK_LISTING_ID, FULL_PRICE_OFFER_ID, false);
 
         // Assert
         Assert.assertEquals(List.of(LOW_OFFER_ID), idsOf(rejected));
@@ -602,7 +633,7 @@ public class OfferJpaDaoTest {
     @Test
     public void testRejectPendingOffersKeepsTheExcludedOnePending() {
         // Act
-        offerDao.rejectPendingOffers(MACBOOK_LISTING_ID, FULL_PRICE_OFFER_ID);
+        offerDao.rejectPendingOffers(MACBOOK_LISTING_ID, FULL_PRICE_OFFER_ID, false);
 
         // Assert
         Assert.assertEquals(1, countOffersWhere("offer_id = " + LOW_OFFER_ID + " AND status = 'REJECTED'"));
@@ -612,7 +643,7 @@ public class OfferJpaDaoTest {
     @Test
     public void testRejectPendingOffersWithoutExceptionRejectsAll() {
         // Act
-        final List<Offer> rejected = offerDao.rejectPendingOffers(MACBOOK_LISTING_ID, null);
+        final List<Offer> rejected = offerDao.rejectPendingOffers(MACBOOK_LISTING_ID, null, false);
 
         // Assert
         Assert.assertEquals(List.of(LOW_OFFER_ID, FULL_PRICE_OFFER_ID), sortedIdsOf(rejected));
@@ -622,7 +653,7 @@ public class OfferJpaDaoTest {
     @Test
     public void testRejectPendingOffersIgnoresOtherStatuses() {
         // Act (listing 4 also has a rejected and a pending_payment offer)
-        final List<Offer> rejected = offerDao.rejectPendingOffers(GAMING_LISTING_ID, null);
+        final List<Offer> rejected = offerDao.rejectPendingOffers(GAMING_LISTING_ID, null, false);
 
         // Assert
         Assert.assertEquals(List.of(GAMING_OFFER_ID), idsOf(rejected));
@@ -630,12 +661,77 @@ public class OfferJpaDaoTest {
     }
 
     @Test
+    public void testRejectPendingOffersCanIncludePendingPaymentOffers() {
+        // Act
+        final List<Offer> rejected = offerDao.rejectPendingOffers(GAMING_LISTING_ID, null, true);
+
+        // Assert
+        Assert.assertEquals(List.of(GAMING_OFFER_ID, TRADE_OFFER_ID), sortedIdsOf(rejected));
+        Assert.assertEquals(0, countOffersWhere(
+            "listing_id = " + GAMING_LISTING_ID + " AND status IN ('PENDING', 'PENDING_PAYMENT')"));
+    }
+
+    @Test
+    public void testRejectCancellableOffersForOfferedListing() {
+        // Act
+        final int rejected = offerDao.rejectCancellableOffersForOfferedListing(MACBOOK_LISTING_ID);
+
+        // Assert
+        Assert.assertEquals(1, rejected);
+        Assert.assertEquals(1, countOffersWhere(
+            "offer_id = " + TRADE_OFFER_ID + " AND status = 'REJECTED'"));
+    }
+
+    @Test
     public void testRejectPendingOffersDoesNotTouchOtherListings() {
         // Act
-        offerDao.rejectPendingOffers(MACBOOK_LISTING_ID, null);
+        offerDao.rejectPendingOffers(MACBOOK_LISTING_ID, null, false);
 
         // Assert
         Assert.assertEquals(1, countOffersWhere("offer_id = " + GAMING_OFFER_ID + " AND status = 'PENDING'"));
+    }
+
+    /* ---------------------------------------------------------------------------------------------- */
+    /* rejectAllForParticipant                                                                         */
+    /* ---------------------------------------------------------------------------------------------- */
+
+    @Test
+    public void testRejectAllForParticipantRejectsPendingAndPendingPaymentOffers() {
+        // Act
+        final int updated = offerDao.rejectAllForParticipant(BUYER_ID);
+
+        // Assert
+        Assert.assertEquals(4, updated);
+        Assert.assertEquals(1, countOffersWhere("offer_id = " + LOW_OFFER_ID + " AND status = 'REJECTED'"));
+        Assert.assertEquals(1, countOffersWhere("offer_id = " + FULL_PRICE_OFFER_ID + " AND status = 'REJECTED'"));
+        Assert.assertEquals(1, countOffersWhere("offer_id = " + GAMING_OFFER_ID + " AND status = 'REJECTED'"));
+        Assert.assertEquals(1, countOffersWhere("offer_id = " + TRADE_OFFER_ID + " AND status = 'REJECTED'"));
+        Assert.assertEquals(0, countOffersWhere(
+                "(buyer_id = " + BUYER_ID + " OR listing_id IN (3, 4))"
+                + " AND status IN ('PENDING', 'PENDING_PAYMENT')"));
+    }
+
+    @Test
+    public void testRejectAllForParticipantLeavesResolvedOffersUntouched() {
+        // Act
+        offerDao.rejectAllForParticipant(BUYER_ID);
+
+        // Assert
+        Assert.assertEquals(1, countOffersWhere("offer_id = " + ACCEPTED_OFFER_ID + " AND status = 'ACCEPTED'"));
+        Assert.assertEquals(1, countOffersWhere("offer_id = " + RATED_OFFER_ID + " AND status = 'ACCEPTED'"));
+        Assert.assertEquals(1, countOffersWhere("offer_id = " + RECENT_ACCEPTED_OFFER_ID + " AND status = 'ACCEPTED'"));
+        Assert.assertEquals(1, countOffersWhere("offer_id = " + REJECTED_OFFER_ID + " AND status = 'REJECTED'"));
+    }
+
+    @Test
+    public void testRejectAllForParticipantDoesNothingForNonParticipant() {
+        // Act
+        final int updated = offerDao.rejectAllForParticipant(NON_EXISTING_ID);
+
+        // Assert
+        Assert.assertEquals(0, updated);
+        Assert.assertEquals(3, countOffersWhere("status = 'PENDING'"));
+        Assert.assertEquals(1, countOffersWhere("status = 'PENDING_PAYMENT'"));
     }
 
     /* ---------------------------------------------------------------------------------------------- */
@@ -667,6 +763,32 @@ public class OfferJpaDaoTest {
 
         // Assert
         Assert.assertEquals(0, count);
+    }
+
+    /* ---------------------------------------------------------------------------------------------- */
+    /* countByStatus                                                                                   */
+    /* ---------------------------------------------------------------------------------------------- */
+
+    @Test
+    public void testCountByStatusGroupsIncomingOffers() {
+        // Act
+        final Map<OfferStatusGroup, Long> counts = offerDao.countByStatus(buildFakeUser(SELLER_ID), true);
+
+        // Assert
+        Assert.assertEquals(2L, (long) counts.get(OfferStatusGroup.PENDING));
+        Assert.assertNull(counts.get(OfferStatusGroup.PENDING_PAYMENT));
+        Assert.assertNull(counts.get(OfferStatusGroup.RESOLVED));
+    }
+
+    @Test
+    public void testCountByStatusGroupsBuyerOffers() {
+        // Act
+        final Map<OfferStatusGroup, Long> counts = offerDao.countByStatus(buildFakeUser(SELLER_ID), false);
+
+        // Assert
+        Assert.assertEquals(1L, (long) counts.get(OfferStatusGroup.PENDING));
+        Assert.assertEquals(1L, (long) counts.get(OfferStatusGroup.PENDING_PAYMENT));
+        Assert.assertEquals(2L, (long) counts.get(OfferStatusGroup.RESOLVED));
     }
 
     /* ---------------------------------------------------------------------------------------------- */
@@ -792,6 +914,38 @@ public class OfferJpaDaoTest {
 
         // Assert
         Assert.assertFalse(updated);
+    }
+
+    @Test
+    public void testSetSellerRatingsBulkUpdatesOnlyUnratedOffers() {
+        // Act
+        final int updated = offerDao.setSellerRatings(
+            List.of(ACCEPTED_OFFER_ID, RECENT_ACCEPTED_OFFER_ID, RATED_OFFER_ID), OfferRating.NEGATIVE);
+
+        // Assert
+        Assert.assertEquals(2, updated);
+        Assert.assertEquals(1, countOffersWhere(
+            "offer_id = " + ACCEPTED_OFFER_ID + " AND seller_rating = 'NEGATIVE'"));
+        Assert.assertEquals(1, countOffersWhere(
+            "offer_id = " + RECENT_ACCEPTED_OFFER_ID + " AND seller_rating = 'NEGATIVE'"));
+        Assert.assertEquals(1, countOffersWhere(
+            "offer_id = " + RATED_OFFER_ID + " AND seller_rating = 'NEUTRAL'"));
+    }
+
+    @Test
+    public void testSetBuyerRatingsBulkUpdatesOnlyUnratedOffers() {
+        // Act
+        final int updated = offerDao.setBuyerRatings(
+            List.of(ACCEPTED_OFFER_ID, RECENT_ACCEPTED_OFFER_ID, RATED_OFFER_ID), OfferRating.NEGATIVE);
+
+        // Assert
+        Assert.assertEquals(1, updated);
+        Assert.assertEquals(1, countOffersWhere(
+            "offer_id = " + RECENT_ACCEPTED_OFFER_ID + " AND buyer_rating = 'NEGATIVE'"));
+        Assert.assertEquals(1, countOffersWhere(
+            "offer_id = " + ACCEPTED_OFFER_ID + " AND buyer_rating = 'POSITIVE'"));
+        Assert.assertEquals(1, countOffersWhere(
+            "offer_id = " + RATED_OFFER_ID + " AND buyer_rating = 'POSITIVE'"));
     }
 
     /* ---------------------------------------------------------------------------------------------- */

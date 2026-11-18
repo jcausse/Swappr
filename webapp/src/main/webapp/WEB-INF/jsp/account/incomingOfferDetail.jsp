@@ -13,7 +13,7 @@
 <account:layout titleKey="account.incomingOffers.title" title="${titleMsg}" subtitle="${subtitleMsg}">
     <!-- Back link -->
     <div class="mb-4">
-        <spring:message code="offer.detail.back" var="backLabel"/>
+        <spring:message code="account.incomingOffers.title" var="backLabel"/>
         <paw:linkButton href="${incomingOffersUrl}" text="${backLabel}" variant="ghost" icon="chevron-left" classname="justify-start" />
     </div>
 
@@ -29,44 +29,54 @@
                         <c:when test="${offerAmount != null and offerAmount > 0.0}">
                             <spring:message code="offer.detail.title.tradeWithCash" var="title">
                                 <spring:argument value="${offer.buyer.displayName}"/>
-                                <spring:argument value="${offeredListing.product.brand}"/>
-                                <spring:argument value="${offeredListing.product.model}"/>
-                                <spring:argument value="${offeredListing.product.year}"/>
-                                <spring:argument value="${currencySymbol} ${offerAmount}"/>
-                                <spring:argument value="${offer.listing.product.brand}"/>
-                                <spring:argument value="${offer.listing.product.model}"/>
-                                <spring:argument value="${offer.listing.product.year}"/>
+                                <spring:argument value="${offeredListing.brand.name}"/>
+                                <spring:argument value="${offeredListing.model.name}"/>
+                                <spring:argument value="${offeredListing.year}"/>
+                                <spring:argument value="${currencySymbol}"/>
+                                <spring:argument value="${offerAmount}"/>
+                                <spring:argument value="${offer.listing.brand.name}"/>
+                                <spring:argument value="${offer.listing.model.name}"/>
+                                <spring:argument value="${offer.listing.year}"/>
                             </spring:message>
                         </c:when>
                         <c:otherwise>
                             <spring:message code="offer.detail.title.trade" var="title">
                                 <spring:argument value="${offer.buyer.displayName}"/>
-                                <spring:argument value="${offeredListing.product.brand}"/>
-                                <spring:argument value="${offeredListing.product.model}"/>
-                                <spring:argument value="${offeredListing.product.year}"/>
-                                <spring:argument value="${offer.listing.product.brand}"/>
-                                <spring:argument value="${offer.listing.product.model}"/>
-                                <spring:argument value="${offer.listing.product.year}"/>
+                                <spring:argument value="${offeredListing.brand.name}"/>
+                                <spring:argument value="${offeredListing.model.name}"/>
+                                <spring:argument value="${offeredListing.year}"/>
+                                <spring:argument value="${offer.listing.brand.name}"/>
+                                <spring:argument value="${offer.listing.model.name}"/>
+                                <spring:argument value="${offer.listing.year}"/>
                             </spring:message>
                         </c:otherwise>
                     </c:choose>
                 </c:when>
+                <c:when test="${offer.forFreeListing}">
+                    <spring:message code="offer.detail.title.free" var="title">
+                        <spring:argument value="${offer.buyer.displayName}"/>
+                        <spring:argument value="${offer.listing.brand.name}"/>
+                        <spring:argument value="${offer.listing.model.name}"/>
+                        <spring:argument value="${offer.listing.year}"/>
+                    </spring:message>
+                </c:when>
                 <c:otherwise>
                     <spring:message code="offer.detail.title" var="title">
                         <spring:argument value="${offer.buyer.displayName}"/>
-                        <spring:argument value="${currencySymbol} ${offer.amount}"/>
-                        <spring:argument value="${offer.listing.product.brand}"/>
-                        <spring:argument value="${offer.listing.product.model}"/>
-                        <spring:argument value="${offer.listing.product.year}"/>
+                        <spring:argument value="${currencySymbol}"/>
+                        <spring:argument value="${offer.amount}"/>
+                        <spring:argument value="${offer.listing.brand.name}"/>
+                        <spring:argument value="${offer.listing.model.name}"/>
+                        <spring:argument value="${offer.listing.year}"/>
                     </spring:message>
                 </c:otherwise>
             </c:choose>
             <h1 class="text-xl font-medium text-balance"><c:out value="${title}"/></h1>
 
-            <account:offerHint role="seller" status="${offer.status.name()}" classname="mt-2"/>
+            <account:offerHint role="seller" status="${offer.status.name()}" free="${offer.forFreeListing}" classname="mt-2"/>
         </div>
 
-        <c:if test="${offer.hasOtherOffers and offer.status.name() == 'PENDING'}">
+        <c:if test="${offer.hasOtherOffers and offer.isPending()}">
             <div class="p-3 rounded-lg bg-amber-50 border border-amber-200 mt-2 flex flex-row gap-2 text-amber-800 items-center">
                 <paw:icon name="triangle-alert" />
                 <spring:message code="${offer.hasBetterOffers ? 'offer.warning.betterOffers' : 'offer.warning.otherOffers'}" var="warningMsg"/>
@@ -83,9 +93,9 @@
             <div class="flex-1 min-w-0 flex flex-col justify-center">
                 <h2 class="text-xl font-semibold"><c:out value="${offer.listing.title}"/></h2>
                 <p class="text-sm text-black/60 mt-1">
-                    <c:out value="${offer.listing.product.brand}"/>
-                    <c:out value="${offer.listing.product.model}"/>
-                    (<c:out value="${offer.listing.product.year}"/>)
+                    <c:out value="${offer.listing.brand.name}"/>
+                    <c:out value="${offer.listing.model.name}"/>
+                    (<c:out value="${offer.listing.year}"/>)
                 </p>
             </div>
         </div>
@@ -107,9 +117,9 @@
                             <c:out value="${offeredListing.title}"/>
                         </a>
                         <p class="text-sm text-black/60 mt-1">
-                            <c:out value="${offeredListing.product.brand}"/>
-                            <c:out value="${offeredListing.product.model}"/>
-                            (<c:out value="${offeredListing.product.year}"/>)
+                            <c:out value="${offeredListing.brand.name}"/>
+                            <c:out value="${offeredListing.model.name}"/>
+                            (<c:out value="${offeredListing.year}"/>)
                         </p>
                         <p class="text-sm text-black/60 mt-1">
                             <paw:price amount="${offeredListing.price.amount}"/>
@@ -117,7 +127,10 @@
                     </div>
                 </div>
                 <c:if test="${offer.amount != null and offer.amount > 0.0}">
-                    <spring:message code="offer.tradePlusAmount" arguments="${currencySymbol} ${offer.amount}" var="plusAmountLabel"/>
+                    <spring:message code="offer.tradePlusAmount" var="plusAmountLabel">
+                        <spring:argument value="${currencySymbol}"/>
+                        <spring:argument value="${offer.amount}"/>
+                    </spring:message>
                     <span class="text-2xl text-end font-bold mt-2"><c:out value="${plusAmountLabel}"/></span>
                 </c:if>
             </c:if>
@@ -149,7 +162,7 @@
         </c:if>
 
         <!-- Proof of payment/shipping for pending payment state -->
-        <c:if test="${offer.status.name() == 'PENDING_PAYMENT' and (offer.proofOfPaymentId != null or offer.proofOfShippingId != null or not empty offer.trackingNumber)}">
+        <c:if test="${offer.isPendingPayment() and (offer.proofOfPaymentId != null or offer.proofOfShippingId != null or not empty offer.trackingNumber)}">
             <paw:divider />
             <spring:message code="offer.detail.proofOfPayment" var="proofLabel"/>
             <div class="flex flex-col gap-2">
@@ -166,7 +179,7 @@
         <paw:divider />
 
         <c:choose>
-            <c:when test="${offer.status.name() == 'PENDING'}">
+            <c:when test="${offer.isPending()}">
                 <div class="flex flex-row gap-4">
                     <spring:message code="offer.detail.accept" var="acceptLabel"/>
                     <form action="<c:url value='/offer/${offer.id}/accept'/>" method="POST" class="flex-1">
@@ -179,8 +192,8 @@
                     </form>
                 </div>
             </c:when>
-            <c:when test="${offer.status.name() == 'PENDING_PAYMENT'}">
-                <spring:message code="offer.detail.confirmPayment" var="confirmLabel"/>
+            <c:when test="${offer.isPendingPayment()}">
+                <spring:message code="${offer.forFreeListing ? 'offer.detail.confirmDelivery' : 'offer.detail.confirmPayment'}" var="confirmLabel"/>
                 <form action="<c:url value='/offer/${offer.id}/confirm-payment'/>" method="POST" class="w-full mb-2">
                     <paw:button type="submit" variant="default" size="lg" classname="w-full" text="${confirmLabel}"/>
                 </form>

@@ -22,6 +22,7 @@
 <spring:message code="discovery.filter.maxPrice" var="maxPriceLabel"/>
 <spring:message code="discovery.filter.acceptsTrade" var="acceptsTradeLabel"/>
 <spring:message code="discovery.filter.acceptsShipping" var="acceptsShippingLabel"/>
+<spring:message code="discovery.filter.onlyFree" var="onlyFreeLabel"/>
 <spring:message code="discovery.filter.apply" var="applyLabel"/>
 <spring:message code="discovery.filter.clear" var="clearLabel"/>
 <spring:message code="listing.sort.label" var="sortLabel"/>
@@ -39,25 +40,27 @@
                 <div class="sticky top-24">
                     <paw:card title="${filtersTitle}">
                         <div class="flex flex-col gap-4">
-                            <paw:formSelect path="categoryId" label="${categoryLabel}" placeholder="${allLabel}" items="${categoryOptions}" translateLabels="true" />
-                            <c:if test="${not empty subcategoryOptions}">
-                                <paw:formSelect path="subcategoryId" label="${subcategoryLabel}" placeholder="${allLabel}" items="${subcategoryOptions}" translateLabels="true" />
+                            <paw:formSelect path="categoryId" label="${categoryLabel}" placeholder="${allLabel}" items="${categories}" itemLabel="name" itemValue="id" labelPrefix="category." translateLabels="true" />
+                            <c:if test="${not empty subcategories}">
+                                <paw:formSelect path="subcategoryId" label="${subcategoryLabel}" placeholder="${allLabel}" items="${subcategories}" itemLabel="name" itemValue="id" labelPrefix="subcategory." translateLabels="true" />
                             </c:if>
                             <c:if test="${not empty brandOptions}">
-                                <paw:formSelect path="brand" label="${brandLabel}" placeholder="${allLabel}" items="${brandOptions}" plainStrings="true" />
+                                <paw:formSelect path="brandId" label="${brandLabel}" placeholder="${allLabel}" items="${brandOptions}" />
                             </c:if>
                             <c:if test="${not empty modelOptions}">
-                                <paw:formSelect path="model" label="${modelLabel}" placeholder="${allLabel}" items="${modelOptions}" plainStrings="true" />
+                                <paw:formSelect path="modelId" label="${modelLabel}" placeholder="${allLabel}" items="${modelOptions}" />
                             </c:if>
 
                             <paw:formSelect path="condition" label="${conditionLabel}" placeholder="${allLabel}" items="${conditionOptions}" itemLabel="label" itemValue="value" translateLabels="true" />
 
-                            <paw:formSelect path="provinceId" label="${provinceLabel}" placeholder="${allLabel}" items="${provinceOptions}" translateLabels="true" />
+                            <paw:formSelect path="provinceId" label="${provinceLabel}" placeholder="${allLabel}" items="${provinces}" itemLabel="name" itemValue="id" labelPrefix="province." translateLabels="true" />
 
-                            <div class="flex flex-row gap-2">
-                                <paw:formInput path="minPrice" type="number" step="0.01" min="0" label="${minPriceLabel}" classname="min-w-0" />
-                                <paw:formInput path="maxPrice" type="number" step="0.01" min="0" label="${maxPriceLabel}" classname="min-w-0" />
-                            </div>
+                            <c:if test="${not filterForm.onlyFree}">
+                                <div class="flex flex-row gap-2">
+                                    <paw:formInput path="minPrice" type="number" step="0.01" min="0" label="${minPriceLabel}" classname="min-w-0" />
+                                    <paw:formInput path="maxPrice" type="number" step="0.01" min="0" label="${maxPriceLabel}" classname="min-w-0" />
+                                </div>
+                            </c:if>
 
                             <div class="flex flex-row gap-2">
                                 <paw:formInput path="yearMin" type="number" step="1" min="0" label="${yearMinLabel}" classname="min-w-0" />
@@ -65,14 +68,11 @@
                             </div>
 
                             <div class="flex flex-col gap-1">
-                                <label class="flex items-center gap-2 text-sm">
-                                    <form:checkbox path="acceptsTrade" value="true" class="w-4 h-4 text-lime-600 border-black/20 outline-0 outline-offset-0 outline-lime-600/30 focus-visible:outline-2 accent-lime-600"/>
-                                    <c:out value="${acceptsTradeLabel}"/>
-                                </label>
-                                <label class="flex items-center gap-2 text-sm">
-                                    <form:checkbox path="acceptsShipping" value="true" class="w-4 h-4 text-lime-600 border-black/20 outline-0 outline-offset-0 outline-lime-600/30 focus-visible:outline-2 accent-lime-600"/>
-                                    <c:out value="${acceptsShippingLabel}"/>
-                                </label>
+                                <c:if test="${not filterForm.onlyFree}">
+                                    <paw:checkbox path="acceptsTrade" id="acceptsTrade" value="true" label="${acceptsTradeLabel}"/>
+                                </c:if>
+                                <paw:checkbox path="acceptsShipping" id="acceptsShipping" value="true" label="${acceptsShippingLabel}"/>
+                                <paw:checkbox path="onlyFree" id="onlyFree" value="true" label="${onlyFreeLabel}"/>
                             </div>
 
                             <div class="flex flex-col gap-2 pt-1">
@@ -86,6 +86,10 @@
             </aside>
 
             <section class="flex-1">
+                <c:if test="${filterForm.onlyFree}">
+                    <spring:message code="discovery.freeListings.heading" var="freeHeading"/>
+                    <h2 class="text-xl font-bold mb-4"><c:out value="${freeHeading}"/></h2>
+                </c:if>
                 <div class="flex items-center justify-between gap-4 mb-4">
                     <span class="text-sm text-black/60">
                         <spring:message code="discovery.results.count" arguments="${listingPage.totalCount}"/>
@@ -144,9 +148,9 @@
             }
 
             reloadOnChange('sort', []);
-            reloadOnChange('categoryId', ['subcategoryId', 'brand', 'model']);
-            reloadOnChange('subcategoryId', ['brand', 'model']);
-            reloadOnChange('brand', ['model']);
+            reloadOnChange('categoryId', ['subcategoryId', 'brandId', 'modelId']);
+            reloadOnChange('subcategoryId', ['brandId', 'modelId']);
+            reloadOnChange('brandId', ['modelId']);
         });
     </script>
 </paw:layout>

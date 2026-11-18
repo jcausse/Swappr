@@ -1,9 +1,20 @@
 package ar.edu.itba.paw.model;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 import org.hibernate.annotations.Formula;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.util.Optional;
 
 @Getter
@@ -48,15 +59,12 @@ public class File {
         return Optional.ofNullable(contentType);
     }
 
-    public String getExtension() {
-        if (filename == null || filename.isBlank()) {
-            return "";
+    public String getMediaType() {
+        if (contentType != null
+                && contentType.matches("[A-Za-z0-9!#$&^_.+-]+/[A-Za-z0-9!#$&^_.+-]+")) {
+            return contentType;
         }
-        int lastDot = filename.lastIndexOf('.');
-        if (lastDot == -1 || lastDot == filename.length() - 1) {
-            return "";
-        }
-        return filename.substring(lastDot + 1).toLowerCase();
+        return "application/octet-stream";
     }
 
     public long getSize() {
@@ -67,11 +75,4 @@ public class File {
         return data != null ? data.length : 0L;
     }
 
-    public long getSizeKb() {
-        return getSize() / 1024;
-    }
-
-    public boolean isImage() {
-        return contentType != null && contentType.startsWith("image/");
-    }
 }

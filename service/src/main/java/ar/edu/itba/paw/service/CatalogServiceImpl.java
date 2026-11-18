@@ -1,0 +1,321 @@
+package ar.edu.itba.paw.service;
+
+import ar.edu.itba.paw.model.Brand;
+import ar.edu.itba.paw.model.BrandInfo;
+import ar.edu.itba.paw.model.BrandSort;
+import ar.edu.itba.paw.model.Category;
+import ar.edu.itba.paw.model.Model;
+import ar.edu.itba.paw.model.ModelInfo;
+import ar.edu.itba.paw.model.ModelListingInfo;
+import ar.edu.itba.paw.model.ModelListingInfoSummary;
+import ar.edu.itba.paw.model.ModelSort;
+import ar.edu.itba.paw.model.Page;
+import ar.edu.itba.paw.model.Subcategory;
+import ar.edu.itba.paw.persistence.BrandDao;
+import ar.edu.itba.paw.persistence.CategoryDao;
+import ar.edu.itba.paw.persistence.ListingDao;
+import ar.edu.itba.paw.persistence.ModelDao;
+import ar.edu.itba.paw.persistence.SubcategoryDao;
+import ar.edu.itba.paw.service.dto.ModelOption;
+import ar.edu.itba.paw.service.exception.BadParameterException;
+import ar.edu.itba.paw.service.exception.BrandAlreadyExistsException;
+import ar.edu.itba.paw.service.exception.CatalogEntityInUseException;
+import ar.edu.itba.paw.service.exception.ModelAlreadyExistsException;
+import ar.edu.itba.paw.service.exception.NotFoundException;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+@RequiredArgsConstructor
+@Service
+@Transactional(readOnly = true)
+public class CatalogServiceImpl implements CatalogService {
+
+    private final CategoryDao categoryDao;
+    private final SubcategoryDao subcategoryDao;
+    private final BrandDao brandDao;
+    private final ModelDao modelDao;
+    private final ListingDao listingDao;
+
+    @Override
+    public Page<BrandInfo> getBrands(BrandSort sort, Integer page, int pageSize) {
+        final int safePage = page == null || page < 1 ? 1 : page;
+        return brandDao.getWithStats(sort == null ? BrandSort.BRAND_ASC : sort, safePage, pageSize);
+    }
+
+    @Override
+    public List<Brand> getAllBrands() {
+        return brandDao.getAll();
+    }
+
+    @Override
+    public Brand getBrandById(Long id) {
+        return brandDao
+            .getById(id)
+            .orElseThrow(() -> NotFoundException.createFor("Brand with ID " + id));
+    }
+
+    @Override
+    public Optional<Brand> findBrandByName(String name) {
+        return brandDao.getByName(name);
+    }
+
+    @Override
+    public Map<Long, List<Brand>> getBrandReplacementOptions(final Collection<Long> brandIds) {
+        if (brandIds.isEmpty()) {
+            return Map.of();
+        }
+        final List<Brand> brands = brandDao.getAll();
+        final Map<Long, List<Brand>> options = new HashMap<>();
+        for (final Long brandId : brandIds) {
+            options.put(brandId, brands.stream()
+                .filter(candidate -> !candidate.getId().equals(brandId))
+                .toList());
+        }
+        return options;
+    }
+
+    @Override
+    @Transactional
+    public void replaceBrand(Long id, Long replacementId) {
+        if (id == null || replacementId == null || id.equals(replacementId)) {
+            throw BadParameterException.create("replacementBrandId", "Replacement brand must be different");
+        }
+        brandDao.getById(id)
+            .orElseThrow(() -> NotFoundException.createFor("Brand with ID " + id));
+        brandDao.getById(replacementId)
+            .orElseThrow(() -> NotFoundException.createFor("Brand with ID " + replacementId));
+        listingDao.replaceSameNameModelsForBrands(id, replacementId);
+        modelDao.replaceBrand(id, replacementId);
+    }
+
+    @Override
+    @Transactional
+    public Brand createBrand(String name) {
+        final String trimmedName = name == null ? "" : name.trim();
+        if (trimmedName.isEmpty()) {
+            throw BadParameterException.create("name", "Brand name is required");
+        }
+        if (brandDao.getByName(trimmedName).isPresent()) {
+            throw new BrandAlreadyExistsException(trimmedName);
+        }
+        return brandDao.create(trimmedName);
+    }
+
+    @Override
+    @Transactional
+    public void renameBrand(Long id, String name) {
+        final String trimmedName = name == null ? "" : name.trim();
+        if (trimmedName.isEmpty()) {
+            throw BadParameterException.create("name", "Brand name is required");
+        }
+        if (brandDao.existsByNameAndIdNot(trimmedName, id)) {
+            throw new BrandAlreadyExistsException(trimmedName);
+        }
+        brandDao.rename(id, trimmedName)
+            .orElseThrow(() -> NotFoundException.createFor("Brand with ID " + id));
+    }
+
+    @Override
+    @Transactional
+    public void deleteBrand(Long id) {
+        if (brandDao.hasListings(id)) {
+            throw new CatalogEntityInUseException("Brand with ID " + id + " has listings");
+        }
+        if (!brandDao.delete(id)) {
+            throw NotFoundException.createFor("Brand with ID " + id);
+        }
+    }
+
+    @Override
+    public List<Category> getAllCategories() {
+        return categoryDao.getAll();
+    }
+
+    @Override
+    public List<Subcategory> getSubcategoriesByCategory(Long categoryId) {
+        return subcategoryDao.getByCategoryId(categoryId);
+    }
+
+    @Override
+    public List<Subcategory> getAllSubcategories() {
+        return subcategoryDao.getAll();
+    }
+
+    @Override
+    public Subcategory getSubcategoryById(Long id) {
+        return subcategoryDao
+            .getById(id)
+            .orElseThrow(() -> NotFoundException.createFor("Subcategory with ID " + id));
+    }
+
+    @Override
+    public List<Brand> getBrandsBySubcategory(Long subcategoryId) {
+        return brandDao.getBySubcategoryId(subcategoryId);
+    }
+
+    @Override
+    public List<Model> getModelsBySubcategoryAndBrand(Long subcategoryId, Long brandId) {
+        return modelDao.getBySubcategoryIdAndBrandId(subcategoryId, brandId);
+    }
+
+    @Override
+    public Model getModelById(Long id) {
+        if (id == null) {
+            throw BadParameterException.create("id", "Model id is required");
+        }
+        return modelDao
+            .getById(id)
+            .orElseThrow(() -> NotFoundException.createFor("Model with ID " + id));
+    }
+
+    @Override
+    public Optional<Model> findModelByNameAndBrand(String name, Long brandId) {
+        return modelDao.getByNameAndBrandId(name, brandId);
+    }
+
+    @Override
+    public Page<ModelInfo> getModels(
+            Long brandId,
+            Long categoryId,
+            Long subcategoryId,
+            ModelSort sort,
+            Integer page,
+            int pageSize
+    ) {
+        final int safePage = page == null || page < 1 ? 1 : page;
+        return modelDao.getWithInfo(
+            brandId, categoryId, subcategoryId, sort == null ? ModelSort.NAME_ASC : sort, safePage, pageSize
+        );
+    }
+
+    @Override
+    public Map<Long, List<ModelOption>> getModelReplacementOptions(final Collection<Long> modelIds) {
+        if (modelIds.isEmpty()) {
+            return Map.of();
+        }
+        final List<ModelOption> allOptions = modelDao.getAllWithBrand().stream()
+            .map(candidate -> ModelOption.builder()
+                .id(candidate.getId())
+                .label(candidate.getBrand().getName() + " — " + candidate.getName())
+                .build())
+            .toList();
+        final Map<Long, List<ModelOption>> options = new HashMap<>();
+        for (final Long modelId : modelIds) {
+            options.put(modelId, allOptions.stream()
+                .filter(option -> !option.getId().equals(modelId))
+                .toList());
+        }
+        return options;
+    }
+
+    @Override
+    @Transactional
+    public Model createModel(String name, Long brandId, Long subcategoryId) {
+        final String trimmedName = name == null ? "" : name.trim();
+        if (trimmedName.isEmpty()) {
+            throw BadParameterException.create("name", "Model name is required");
+        }
+        final Brand brand = brandDao.getById(brandId)
+            .orElseThrow(() -> NotFoundException.createFor("Brand with ID " + brandId));
+        final Subcategory subcategory = subcategoryDao.getById(subcategoryId)
+            .orElseThrow(() -> NotFoundException.createFor("Subcategory with ID " + subcategoryId));
+        if (modelDao.existsByNameAndBrandId(trimmedName, brandId)) {
+            throw ModelAlreadyExistsException.createFor(brand.getName(), trimmedName);
+        }
+        return modelDao.create(trimmedName, brand, subcategory);
+    }
+
+    @Override
+    @Transactional
+    public void updateModel(Long id, String name, Long brandId, Long subcategoryId) {
+        final String trimmedName = name == null ? "" : name.trim();
+        if (trimmedName.isEmpty()) {
+            throw BadParameterException.create("name", "Model name is required");
+        }
+        final Brand brand = brandDao.getById(brandId)
+            .orElseThrow(() -> NotFoundException.createFor("Brand with ID " + brandId));
+        final Subcategory subcategory = subcategoryDao.getById(subcategoryId)
+            .orElseThrow(() -> NotFoundException.createFor("Subcategory with ID " + subcategoryId));
+        if (modelDao.existsByNameAndBrandIdAndIdNot(trimmedName, brandId, id)) {
+            throw ModelAlreadyExistsException.createFor(brand.getName(), trimmedName);
+        }
+        modelDao.update(id, trimmedName, brand, subcategory)
+            .orElseThrow(() -> NotFoundException.createFor("Model with ID " + id));
+    }
+
+    @Override
+    @Transactional
+    public void deleteModel(Long id) {
+        if (modelDao.hasListings(id)) {
+            throw new CatalogEntityInUseException("Model with ID " + id + " has listings");
+        }
+        if (!modelDao.deleteModel(id)) {
+            throw NotFoundException.createFor("Model with ID " + id);
+        }
+    }
+
+    @Override
+    @Transactional
+    public void replaceModel(Long id, Long replacementId) {
+        if (id == null || replacementId == null || id.equals(replacementId)) {
+            throw BadParameterException.create("replacementModelId", "Replacement model must be different");
+        }
+        modelDao.getById(id)
+            .orElseThrow(() -> NotFoundException.createFor("Model with ID " + id));
+        modelDao.getById(replacementId)
+            .orElseThrow(() -> NotFoundException.createFor("Model with ID " + replacementId));
+        listingDao.replaceModel(id, replacementId);
+    }
+
+    @Override
+    public Page<ModelListingInfoSummary> getListingInfoSummary(Long brandId, Long modelId, Integer fromYear,
+            Integer toYear, @NonNull Long subcategoryId, Integer page, int pageSize) {
+        final int safePage = page == null || page < 1 ? 1 : page;
+        final var infoPage = modelDao.getListingInfoSummary(
+            brandId, modelId, fromYear, toYear, subcategoryId, safePage, pageSize
+        );
+
+        final Map<Long, List<ModelListingInfo>> infoByModelId = new LinkedHashMap<>();
+        for (final ModelListingInfo info : infoPage.getContent()) {
+            infoByModelId
+                .computeIfAbsent(info.getModelId(), key -> new ArrayList<>())
+                .add(info);
+        }
+
+        final var summaries = infoByModelId.values()
+            .stream()
+            .map(values -> ModelListingInfoSummary.builder()
+                .brandId(values.get(0).getBrandId())
+                .brandName(values.get(0).getBrandName())
+                .modelId(values.get(0).getModelId())
+                .modelName(values.get(0).getModelName())
+                .listingInfoByCondition(values)
+                .build()
+            )
+            .toList();
+
+        return new Page<>(summaries, infoPage.getPage(), infoPage.getPageSize(), infoPage.getTotalCount());
+    }
+
+    @Override
+    public Optional<ModelListingInfoSummary> getListingInfoSummaryForModel(final Long modelId, final Long excludedListingId) {
+        return modelDao.getListingInfoSummaryForModel(modelId, excludedListingId)
+            .map(summary -> ModelListingInfoSummary.builder()
+                .brandId(summary.getBrandId())
+                .brandName(summary.getBrandName())
+                .modelId(summary.getModelId())
+                .modelName(summary.getModelName())
+                .listingInfoByCondition(summary.getListingInfoByCondition())
+                .build());
+    }
+}

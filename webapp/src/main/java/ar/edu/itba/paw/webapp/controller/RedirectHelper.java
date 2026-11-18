@@ -7,7 +7,12 @@ import org.slf4j.LoggerFactory;
 import javax.servlet.http.HttpServletRequest;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
@@ -23,10 +28,7 @@ public final class RedirectHelper {
     private static final Logger LOGGER = LoggerFactory.getLogger(RedirectHelper.class);
 
     private static final String REFERER_HEADER = "Referer";
-    private static final String FORWARDED_PROTO_HEADER = "X-Forwarded-Proto";
-    private static final String FORWARDED_PORT_HEADER = "X-Forwarded-Port";
-    private static final int HTTP_DEFAULT_PORT = 80;
-    private static final int HTTPS_DEFAULT_PORT = 443;
+    private static final String FORWARDED_HOST_HEADER = "X-Forwarded-Host";
 
     private RedirectHelper() {
         throw new AssertionError("Utility class");
@@ -34,7 +36,7 @@ public final class RedirectHelper {
 
     /**
      * Resolves the {@code Referer} header of {@code request} into a normalized context-relative path (preserving query
-     * parameters), or returns {@code fallbackPath} if the header is missing, malformed, or cross-origin/cross-context.
+     * parameters), or returns {@code fallbackPath} if the header is missing, malformed, or cross-host/cross-context.
      */
     public static String resolveReferer(final HttpServletRequest request, final String fallbackPath) {
         return resolveReferer(request, fallbackPath, path -> true);
@@ -42,8 +44,12 @@ public final class RedirectHelper {
 
     /**
      * Resolves the {@code Referer} header of {@code request} into a normalized context-relative path (preserving query
-     * parameters) when it belongs to the same origin and context path and its decoded path satisfies
+     * parameters) when it targets this host and context path and its decoded path satisfies
      * {@code allowedPathPredicate}; otherwise returns {@code fallbackPath}.
+     * <p>
+     * Scheme and port differences on the same host (e.g., {@code https://...:443} at a TLS-terminating reverse proxy
+     * vs {@code http://...:8080} on the app container) are intentionally allowed because the returned target is always
+     * stripped to a context-relative path.
      */
     public static String resolveReferer(
             final @NonNull HttpServletRequest request,
@@ -63,8 +69,8 @@ public final class RedirectHelper {
             return fallbackPath;
         }
 
-        if (!isSameOrigin(refererUri, request)) {
-            LOGGER.warn("Rejected cross-origin Referer: {}", referer);
+        if (!isSameHost(refererUri, request)) {
+            LOGGER.warn("Rejected cross-host Referer: {}", referer);
             return fallbackPath;
         }
 
@@ -148,6 +154,42 @@ public final class RedirectHelper {
     }
 
     /**
+     * Adds or replaces a single query parameter on a validated context-relative {@code path[?query]} target,
+     * encoding both the parameter name and value. An existing parameter with the same name is removed first, so the
+     * returned target never contains duplicate values for {@code name}.
+     */
+    public static String appendQueryParam(final String path, final String name, final String value) {
+        Objects.requireNonNull(path, "path must not be null");
+        Objects.requireNonNull(name, "name must not be null");
+        Objects.requireNonNull(value, "value must not be null");
+
+        final URI uri;
+        try {
+            uri = new URI(path.trim());
+        } catch (URISyntaxException e) {
+            throw new IllegalArgumentException("Invalid path syntax: " + path, e);
+        }
+
+        final String rawPath = Optional.ofNullable(uri.getRawPath()).orElse("");
+        final String rawQuery = uri.getRawQuery();
+        final List<String> params = new ArrayList<>();
+        if (rawQuery != null && !rawQuery.isEmpty()) {
+            for (final String pair : rawQuery.split("&")) {
+                if (pair.isEmpty()) {
+                    continue;
+                }
+                final int separatorIdx = pair.indexOf('=');
+                final String rawName = separatorIdx >= 0 ? pair.substring(0, separatorIdx) : pair;
+                if (!decode(rawName).equals(name)) {
+                    params.add(pair);
+                }
+            }
+        }
+        params.add(encode(name) + "=" + encode(value));
+        return rawPath + "?" + String.join("&", params);
+    }
+
+    /**
      * Builds a path predicate that matches any path equal to one of {@code prefixes} or nested beneath it on a {@code '/'}
      * boundary (e.g. prefix {@code "/admin"} matches {@code "/admin"} and {@code "/admin/offers"}, but not
      * {@code "/admin-evil"}).
@@ -159,67 +201,40 @@ public final class RedirectHelper {
                 .anyMatch(prefix -> matchesPrefix(path, prefix));
     }
 
-    private static boolean isSameOrigin(final URI refererUri, final HttpServletRequest request) {
-        final String refererScheme = refererUri.getScheme();
-        if (!isHttpScheme(refererScheme) || refererUri.getRawUserInfo() != null) {
-            return false;
-        }
+    private static String encode(final String value) {
+        return URLEncoder.encode(value, StandardCharsets.UTF_8);
+    }
 
-        final String requestScheme = resolveRequestScheme(request);
-        if (!refererScheme.equalsIgnoreCase(requestScheme)) {
-            return false;
+    private static String decode(final String value) {
+        try {
+            return URLDecoder.decode(value, StandardCharsets.UTF_8);
+        } catch (IllegalArgumentException e) {
+            return value;
         }
+    }
 
+    private static boolean isSameHost(final URI refererUri, final HttpServletRequest request) {
+        final String scheme = refererUri.getScheme();
         final String refererHost = refererUri.getHost();
-        final String requestHost = request.getServerName();
-        if (refererHost == null || !refererHost.equalsIgnoreCase(requestHost)) {
+        if ((!"http".equalsIgnoreCase(scheme) && !"https".equalsIgnoreCase(scheme))
+                || refererUri.getRawUserInfo() != null
+                || refererHost == null || refererHost.isBlank()) {
             return false;
         }
-
-        final int refererPort = refererUri.getPort() != -1
-                ? refererUri.getPort()
-                : defaultPortForScheme(refererScheme);
-        final int requestPort = resolveRequestPort(request, requestScheme);
-
-        return refererPort == requestPort;
+        final String forwardedHost = stripPort(firstHeaderToken(request.getHeader(FORWARDED_HOST_HEADER)));
+        return refererHost.equalsIgnoreCase(request.getServerName()) || refererHost.equalsIgnoreCase(forwardedHost);
     }
 
-    private static boolean isHttpScheme(final String scheme) {
-        return "http".equalsIgnoreCase(scheme) || "https".equalsIgnoreCase(scheme);
-    }
-
-    private static int defaultPortForScheme(final String scheme) {
-        return "https".equalsIgnoreCase(scheme) ? HTTPS_DEFAULT_PORT : HTTP_DEFAULT_PORT;
-    }
-
-    private static String resolveRequestScheme(final HttpServletRequest request) {
-        final String forwardedProto = firstHeaderToken(request.getHeader(FORWARDED_PROTO_HEADER));
-        if (isHttpScheme(forwardedProto)) {
-            return forwardedProto;
+    private static String stripPort(final String hostHeader) {
+        if (hostHeader == null || hostHeader.isBlank()) {
+            return null;
         }
-        return request.getScheme();
-    }
-
-    private static int resolveRequestPort(final HttpServletRequest request, final String effectiveScheme) {
-        final String forwardedPort = firstHeaderToken(request.getHeader(FORWARDED_PORT_HEADER));
-        if (forwardedPort != null) {
-            try {
-                final int parsed = Integer.parseInt(forwardedPort);
-                if (parsed > 0) {
-                    return parsed;
-                }
-            } catch (NumberFormatException ignored) {
-                // Fall back to container port resolution
-            }
+        if (hostHeader.startsWith("[")) {
+            final int closeBracket = hostHeader.indexOf(']');
+            return closeBracket > 1 ? hostHeader.substring(0, closeBracket + 1) : null;
         }
-
-        final int serverPort = request.getServerPort();
-        if (serverPort == HTTP_DEFAULT_PORT
-                && "http".equalsIgnoreCase(request.getScheme())
-                && "https".equalsIgnoreCase(effectiveScheme)) {
-            return HTTPS_DEFAULT_PORT;
-        }
-        return serverPort > 0 ? serverPort : defaultPortForScheme(effectiveScheme);
+        final int colonIdx = hostHeader.indexOf(':');
+        return colonIdx >= 0 ? hostHeader.substring(0, colonIdx) : hostHeader;
     }
 
     private static String firstHeaderToken(final String headerValue) {

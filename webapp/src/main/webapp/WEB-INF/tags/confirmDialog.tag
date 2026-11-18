@@ -4,6 +4,7 @@
 <%@ attribute name="confirmText" required="true" %>
 <%@ attribute name="cancelText" required="true" %>
 <%@ attribute name="formAction" required="true" %>
+<%@ attribute name="redirect" required="false" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="paw" tagdir="/WEB-INF/tags" %>
 
@@ -19,6 +20,9 @@
     <div class="flex justify-end gap-2">
         <paw:button variant="ghost" role="secondary" text="${cancelText}" onclick="document.getElementById('${id}').close()" />
         <form action="${formAction}" method="POST">
+            <c:if test="${not empty redirect}">
+                <input type="hidden" name="redirect" value="<c:out value='${redirect}'/>"/>
+            </c:if>
             <paw:button type="submit" role="danger" text="${confirmText}" />
         </form>
     </div>

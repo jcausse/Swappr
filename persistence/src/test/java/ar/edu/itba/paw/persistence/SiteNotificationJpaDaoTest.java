@@ -1,9 +1,11 @@
 package ar.edu.itba.paw.persistence;
 
-import ar.edu.itba.paw.model.NotificationType;
+import ar.edu.itba.paw.model.notification.NotificationType;
+import ar.edu.itba.paw.model.Offer;
+import org.springframework.test.context.jdbc.Sql;
 import ar.edu.itba.paw.model.Page;
-import ar.edu.itba.paw.model.SiteNotification;
-import ar.edu.itba.paw.model.SiteNotificationFilter;
+import ar.edu.itba.paw.model.notification.SiteNotification;
+import ar.edu.itba.paw.model.notification.SiteNotificationFilter;
 import ar.edu.itba.paw.model.User;
 import org.junit.Assert;
 import org.junit.Before;
@@ -27,6 +29,7 @@ import java.util.Map;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = { TestConfig.class })
+@Sql({ "classpath:sql/listing-data.sql", "classpath:sql/offer-data.sql" })
 @Transactional
 @Rollback
 public class SiteNotificationJpaDaoTest {
@@ -73,11 +76,12 @@ public class SiteNotificationJpaDaoTest {
             final String actionUrl,
             final String actionLabelKey,
             final boolean isRead,
-            final Instant createdAt
+            final Instant createdAt,
+            final Long offerId
     ) {
         jdbcTemplate.update(
-                "INSERT INTO site_notifications (notification_id, user_id, notification_type, title_key, body_key, action_url, action_label_key, is_read, created_at) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                "INSERT INTO site_notifications (notification_id, user_id, notification_type, title_key, body_key, action_url, action_label_key, is_read, created_at, offer_id) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 id,
                 userId,
                 type.name(),
@@ -86,7 +90,8 @@ public class SiteNotificationJpaDaoTest {
                 actionUrl,
                 actionLabelKey,
                 isRead,
-                Timestamp.from(createdAt)
+                Timestamp.from(createdAt),
+                offerId
         );
         if (bodyArgs != null) {
             for (int i = 0; i < bodyArgs.size(); i++) {
@@ -98,6 +103,21 @@ public class SiteNotificationJpaDaoTest {
                 );
             }
         }
+    }
+
+    private void insertNotification(
+            final long id,
+            final long userId,
+            final NotificationType type,
+            final String titleKey,
+            final String bodyKey,
+            final List<String> bodyArgs,
+            final String actionUrl,
+            final String actionLabelKey,
+            final boolean isRead,
+            final Instant createdAt
+    ) {
+        insertNotification(id, userId, type, titleKey, bodyKey, bodyArgs, actionUrl, actionLabelKey, isRead, createdAt, null);
     }
 
     /* ---------------------------------------------------------------------------------------------- */
@@ -162,6 +182,27 @@ public class SiteNotificationJpaDaoTest {
                 notification.getId()
         );
         Assert.assertEquals(BODY_ARGS, persistedArgs);
+    }
+
+    @Test
+    public void testCreateWithOfferPersistsOfferId() {
+        // Arrange
+        final User user = userRef(USER_ID);
+        final Offer offer = em.getReference(Offer.class, 6L);
+        final Instant now = Instant.now();
+
+        // Act
+        final SiteNotification notification = notificationDao.create(
+                user, NotificationType.OFFER_ACCEPTED, TITLE_KEY, BODY_KEY, BODY_ARGS, ACTION_URL, ACTION_LABEL_KEY, now, offer
+        );
+        em.flush();
+
+        // Assert directly querying database table (no other DAO methods used)
+        Assert.assertEquals(1, JdbcTestUtils.countRowsInTableWhere(
+                jdbcTemplate, TABLE, "notification_id = " + notification.getId() + " AND offer_id = 6"
+        ));
+        Assert.assertNotNull(notification.getOffer().orElse(null));
+        Assert.assertEquals(Long.valueOf(6L), notification.getOffer().get().getId());
     }
 
     /* ---------------------------------------------------------------------------------------------- */

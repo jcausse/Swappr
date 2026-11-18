@@ -7,12 +7,14 @@
 <spring:message code="notifications.title" var="titleMsg"/>
 <spring:message code="notifications.subtitle" var="subtitleMsg"/>
 <spring:message code="notifications.action.markAllRead" var="markAllReadLabel"/>
+<spring:message code="notifications.preferences.button" var="preferencesLabel"/>
 <spring:message code="notifications.filter.type.label" var="typeFilterLabel"/>
 <spring:message code="notifications.filter.type.all" var="allTypesLabel"/>
 <spring:message code="notifications.filter.clear" var="clearFiltersLabel"/>
 
 <c:url value="/notifications" var="filterAction"/>
 <c:url value="/notifications/read-all" var="markAllReadUrl"/>
+<c:url value="/notifications/preferences" var="preferencesUrl"/>
 
 <paw:layout titleKey="notifications.title">
     <div class="mb-8 flex flex-col sm:flex-row sm:items-center gap-4">
@@ -26,11 +28,14 @@
             <p class="text-black/60 mt-2"><c:out value="${subtitleMsg}"/></p>
         </div>
 
-        <c:if test="${recentUnreadNotificationsPage.totalCount > 0}">
-            <form action="${markAllReadUrl}" method="post" class="sm:ml-auto">
-                <paw:button type="submit" variant="outline" icon="check-check" text="${markAllReadLabel}"/>
-            </form>
-        </c:if>
+        <div class="sm:ml-auto flex flex-row items-center gap-2">
+            <c:if test="${recentUnreadNotificationsPage.totalCount > 0}">
+                <form action="${markAllReadUrl}" method="post">
+                    <paw:button type="submit" variant="outline" size="sm" icon="check-check" text="${markAllReadLabel}"/>
+                </form>
+            </c:if>
+            <paw:linkButton href="${preferencesUrl}" text="${preferencesLabel}" size="sm" variant="outline"/>
+        </div>
     </div>
 
     <form:form modelAttribute="filterForm" action="${filterAction}" method="get" id="filterForm" cssClass="flex flex-col gap-4 mb-6">

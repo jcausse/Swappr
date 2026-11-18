@@ -138,7 +138,7 @@
                             </c:if>
                         </c:forEach>
 
-                        <paw:pagination page="${ratingPage}" baseUrl="/profile/${user.id}"/>
+                        <paw:pagination page="${ratingPage}" baseUrl="/profile/${user.id}" pageParam="ratingPage"/>
                     </div>
                 </c:otherwise>
             </c:choose>
@@ -173,7 +173,7 @@
                                     <paw:listingImage listing="${listing}" />
 
                                     <div class="flex-1 min-w-0 flex flex-col justify-between">
-                                        <paw:product product="${listing.product}" size="sm" />
+                                        <paw:product model="${listing.model}" year="${listing.year}" size="sm" />
                                         <div class="text-xl font-bold mt-2 sm:mt-0">
                                             <paw:price amount="${listing.price.amount}"/>
                                         </div>
@@ -191,7 +191,7 @@
                         </c:forEach>
                     </div>
 
-                    <paw:pagination page="${listingPage}" baseUrl="/profile/${user.id}"/>
+                    <paw:pagination page="${listingPage}" baseUrl="/profile/${user.id}" pageParam="listingPage"/>
                 </c:otherwise>
             </c:choose>
         </paw:card>

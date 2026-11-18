@@ -5,7 +5,9 @@
 <%@ taglib prefix="account" tagdir="/WEB-INF/tags/account" %>
 
 
-<spring:message code="account.welcome" arguments="${currentUser.get().displayName}" var="welcomeMsg"/>
+<spring:message code="account.welcome" var="welcomeMsg">
+    <spring:argument value="${currentUser.get().displayName}"/>
+</spring:message>
 <spring:message code="account.subtitle" var="subtitleMsg"/>
 
 <c:url value="/account/listings" var="listingsUrl"/>

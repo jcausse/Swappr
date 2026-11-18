@@ -1,7 +1,7 @@
 package ar.edu.itba.paw.webapp.form;
 
-import ar.edu.itba.paw.model.NotificationType;
-import ar.edu.itba.paw.model.SiteNotificationFilter;
+import ar.edu.itba.paw.model.notification.NotificationType;
+import ar.edu.itba.paw.model.notification.SiteNotificationFilter;
 import ar.edu.itba.paw.model.User;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

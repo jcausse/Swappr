@@ -5,19 +5,22 @@ import ar.edu.itba.paw.model.File;
 import ar.edu.itba.paw.model.Listing;
 import ar.edu.itba.paw.model.ListingStatus;
 import ar.edu.itba.paw.model.Offer;
+import ar.edu.itba.paw.model.OfferFilter;
+import ar.edu.itba.paw.model.OfferPendingCount;
 import ar.edu.itba.paw.model.OfferRating;
 import ar.edu.itba.paw.model.OfferStatus;
 import ar.edu.itba.paw.model.OfferType;
+import ar.edu.itba.paw.model.Page;
 import ar.edu.itba.paw.model.Price;
 import ar.edu.itba.paw.model.User;
-import ar.edu.itba.paw.persistence.FileDao;
 import ar.edu.itba.paw.persistence.OfferDao;
-import ar.edu.itba.paw.persistence.UserDao;
 import ar.edu.itba.paw.service.dto.FileDto;
 import ar.edu.itba.paw.service.dto.OfferCreationDto;
+import ar.edu.itba.paw.service.dto.OfferFilterDto;
 import ar.edu.itba.paw.service.exception.BadParameterException;
 import ar.edu.itba.paw.service.exception.ForbiddenException;
 import ar.edu.itba.paw.service.exception.NotFoundException;
+import ar.edu.itba.paw.service.exception.OfferNotCancelableException;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -26,12 +29,16 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.math.BigDecimal;
-import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.isNull;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class OfferServiceImplTest {
@@ -43,7 +50,6 @@ public class OfferServiceImplTest {
     private static final long LISTING_ID = 10L;
     private static final long OFFERED_LISTING_ID = 20L;
     private static final long OFFER_ID = 100L;
-    private static final long OTHER_OFFER_ID = 101L;
     private static final long NON_EXISTING_ID = 9000L;
     private static final long FILE_ID = 50L;
 
@@ -62,21 +68,16 @@ public class OfferServiceImplTest {
     private static final FileDto FILE_DTO_PDF = new FileDto(DATA, FILENAME_PDF, PDF);
     private static final FileDto FILE_DTO_PNG = new FileDto(DATA, FILENAME_PNG, PNG);
     private static final FileDto FILE_DTO_PNG_EMPTY = new FileDto(new byte[0], FILENAME_PNG, PNG);
-	private static final FileDto FILE_DTO_TXT = new FileDto(DATA, "notes.txt", "text/plain");
+    private static final FileDto FILE_DTO_TXT = new FileDto(DATA, "notes.txt", "text/plain");
 
     private static final int PAGE_SIZE = 10;
-
-    // Duplicated on purpose: if the business rule changes, these tests must be updated consciously
-    private static final Duration RATING_AUTO_ASSIGN_DELAY = Duration.ofDays(14);
 
     @InjectMocks
     private OfferServiceImpl offerService;
     @Mock
     private OfferDao offerDao;
     @Mock
-    private FileDao fileDao;
-    @Mock
-    private UserDao userDao;
+    private FileService fileService;
     @Mock
     private UserService userService;
     @Mock
@@ -119,6 +120,18 @@ public class OfferServiceImplTest {
     }
 
 
+    private static Listing buildFreeListing() {
+        return Listing.builder()
+            .id(LISTING_ID)
+            .title("Listing " + LISTING_ID)
+            .creator(buildFakeUser(SELLER_ID))
+            .price(new Price(BigDecimal.ZERO))
+            .status(ListingStatus.ACTIVE)
+            .condition(Condition.GOOD)
+            .acceptsTrade(true)
+            .build();
+    }
+
     private static Offer.OfferBuilder offerBuilder(final OfferStatus status) {
         return Offer.builder()
             .id(OFFER_ID)
@@ -156,6 +169,14 @@ public class OfferServiceImplTest {
         when(offerDao.getById(eq(OFFER_ID))).thenReturn(Optional.of(offer));
     }
 
+    private static OfferFilterDto buildFilterDto() {
+        return OfferFilterDto.builder()
+            .sellerId(SELLER_ID)
+            .page(1)
+            .pageSize(PAGE_SIZE)
+            .build();
+    }
+
     /* ---------------------------------------------------------------------------------------------- */
     /* getByListingAndBuyer                                                                            */
     /* ---------------------------------------------------------------------------------------------- */
@@ -169,21 +190,6 @@ public class OfferServiceImplTest {
         Assert.assertFalse(maybeOffer.isPresent());
     }
 
-    @Test
-    public void testGetByListingAndBuyerReturnsDaoResult() {
-        // Arrange
-        final Listing listing = buildSellerListing();
-        final User buyer = buildFakeUser(BUYER_ID);
-        when(offerDao.getByListingAndBuyer(eq(listing), eq(buyer))).thenReturn(Optional.of(buildFakeOffer(OfferStatus.PENDING)));
-
-        // Act
-        final Optional<Offer> maybeOffer = offerService.getByListingAndBuyer(listing, buyer);
-
-        // Assert
-        Assert.assertTrue(maybeOffer.isPresent());
-        Assert.assertEquals(OFFER_ID, (long) maybeOffer.get().getId());
-    }
-
     /* ---------------------------------------------------------------------------------------------- */
     /* get (filters)                                                                                   */
     /* ---------------------------------------------------------------------------------------------- */
@@ -191,7 +197,59 @@ public class OfferServiceImplTest {
     @Test(expected = NullPointerException.class)
     public void testGetNullDtoThrows() {
         // Act
-        offerService.get(null);
+        offerService.get(null, false);
+    }
+
+    @Test
+    public void testGetPopulatesTransientFlagsWhenRequested() {
+        // Arrange
+        final Offer offer = buildFakeOffer(OfferStatus.PENDING);
+        when(offerDao.search(any(OfferFilter.class)))
+            .thenReturn(new Page<>(List.of(offer), 1, PAGE_SIZE, 1));
+        when(offerDao.getPendingCounts(eq(List.of(LISTING_ID))))
+            .thenReturn(Map.of(LISTING_ID, new OfferPendingCount(LISTING_ID, 2, new BigDecimal("1500.00"))));
+
+        // Act
+        final Page<Offer> page = offerService.get(buildFilterDto(), true);
+
+        // Assert
+        final Offer result = page.getContent().getFirst();
+        Assert.assertTrue(result.isHasOtherOffers());
+        Assert.assertTrue(result.isHasBetterOffers());
+    }
+
+    @Test
+    public void testGetDoesNotPopulateTransientFlagsWhenNotRequested() {
+        // Arrange
+        final Offer offer = buildFakeOffer(OfferStatus.PENDING);
+        when(offerDao.search(any(OfferFilter.class)))
+            .thenReturn(new Page<>(List.of(offer), 1, PAGE_SIZE, 1));
+        lenient().when(offerDao.getPendingCounts(any()))
+            .thenReturn(Map.of(LISTING_ID, new OfferPendingCount(LISTING_ID, 2, new BigDecimal("1500.00"))));
+
+        // Act
+        final Page<Offer> page = offerService.get(buildFilterDto(), false);
+
+        // Assert
+        final Offer result = page.getContent().getFirst();
+        Assert.assertFalse(result.isHasOtherOffers());
+        Assert.assertFalse(result.isHasBetterOffers());
+    }
+
+    @Test
+    public void testGetByIdPopulatesTransientFlags() {
+        // Arrange
+        final Offer offer = buildFakeOffer(OfferStatus.PENDING);
+        givenOffer(offer);
+        when(offerDao.getPendingCounts(eq(List.of(LISTING_ID))))
+            .thenReturn(Map.of(LISTING_ID, new OfferPendingCount(LISTING_ID, 2, AMOUNT)));
+
+        // Act
+        final Offer result = offerService.getById(OFFER_ID, true).orElseThrow();
+
+        // Assert
+        Assert.assertTrue(result.isHasOtherOffers());
+        Assert.assertFalse(result.isHasBetterOffers());
     }
 
     /* ---------------------------------------------------------------------------------------------- */
@@ -213,6 +271,44 @@ public class OfferServiceImplTest {
 
         // Act
         final Offer result = offerService.create(buildCreationDto(BUYER_ID, null));
+
+        // Assert
+        Assert.assertEquals(OFFER_ID, (long) result.getId());
+    }
+
+    @Test(expected = BadParameterException.class)
+    public void testCreateTradeOnFreeListingThrows() {
+        // Arrange
+        when(listingService.getById(eq(LISTING_ID))).thenReturn(buildFreeListing());
+
+        // Act
+        offerService.create(buildCreationDto(BUYER_ID, OFFERED_LISTING_ID));
+    }
+
+    @Test(expected = BadParameterException.class)
+    public void testCreateCustomOnFreeListingThrows() {
+        // Arrange
+        when(listingService.getById(eq(LISTING_ID))).thenReturn(buildFreeListing());
+
+        // Act
+        offerService.create(buildCreationDto(BUYER_ID, null));
+    }
+
+    @Test
+    public void testCreateInterestOnFreeListingReturnsOffer() {
+        // Arrange
+        final Listing listing = buildFreeListing();
+        final User buyer = buildFakeUser(BUYER_ID);
+        final Offer offer = buildFakeOffer(OfferStatus.PENDING);
+        when(listingService.getById(eq(LISTING_ID))).thenReturn(listing);
+        when(userService.getById(eq(BUYER_ID))).thenReturn(Optional.of(buyer));
+        when(offerDao.create(
+            eq(LISTING_ID), eq(buyer), eq(BigDecimal.ZERO), eq(true), eq(OfferStatus.PENDING),
+            isNull(), any(Instant.class), isNull()
+        )).thenReturn(offer);
+
+        // Act
+        final Offer result = offerService.createInterest(LISTING_ID, BUYER_ID);
 
         // Assert
         Assert.assertEquals(OFFER_ID, (long) result.getId());
@@ -366,7 +462,7 @@ public class OfferServiceImplTest {
     /* withdraw                                                                                        */
     /* ---------------------------------------------------------------------------------------------- */
 
-    @Test(expected = BadParameterException.class)
+    @Test(expected = ForbiddenException.class)
     public void testWithdrawByNonBuyerThrows() {
         // Arrange
         givenOffer(buildFakeOffer(OfferStatus.PENDING));
@@ -385,26 +481,6 @@ public class OfferServiceImplTest {
     }
 
     /* ---------------------------------------------------------------------------------------------- */
-    /* rejectPendingOffersForListing                                                                   */
-    /* ---------------------------------------------------------------------------------------------- */
-
-    @Test
-    public void testRejectPendingOffersReturnsRejectedOffers() {
-        // Arrange
-        final List<Offer> rejected = List.of(
-            buildFakeOffer(OfferStatus.REJECTED),
-            offerBuilder(OfferStatus.REJECTED).id(OTHER_OFFER_ID).build()
-        );
-        when(offerDao.rejectPendingOffers(eq(LISTING_ID), isNull())).thenReturn(rejected);
-
-        // Act
-        final List<Offer> result = offerService.rejectPendingOffersForListing(LISTING_ID, null);
-
-        // Assert
-        Assert.assertEquals(rejected, result);
-    }
-
-    /* ---------------------------------------------------------------------------------------------- */
     /* uploadProofOfPayment                                                                            */
     /* ---------------------------------------------------------------------------------------------- */
 
@@ -412,7 +488,7 @@ public class OfferServiceImplTest {
     public void testUploadProofOfPaymentAcceptsPdf() {
         // Arrange
         givenOffer(buildFakeOffer(OfferStatus.PENDING_PAYMENT));
-        when(fileDao.create(any(), any(), eq(PDF), any(byte[].class))).thenReturn(buildFakeFile());
+        when(fileService.create(any(), any(), eq(PDF), any(byte[].class))).thenReturn(buildFakeFile());
 
         // Act
         final Offer result = offerService.uploadProofOfPayment(OFFER_ID, BUYER_ID, FILE_DTO_PDF);
@@ -421,7 +497,7 @@ public class OfferServiceImplTest {
         Assert.assertEquals(OFFER_ID, (long) result.getId());
     }
 
-    @Test(expected = BadParameterException.class)
+    @Test(expected = ForbiddenException.class)
     public void testUploadProofOfPaymentByNonBuyerThrows() {
         // Arrange
         givenOffer(buildFakeOffer(OfferStatus.PENDING_PAYMENT));
@@ -470,7 +546,7 @@ public class OfferServiceImplTest {
         offerService.uploadProofOfShipping(OFFER_ID, SELLER_ID, null, null);
     }
 
-    @Test(expected = BadParameterException.class)
+    @Test(expected = ForbiddenException.class)
     public void testUploadProofOfShippingByNonSellerThrows() {
         // Arrange
         givenOffer(buildFakeOffer(OfferStatus.PENDING_PAYMENT));
@@ -488,11 +564,77 @@ public class OfferServiceImplTest {
         offerService.uploadProofOfShipping(OFFER_ID, SELLER_ID, FILE_DTO_TXT, TRACKING_NUMBER);
     }
 
+    @Test(expected = BadParameterException.class)
+    public void testUploadProofOfShippingEmptyFileThrows() {
+        // Arrange
+        givenOffer(buildFakeOffer(OfferStatus.PENDING_PAYMENT));
+
+        // Act
+        offerService.uploadProofOfShipping(OFFER_ID, SELLER_ID, FILE_DTO_PNG_EMPTY, TRACKING_NUMBER);
+    }
+
+    @Test
+    public void testUploadProofOfShippingWithTrackingOnlySucceeds() {
+        // Arrange
+        givenOffer(buildFakeOffer(OfferStatus.PENDING_PAYMENT));
+
+        // Act
+        final Offer result = offerService.uploadProofOfShipping(OFFER_ID, SELLER_ID, null, TRACKING_NUMBER);
+
+        // Assert
+        Assert.assertEquals(OFFER_ID, (long) result.getId());
+    }
+
+    /* ---------------------------------------------------------------------------------------------- */
+    /* getForDocumentUpload                                                                            */
+    /* ---------------------------------------------------------------------------------------------- */
+
+    @Test
+    public void testGetForDocumentUploadReturnsPendingPaymentOffer() {
+        // Arrange
+        givenOffer(buildFakeOffer(OfferStatus.PENDING_PAYMENT));
+
+        // Act
+        final Offer result = offerService.getForDocumentUpload(OFFER_ID);
+
+        // Assert
+        Assert.assertEquals(OFFER_ID, (long) result.getId());
+    }
+
+    @Test(expected = BadParameterException.class)
+    public void testGetForDocumentUploadWhenNotPendingPaymentThrows() {
+        // Arrange
+        givenOffer(buildFakeOffer(OfferStatus.PENDING));
+
+        // Act
+        offerService.getForDocumentUpload(OFFER_ID);
+    }
+
+    @Test(expected = BadParameterException.class)
+    public void testGetForDocumentUploadForFreeListingThrows() {
+        // Arrange
+        final Offer offer = buildFakeOffer(OfferStatus.PENDING_PAYMENT);
+        offer.setListing(buildFreeListing());
+        givenOffer(offer);
+
+        // Act
+        offerService.getForDocumentUpload(OFFER_ID);
+    }
+
+    @Test(expected = NotFoundException.class)
+    public void testGetForDocumentUploadForNonExistingOfferThrows() {
+        // Arrange
+        when(offerDao.getById(eq(NON_EXISTING_ID))).thenReturn(Optional.empty());
+
+        // Act
+        offerService.getForDocumentUpload(NON_EXISTING_ID);
+    }
+
     /* ---------------------------------------------------------------------------------------------- */
     /* confirmPayment                                                                                  */
     /* ---------------------------------------------------------------------------------------------- */
 
-    @Test(expected = BadParameterException.class)
+    @Test(expected = ForbiddenException.class)
     public void testConfirmPaymentByNonSellerThrows() {
         // Arrange
         givenOffer(buildFakeOffer(OfferStatus.PENDING_PAYMENT));
@@ -511,7 +653,7 @@ public class OfferServiceImplTest {
     }
 
     /* ---------------------------------------------------------------------------------------------- */
-    /* proof files / pending count                                                                     */
+    /* proof files                                                                                     */
     /* ---------------------------------------------------------------------------------------------- */
 
     @Test
@@ -526,33 +668,6 @@ public class OfferServiceImplTest {
         Assert.assertFalse(maybeFile.isPresent());
     }
 
-    @Test
-    public void testGetProofOfPaymentFileReturnsStoredFile() {
-        // Arrange
-        givenOffer(offerBuilder(OfferStatus.PENDING_PAYMENT).proofOfPayment(ar.edu.itba.paw.model.File.builder().id(FILE_ID).build()).build());
-        when(fileDao.getById(eq(FILE_ID))).thenReturn(Optional.of(buildFakeFile()));
-
-        // Act
-        final Optional<File> maybeFile = offerService.getProofOfPaymentFile(OFFER_ID, SELLER_ID);
-
-        // Assert
-        Assert.assertTrue(maybeFile.isPresent());
-        Assert.assertEquals(FILE_ID, (long) maybeFile.get().getId());
-    }
-
-    @Test
-    public void testGetProofOfShippingFileReturnsStoredFile() {
-        // Arrange
-        givenOffer(offerBuilder(OfferStatus.PENDING_PAYMENT).proofOfShipping(ar.edu.itba.paw.model.File.builder().id(FILE_ID).build()).build());
-        when(fileDao.getById(eq(FILE_ID))).thenReturn(Optional.of(buildFakeFile()));
-
-        // Act
-        final Optional<File> maybeFile = offerService.getProofOfShippingFile(OFFER_ID, SELLER_ID);
-
-        // Assert
-        Assert.assertTrue(maybeFile.isPresent());
-    }
-
     @Test(expected = NotFoundException.class)
     public void testGetProofOfPaymentFileForNonExistingOfferThrows() {
         // Arrange
@@ -562,17 +677,58 @@ public class OfferServiceImplTest {
         offerService.getProofOfPaymentFile(NON_EXISTING_ID, SELLER_ID);
     }
 
+    /* ---------------------------------------------------------------------------------------------- */
+    /* getRateableBy                                                                                   */
+    /* ---------------------------------------------------------------------------------------------- */
+
     @Test
-    public void testGetPendingOffersCount() {
+    public void testGetRateableByReturnsAcceptedOffer() {
         // Arrange
-        final User seller = buildFakeUser(SELLER_ID);
-        when(offerDao.countPendingBySeller(eq(seller))).thenReturn(3);
+        givenOffer(buildFakeOffer(OfferStatus.ACCEPTED));
 
         // Act
-        final int count = offerService.getPendingOffersCount(seller);
+        final Offer result = offerService.getRateableBy(OFFER_ID, buildFakeUser(BUYER_ID));
 
         // Assert
-        Assert.assertEquals(3, count);
+        Assert.assertEquals(OFFER_ID, (long) result.getId());
+    }
+
+    @Test(expected = BadParameterException.class)
+    public void testGetRateableByNonAcceptedOfferThrows() {
+        // Arrange
+        givenOffer(buildFakeOffer(OfferStatus.PENDING_PAYMENT));
+
+        // Act
+        offerService.getRateableBy(OFFER_ID, buildFakeUser(BUYER_ID));
+    }
+
+    @Test(expected = BadParameterException.class)
+    public void testGetRateableByAlreadyRatedOfferThrows() {
+        // Arrange
+        final Offer offer = buildFakeOffer(OfferStatus.ACCEPTED);
+        offer.setSellerRating(OfferRating.POSITIVE);
+        givenOffer(offer);
+
+        // Act
+        offerService.getRateableBy(OFFER_ID, buildFakeUser(BUYER_ID));
+    }
+
+    @Test(expected = ForbiddenException.class)
+    public void testGetRateableByOutsiderThrows() {
+        // Arrange
+        givenOffer(buildFakeOffer(OfferStatus.ACCEPTED));
+
+        // Act
+        offerService.getRateableBy(OFFER_ID, buildFakeUser(OUTSIDER_ID));
+    }
+
+    @Test(expected = NotFoundException.class)
+    public void testGetRateableByNonExistingOfferThrows() {
+        // Arrange
+        when(offerDao.getById(eq(NON_EXISTING_ID))).thenReturn(Optional.empty());
+
+        // Act
+        offerService.getRateableBy(NON_EXISTING_ID, buildFakeUser(BUYER_ID));
     }
 
     /* ---------------------------------------------------------------------------------------------- */
@@ -583,27 +739,53 @@ public class OfferServiceImplTest {
     public void testRateTwiceThrows() {
         // Arrange
         final Offer offer = buildFakeOffer(OfferStatus.ACCEPTED);
+        givenOffer(offer);
         when(offerDao.setSellerRating(eq(OFFER_ID), eq(OfferRating.POSITIVE))).thenReturn(false);
 
         // Act
-        offerService.rate(offer, buildFakeUser(BUYER_ID), OfferRating.POSITIVE);
+        offerService.rate(OFFER_ID, buildFakeUser(BUYER_ID), OfferRating.POSITIVE);
     }
 
     @Test(expected = BadParameterException.class)
     public void testRateNonAcceptedOfferThrows() {
         // Arrange
         final Offer offer = buildFakeOffer(OfferStatus.PENDING_PAYMENT);
+        givenOffer(offer);
 
         // Act
-        offerService.rate(offer, buildFakeUser(BUYER_ID), OfferRating.POSITIVE);
+        offerService.rate(OFFER_ID, buildFakeUser(BUYER_ID), OfferRating.POSITIVE);
     }
 
     @Test(expected = ForbiddenException.class)
     public void testRateByOutsiderThrows() {
         // Arrange
         final Offer offer = buildFakeOffer(OfferStatus.ACCEPTED);
+        givenOffer(offer);
 
         // Act
-        offerService.rate(offer, buildFakeUser(OUTSIDER_ID), OfferRating.POSITIVE);
+        offerService.rate(OFFER_ID, buildFakeUser(OUTSIDER_ID), OfferRating.POSITIVE);
+    }
+
+    /* ---------------------------------------------------------------------------------------------- */
+    /* cancelByAdmin                                                                                   */
+    /* ---------------------------------------------------------------------------------------------- */
+
+    @Test(expected = OfferNotCancelableException.class)
+    public void testCancelByAdminAcceptedOfferThrows() {
+        // Arrange
+        final Offer offer = buildFakeOffer(OfferStatus.ACCEPTED);
+        when(offerDao.getById(eq(OFFER_ID))).thenReturn(Optional.of(offer));
+
+        // Act
+        offerService.cancelByAdmin(OFFER_ID);
+    }
+
+    @Test(expected = NotFoundException.class)
+    public void testCancelByAdminNonExistingOfferThrows() {
+        // Arrange
+        when(offerDao.getById(eq(NON_EXISTING_ID))).thenReturn(Optional.empty());
+
+        // Act
+        offerService.cancelByAdmin(NON_EXISTING_ID);
     }
 }

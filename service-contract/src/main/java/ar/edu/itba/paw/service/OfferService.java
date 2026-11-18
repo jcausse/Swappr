@@ -17,13 +17,19 @@ import java.util.Optional;
 
 public interface OfferService {
 
-    Optional<Offer> getById(Long id);
+    Optional<Offer> getById(Long id, boolean populateTransientFlags);
+
+    Offer getForDocumentUpload(Long offerId);
+
+    Offer getRateableBy(Long offerId, User currentUser);
 
     Optional<Offer> getByListingAndBuyer(Listing listing, User buyer);
 
-    Page<Offer> get(OfferFilterDto filter);
+    Page<Offer> get(OfferFilterDto filter, boolean populateTransientFlags);
 
     Offer create(OfferCreationDto dto);
+
+    Offer createInterest(Long listingId, Long buyerId);
 
     Offer accept(Long offerId, Long currentUserId);
 
@@ -31,7 +37,17 @@ public interface OfferService {
 
     Offer withdraw(Long offerId, Long currentUserId);
 
-    List<Offer> rejectPendingOffersForListing(Long listingId, Long exceptOfferId);
+    /**
+     * Used by listing cancellation: rejects PENDING offers on the listing and, when
+     * {@code includePendingPayment} is true (admin cancellation), PENDING_PAYMENT offers too.
+     */
+    void rejectPendingOffersForListing(Long listingId, Long exceptOfferId, boolean includePendingPayment);
+
+    /**
+     * Admin-cancellation edge case for OFFERED_IN_TRADE listings: silently rejects the trade
+     * offers that reference this listing as their offered item, releasing any held target listings.
+     */
+    void rejectTradeOffersForOfferedListing(Long offeredListingId);
 
     int getPendingOffersCount(User seller);
 
@@ -47,12 +63,14 @@ public interface OfferService {
 
     Optional<File> getProofOfShippingFile(Long offerId, Long currentUserId);
 
-    Offer rate(Offer offer, User currentUser, OfferRating rating);
+    Offer rate(Long offerId, User currentUser, OfferRating rating);
 
-    Offer rate(Offer offer, User currentUser, OfferRating rating, String reviewText);
+    Offer rate(Long offerId, User currentUser, OfferRating rating, String reviewText);
 
     @SuppressWarnings("unused")
     void autoRatePendingOffers();
 
     void cancelByAdmin(Long offerId);
+
+    int rejectAllForParticipant(Long userId);
 }
