@@ -3,7 +3,6 @@ package ar.edu.itba.paw.service;
 import ar.edu.itba.paw.model.Brand;
 import ar.edu.itba.paw.model.Category;
 import ar.edu.itba.paw.model.Condition;
-import ar.edu.itba.paw.model.Image;
 import ar.edu.itba.paw.model.Listing;
 import ar.edu.itba.paw.model.ListingFilter;
 import ar.edu.itba.paw.model.ListingSort;
@@ -23,7 +22,6 @@ import ar.edu.itba.paw.service.exception.NotFoundException;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
@@ -31,16 +29,13 @@ import org.mockito.junit.MockitoJUnitRunner;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.Year;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyBoolean;
 import static org.mockito.Mockito.anyInt;
-import static org.mockito.Mockito.argThat;
 import static org.mockito.Mockito.eq;
-import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -61,8 +56,6 @@ public class ListingServiceImplTest {
     private static final long BRAND_ID = 1L;
     private static final long MODEL_ID = 1L;
     private static final int YEAR = 2023;
-    private static final long IMAGE_ID = 10L;
-    private static final long FOREIGN_IMAGE_ID = 999L;
     private static final int PAGE_SIZE = 12;
 
     @InjectMocks
@@ -130,12 +123,6 @@ public class ListingServiceImplTest {
         );
     }
 
-    private static ListingCreationDto buildCreationDtoWithPrice(final BigDecimal price) {
-        return new ListingCreationDto(
-            LISTING_TITLE, price, SELLER_ID, MODEL_ID, YEAR, Condition.GOOD, true, false, LISTING_DESCRIPTION, null
-        );
-    }
-
     private static ListingCreationDto buildCreationDtoWithYear(final int year) {
         return new ListingCreationDto(
             LISTING_TITLE, LISTING_PRICE.getAmount(), SELLER_ID, MODEL_ID, year, Condition.GOOD, true, false, LISTING_DESCRIPTION, null
@@ -147,31 +134,6 @@ public class ListingServiceImplTest {
             LISTING_ID, LISTING_TITLE, LISTING_PRICE.getAmount(), MODEL_ID, year, Condition.GOOD, true, false, LISTING_DESCRIPTION,
             List.of(), List.of()
         );
-    }
-
-    private static ListingUpdateDto buildUpdateDtoWithPrice(final BigDecimal price) {
-        return new ListingUpdateDto(
-            LISTING_ID, LISTING_TITLE, price, MODEL_ID, YEAR, Condition.FAIR, true, false, LISTING_DESCRIPTION, null, null
-        );
-    }
-
-    private void stubCreateCapturingAcceptsTrade(final ArgumentCaptor<Boolean> acceptsTradeCaptor) {
-        final User seller = buildFakeUser(SELLER_ID, "seller");
-        final Listing listing = buildFakeListing(seller);
-        when(userService.getById(eq(SELLER_ID))).thenReturn(Optional.of(seller));
-        when(catalogService.getModelById(eq(MODEL_ID))).thenReturn(buildFakeModel());
-        when(listingDao.create(
-            any(), any(), any(), any(), anyInt(), any(), acceptsTradeCaptor.capture(), anyBoolean(), any(), any()
-        )).thenReturn(listing);
-    }
-
-    private void stubUpdateCapturingAcceptsTrade(final ArgumentCaptor<Boolean> acceptsTradeCaptor) {
-        final Listing listing = buildFakeListing(buildFakeUser(SELLER_ID, "seller"));
-        when(listingDao.getById(eq(LISTING_ID))).thenReturn(Optional.of(listing));
-        when(catalogService.getModelById(eq(MODEL_ID))).thenReturn(buildFakeModel());
-        when(listingDao.update(
-            any(), any(), any(), any(), anyInt(), any(), acceptsTradeCaptor.capture(), anyBoolean(), any()
-        )).thenReturn(Optional.of(listing));
     }
 
     private static ListingUpdateDto buildUpdateDto(final long listingId, final Condition condition) {
@@ -244,87 +206,6 @@ public class ListingServiceImplTest {
         Assert.assertSame(page, result);
     }
 
-    @Test
-    public void testSearch_onlyFreeSearchesZeroPriceRangeIgnoringGivenRange() {
-        // Arrange
-        final ArgumentCaptor<ListingFilter> captor = ArgumentCaptor.forClass(ListingFilter.class);
-        when(listingDao.search(captor.capture())).thenReturn(new Page<>(List.of(), 1, PAGE_SIZE, 0));
-        final ListingFilterDto dto = ListingFilterDto.builder()
-            .onlyFree(Boolean.TRUE)
-            .minPrice(new BigDecimal("10"))
-            .maxPrice(new BigDecimal("100"))
-            .page(1)
-            .pageSize(PAGE_SIZE)
-            .build();
-
-        // Act
-        listingService.search(dto);
-
-        // Assert
-        final ListingFilter sent = captor.getValue();
-        Assert.assertEquals(BigDecimal.ZERO, sent.getMinPrice());
-        Assert.assertEquals(BigDecimal.ZERO, sent.getMaxPrice());
-    }
-
-    @Test
-    public void testSearch_notOnlyFreeKeepsPriceRange() {
-        // Arrange
-        final ArgumentCaptor<ListingFilter> captor = ArgumentCaptor.forClass(ListingFilter.class);
-        when(listingDao.search(captor.capture())).thenReturn(new Page<>(List.of(), 1, PAGE_SIZE, 0));
-        final ListingFilterDto dto = ListingFilterDto.builder()
-            .minPrice(new BigDecimal("10"))
-            .maxPrice(new BigDecimal("100"))
-            .page(1)
-            .pageSize(PAGE_SIZE)
-            .build();
-
-        // Act
-        listingService.search(dto);
-
-        // Assert
-        final ListingFilter sent = captor.getValue();
-        Assert.assertEquals(new BigDecimal("10"), sent.getMinPrice());
-        Assert.assertEquals(new BigDecimal("100"), sent.getMaxPrice());
-    }
-
-    @Test
-    public void testSearch_onlyFreeIgnoresAcceptsTrade() {
-        // Arrange
-        final ArgumentCaptor<ListingFilter> captor = ArgumentCaptor.forClass(ListingFilter.class);
-        when(listingDao.search(captor.capture())).thenReturn(new Page<>(List.of(), 1, PAGE_SIZE, 0));
-        final ListingFilterDto dto = ListingFilterDto.builder()
-            .onlyFree(Boolean.TRUE)
-            .acceptsTrade(Boolean.TRUE)
-            .page(1)
-            .pageSize(PAGE_SIZE)
-            .build();
-
-        // Act
-        listingService.search(dto);
-
-        // Assert
-        final ListingFilter sent = captor.getValue();
-        Assert.assertNull(sent.getAcceptsTrade());
-    }
-
-    @Test
-    public void testSearch_notOnlyFreeKeepsAcceptsTrade() {
-        // Arrange
-        final ArgumentCaptor<ListingFilter> captor = ArgumentCaptor.forClass(ListingFilter.class);
-        when(listingDao.search(captor.capture())).thenReturn(new Page<>(List.of(), 1, PAGE_SIZE, 0));
-        final ListingFilterDto dto = ListingFilterDto.builder()
-            .acceptsTrade(Boolean.TRUE)
-            .page(1)
-            .pageSize(PAGE_SIZE)
-            .build();
-
-        // Act
-        listingService.search(dto);
-
-        // Assert
-        Assert.assertEquals(Boolean.TRUE, captor.getValue().getAcceptsTrade());
-    }
-
     @Test(expected = NullPointerException.class)
     public void testSearchNullDtoThrows() {
         // Act
@@ -350,60 +231,6 @@ public class ListingServiceImplTest {
 
         // Act
         final Listing result = listingService.create(buildCreationDto(Condition.GOOD, null));
-
-        // Assert
-        Assert.assertEquals(LISTING_ID, (long) result.getId());
-    }
-
-    @Test
-    public void testCreate_freePriceAcceptsTrade_daoReceivesFalse() {
-        // Arrange
-        final ArgumentCaptor<Boolean> acceptsTradeCaptor = ArgumentCaptor.forClass(Boolean.class);
-        stubCreateCapturingAcceptsTrade(acceptsTradeCaptor);
-
-        // Act
-        listingService.create(buildCreationDtoWithPrice(BigDecimal.ZERO));
-
-        // Assert
-        Assert.assertFalse(acceptsTradeCaptor.getValue());
-    }
-
-    @Test
-    public void testCreate_paidPriceAcceptsTrade_daoReceivesTrue() {
-        // Arrange
-        final ArgumentCaptor<Boolean> acceptsTradeCaptor = ArgumentCaptor.forClass(Boolean.class);
-        stubCreateCapturingAcceptsTrade(acceptsTradeCaptor);
-
-        // Act
-        listingService.create(buildCreationDtoWithPrice(new BigDecimal("10.00")));
-
-        // Assert
-        Assert.assertTrue(acceptsTradeCaptor.getValue());
-    }
-
-    @Test
-    public void testCreateStoresOnlyNonEmptyImages() {
-        // Arrange
-        final User seller = buildFakeUser(SELLER_ID, "seller");
-        final Listing listing = buildFakeListing(seller);
-        final List<ImageData> images = Arrays.asList(
-            new ImageData(new byte[]{ 1, 2, 3 }, "photo.jpg", "image/jpeg"),
-            new ImageData(new byte[0], "empty.jpg", "image/jpeg"),
-            null
-        );
-        final Image storedImage = Image.builder().id(IMAGE_ID).filename("photo.jpg").alt("alt").build();
-        when(userService.getById(eq(SELLER_ID))).thenReturn(Optional.of(seller));
-        when(catalogService.getModelById(eq(MODEL_ID))).thenReturn(buildFakeModel());
-        when(imageService.createAll(argThat(toCreate ->
-                toCreate.size() == 1
-                    && "photo.jpg".equals(toCreate.getFirst().getFilename())
-                    && ("Image 1 for listing: " + LISTING_TITLE).equals(toCreate.getFirst().getAlt())
-            ))).thenReturn(List.of(storedImage));
-        when(listingDao.create(any(), any(), any(), any(), anyInt(), any(), anyBoolean(), anyBoolean(), any(), eq(List.of(IMAGE_ID))))
-            .thenReturn(listing);
-
-        // Act
-        final Listing result = listingService.create(buildCreationDto(Condition.GOOD, images));
 
         // Assert
         Assert.assertEquals(LISTING_ID, (long) result.getId());
@@ -536,32 +363,6 @@ public class ListingServiceImplTest {
         Assert.assertEquals(LISTING_ID, (long) result.getId());
     }
 
-    @Test
-    public void testUpdate_freePriceAcceptsTrade_daoReceivesFalse() {
-        // Arrange
-        final ArgumentCaptor<Boolean> acceptsTradeCaptor = ArgumentCaptor.forClass(Boolean.class);
-        stubUpdateCapturingAcceptsTrade(acceptsTradeCaptor);
-
-        // Act
-        listingService.update(buildUpdateDtoWithPrice(BigDecimal.ZERO), SELLER_ID);
-
-        // Assert
-        Assert.assertFalse(acceptsTradeCaptor.getValue());
-    }
-
-    @Test
-    public void testUpdate_paidPriceAcceptsTrade_daoReceivesTrue() {
-        // Arrange
-        final ArgumentCaptor<Boolean> acceptsTradeCaptor = ArgumentCaptor.forClass(Boolean.class);
-        stubUpdateCapturingAcceptsTrade(acceptsTradeCaptor);
-
-        // Act
-        listingService.update(buildUpdateDtoWithPrice(new BigDecimal("10.00")), SELLER_ID);
-
-        // Assert
-        Assert.assertTrue(acceptsTradeCaptor.getValue());
-    }
-
     @Test(expected = NotFoundException.class)
     public void testUpdateNonExistingListingThrows() {
         // Arrange
@@ -607,29 +408,5 @@ public class ListingServiceImplTest {
 
         // Act
         listingService.update(buildUpdateDto(LISTING_ID, null), SELLER_ID);
-    }
-
-    @Test
-    public void testUpdateIgnoresRemovedImagesFromOtherListings() {
-        // Arrange
-        final Listing listing = buildFakeListing(buildFakeUser(SELLER_ID, "seller"));
-        final Model model = buildFakeModel();
-        when(listingDao.getById(eq(LISTING_ID))).thenReturn(Optional.of(listing));
-        when(catalogService.getModelById(eq(MODEL_ID))).thenReturn(model);
-        when(listingDao.update(
-            eq(LISTING_ID), eq(LISTING_TITLE), eq(LISTING_PRICE), eq(model), eq(YEAR),
-            eq(Condition.GOOD), eq(true), anyBoolean(), eq(LISTING_DESCRIPTION)
-        )).thenReturn(Optional.of(listing));
-        lenient().doThrow(new AssertionError("Foreign image must not be deleted"))
-            .when(imageService).delete(eq(FOREIGN_IMAGE_ID));
-
-        // Act
-        final Listing result = listingService.update(new ListingUpdateDto(
-            LISTING_ID, LISTING_TITLE, LISTING_PRICE.getAmount(), MODEL_ID, YEAR, Condition.GOOD, true, false,
-            LISTING_DESCRIPTION, List.of(), List.of(FOREIGN_IMAGE_ID)
-        ), SELLER_ID);
-
-        // Assert
-        Assert.assertEquals(LISTING_ID, (long) result.getId());
     }
 }

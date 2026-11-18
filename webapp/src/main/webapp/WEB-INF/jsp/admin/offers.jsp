@@ -161,7 +161,7 @@
                     </c:forEach>
 
                     <%-- Pagination --%>
-                    <paw:pagination page="${offersPage}" baseUrl="${offersBaseUrl}"/>
+                    <paw:pagination page="${offersPage}" baseUrl="/admin/offers"/>
                 </div>
             </c:otherwise>
         </c:choose>

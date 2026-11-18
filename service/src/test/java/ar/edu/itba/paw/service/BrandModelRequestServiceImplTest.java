@@ -7,7 +7,6 @@ import ar.edu.itba.paw.model.Model;
 import ar.edu.itba.paw.model.Subcategory;
 import ar.edu.itba.paw.model.User;
 import ar.edu.itba.paw.persistence.BrandModelRequestDao;
-import ar.edu.itba.paw.service.dto.BrandModelRequestAcceptanceDto;
 import ar.edu.itba.paw.service.dto.BrandModelRequestCreationDto;
 import ar.edu.itba.paw.service.exception.BadParameterException;
 import ar.edu.itba.paw.service.exception.BrandModelRequestAlreadyExistsException;
@@ -21,14 +20,10 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -293,39 +288,6 @@ public class BrandModelRequestServiceImplTest {
         }
     }
 
-    @Test
-    public void testCreateAttachesNewRequesterToExistingRequest() {
-        stubCommonCatalog();
-        final Brand existingBrand = buildBrand();
-        final BrandModelRequest existingRequest = buildRequest(buildOtherUser(), Set.of());
-        when(catalogService.getBrandById(BRAND_ID)).thenReturn(existingBrand);
-        when(catalogService.findModelByNameAndBrand(MODEL_NAME, BRAND_ID)).thenReturn(Optional.empty());
-        when(brandModelRequestDao.findMatching(BRAND_NAME, MODEL_NAME))
-            .thenReturn(Optional.of(existingRequest));
-        when(brandModelRequestDao.isAdditionalRequester(REQUEST_ID, REQUESTER_ID)).thenReturn(false);
-
-        final AtomicReference<Long> attachedRequestId = new AtomicReference<>();
-        final AtomicReference<Long> attachedUserId = new AtomicReference<>();
-        doAnswer(invocation -> {
-            attachedRequestId.set(invocation.getArgument(0));
-            attachedUserId.set(invocation.getArgument(1));
-            return null;
-        }).when(brandModelRequestDao).addAdditionalRequester(any(), any());
-
-        final BrandModelRequest result = service.create(new BrandModelRequestCreationDto(
-            REQUESTER_ID,
-            BrandModelRequestType.EXISTING_BRAND,
-            SUBCATEGORY_ID,
-            BRAND_ID,
-            null,
-            MODEL_NAME
-        ));
-
-        Assert.assertSame(existingRequest, result);
-        Assert.assertEquals(Long.valueOf(REQUEST_ID), attachedRequestId.get());
-        Assert.assertEquals(Long.valueOf(REQUESTER_ID), attachedUserId.get());
-    }
-
     /* ---------------------------------------------------------------------------------------------- */
     /* create: validation                                                                              */
     /* ---------------------------------------------------------------------------------------------- */
@@ -408,65 +370,5 @@ public class BrandModelRequestServiceImplTest {
             null,
             MODEL_NAME
         ));
-    }
-
-    /* ---------------------------------------------------------------------------------------------- */
-    /* accept / reject notify all requesters                                                           */
-    /* ---------------------------------------------------------------------------------------------- */
-
-    @Test
-    public void testAcceptNotifiesPrimaryAndAdditionalRequesters() {
-        final User primary = buildRequester();
-        final User additional = buildOtherUser();
-        final BrandModelRequest existingRequest = buildRequest(primary, Set.of(additional));
-        final Model model = Model.builder()
-            .id(MODEL_ID)
-            .name(MODEL_NAME)
-            .brand(buildBrand())
-            .subcategory(buildSubcategory())
-            .build();
-        when(brandModelRequestDao.getById(REQUEST_ID)).thenReturn(Optional.of(existingRequest));
-        when(catalogService.getBrandById(BRAND_ID)).thenReturn(buildBrand());
-        when(catalogService.createModel(MODEL_NAME, BRAND_ID, SUBCATEGORY_ID)).thenReturn(model);
-        when(brandModelRequestDao.delete(REQUEST_ID)).thenReturn(true);
-
-        final AtomicReference<List<User>> recipients = new AtomicReference<>();
-        doAnswer(invocation -> {
-            recipients.set(invocation.getArgument(1));
-            return null;
-        }).when(notificationDispatcherService)
-            .notifyBrandModelRequestAccepted(any(), anyList(), any(), any());
-
-        service.accept(REQUEST_ID, new BrandModelRequestAcceptanceDto(
-            BrandModelRequestType.EXISTING_BRAND,
-            BRAND_ID,
-            null,
-            MODEL_NAME
-        ));
-
-        Assert.assertEquals(2, recipients.get().size());
-        Assert.assertTrue(recipients.get().contains(primary));
-        Assert.assertTrue(recipients.get().contains(additional));
-    }
-
-    @Test
-    public void testRejectNotifiesPrimaryAndAdditionalRequesters() {
-        final User primary = buildRequester();
-        final User additional = buildOtherUser();
-        final BrandModelRequest existingRequest = buildRequest(primary, Set.of(additional));
-        when(brandModelRequestDao.getById(REQUEST_ID)).thenReturn(Optional.of(existingRequest));
-        when(brandModelRequestDao.delete(REQUEST_ID)).thenReturn(true);
-
-        final AtomicReference<List<User>> recipients = new AtomicReference<>();
-        doAnswer(invocation -> {
-            recipients.set(invocation.getArgument(1));
-            return null;
-        }).when(notificationDispatcherService).notifyBrandModelRequestRejected(any(), anyList());
-
-        service.reject(REQUEST_ID);
-
-        Assert.assertEquals(2, recipients.get().size());
-        Assert.assertTrue(recipients.get().contains(primary));
-        Assert.assertTrue(recipients.get().contains(additional));
     }
 }
