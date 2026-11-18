@@ -16,8 +16,7 @@
             <p class="text-black/60 mt-2"><c:out value="${subtitle}"/></p>
         </div>
         <c:if test="${not empty actionHref and not empty actionText}">
-            <c:url value="${actionHref}" var="href" />
-            <paw:linkButton href="${href}" text="${actionText}" classname="ml-auto" />
+            <paw:linkButton href="${actionHref}" text="${actionText}" classname="ml-auto" />
         </c:if>
     </div>
 
