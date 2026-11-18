@@ -158,23 +158,24 @@ public class ModelJpaDao implements ModelDao {
 
     @Override
     public boolean existsByNameAndBrandId(String name, Long brandId) {
-        return em.createQuery(
-                "SELECT COUNT(m) FROM Model m WHERE LOWER(m.name) = LOWER(:name) AND m.brand.id = :brandId",
-                Long.class)
+        return Boolean.TRUE.equals(em.createNativeQuery(
+                        "SELECT EXISTS (SELECT 1 FROM models m"
+                        + " WHERE LOWER(m.model_name) = LOWER(:name) AND m.brand_id = :brandId)")
                 .setParameter("name", name)
                 .setParameter("brandId", brandId)
-                .getSingleResult() > 0;
+                .getSingleResult());
     }
 
     @Override
     public boolean existsByNameAndBrandIdAndIdNot(String name, Long brandId, Long id) {
-        return em.createQuery(
-                "SELECT COUNT(m) FROM Model m WHERE LOWER(m.name) = LOWER(:name) AND m.brand.id = :brandId AND m.id <> :id",
-                Long.class)
+        return Boolean.TRUE.equals(em.createNativeQuery(
+                        "SELECT EXISTS (SELECT 1 FROM models m"
+                        + " WHERE LOWER(m.model_name) = LOWER(:name) AND m.brand_id = :brandId"
+                        + " AND m.model_id <> :id)")
                 .setParameter("name", name)
                 .setParameter("brandId", brandId)
                 .setParameter("id", id)
-                .getSingleResult() > 0;
+                .getSingleResult());
     }
 
     @Override
@@ -210,15 +211,15 @@ public class ModelJpaDao implements ModelDao {
         return true;
     }
 
+    // Native EXISTS: JPQL has no select-level EXISTS, so the alternatives are a full COUNT or a
+    // setMaxResults(1) query, which may trigger hidden in-memory pagination via implicit joins if
+    // entities change. Native EXISTS short-circuits on the first match.
     @Override
     public boolean hasListings(Long modelId) {
-        return !em.createQuery(
-                "SELECT l.id FROM Listing l WHERE l.model.id = :modelId",
-                Long.class)
+        return Boolean.TRUE.equals(em.createNativeQuery(
+                        "SELECT EXISTS (SELECT 1 FROM listings l WHERE l.model_id = :modelId)")
                 .setParameter("modelId", modelId)
-                .setMaxResults(1)
-                .getResultList()
-                .isEmpty();
+                .getSingleResult());
     }
 
     @Override
