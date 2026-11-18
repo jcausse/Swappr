@@ -2,6 +2,7 @@
 <%@ attribute name="page" required="true" type="ar.edu.itba.paw.model.Page" %>
 <%@ attribute name="baseUrl" required="true" %>
 <%@ attribute name="pageParam" required="false" %>
+<%@ attribute name="classname" required="false" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="spring" uri="http://www.springframework.org/tags" %>
 <%@ taglib prefix="paw" tagdir="/WEB-INF/tags" %>
@@ -11,6 +12,7 @@
   Preserves every current query param except "page", so active filters/sorting survive navigation.
 --%>
 <c:set var="pageParamName" value="${not empty pageParam ? pageParam : 'page'}"/>
+<c:set var="paginationClass" value="${not empty classname ? classname : 'mt-8'}"/>
 
 <spring:message code="pagination.first" var="paginationFirstLabel"/>
 <spring:message code="pagination.previous" var="paginationPreviousLabel"/>
@@ -59,7 +61,7 @@
         <c:param name="${pageParamName}" value="${page.totalPages}"/>
     </c:url>
 
-    <div class="flex items-center justify-center gap-1 mt-8">
+    <div class="flex items-center justify-center gap-1 ${paginationClass}">
         <paw:linkButton href="${firstUrl}" variant="outline" icon="chevrons-left" disabled="${not page.hasPrevious}" ariaLabel="${paginationFirstLabel}" />
         <paw:linkButton href="${prevUrl}" variant="outline" icon="chevron-left" disabled="${not page.hasPrevious}" ariaLabel="${paginationPreviousLabel}" />
 

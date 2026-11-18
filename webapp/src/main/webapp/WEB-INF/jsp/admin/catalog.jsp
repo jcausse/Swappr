@@ -219,9 +219,7 @@
                 </table>
             </div>
 
-            <div class="-mt-8 mb-4">
-                <paw:pagination page="${brandsPage}" baseUrl="/admin/catalog"/>
-            </div>
+            <paw:pagination page="${brandsPage}" baseUrl="/admin/catalog" classname="mb-4"/>
 
             <paw:divider />
 
@@ -481,9 +479,7 @@
                 </table>
             </div>
 
-            <div class="-mt-8 mb-4">
-                <paw:pagination page="${modelsPage}" baseUrl="/admin/catalog" pageParam="modelPage"/>
-            </div>
+            <paw:pagination page="${modelsPage}" baseUrl="/admin/catalog" pageParam="modelPage" classname="mb-4"/>
 
             <paw:divider />
 
@@ -689,9 +685,7 @@
                 </table>
             </div>
 
-            <div class="-mt-8 mb-4">
-                <paw:pagination page="${requestsPage}" baseUrl="/admin/catalog" pageParam="requestPage"/>
-            </div>
+            <paw:pagination page="${requestsPage}" baseUrl="/admin/catalog" pageParam="requestPage" classname="mb-4"/>
         </paw:card>
 
         <c:forEach var="request" items="${requests}">
