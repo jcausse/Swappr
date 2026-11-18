@@ -19,6 +19,7 @@ import ar.edu.itba.paw.service.exception.UserNotFoundException;
 import ar.edu.itba.paw.webapp.form.RatingFilterForm;
 import ar.edu.itba.paw.webapp.form.StringSelectOption;
 import ar.edu.itba.paw.webapp.form.SelectOption;
+import ar.edu.itba.paw.webapp.form.SelectOptionFactory;
 import ar.edu.itba.paw.webapp.form.UserEditForm;
 import ar.edu.itba.paw.webapp.form.UserForm;
 import javax.validation.Valid;
@@ -151,12 +152,7 @@ public class UserController {
     }
 
     private List<SelectOption> buildProvinceOptions() {
-        return provinceService.getAll().stream()
-                .map(province -> new SelectOption(
-                        province.getId(),
-                        "province." + province.getName()
-                ))
-                .toList();
+        return SelectOptionFactory.provinces(provinceService.getAll());
     }
 
     @PostMapping("/profile/edit")

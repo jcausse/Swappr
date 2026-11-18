@@ -143,12 +143,8 @@
         document.addEventListener('DOMContentLoaded', function() {
             const statusSelect = document.getElementById('status');
             const sortSelect = document.getElementById('sort');
-            const isAutoSubmitInput = document.getElementById('isAutoSubmit');
 
             function submitForm() {
-                if (isAutoSubmitInput) {
-                    isAutoSubmitInput.value = 'true';
-                }
                 document.querySelector('form#filterForm').submit();
             }
 

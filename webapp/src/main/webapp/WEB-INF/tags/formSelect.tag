@@ -2,7 +2,6 @@
 <%@ attribute name="path" required="true" %>
 <%@ attribute name="id" required="false" %>
 <%@ attribute name="items" required="true" type="java.lang.Object" %>
-<%@ attribute name="plainStrings" required="false" type="java.lang.Boolean" %>
 <%@ attribute name="translateLabels" required="false" type="java.lang.Boolean" %>
 <%@ attribute name="itemLabel" required="false" type="java.lang.String" %>
 <%@ attribute name="itemValue" required="false" type="java.lang.String" %>
@@ -63,22 +62,11 @@
             <c:choose>
                 <c:when test="${isTranslateLabels}">
                     <c:forEach var="item" items="${items}">
-                        <c:choose>
-                            <c:when test="${not empty plainStrings}">
-                                <c:set var="optionValue" value="${item}"/>
-                                <c:set var="optionLabelKey" value="${item}"/>
-                            </c:when>
-                            <c:otherwise>
-                                <c:set var="optionValue" value="${item[resolvedItemValue]}"/>
-                                <c:set var="optionLabelKey" value="${item[resolvedItemLabel]}"/>
-                            </c:otherwise>
-                        </c:choose>
+                        <c:set var="optionValue" value="${item[resolvedItemValue]}"/>
+                        <c:set var="optionLabelKey" value="${item[resolvedItemLabel]}"/>
                         <spring:message code="${optionLabelKey}" var="optionLabel"/>
                         <form:option value="${optionValue}" label="${optionLabel}"/>
                     </c:forEach>
-                </c:when>
-                <c:when test="${not empty plainStrings}">
-                    <form:options items="${items}" />
                 </c:when>
                 <c:otherwise>
                     <form:options items="${items}" itemValue="${resolvedItemValue}" itemLabel="${resolvedItemLabel}" />

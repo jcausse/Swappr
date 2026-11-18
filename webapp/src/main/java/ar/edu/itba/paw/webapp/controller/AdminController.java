@@ -35,6 +35,7 @@ import ar.edu.itba.paw.webapp.form.AdminReplaceBrandForm;
 import ar.edu.itba.paw.webapp.form.AdminReplaceModelForm;
 import ar.edu.itba.paw.webapp.form.AdminUserFilterForm;
 import ar.edu.itba.paw.webapp.form.SelectOption;
+import ar.edu.itba.paw.webapp.form.SelectOptionFactory;
 import ar.edu.itba.paw.webapp.form.StringSelectOption;
 import ar.edu.itba.paw.webapp.form.AdminSuspendUserForm;
 import ar.edu.itba.paw.webapp.form.AdminTakeDownListingForm;
@@ -128,14 +129,10 @@ public class AdminController {
                 .addObject("brandReplacementOptions", catalogService.getBrandReplacementOptions(
                         brandsPage.getContent().stream().map(BrandInfo::getId).toList()))
                 .addObject("brandOptions", allBrands)
-                .addObject("editModelSubcategoryOptions", catalogService.getAllSubcategories().stream()
-                        .map(subcategory -> new SelectOption(
-                                subcategory.getId(), "subcategory." + subcategory.getName()))
-                        .toList())
+                .addObject("editModelSubcategoryOptions", SelectOptionFactory.subcategories(
+                        catalogService.getAllSubcategories()))
                 .addObject("categories", categories)
-                .addObject("categoryOptions", categories.stream()
-                        .map(category -> new SelectOption(category.getId(), "category." + category.getName()))
-                        .toList())
+                .addObject("categoryOptions", SelectOptionFactory.categories(categories))
                 .addObject("modelFilterSubcategoryOptions", subcategoryOptions(modelFilterForm.getFilterCategoryId()))
                 .addObject("createModelSubcategoryOptions", subcategoryOptions(createModelFilterForm.getCategoryId()))
                 .addObject("models", modelsPage.getContent())
@@ -198,10 +195,7 @@ public class AdminController {
         if (categoryId == null) {
             return List.of();
         }
-        return catalogService.getSubcategoriesByCategory(categoryId).stream()
-                .map(subcategory -> new SelectOption(
-                        subcategory.getId(), "subcategory." + subcategory.getName()))
-                .toList();
+        return SelectOptionFactory.subcategories(catalogService.getSubcategoriesByCategory(categoryId));
     }
 
     @PostMapping("/catalog/requests/{id}/accept")
@@ -506,9 +500,7 @@ public class AdminController {
         ModelAndView mav = new ModelAndView("admin/offers");
         var filter = filterForm.toDto(page, DEFAULT_PAGE_SIZE);
         mav.addObject("offersPage", offerService.get(filter, false));
-        mav.addObject("statusGroupOptions", Arrays.stream(OfferStatusGroup.values())
-                .map(statusGroup -> new StringSelectOption(statusGroup.name(), "offer.statusGroup." + statusGroup.getStatus()))
-                .toList());
+        mav.addObject("statusGroupOptions", SelectOptionFactory.offerStatusGroups());
         mav.addObject("offersReturnUrl", buildOffersReturnUrl(page, filterForm));
         return mav;
     }
