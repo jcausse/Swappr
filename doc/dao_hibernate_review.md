@@ -18,7 +18,7 @@ Severity groups: **1 = High**, **2 = Medium**, **3 = Low**.
 | 1.4 | [rejectPendingOffers notification N+1](#14-offerjpadaorejectpendingoffers--notification-loop-is-an-n1) | ✅ Done |
 | 2.1 | [hasListings JPQL pagination](#21-haslistings-paginates-a-jpql-query-rule-violation) | ✅ Done |
 | 2.2 | [Unfetched associations (latent risk)](#22-returnedpaginated-entities-rely-on-callers-not-touching-unfetched-associations-latent-risk) | 🚫 Won't fix |
-| 2.3 | [Bulk writes bypass persistence context](#23-bulk-jpql-writes-bypass-the-persistence-context) | 🕓 Open |
+| 2.3 | [Bulk writes bypass persistence context](#23-bulk-jpql-writes-bypass-the-persistence-context) | ✅ Done |
 | 2.4 | [JOIN FETCH nullability / native counts](#24-inner-fetch-joins-and-non-distinct-counts-depend-on-current-nullability) | ✅ Done |
 | 3.1 | [OSIV reliance](#31-osiv-reliance-across-views-and-controllers) | 🚫 Won't fix |
 | 3.2 | [File/Image blobs](#32-file--image-blobs-are-loaded-eagerly--irrelevant) | ➖ Irrelevant |
@@ -149,7 +149,9 @@ Managed entities loaded earlier in the same transaction are not refreshed by the
 
 **Status:** documented fragility, **no actual stale-data bug found** in the current call sites. Every bulk write is either terminal (nothing reads the affected entities afterwards), runs before the affected entities are loaded, or reloads them after the write. `OfferServiceImpl#autoRatePendingOffers` is the closest latent case (the loaded offers keep `null` ratings after the bulk rating updates), but nothing reads them again in that transaction.
 
-**Action plan (documentation only, do not implement now):** document the invariant that entities affected by a bulk write must be re-fetched (or explicitly `refresh`ed/`detach`ed) before being accessed later in the same transaction. Existing bulk methods that return entities should keep/receive a comment stating that the returned instances may be stale. No blanket `em.clear()` and no behavioural change.
+**Action plan (documentation only):** document the invariant that entities affected by a bulk write must be re-fetched (or explicitly `refresh`ed/`detach`ed) before being accessed later in the same transaction. Existing bulk methods that return entities should keep/receive a comment stating that the returned instances may be stale. No blanket `em.clear()` and no behavioural change.
+
+**Status:** resolved — the invariant comment was added to every bulk write method listed above (`ListingJpaDao` release/cancel/replace/`updateStatusBulk`, `OfferJpaDao` reject/rating bulk methods, `ModelJpaDao.replaceBrand`, `ImageJpaDao.deleteAll`, `OneTimePasswordJpaDao.deleteOlderThan`, `UserJpaDao.incrementRatingCounters`). No behavioural change.
 
 ### 2.4 Inner fetch joins and non-`DISTINCT` counts depend on current nullability
 
