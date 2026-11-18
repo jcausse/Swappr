@@ -21,26 +21,28 @@
     <c:forEach var="item" items="${items}">
         <c:set var="optionValue" value="${item[resolvedItemValue]}"/>
         <c:set var="optionLabelKey" value="${resolvedLabelPrefix}${item[resolvedItemLabel]}"/>
-        <form:radiobutton path="${path}" id="${path}_${optionValue}" value="${optionValue}" cssClass="sr-only peer" />
-        <c:choose>
-            <c:when test="${isTranslateLabels}">
-                <spring:message code="${optionLabelKey}" var="optionLabel"/>
-            </c:when>
-            <c:otherwise>
-                <c:set var="optionLabel" value="${item[resolvedItemLabel]}"/>
-            </c:otherwise>
-        </c:choose>
-        <paw:fakeButton htmlFor="${path}_${optionValue}" variant="ghost" classname="grow" on="${(empty optionValue and empty selectedOption) or optionValue == selectedOption ? 'true' : 'false'}">
-            <c:out value="${optionLabel}" />
-            <c:if test="${not empty badgeCounts}">
-                <c:set var="countValue" value="${badgeCounts.get(optionValue)}" />
-                <c:if test="${countValue != null and countValue > 0}">
-                    <div class="rounded-full bg-white">
-                        <paw:badge text="${countValue}" classname="text-lime-600 min-w-5! p-0.25!" size="sm" />
-                    </div>
+        <div class="grow">
+            <form:radiobutton path="${path}" id="${path}_${optionValue}" value="${optionValue}" cssClass="sr-only peer" />
+            <c:choose>
+                <c:when test="${isTranslateLabels}">
+                    <spring:message code="${optionLabelKey}" var="optionLabel"/>
+                </c:when>
+                <c:otherwise>
+                    <c:set var="optionLabel" value="${item[resolvedItemLabel]}"/>
+                </c:otherwise>
+            </c:choose>
+            <paw:fakeButton htmlFor="${path}_${optionValue}" variant="ghost" on="${(empty optionValue and empty selectedOption) or optionValue == selectedOption ? 'true' : 'false'}">
+                <c:out value="${optionLabel}" />
+                <c:if test="${not empty badgeCounts}">
+                    <c:set var="countValue" value="${badgeCounts.get(optionValue)}" />
+                    <c:if test="${countValue != null and countValue > 0}">
+                        <div class="rounded-full bg-white">
+                            <paw:badge text="${countValue}" classname="text-lime-600 min-w-5! p-0.25!" size="sm" />
+                        </div>
+                    </c:if>
                 </c:if>
-            </c:if>
-        </paw:fakeButton>
+            </paw:fakeButton>
+        </div>
     </c:forEach>
 </div>
 
