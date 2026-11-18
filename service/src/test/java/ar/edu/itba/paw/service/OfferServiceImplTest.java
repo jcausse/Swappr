@@ -586,6 +586,51 @@ public class OfferServiceImplTest {
     }
 
     /* ---------------------------------------------------------------------------------------------- */
+    /* getForDocumentUpload                                                                            */
+    /* ---------------------------------------------------------------------------------------------- */
+
+    @Test
+    public void testGetForDocumentUploadReturnsPendingPaymentOffer() {
+        // Arrange
+        givenOffer(buildFakeOffer(OfferStatus.PENDING_PAYMENT));
+
+        // Act
+        final Offer result = offerService.getForDocumentUpload(OFFER_ID);
+
+        // Assert
+        Assert.assertEquals(OFFER_ID, (long) result.getId());
+    }
+
+    @Test(expected = BadParameterException.class)
+    public void testGetForDocumentUploadWhenNotPendingPaymentThrows() {
+        // Arrange
+        givenOffer(buildFakeOffer(OfferStatus.PENDING));
+
+        // Act
+        offerService.getForDocumentUpload(OFFER_ID);
+    }
+
+    @Test(expected = BadParameterException.class)
+    public void testGetForDocumentUploadForFreeListingThrows() {
+        // Arrange
+        final Offer offer = buildFakeOffer(OfferStatus.PENDING_PAYMENT);
+        offer.setListing(buildFreeListing());
+        givenOffer(offer);
+
+        // Act
+        offerService.getForDocumentUpload(OFFER_ID);
+    }
+
+    @Test(expected = NotFoundException.class)
+    public void testGetForDocumentUploadForNonExistingOfferThrows() {
+        // Arrange
+        when(offerDao.getById(eq(NON_EXISTING_ID))).thenReturn(Optional.empty());
+
+        // Act
+        offerService.getForDocumentUpload(NON_EXISTING_ID);
+    }
+
+    /* ---------------------------------------------------------------------------------------------- */
     /* confirmPayment                                                                                  */
     /* ---------------------------------------------------------------------------------------------- */
 
@@ -630,6 +675,60 @@ public class OfferServiceImplTest {
 
         // Act
         offerService.getProofOfPaymentFile(NON_EXISTING_ID, SELLER_ID);
+    }
+
+    /* ---------------------------------------------------------------------------------------------- */
+    /* getRateableBy                                                                                   */
+    /* ---------------------------------------------------------------------------------------------- */
+
+    @Test
+    public void testGetRateableByReturnsAcceptedOffer() {
+        // Arrange
+        givenOffer(buildFakeOffer(OfferStatus.ACCEPTED));
+
+        // Act
+        final Offer result = offerService.getRateableBy(OFFER_ID, buildFakeUser(BUYER_ID));
+
+        // Assert
+        Assert.assertEquals(OFFER_ID, (long) result.getId());
+    }
+
+    @Test(expected = BadParameterException.class)
+    public void testGetRateableByNonAcceptedOfferThrows() {
+        // Arrange
+        givenOffer(buildFakeOffer(OfferStatus.PENDING_PAYMENT));
+
+        // Act
+        offerService.getRateableBy(OFFER_ID, buildFakeUser(BUYER_ID));
+    }
+
+    @Test(expected = BadParameterException.class)
+    public void testGetRateableByAlreadyRatedOfferThrows() {
+        // Arrange
+        final Offer offer = buildFakeOffer(OfferStatus.ACCEPTED);
+        offer.setSellerRating(OfferRating.POSITIVE);
+        givenOffer(offer);
+
+        // Act
+        offerService.getRateableBy(OFFER_ID, buildFakeUser(BUYER_ID));
+    }
+
+    @Test(expected = ForbiddenException.class)
+    public void testGetRateableByOutsiderThrows() {
+        // Arrange
+        givenOffer(buildFakeOffer(OfferStatus.ACCEPTED));
+
+        // Act
+        offerService.getRateableBy(OFFER_ID, buildFakeUser(OUTSIDER_ID));
+    }
+
+    @Test(expected = NotFoundException.class)
+    public void testGetRateableByNonExistingOfferThrows() {
+        // Arrange
+        when(offerDao.getById(eq(NON_EXISTING_ID))).thenReturn(Optional.empty());
+
+        // Act
+        offerService.getRateableBy(NON_EXISTING_ID, buildFakeUser(BUYER_ID));
     }
 
     /* ---------------------------------------------------------------------------------------------- */
