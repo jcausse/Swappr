@@ -1,8 +1,7 @@
 # Swappr — `dev` code review, summary 3 (2026-11-17)
 
-Condensed summary of the third review (`doc/review_3.md`, items 1–8, checked at `42540bb7`), plus
-the DAO/Hibernate preflight (`doc/dao_hibernate_review.md`) and the test audit
-(`doc/test_audit_review.md`). **Every actionable item was fixed and merged**; the remaining audit
+Condensed summary of the third review (items 1–8, checked at `42540bb7`), the DAO/Hibernate
+preflight and the test audit. **Every actionable item was fixed and merged**; the remaining audit
 items are explicitly won't-fix, latent-risk notes, or accepted. The detailed per-item notes are no
 longer maintained; this file keeps only what future reviews need. Fixes landed through `2c259549`.
 
@@ -139,8 +138,9 @@ Scope: 41 test files / 620 `@Test` methods. No critical findings.
 ## Notes for future reviews
 
 - Review scope was `dev` at `42540bb7`; review-3 fixes and both audits landed through `2c259549`.
-- The current tracker is `doc/review_3.md`; `4.1` is marked resolved. Earlier history lives in
-  `doc/review_summary_1_*.md` and `doc/review_summary_2_*.md`.
+- This file is the full history for review 3 (the original tracker and both audits were folded in
+  and removed). Earlier history lives in `doc/review_summary_1_*.md` and
+  `doc/review_summary_2_*.md`.
 - Migrations `V36`–`V38` are the review-3 additions (unique rating per role, creator NOT NULL,
   restored rating enum checks), each mirrored for HSQLDB.
 - Proof metadata uses `FileJpaDao#getMetadataByIds` / `FileMetadata`; keep blobs out of listing
