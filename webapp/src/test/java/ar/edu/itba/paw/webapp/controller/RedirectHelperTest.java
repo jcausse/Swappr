@@ -35,7 +35,7 @@ public class RedirectHelperTest {
     /* ---------------------------------------------------------------------------------------------- */
 
     @Test
-    public void testResolveRefererValidSameOriginCustomPortPreservesQuery() {
+    public void testResolveRefererValidSameHostCustomPortPreservesQuery() {
         final var request = buildDevRequest();
         request.addHeader("Referer", "http://localhost:8080/listing?categoryId=2&page=3");
 
@@ -78,24 +78,43 @@ public class RedirectHelperTest {
         final var request = new MockHttpServletRequest();
         request.setScheme("http");
         request.setServerName(PAW_HOST);
-        request.setServerPort(80);
+        request.setServerPort(8080);
         request.setContextPath(PAW_CONTEXT);
-        request.addHeader("X-Forwarded-Proto", "https, http");
         request.addHeader("Referer", "https://pawserver.it.itba.edu.ar/paw-2026b-08/account/my-offers");
 
         Assert.assertEquals("/account/my-offers", RedirectHelper.resolveReferer(request, FALLBACK));
     }
 
     @Test
-    public void testResolveRefererBehindReverseProxyWithForwardedPort() {
+    public void testResolveRefererBehindReverseProxyWithForwardedHost() {
         final var request = new MockHttpServletRequest();
         request.setScheme("http");
-        request.setServerName("example.org");
+        request.setServerName("localhost");
+        request.setServerPort(8080);
+        request.setContextPath(PAW_CONTEXT);
+        request.addHeader("X-Forwarded-Host", "pawserver.it.itba.edu.ar:443, internal-proxy:8080");
+        request.addHeader("Referer", "https://pawserver.it.itba.edu.ar/paw-2026b-08/listing?page=2");
+
+        Assert.assertEquals("/listing?page=2", RedirectHelper.resolveReferer(request, FALLBACK));
+    }
+
+    @Test
+    public void testResolveRefererBehindReverseProxyWithIpv6ForwardedHost() {
+        final var request = new MockHttpServletRequest();
+        request.setScheme("http");
+        request.setServerName("internal-backend");
         request.setServerPort(8080);
         request.setContextPath("");
-        request.addHeader("X-Forwarded-Proto", "https");
-        request.addHeader("X-Forwarded-Port", "8443");
-        request.addHeader("Referer", "https://example.org:8443/listing");
+        request.addHeader("X-Forwarded-Host", "[::1]:443");
+        request.addHeader("Referer", "https://[::1]/listing?page=1");
+
+        Assert.assertEquals("/listing?page=1", RedirectHelper.resolveReferer(request, FALLBACK));
+    }
+
+    @Test
+    public void testResolveRefererAllowsSchemeAndPortDifferenceOnSameHost() {
+        final var request = buildDevRequest();
+        request.addHeader("Referer", "https://localhost:3000/listing");
 
         Assert.assertEquals("/listing", RedirectHelper.resolveReferer(request, FALLBACK));
     }
@@ -136,6 +155,12 @@ public class RedirectHelperTest {
         request.addHeader("Referer", "https://evil.com/phishing");
 
         Assert.assertEquals(FALLBACK, RedirectHelper.resolveReferer(request, FALLBACK));
+
+        final var proxiedRequest = buildDevRequest();
+        proxiedRequest.setContextPath(PAW_CONTEXT);
+        proxiedRequest.addHeader("X-Forwarded-Host", PAW_HOST);
+        proxiedRequest.addHeader("Referer", "https://evil.com/paw-2026b-08/listing");
+        Assert.assertEquals(FALLBACK, RedirectHelper.resolveReferer(proxiedRequest, FALLBACK));
     }
 
     @Test
@@ -147,28 +172,6 @@ public class RedirectHelperTest {
         final var prefixHostReq = buildDevRequest();
         prefixHostReq.addHeader("Referer", "http://evillocalhost:8080/listing");
         Assert.assertEquals(FALLBACK, RedirectHelper.resolveReferer(prefixHostReq, FALLBACK));
-    }
-
-    @Test
-    public void testResolveRefererRejectsDifferentPortOnSameHost() {
-        final var otherCustomPort = buildDevRequest();
-        otherCustomPort.addHeader("Referer", "http://localhost:3000/listing");
-        Assert.assertEquals(FALLBACK, RedirectHelper.resolveReferer(otherCustomPort, FALLBACK));
-
-        final var defaultPortAgainst8080 = buildDevRequest();
-        defaultPortAgainst8080.addHeader("Referer", "http://localhost/listing");
-        Assert.assertEquals(FALLBACK, RedirectHelper.resolveReferer(defaultPortAgainst8080, FALLBACK));
-    }
-
-    @Test
-    public void testResolveRefererRejectsSchemeMismatch() {
-        final var httpsOnHttpDev = buildDevRequest();
-        httpsOnHttpDev.addHeader("Referer", "https://localhost:8080/listing");
-        Assert.assertEquals(FALLBACK, RedirectHelper.resolveReferer(httpsOnHttpDev, FALLBACK));
-
-        final var httpOnHttpsProd = buildProdRequest();
-        httpOnHttpsProd.addHeader("Referer", "http://pawserver.it.itba.edu.ar/paw-2026b-08/listing");
-        Assert.assertEquals(FALLBACK, RedirectHelper.resolveReferer(httpOnHttpsProd, FALLBACK));
     }
 
     @Test
