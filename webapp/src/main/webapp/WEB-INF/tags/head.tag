@@ -41,10 +41,5 @@
     <link rel="stylesheet" href="<c:url value="/css/tailwind.css"/>"/>
     <link rel="stylesheet" href="https://unpkg.com/lucide-static@${lucideVersion}/font/lucide.css" />
 
-    <%-- Tailwind CDN to prevent needing a full recompile on JSP classname changes --%>
-    <%-- FOR DEV ONLY -- REMOVE OR COMMENT FOR DEPLOY TO PROD! --%>
-    <%-- /* IMPORTANT: REVIEW BEFORE DEPLOY. DO NOT CHANGE THIS COMMENT AS IT IS SEARCHED BY GREP */ --%>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-
     <jsp:doBody/>
 </head>
