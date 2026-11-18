@@ -19,6 +19,10 @@ public interface OfferService {
 
     Optional<Offer> getById(Long id, boolean populateTransientFlags);
 
+    Offer getForDocumentUpload(Long offerId);
+
+    Offer getRateableBy(Long offerId, User currentUser);
+
     Optional<Offer> getByListingAndBuyer(Listing listing, User buyer);
 
     Page<Offer> get(OfferFilterDto filter, boolean populateTransientFlags);
