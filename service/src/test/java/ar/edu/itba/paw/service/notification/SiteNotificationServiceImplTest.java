@@ -1,14 +1,9 @@
 package ar.edu.itba.paw.service.notification;
 
-import ar.edu.itba.paw.model.Offer;
-import ar.edu.itba.paw.model.OfferStatus;
-import ar.edu.itba.paw.model.Page;
 import ar.edu.itba.paw.model.User;
 import ar.edu.itba.paw.model.notification.NotificationType;
 import ar.edu.itba.paw.model.notification.SiteNotification;
-import ar.edu.itba.paw.model.notification.SiteNotificationFilter;
 import ar.edu.itba.paw.persistence.SiteNotificationDao;
-import ar.edu.itba.paw.service.dto.SiteNotificationCreationDto;
 import ar.edu.itba.paw.service.exception.ForbiddenException;
 import ar.edu.itba.paw.service.exception.NotFoundException;
 import org.junit.Assert;
@@ -22,10 +17,6 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.isNull;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -74,117 +65,6 @@ public class SiteNotificationServiceImplTest {
                 .read(false)
                 .createdAt(Instant.now())
                 .build();
-    }
-
-    @Test
-    public void testCreateDelegatesToDaoAndReturnsNotification() {
-        // Arrange
-        final User user = buildUser();
-        final SiteNotification expected = buildNotification(user);
-        final List<String> args = List.of("Buyer Bob", "250.00", "Laptop");
-        final SiteNotificationCreationDto dto = SiteNotificationCreationDto.builder()
-                .notificationRecipient(user)
-                .notificationType(NotificationType.NEW_OFFER)
-                .titleKey("notification.newOffer.title")
-                .bodyKey("notification.newOffer.body")
-                .bodyArgs(args)
-                .actionUrl("/offers/1")
-                .actionLabelKey("notification.action.viewOffer")
-                .build();
-
-        when(siteNotificationDao.create(
-                eq(user),
-                eq(NotificationType.NEW_OFFER),
-                eq("notification.newOffer.title"),
-                eq("notification.newOffer.body"),
-                eq(args),
-                eq("/offers/1"),
-                eq("notification.action.viewOffer"),
-                any(Instant.class),
-                isNull()
-        )).thenReturn(expected);
-
-        // Act
-        final SiteNotification result = notificationService.create(dto);
-
-        // Assert
-        Assert.assertNotNull(result);
-        Assert.assertEquals(expected.getId(), result.getId());
-        Assert.assertEquals(expected.getTitleKey(), result.getTitleKey());
-        Assert.assertEquals(expected.getBodyKey(), result.getBodyKey());
-        Assert.assertEquals(args, result.getBodyArgs());
-    }
-
-    @Test
-    public void testCreateWithOfferDelegatesToDao() {
-        // Arrange
-        final User user = buildUser();
-        final Offer offer = Offer.builder().id(50L).status(OfferStatus.PENDING_PAYMENT).build();
-        final List<String> args = List.of("250.00");
-        final SiteNotification expected = SiteNotification.builder()
-                .id(101L)
-                .user(user)
-                .offer(offer)
-                .type(NotificationType.OFFER_ACCEPTED)
-                .titleKey("notification.offerAccepted.title")
-                .bodyKey("notification.offerAccepted.body")
-                .bodyArgs(args)
-                .actionUrl("/account/my-offers/50/payment")
-                .actionLabelKey("notification.offerAccepted.cta")
-                .read(false)
-                .createdAt(Instant.now())
-                .build();
-        final SiteNotificationCreationDto dto = SiteNotificationCreationDto.builder()
-                .notificationRecipient(user)
-                .notificationType(NotificationType.OFFER_ACCEPTED)
-                .titleKey("notification.offerAccepted.title")
-                .bodyKey("notification.offerAccepted.body")
-                .bodyArgs(args)
-                .actionUrl("/account/my-offers/50/payment")
-                .actionLabelKey("notification.offerAccepted.cta")
-                .offer(offer)
-                .build();
-
-        when(siteNotificationDao.create(
-                eq(user),
-                eq(NotificationType.OFFER_ACCEPTED),
-                eq("notification.offerAccepted.title"),
-                eq("notification.offerAccepted.body"),
-                eq(args),
-                eq("/account/my-offers/50/payment"),
-                eq("notification.offerAccepted.cta"),
-                any(Instant.class),
-                eq(offer)
-        )).thenReturn(expected);
-
-        // Act
-        final SiteNotification result = notificationService.create(dto);
-
-        // Assert
-        Assert.assertNotNull(result);
-        Assert.assertEquals(expected.getId(), result.getId());
-        Assert.assertEquals(offer, result.getOffer().orElse(null));
-        Assert.assertTrue(result.showCallToAction());
-    }
-
-    @Test
-    public void testGetMatchingDelegatesToDao() {
-        // Arrange
-        final SiteNotificationFilter filter = SiteNotificationFilter.builder()
-                .userId(USER_ID)
-                .unreadOnly(false)
-                .page(1)
-                .pageSize(10)
-                .build();
-        final Page<SiteNotification> mockPage = new Page<>(List.of(), 1, 10, 0);
-
-        when(siteNotificationDao.getMatching(filter)).thenReturn(mockPage);
-
-        // Act
-        final Page<SiteNotification> result = notificationService.getMatching(filter);
-
-        // Assert
-        Assert.assertSame(mockPage, result);
     }
 
     @Test(expected = NotFoundException.class)

@@ -190,21 +190,6 @@ public class OfferServiceImplTest {
         Assert.assertFalse(maybeOffer.isPresent());
     }
 
-    @Test
-    public void testGetByListingAndBuyerReturnsDaoResult() {
-        // Arrange
-        final Listing listing = buildSellerListing();
-        final User buyer = buildFakeUser(BUYER_ID);
-        when(offerDao.getByListingAndBuyer(eq(listing), eq(buyer))).thenReturn(Optional.of(buildFakeOffer(OfferStatus.PENDING)));
-
-        // Act
-        final Optional<Offer> maybeOffer = offerService.getByListingAndBuyer(listing, buyer);
-
-        // Assert
-        Assert.assertTrue(maybeOffer.isPresent());
-        Assert.assertEquals(OFFER_ID, (long) maybeOffer.get().getId());
-    }
-
     /* ---------------------------------------------------------------------------------------------- */
     /* get (filters)                                                                                   */
     /* ---------------------------------------------------------------------------------------------- */

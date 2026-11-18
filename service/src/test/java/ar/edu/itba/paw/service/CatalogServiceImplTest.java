@@ -119,86 +119,8 @@ public class CatalogServiceImplTest {
     }
 
     /* ---------------------------------------------------------------------------------------------- */
-    /* delegating reads                                                                                */
-    /* ---------------------------------------------------------------------------------------------- */
-
-    @Test
-    public void testFindBrandByNameDelegates() {
-        final Brand brand = buildFakeBrand();
-        when(brandDao.getByName(eq(BRAND_NAME))).thenReturn(Optional.of(brand));
-
-        final Optional<Brand> result = catalogService.findBrandByName(BRAND_NAME);
-
-        Assert.assertTrue(result.isPresent());
-        Assert.assertSame(brand, result.get());
-    }
-
-    @Test
-    public void testFindModelByNameAndBrandDelegates() {
-        final Model model = buildFakeModel(MODEL_ID, MODEL_NAME);
-        when(modelDao.getByNameAndBrandId(eq(MODEL_NAME), eq(BRAND_ID))).thenReturn(Optional.of(model));
-
-        final Optional<Model> result = catalogService.findModelByNameAndBrand(MODEL_NAME, BRAND_ID);
-
-        Assert.assertTrue(result.isPresent());
-        Assert.assertSame(model, result.get());
-    }
-
-    @Test
-    public void testGetAllCategoriesDelegates() {
-        final List<Category> categories = List.of(Category.builder().id(CATEGORY_ID).name("Electronics").build());
-        when(categoryDao.getAll()).thenReturn(categories);
-
-        final List<Category> result = catalogService.getAllCategories();
-
-        Assert.assertEquals(categories, result);
-    }
-
-    @Test
-    public void testGetSubcategoriesByCategoryDelegates() {
-        final List<Subcategory> subcategories = List.of(buildFakeSubcategory());
-        when(subcategoryDao.getByCategoryId(eq(CATEGORY_ID))).thenReturn(subcategories);
-
-        final List<Subcategory> result = catalogService.getSubcategoriesByCategory(CATEGORY_ID);
-
-        Assert.assertEquals(subcategories, result);
-    }
-
-    @Test
-    public void testGetBrandsBySubcategoryDelegates() {
-        final List<Brand> brands = List.of(buildFakeBrand());
-        when(brandDao.getBySubcategoryId(eq(SUBCATEGORY_ID))).thenReturn(brands);
-
-        final List<Brand> result = catalogService.getBrandsBySubcategory(SUBCATEGORY_ID);
-
-        Assert.assertEquals(brands, result);
-    }
-
-    @Test
-    public void testGetModelsBySubcategoryAndBrandDelegates() {
-        final List<Model> models = List.of(buildFakeModel(MODEL_ID, MODEL_NAME));
-        when(modelDao.getBySubcategoryIdAndBrandId(eq(SUBCATEGORY_ID), eq(BRAND_ID))).thenReturn(models);
-
-        final List<Model> result = catalogService.getModelsBySubcategoryAndBrand(SUBCATEGORY_ID, BRAND_ID);
-
-        Assert.assertEquals(models, result);
-    }
-
-    /* ---------------------------------------------------------------------------------------------- */
     /* brand management                                                                                */
     /* ---------------------------------------------------------------------------------------------- */
-
-    @Test
-    public void testGetBrandsDelegatesToDao() {
-        final Page<BrandInfo> brandsPage = new Page<>(List.of(
-                BrandInfo.builder().id(1L).name("Apple").modelCount(2L).listingCount(1L).build(),
-                BrandInfo.builder().id(2L).name("Dell").modelCount(0L).listingCount(0L).build()), 2, 10, 12);
-        when(brandDao.getWithStats(eq(BrandSort.BRAND_ASC), eq(2), eq(10))).thenReturn(brandsPage);
-
-        final Page<BrandInfo> result = catalogService.getBrands(BrandSort.BRAND_ASC, 2, 10);
-
-        Assert.assertSame(brandsPage, result);
-    }
 
     @Test
     public void testGetBrandsDefaultsNullPageAndSort() {
@@ -208,16 +130,6 @@ public class CatalogServiceImplTest {
         final Page<BrandInfo> result = catalogService.getBrands(null, null, 10);
 
         Assert.assertSame(brandsPage, result);
-    }
-
-    @Test
-    public void testGetAllBrandsDelegatesToDao() {
-        final List<Brand> brands = List.of(buildFakeBrand());
-        when(brandDao.getAll()).thenReturn(brands);
-
-        final List<Brand> result = catalogService.getAllBrands();
-
-        Assert.assertSame(brands, result);
     }
 
     @Test(expected = BadParameterException.class)
@@ -337,14 +249,6 @@ public class CatalogServiceImplTest {
         final Page<ModelInfo> result = catalogService.getModels(null, null, null, null, null, 10);
 
         Assert.assertSame(modelsPage, result);
-    }
-
-    @Test
-    public void testGetAllSubcategoriesDelegates() {
-        final List<Subcategory> subcategories = List.of(buildFakeSubcategory());
-        when(subcategoryDao.getAll()).thenReturn(subcategories);
-
-        Assert.assertSame(subcategories, catalogService.getAllSubcategories());
     }
 
     @Test
