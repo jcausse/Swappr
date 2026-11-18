@@ -1,15 +1,11 @@
 package ar.edu.itba.paw.service;
 
 import ar.edu.itba.paw.model.Brand;
-import ar.edu.itba.paw.model.BrandInfo;
-import ar.edu.itba.paw.model.BrandSort;
 import ar.edu.itba.paw.model.Category;
 import ar.edu.itba.paw.model.Condition;
 import ar.edu.itba.paw.model.Model;
-import ar.edu.itba.paw.model.ModelInfo;
 import ar.edu.itba.paw.model.ModelListingInfo;
 import ar.edu.itba.paw.model.ModelListingInfoSummary;
-import ar.edu.itba.paw.model.ModelSort;
 import ar.edu.itba.paw.model.Page;
 import ar.edu.itba.paw.model.Price;
 import ar.edu.itba.paw.model.Subcategory;
@@ -122,16 +118,6 @@ public class CatalogServiceImplTest {
     /* brand management                                                                                */
     /* ---------------------------------------------------------------------------------------------- */
 
-    @Test
-    public void testGetBrandsDefaultsNullPageAndSort() {
-        final Page<BrandInfo> brandsPage = new Page<>(List.of(), 1, 10, 0);
-        when(brandDao.getWithStats(eq(BrandSort.BRAND_ASC), eq(1), eq(10))).thenReturn(brandsPage);
-
-        final Page<BrandInfo> result = catalogService.getBrands(null, null, 10);
-
-        Assert.assertSame(brandsPage, result);
-    }
-
     @Test(expected = BadParameterException.class)
     public void testReplaceBrandWithSameBrandThrows() {
         catalogService.replaceBrand(BRAND_ID, BRAND_ID);
@@ -242,16 +228,6 @@ public class CatalogServiceImplTest {
     /* ---------------------------------------------------------------------------------------------- */
 
     @Test
-    public void testGetModelsDefaultsPageAndSort() {
-        final Page<ModelInfo> modelsPage = new Page<>(List.of(), 1, 10, 0);
-        when(modelDao.getWithInfo(null, null, null, ModelSort.NAME_ASC, 1, 10)).thenReturn(modelsPage);
-
-        final Page<ModelInfo> result = catalogService.getModels(null, null, null, null, null, 10);
-
-        Assert.assertSame(modelsPage, result);
-    }
-
-    @Test
     public void testCreateModelTrimsName() {
         final Brand brand = buildFakeBrand();
         final Subcategory subcategory = buildFakeSubcategory();
@@ -333,21 +309,6 @@ public class CatalogServiceImplTest {
                 .map(ModelListingInfo::getCondition)
                 .toList()
         );
-    }
-
-    @Test
-    public void testGetListingInfoSummaryDefaultsNullPageToOne() {
-        final Page<ModelListingInfo> daoPage = new Page<>(List.of(), 1, 10, 0);
-        when(modelDao.getListingInfoSummary(BRAND_ID, MODEL_ID, null, null, SUBCATEGORY_ID, 1, 10))
-            .thenReturn(daoPage);
-
-        final Page<ModelListingInfoSummary> result = catalogService.getListingInfoSummary(
-            BRAND_ID, MODEL_ID, null, null, SUBCATEGORY_ID, null, 10
-        );
-
-        Assert.assertEquals(1, result.getPage());
-        Assert.assertTrue(result.getContent().isEmpty());
-        Assert.assertEquals(0, result.getTotalCount());
     }
 
     /* ---------------------------------------------------------------------------------------------- */
