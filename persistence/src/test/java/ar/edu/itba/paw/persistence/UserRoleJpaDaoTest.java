@@ -71,4 +71,18 @@ public class UserRoleJpaDaoTest {
         Assert.assertTrue(roles.contains(Role.USER));
         Assert.assertTrue(roles.contains(Role.ADMIN));
     }
+
+    @Test
+    public void testHasRoleReturnsTrueWhenRolePresent() {
+        jdbcTemplate.update("INSERT INTO users_roles (user_id, role_name) VALUES (?, ?)", PLAIN_USER_ID, "ADMIN");
+
+        Assert.assertTrue(userRoleDao.hasRole(buildUser(PLAIN_USER_ID), Role.ADMIN));
+    }
+
+    @Test
+    public void testHasRoleReturnsFalseWhenRoleAbsent() {
+        jdbcTemplate.update("INSERT INTO users_roles (user_id, role_name) VALUES (?, ?)", PLAIN_USER_ID, "USER");
+
+        Assert.assertFalse(userRoleDao.hasRole(buildUser(PLAIN_USER_ID), Role.ADMIN));
+    }
 }
