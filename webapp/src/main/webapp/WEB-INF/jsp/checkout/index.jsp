@@ -71,10 +71,7 @@
                                                 </c:forEach>
                                             </div>
 
-                                            <div id="tradeListingPagination" class="-mt-8 mb-4">
-                                                <c:url value="/checkout" var="checkoutBaseUrl"/>
-                                                <paw:pagination page="${userListingsPage}" baseUrl="${checkoutBaseUrl}"/>
-                                            </div>
+                                            <paw:pagination id="tradeListingPagination" page="${userListingsPage}" baseUrl="/checkout" classname="mb-4"/>
 
                                             <spring:message code="checkout.form.tradeAmount" var="tradeAmountLabel"/>
                                             <spring:message code="checkout.form.tradeAmount.placeholder" var="tradeAmountPlaceholder"/>
