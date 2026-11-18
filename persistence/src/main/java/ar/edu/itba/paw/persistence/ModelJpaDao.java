@@ -158,23 +158,24 @@ public class ModelJpaDao implements ModelDao {
 
     @Override
     public boolean existsByNameAndBrandId(String name, Long brandId) {
-        return em.createQuery(
-                "SELECT COUNT(m) FROM Model m WHERE LOWER(m.name) = LOWER(:name) AND m.brand.id = :brandId",
-                Long.class)
+        return Boolean.TRUE.equals(em.createNativeQuery(
+                        "SELECT EXISTS (SELECT 1 FROM models m"
+                        + " WHERE LOWER(m.model_name) = LOWER(:name) AND m.brand_id = :brandId)")
                 .setParameter("name", name)
                 .setParameter("brandId", brandId)
-                .getSingleResult() > 0;
+                .getSingleResult());
     }
 
     @Override
     public boolean existsByNameAndBrandIdAndIdNot(String name, Long brandId, Long id) {
-        return em.createQuery(
-                "SELECT COUNT(m) FROM Model m WHERE LOWER(m.name) = LOWER(:name) AND m.brand.id = :brandId AND m.id <> :id",
-                Long.class)
+        return Boolean.TRUE.equals(em.createNativeQuery(
+                        "SELECT EXISTS (SELECT 1 FROM models m"
+                        + " WHERE LOWER(m.model_name) = LOWER(:name) AND m.brand_id = :brandId"
+                        + " AND m.model_id <> :id)")
                 .setParameter("name", name)
                 .setParameter("brandId", brandId)
                 .setParameter("id", id)
-                .getSingleResult() > 0;
+                .getSingleResult());
     }
 
     @Override
