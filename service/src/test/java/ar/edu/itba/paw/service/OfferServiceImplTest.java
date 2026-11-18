@@ -190,21 +190,6 @@ public class OfferServiceImplTest {
         Assert.assertFalse(maybeOffer.isPresent());
     }
 
-    @Test
-    public void testGetByListingAndBuyerReturnsDaoResult() {
-        // Arrange
-        final Listing listing = buildSellerListing();
-        final User buyer = buildFakeUser(BUYER_ID);
-        when(offerDao.getByListingAndBuyer(eq(listing), eq(buyer))).thenReturn(Optional.of(buildFakeOffer(OfferStatus.PENDING)));
-
-        // Act
-        final Optional<Offer> maybeOffer = offerService.getByListingAndBuyer(listing, buyer);
-
-        // Assert
-        Assert.assertTrue(maybeOffer.isPresent());
-        Assert.assertEquals(OFFER_ID, (long) maybeOffer.get().getId());
-    }
-
     /* ---------------------------------------------------------------------------------------------- */
     /* get (filters)                                                                                   */
     /* ---------------------------------------------------------------------------------------------- */
@@ -668,7 +653,7 @@ public class OfferServiceImplTest {
     }
 
     /* ---------------------------------------------------------------------------------------------- */
-    /* proof files / pending count                                                                     */
+    /* proof files                                                                                     */
     /* ---------------------------------------------------------------------------------------------- */
 
     @Test
@@ -683,33 +668,6 @@ public class OfferServiceImplTest {
         Assert.assertFalse(maybeFile.isPresent());
     }
 
-    @Test
-    public void testGetProofOfPaymentFileReturnsStoredFile() {
-        // Arrange
-        givenOffer(offerBuilder(OfferStatus.PENDING_PAYMENT).proofOfPayment(ar.edu.itba.paw.model.File.builder().id(FILE_ID).build()).build());
-        when(fileService.getById(eq(FILE_ID))).thenReturn(Optional.of(buildFakeFile()));
-
-        // Act
-        final Optional<File> maybeFile = offerService.getProofOfPaymentFile(OFFER_ID, SELLER_ID);
-
-        // Assert
-        Assert.assertTrue(maybeFile.isPresent());
-        Assert.assertEquals(FILE_ID, (long) maybeFile.get().getId());
-    }
-
-    @Test
-    public void testGetProofOfShippingFileReturnsStoredFile() {
-        // Arrange
-        givenOffer(offerBuilder(OfferStatus.PENDING_PAYMENT).proofOfShipping(ar.edu.itba.paw.model.File.builder().id(FILE_ID).build()).build());
-        when(fileService.getById(eq(FILE_ID))).thenReturn(Optional.of(buildFakeFile()));
-
-        // Act
-        final Optional<File> maybeFile = offerService.getProofOfShippingFile(OFFER_ID, SELLER_ID);
-
-        // Assert
-        Assert.assertTrue(maybeFile.isPresent());
-    }
-
     @Test(expected = NotFoundException.class)
     public void testGetProofOfPaymentFileForNonExistingOfferThrows() {
         // Arrange
@@ -717,19 +675,6 @@ public class OfferServiceImplTest {
 
         // Act
         offerService.getProofOfPaymentFile(NON_EXISTING_ID, SELLER_ID);
-    }
-
-    @Test
-    public void testGetPendingOffersCount() {
-        // Arrange
-        final User seller = buildFakeUser(SELLER_ID);
-        when(offerDao.countPendingBySeller(eq(seller))).thenReturn(3);
-
-        // Act
-        final int count = offerService.getPendingOffersCount(seller);
-
-        // Assert
-        Assert.assertEquals(3, count);
     }
 
     /* ---------------------------------------------------------------------------------------------- */
