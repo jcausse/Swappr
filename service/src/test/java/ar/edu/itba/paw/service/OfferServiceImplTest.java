@@ -29,17 +29,12 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.math.BigDecimal;
-import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.isNull;
 import static org.mockito.Mockito.lenient;
@@ -55,7 +50,6 @@ public class OfferServiceImplTest {
     private static final long LISTING_ID = 10L;
     private static final long OFFERED_LISTING_ID = 20L;
     private static final long OFFER_ID = 100L;
-    private static final long OTHER_OFFER_ID = 101L;
     private static final long NON_EXISTING_ID = 9000L;
     private static final long FILE_ID = 50L;
 
@@ -77,9 +71,6 @@ public class OfferServiceImplTest {
     private static final FileDto FILE_DTO_TXT = new FileDto(DATA, "notes.txt", "text/plain");
 
     private static final int PAGE_SIZE = 10;
-
-    // Duplicated on purpose: if the business rule changes, these tests must be updated consciously
-    private static final Duration RATING_AUTO_ASSIGN_DELAY = Duration.ofDays(14);
 
     @InjectMocks
     private OfferServiceImpl offerService;
@@ -433,28 +424,6 @@ public class OfferServiceImplTest {
         Assert.assertEquals(OFFER_ID, (long) result.getId());
     }
 
-    @Test
-    public void testAcceptTradeRejectsOffersOnOfferedListing() {
-        // Arrange
-        final Offer tradeOffer = offerBuilder(OfferStatus.PENDING)
-            .offeredListing(buildFakeListing(OFFERED_LISTING_ID, buildFakeUser(BUYER_ID),
-                ListingStatus.OFFERED_IN_TRADE, false))
-            .build();
-        givenOffer(tradeOffer);
-
-        final List<Long> rejectedListingIds = new ArrayList<>();
-        when(offerDao.rejectPendingOffers(any(), isNull(), eq(false))).thenAnswer(invocation -> {
-            rejectedListingIds.add(invocation.getArgument(0));
-            return List.of();
-        });
-
-        // Act
-        offerService.accept(OFFER_ID, SELLER_ID);
-
-        // Assert
-        Assert.assertTrue(rejectedListingIds.contains(OFFERED_LISTING_ID));
-    }
-
     @Test(expected = ForbiddenException.class)
     public void testAcceptByNonSellerThrows() {
         // Arrange
@@ -743,26 +712,6 @@ public class OfferServiceImplTest {
         offerService.rate(OFFER_ID, buildFakeUser(BUYER_ID), OfferRating.POSITIVE);
     }
 
-    @Test
-    public void testRateByBuyerSetsSellerRatingAndIncrementsCounter() {
-        // Arrange
-        final Offer offer = buildFakeOffer(OfferStatus.ACCEPTED);
-        givenOffer(offer);
-        when(offerDao.setSellerRating(eq(OFFER_ID), eq(OfferRating.POSITIVE))).thenReturn(true);
-        final AtomicBoolean incremented = new AtomicBoolean(false);
-        doAnswer(invocation -> {
-            incremented.set(true);
-            return null;
-        }).when(userService).incrementSellerRatingCounter(eq(SELLER_ID), eq(OfferRating.POSITIVE));
-
-        // Act
-        final Offer result = offerService.rate(OFFER_ID, buildFakeUser(BUYER_ID), OfferRating.POSITIVE);
-
-        // Assert
-        Assert.assertEquals(Optional.of(OfferRating.POSITIVE), result.getSellerRating());
-        Assert.assertTrue(incremented.get());
-    }
-
     @Test(expected = ForbiddenException.class)
     public void testRateByOutsiderThrows() {
         // Arrange
@@ -774,64 +723,8 @@ public class OfferServiceImplTest {
     }
 
     /* ---------------------------------------------------------------------------------------------- */
-    /* autoRatePendingOffers                                                                           */
+    /* cancelByAdmin                                                                                   */
     /* ---------------------------------------------------------------------------------------------- */
-
-    @Test
-    public void testAutoRatePendingOffersGroupsIncrementsBySellerAndBuyer() {
-        // Arrange
-        final Offer firstOffer = offerBuilder(OfferStatus.ACCEPTED).id(OFFER_ID).build();
-        final Offer secondOffer = offerBuilder(OfferStatus.ACCEPTED).id(OTHER_OFFER_ID).build();
-        when(offerDao.getAcceptedUnratedBefore(any(Instant.class)))
-            .thenReturn(List.of(firstOffer, secondOffer));
-
-        final Map<Long, Long> sellerIncrements = new HashMap<>();
-        final Map<Long, Long> buyerIncrements = new HashMap<>();
-        doAnswer(invocation -> {
-            sellerIncrements.putAll(invocation.getArgument(0));
-            return null;
-        }).when(userService).incrementSellerRatingCounters(any(), eq(OfferRating.POSITIVE));
-        doAnswer(invocation -> {
-            buyerIncrements.putAll(invocation.getArgument(0));
-            return null;
-        }).when(userService).incrementBuyerRatingCounters(any(), eq(OfferRating.POSITIVE));
-
-        // Act
-        offerService.autoRatePendingOffers();
-
-        // Assert
-        Assert.assertEquals(Map.of(SELLER_ID, 2L), sellerIncrements);
-        Assert.assertEquals(Map.of(BUYER_ID, 2L), buyerIncrements);
-    }
-
-    @Test
-    public void testAutoRatePendingOffersExcludesAlreadyRatedSeller() {
-        // Arrange
-        final Offer alreadyRatedOffer = offerBuilder(OfferStatus.ACCEPTED)
-            .id(OFFER_ID)
-            .sellerRating(OfferRating.POSITIVE)
-            .build();
-        when(offerDao.getAcceptedUnratedBefore(any(Instant.class)))
-            .thenReturn(List.of(alreadyRatedOffer));
-
-        final List<Long> sellerRatingOfferIds = new ArrayList<>();
-        final Map<Long, Long> sellerIncrements = new HashMap<>();
-        doAnswer(invocation -> {
-            sellerRatingOfferIds.addAll(invocation.getArgument(0));
-            return 0;
-        }).when(offerDao).setSellerRatings(any(), eq(OfferRating.POSITIVE));
-        doAnswer(invocation -> {
-            sellerIncrements.putAll(invocation.getArgument(0));
-            return null;
-        }).when(userService).incrementSellerRatingCounters(any(), eq(OfferRating.POSITIVE));
-
-        // Act
-        offerService.autoRatePendingOffers();
-
-        // Assert
-        Assert.assertTrue(sellerRatingOfferIds.isEmpty());
-        Assert.assertTrue(sellerIncrements.isEmpty());
-    }
 
     @Test(expected = OfferNotCancelableException.class)
     public void testCancelByAdminAcceptedOfferThrows() {

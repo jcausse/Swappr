@@ -41,14 +41,12 @@ public class BrandModelRequestJpaDao implements BrandModelRequestDao {
 
     @Override
     public boolean isAdditionalRequester(Long requestId, Long userId) {
-        return em.createQuery(
-                "SELECT COUNT(r) FROM BrandModelRequest r"
-                + " JOIN r.additionalRequesters u"
-                + " WHERE r.id = :requestId AND u.id = :userId",
-                Long.class)
+        return Boolean.TRUE.equals(em.createNativeQuery(
+                        "SELECT EXISTS (SELECT 1 FROM brand_model_request_additional_users r"
+                        + " WHERE r.request_id = :requestId AND r.user_id = :userId)")
                 .setParameter("requestId", requestId)
                 .setParameter("userId", userId)
-                .getSingleResult() > 0;
+                .getSingleResult());
     }
 
     @Override
@@ -62,10 +60,9 @@ public class BrandModelRequestJpaDao implements BrandModelRequestDao {
 
     @Override
     public Page<BrandModelRequest> getMatching(int page, int pageSize) {
-        final long totalCount = em.createQuery(
-                "SELECT COUNT(r) FROM BrandModelRequest r",
-                Long.class)
-                .getSingleResult();
+        final long totalCount = ((Number) em.createNativeQuery(
+                "SELECT COUNT(*) FROM brand_model_requests")
+                .getSingleResult()).longValue();
 
         if (totalCount == 0) {
             return new Page<>(List.of(), page, pageSize, 0);

@@ -83,24 +83,26 @@ public class ModelJpaDao implements ModelDao {
             where.append(" AND s.id = :subcategoryId");
         }
 
-        final var countQuery = em.createQuery(
-                "SELECT COUNT(m) FROM Model m JOIN m.brand b JOIN m.subcategory s" + where,
-                Long.class);
+        // The count and ID queries share the same native predicate so their filters cannot drift.
+        final StringBuilder nativeWhere = new StringBuilder(" WHERE 1=1");
+        if (brandId != null) nativeWhere.append(" AND m.brand_id = :brandId");
+        if (categoryId != null) nativeWhere.append(" AND s.category_id = :categoryId");
+        if (subcategoryId != null) nativeWhere.append(" AND m.subcategory_id = :subcategoryId");
+
+        final String nativeFrom = " FROM models m"
+                + " JOIN subcategories s ON s.subcategory_id = m.subcategory_id";
+
+        final var countQuery = em.createNativeQuery("SELECT COUNT(*)" + nativeFrom + nativeWhere);
         if (brandId != null) countQuery.setParameter("brandId", brandId);
         if (categoryId != null) countQuery.setParameter("categoryId", categoryId);
         if (subcategoryId != null) countQuery.setParameter("subcategoryId", subcategoryId);
-        final long totalCount = countQuery.getSingleResult();
+        final long totalCount = ((Number) countQuery.getSingleResult()).longValue();
 
         if (totalCount == 0) {
             return new Page<>(List.of(), page, pageSize, 0);
         }
 
         // 1+1 pagination: page only model IDs in a native query, then aggregate for those IDs.
-        final StringBuilder nativeWhere = new StringBuilder(" WHERE 1=1");
-        if (brandId != null) nativeWhere.append(" AND m.brand_id = :brandId");
-        if (categoryId != null) nativeWhere.append(" AND s.category_id = :categoryId");
-        if (subcategoryId != null) nativeWhere.append(" AND m.subcategory_id = :subcategoryId");
-
         final String direction = sort.isAscending() ? "ASC" : "DESC";
         final String nativeOrderBy = sort.getKey().equals("id")
                 ? "m.model_id " + direction
@@ -110,9 +112,7 @@ public class ModelJpaDao implements ModelDao {
                 : "m.name " + direction + ", m.id " + direction;
 
         final var idQuery = em.createNativeQuery(
-                "SELECT m.model_id FROM models m"
-                + " JOIN subcategories s ON s.subcategory_id = m.subcategory_id"
-                + nativeWhere
+                "SELECT m.model_id" + nativeFrom + nativeWhere
                 + " ORDER BY " + nativeOrderBy);
         if (brandId != null) idQuery.setParameter("brandId", brandId);
         if (categoryId != null) idQuery.setParameter("categoryId", categoryId);
@@ -158,23 +158,24 @@ public class ModelJpaDao implements ModelDao {
 
     @Override
     public boolean existsByNameAndBrandId(String name, Long brandId) {
-        return em.createQuery(
-                "SELECT COUNT(m) FROM Model m WHERE LOWER(m.name) = LOWER(:name) AND m.brand.id = :brandId",
-                Long.class)
+        return Boolean.TRUE.equals(em.createNativeQuery(
+                        "SELECT EXISTS (SELECT 1 FROM models m"
+                        + " WHERE LOWER(m.model_name) = LOWER(:name) AND m.brand_id = :brandId)")
                 .setParameter("name", name)
                 .setParameter("brandId", brandId)
-                .getSingleResult() > 0;
+                .getSingleResult());
     }
 
     @Override
     public boolean existsByNameAndBrandIdAndIdNot(String name, Long brandId, Long id) {
-        return em.createQuery(
-                "SELECT COUNT(m) FROM Model m WHERE LOWER(m.name) = LOWER(:name) AND m.brand.id = :brandId AND m.id <> :id",
-                Long.class)
+        return Boolean.TRUE.equals(em.createNativeQuery(
+                        "SELECT EXISTS (SELECT 1 FROM models m"
+                        + " WHERE LOWER(m.model_name) = LOWER(:name) AND m.brand_id = :brandId"
+                        + " AND m.model_id <> :id)")
                 .setParameter("name", name)
                 .setParameter("brandId", brandId)
                 .setParameter("id", id)
-                .getSingleResult() > 0;
+                .getSingleResult());
     }
 
     @Override
@@ -210,15 +211,15 @@ public class ModelJpaDao implements ModelDao {
         return true;
     }
 
+    // Native EXISTS: JPQL has no select-level EXISTS, so the alternatives are a full COUNT or a
+    // setMaxResults(1) query, which may trigger hidden in-memory pagination via implicit joins if
+    // entities change. Native EXISTS short-circuits on the first match.
     @Override
     public boolean hasListings(Long modelId) {
-        return !em.createQuery(
-                "SELECT l.id FROM Listing l WHERE l.model.id = :modelId",
-                Long.class)
+        return Boolean.TRUE.equals(em.createNativeQuery(
+                        "SELECT EXISTS (SELECT 1 FROM listings l WHERE l.model_id = :modelId)")
                 .setParameter("modelId", modelId)
-                .setMaxResults(1)
-                .getResultList()
-                .isEmpty();
+                .getSingleResult());
     }
 
     @Override
@@ -230,21 +231,22 @@ public class ModelJpaDao implements ModelDao {
     ) {
         final var filters = buildListingInfoSummaryFilters(brandId, modelId, fromYear, toYear, subcategoryId);
 
-        final var countQuery = em.createQuery("SELECT COUNT(m) FROM Model m" + filters.jpqlWhere(), Long.class);
+        // The count and ID queries share the same native predicate so their filters cannot drift.
+        final String nativeFrom = " FROM models m"
+                + " INNER JOIN brands b ON b.brand_id = m.brand_id";
+
+        final var countQuery = em.createNativeQuery("SELECT COUNT(*)" + nativeFrom + filters.nativeWhere());
         bindListingInfoSummaryParams(
-                countQuery, subcategoryId, brandId, modelId, fromYear, toYear, ListingStatus.ACTIVE);
-        final long totalCount = countQuery.getSingleResult();
+                countQuery, subcategoryId, brandId, modelId, fromYear, toYear, ListingStatus.ACTIVE.name());
+        final long totalCount = ((Number) countQuery.getSingleResult()).longValue();
 
         if (totalCount == 0) {
             return new Page<>(List.of(), page, pageSize, 0);
         }
 
-        // The 1+1 pagination rule mandates a native ID query here. It is odd that this cannot be
-        // expressed in JPQL, so we should revisit this later.
+        // 1+1 pagination: page only model IDs in a native query, then aggregate for those IDs.
         final var idQuery = em.createNativeQuery(
-                "SELECT m.model_id FROM models m"
-                + " INNER JOIN brands b ON b.brand_id = m.brand_id"
-                + filters.nativeWhere()
+                "SELECT m.model_id" + nativeFrom + filters.nativeWhere()
                 + " ORDER BY b.brand_name, m.model_name, m.model_id");
         bindListingInfoSummaryParams(
                 idQuery, subcategoryId, brandId, modelId, fromYear, toYear, ListingStatus.ACTIVE.name());
@@ -340,8 +342,7 @@ public class ModelJpaDao implements ModelDao {
     }
 
     /*
-     * Builds the JPQL (count) and native (ID) predicates from the same filter definitions so they
-     * cannot drift apart.
+     * Builds the native predicate shared by the count (1+1 step 0) and ID (1+1 step 1) queries.
      */
     private static ListingInfoSummaryFilters buildListingInfoSummaryFilters(
             final Long brandId,
@@ -350,32 +351,25 @@ public class ModelJpaDao implements ModelDao {
             final Integer toYear,
             final Long subcategoryId
     ) {
-        final var jpql = new StringBuilder(" WHERE m.subcategory.id = :subcategoryId");
         final var nativeSql = new StringBuilder(" WHERE m.subcategory_id = :subcategoryId");
 
         if (brandId != null) {
-            jpql.append(" AND m.brand.id = :brandId");
             nativeSql.append(" AND m.brand_id = :brandId");
         }
         if (modelId != null) {
-            jpql.append(" AND m.id = :modelId");
             nativeSql.append(" AND m.model_id = :modelId");
         }
 
-        jpql.append(" AND EXISTS (SELECT l.id FROM Listing l WHERE l.model = m AND l.status = :status");
         nativeSql.append(" AND EXISTS (SELECT 1 FROM listings l WHERE l.model_id = m.model_id AND l.status = :status");
         if (fromYear != null) {
-            jpql.append(" AND l.year >= :fromYear");
             nativeSql.append(" AND l.year >= :fromYear");
         }
         if (toYear != null) {
-            jpql.append(" AND l.year <= :toYear");
             nativeSql.append(" AND l.year <= :toYear");
         }
-        jpql.append(")");
         nativeSql.append(")");
 
-        return new ListingInfoSummaryFilters(jpql.toString(), nativeSql.toString());
+        return new ListingInfoSummaryFilters(nativeSql.toString());
     }
 
     private static void bindListingInfoSummaryParams(
@@ -403,6 +397,6 @@ public class ModelJpaDao implements ModelDao {
         }
     }
 
-    private record ListingInfoSummaryFilters(String jpqlWhere, String nativeWhere) {
+    private record ListingInfoSummaryFilters(String nativeWhere) {
     }
 }

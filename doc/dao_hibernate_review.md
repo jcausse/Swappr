@@ -16,10 +16,10 @@ Severity groups: **1 = High**, **2 = Medium**, **3 = Low**.
 | 1.2 | [Eager User.roles secondary selects](#12-eager-userroles-produces-a-hidden-secondary-select-per-distinct-user) | ✅ Done |
 | 1.3 | [Listing search does not fetch creator](#13-listingjpadaosearch-does-not-fetch-creator-but-admin-listings-renders-it) | ✅ Done |
 | 1.4 | [rejectPendingOffers notification N+1](#14-offerjpadaorejectpendingoffers--notification-loop-is-an-n1) | ✅ Done |
-| 2.1 | [hasListings JPQL pagination](#21-haslistings-paginates-a-jpql-query-rule-violation) | 🕓 Open |
+| 2.1 | [hasListings JPQL pagination](#21-haslistings-paginates-a-jpql-query-rule-violation) | ✅ Done |
 | 2.2 | [Unfetched associations (latent risk)](#22-returnedpaginated-entities-rely-on-callers-not-touching-unfetched-associations-latent-risk) | 🚫 Won't fix |
 | 2.3 | [Bulk writes bypass persistence context](#23-bulk-jpql-writes-bypass-the-persistence-context) | ✅ Done |
-| 2.4 | [JOIN FETCH nullability / native counts](#24-inner-fetch-joins-and-non-distinct-counts-depend-on-current-nullability) | 🕓 Open |
+| 2.4 | [JOIN FETCH nullability / native counts](#24-inner-fetch-joins-and-non-distinct-counts-depend-on-current-nullability) | ✅ Done |
 | 3.1 | [OSIV reliance](#31-osiv-reliance-across-views-and-controllers) | 🚫 Won't fix |
 | 3.2 | [File/Image blobs](#32-file--image-blobs-are-loaded-eagerly--irrelevant) | ➖ Irrelevant |
 | 3.3 | [@Formula overhead](#33-formula-columns-are-evaluated-on-every-listing-load--potential-performance-issue-only) | 🚫 Won't fix |
@@ -110,7 +110,7 @@ em.createQuery("SELECT l.id FROM Listing l WHERE ...")
 
 `AGENTS.md` requires the 1+1 model for **every** paginated query, including PK-only/projection queries: native ID query plus population query. It also states the project convention is `SELECT EXISTS(...)`. Effect is one row today, but this is exactly the construct a future mapping change can turn into in-memory pagination or an N+1.
 
-**Status:** planned fix — **native `EXISTS`**.
+**Status:** resolved — both `hasListings` methods now use a native `SELECT EXISTS(...)` query (see implementation below).
 
 **Decision rationale**
 
@@ -118,13 +118,13 @@ em.createQuery("SELECT l.id FROM Listing l WHERE ...")
 - `SELECT CASE WHEN COUNT(l) > 0 THEN TRUE ELSE FALSE END` (or `SELECT COUNT(l)` + Java `> 0`) is pagination-safe, but it scans/counts every matching row. PostgreSQL does not generally rewrite `COUNT(*) > 0` into an existence check.
 - Native `EXISTS` gives real first-row short-circuiting, explicit joins, no pagination of any kind, and matches the documented `SELECT EXISTS` convention.
 
-**Implementation plan**
+**Implementation (done)**
 
 - `ModelJpaDao#hasListings`: native `SELECT EXISTS (SELECT 1 FROM listings l WHERE l.model_id = :modelId)`.
 - `BrandJpaDao#hasListings`: native `SELECT EXISTS (SELECT 1 FROM listings l JOIN models m ON m.model_id = l.model_id WHERE m.brand_id = :brandId)` (explicit join, no hidden implicit entity-path join).
-- Add DAO comments explaining the decision: JPQL has no select-level `EXISTS`, and this avoids reintroducing JPQL pagination and its future `HHH000104` / in-memory-pagination risk.
-- Update `AGENTS.md` to explicitly list native `SELECT EXISTS(...)` existence checks as one of the allowed uses of native queries (in addition to the existing `SELECT EXISTS` convention note).
-- Verify the Boolean scalar mapping under both PostgreSQL and the HSQLDB test dialect.
+- DAO comments explain the decision: JPQL has no select-level `EXISTS`, and this avoids reintroducing JPQL pagination and its future `HHH000104` / in-memory-pagination risk.
+- `AGENTS.md` now explicitly lists native `SELECT EXISTS(...)` existence checks as one of the allowed uses of native queries (in addition to the existing `SELECT EXISTS` convention note).
+- Verified the Boolean scalar mapping under both PostgreSQL and the HSQLDB test dialect.
 
 ### 2.2 Returned/paginated entities rely on callers not touching unfetched associations (latent risk)
 
@@ -156,9 +156,9 @@ Managed entities loaded earlier in the same transaction are not refreshed by the
 ### 2.4 Inner fetch joins and non-`DISTINCT` counts depend on current nullability
 
 - **Inner `JOIN FETCH` nullability — no action.** `ListingJpaDao.search` / `OfferJpaDao.search` / `RatingJpaDao.search` use inner `JOIN FETCH` for associations that are non-null today. If any becomes optional, rows silently disappear from the page even though the ID query selected them. JPQL/HQL has no way to make an inner fetch join fail on null; a null FK is simply filtered. The NOT NULL constraints plus `optional = false` are relied upon and assumed to stay.
-- **Non-`DISTINCT` counts — action plan (do not implement yet).** `ListingJpaDao.search` and `OfferJpaDao.search` count with `COUNT(l)` / `COUNT(o)` while filtering through implicit joins. If any filtered path ever becomes a collection, the count will over-count. Decision: switch **all paginated fetch count queries** to native SQL for consistency, not only these two.
+- **Non-`DISTINCT` counts — resolved.** `ListingJpaDao.search` and `OfferJpaDao.search` counted with `COUNT(l)` / `COUNT(o)` while filtering through implicit joins. If any filtered path ever becomes a collection, the count would over-count. Decision: switch **all paginated fetch count queries** to native SQL for consistency, not only these two.
 
-  Methods to convert:
+  Methods converted:
 
   - `ListingJpaDao.search`
   - `OfferJpaDao.search`
@@ -176,6 +176,8 @@ Managed entities loaded earlier in the same transaction are not refreshed by the
   - use `COUNT(*)` while the joins are all to-one;
   - if a collection join is ever introduced, switch to `COUNT(DISTINCT <alias>.id)` (or an `EXISTS` subquery) to avoid over-counting;
   - verify the native enums/booleans under both PostgreSQL and the HSQLDB test dialect.
+
+**Status:** resolved — all eight count queries are native `COUNT(*)` queries, and each shares its `FROM`/`WHERE`/parameter definitions with the corresponding native ID query (`ListingJpaDao` and `OfferJpaDao` reuse a local `nativeFrom`; `ModelJpaDao#getListingInfoSummary` now has a native-only filter builder). The full persistence suite passes on HSQLDB.
 
 ---
 

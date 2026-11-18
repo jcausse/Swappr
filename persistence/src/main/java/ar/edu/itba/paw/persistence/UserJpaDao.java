@@ -150,16 +150,18 @@ public class UserJpaDao implements UserDao {
 
     @Override
     public boolean isUsernameTaken(String username) {
-        return em.createQuery("SELECT COUNT(u) FROM User u WHERE u.username = :username", Long.class)
+        return Boolean.TRUE.equals(em.createNativeQuery(
+                        "SELECT EXISTS (SELECT 1 FROM users u WHERE u.username = :username)")
                 .setParameter("username", username)
-                .getSingleResult() > 0;
+                .getSingleResult());
     }
 
     @Override
     public boolean isEmailTaken(String email) {
-        return em.createQuery("SELECT COUNT(u) FROM User u WHERE u.email = :email", Long.class)
+        return Boolean.TRUE.equals(em.createNativeQuery(
+                        "SELECT EXISTS (SELECT 1 FROM users u WHERE u.email = :email)")
                 .setParameter("email", email)
-                .getSingleResult() > 0;
+                .getSingleResult());
     }
 
     @Override

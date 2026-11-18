@@ -2,17 +2,16 @@
 
 - **Date:** 2026-11-17
 - **Branch audited:** `tmp/final-checks-review-3` (local only, not pushed)
-- **Remediation branch:** `chore/remove-useless-tests` (from latest `dev`, pushed)
+- **Remediation branches:** `chore/remove-useless-tests` (from latest `dev`, pushed) and `chore/remove-implementation-coupled-tests` (from latest `dev`, pushed).
 - **Scope:** all 41 test files / 620 `@Test` methods under `model`, `persistence`, `service` and `webapp`.
-- **The report itself is not part of the remediation branch.**
 
 Summary of findings:
 
 | Severity | Items |
 | --- | --- |
 | Critical | 0 |
-| High — multiple DAO/service methods per test | 3 (all in `NotificationDispatcherServiceImplTest`) |
-| High — implementation-coupled | 14 (outside the dispatcher test) |
+| High — multiple DAO/service methods per test | ✅ Resolved — dispatcher test class deleted |
+| High — implementation-coupled | ✅ Resolved — 14 tests removed |
 | Low — useless/redundant/misplaced | ✅ Resolved — 21 tests removed (see section 4) |
 | Coverage (blatant only) | 0 (`EmailNotificationServiceImpl` untested is accepted) |
 
@@ -20,17 +19,17 @@ Summary of findings:
 
 | Item | Brief description | Status |
 |---|---|---|
-| 1.1 | [Review/rewrite or remove `NotificationDispatcherServiceImplTest` (all of §1)](#1-notificationdispatcherserviceimpltest--review-or-remove) | ❓ Decision needed |
+| 1.1 | [Review/rewrite or remove `NotificationDispatcherServiceImplTest` (all of §1)](#1-notificationdispatcherserviceimpltest--review-or-remove) | ✅ Resolved — file deleted |
 | 2.1 | [No `Mockito.verify` anywhere](#21-no-mockitoverify-anywhere) | ✅ Resolved |
-| 3.1 | [All implementation-coupled tests outside the dispatcher (all of §3)](#3-high--implementation-coupled-outside-the-dispatcher-test) | ❓ Decision needed |
+| 3.1 | [All implementation-coupled tests outside the dispatcher (all of §3)](#3-high--implementation-coupled-outside-the-dispatcher-test) | ✅ Resolved — 14 tests deleted |
 | 4.1 | [All useless/duplicate/misplaced tests removed (§4)](#4-low--resolved-by-removing-the-tests) | ✅ Resolved |
 | 5.1 | [`EmailNotificationServiceImpl` untested](#5-coverage) | ➖ Irrelevant |
 
 ---
 
-## 1. `NotificationDispatcherServiceImplTest` — review or remove
+## 1. `NotificationDispatcherServiceImplTest` — removed
 
-This file is flagged for dedicated review. It contains **all** the multiple-method violations and almost all of the most implementation-coupled tests in the suite.
+This file was flagged for dedicated review. It contained **all** the multiple-method violations and almost all of the most implementation-coupled tests in the suite. The whole class was deleted in `chore/remove-implementation-coupled-tests`.
 
 ### 1.1 `:408` `testNotifyPurchaseConfirmedDispatchesBothWhileListingSoldIsEmailOnly`
 
@@ -46,7 +45,7 @@ Calls seven different dispatcher methods (`notifyWelcome`, `notifyListingPublish
 
 ### 1.4 All 17 tests are implementation-coupled
 
-Every test uses `ArgumentCaptor` on collaborator DTOs/mail DTOs and asserts exact keys, arguments, body argument lists, action URLs and call counts (`getAllValues().size()`, `isEmpty()`). Even if the DTO content is considered the dispatcher contract, the file is maximally coupled to the internal composition of every notification and mail. Recommend either rewriting against a narrower contract or deleting the file.
+Every test used `ArgumentCaptor` on collaborator DTOs/mail DTOs and asserted exact keys, arguments, body argument lists, action URLs and call counts (`getAllValues().size()`, `isEmpty()`). The file was maximally coupled to the internal composition of every notification and mail, so it was deleted.
 
 ---
 
@@ -58,7 +57,9 @@ No occurrence of `Mockito.verify`, `.verify(`, `spy(`, `InOrder`, `verifyNoInter
 
 ---
 
-## 3. High — implementation-coupled outside the dispatcher test
+## 3. High — implementation-coupled outside the dispatcher test (all removed)
+
+All 14 tests listed in this section were deleted in `chore/remove-implementation-coupled-tests`.
 
 ### 3.1 `ListingServiceImplTest.java:248,270,291,311` — internal `ListingFilter` captors
 

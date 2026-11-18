@@ -32,12 +32,12 @@ public class BrandJpaDao implements BrandDao {
 
     @Override
     public boolean existsByNameAndIdNot(String name, Long id) {
-        return em.createQuery(
-                "SELECT COUNT(b) FROM Brand b WHERE LOWER(b.name) = LOWER(:name) AND b.id <> :id",
-                Long.class)
+        return Boolean.TRUE.equals(em.createNativeQuery(
+                        "SELECT EXISTS (SELECT 1 FROM brands b"
+                        + " WHERE LOWER(b.brand_name) = LOWER(:name) AND b.brand_id <> :id)")
                 .setParameter("name", name)
                 .setParameter("id", id)
-                .getSingleResult() > 0;
+                .getSingleResult());
     }
 
     @Override
@@ -48,8 +48,8 @@ public class BrandJpaDao implements BrandDao {
 
     @Override
     public Page<BrandInfo> getWithStats(BrandSort sort, int page, int pageSize) {
-        final long totalCount = em.createQuery("SELECT COUNT(b) FROM Brand b", Long.class)
-                .getSingleResult();
+        final long totalCount = ((Number) em.createNativeQuery("SELECT COUNT(*) FROM brands b")
+                .getSingleResult()).longValue();
 
         if (totalCount == 0) {
             return new Page<>(List.of(), page, pageSize, 0);
@@ -129,14 +129,18 @@ public class BrandJpaDao implements BrandDao {
         return brand;
     }
 
+    // Native EXISTS: JPQL has no select-level EXISTS, so the alternatives are a full COUNT or a
+    // setMaxResults(1) query, which may trigger hidden in-memory pagination via implicit joins if
+    // entities change. Native EXISTS short-circuits on the first match.
+    // The join is explicit so the SQL reads directly as listings -> models.
     @Override
     public boolean hasListings(Long brandId) {
-        return !em.createQuery(
-                "SELECT l.id FROM Listing l WHERE l.model.brand.id = :brandId",
-                Long.class)
+        return Boolean.TRUE.equals(em.createNativeQuery(
+                        "SELECT EXISTS ("
+                        + "SELECT 1 FROM listings l"
+                        + " JOIN models m ON m.model_id = l.model_id"
+                        + " WHERE m.brand_id = :brandId)")
                 .setParameter("brandId", brandId)
-                .setMaxResults(1)
-                .getResultList()
-                .isEmpty();
+                .getSingleResult());
     }
 }
