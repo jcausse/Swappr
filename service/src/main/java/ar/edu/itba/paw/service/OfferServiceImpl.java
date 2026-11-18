@@ -76,6 +76,39 @@ public class OfferServiceImpl implements OfferService {
     }
 
     @Override
+    public Offer getForDocumentUpload(Long offerId) {
+        final Offer offer = getById(offerId, false)
+            .orElseThrow(() -> NotFoundException.createFor("Offer with ID " + offerId));
+
+        if (!offer.canUploadDocuments()) {
+            throw new BadParameterException("Offer does not accept uploading documents in current state");
+        }
+
+        return offer;
+    }
+
+    @Override
+    public Offer getRateableBy(Long offerId, User currentUser) {
+        final Offer offer = getById(offerId, false)
+            .orElseThrow(() -> NotFoundException.createFor("Offer with ID " + offerId));
+
+        ensureRateable(offer, currentUser);
+        return offer;
+    }
+
+    private void ensureRateable(Offer offer, User currentUser) {
+        if (!offer.isAccepted()) {
+            throw new BadParameterException("Only accepted offers can be rated");
+        }
+        if (!offer.isParticipant(currentUser)) {
+            throw new ForbiddenException("You did not participate in this offer");
+        }
+        if (!offer.canBeRatedBy(currentUser)) {
+            throw new BadParameterException("You have already rated this offer");
+        }
+    }
+
+    @Override
     public Optional<Offer> getByListingAndBuyer(Listing listing, User buyer) {
         if (buyer == null) return Optional.empty();
         return offerDao.getByListingAndBuyer(listing, buyer);
@@ -592,21 +625,12 @@ public class OfferServiceImpl implements OfferService {
         final Offer offer = offerDao.getById(offerId)
             .orElseThrow(() -> NotFoundException.createFor("Offer with ID " + offerId));
 
-        if (!offer.isAccepted()) {
-            throw new BadParameterException("Only accepted offers can be rated");
-        }
+        ensureRateable(offer, currentUser);
 
         final var buyer = offer.getBuyer();
         final var seller = offer.getListing().getCreator();
 
         final boolean isBuyer = offer.isBuyer(currentUser);
-
-        if (!offer.isParticipant(currentUser)) {
-            throw new ForbiddenException("You did not participate in this offer");
-        }
-        if (!offer.canBeRatedBy(currentUser)) {
-            throw new BadParameterException("You have already rated this offer");
-        }
 
         final var role = isBuyer ? RatingRole.SELLER : RatingRole.BUYER;
         final var ratedUser = isBuyer ? seller : buyer;

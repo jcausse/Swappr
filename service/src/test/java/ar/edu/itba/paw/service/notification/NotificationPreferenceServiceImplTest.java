@@ -87,7 +87,7 @@ public class NotificationPreferenceServiceImplTest {
     }
 
     @Test
-    public void testIsNotificationEnabledReturnsTrueForNonConfigurableTypeWithoutQueryingDao() {
+    public void testIsNotificationEnabledReturnsTrueForNonConfigurableType() {
         final User user = buildUser(10L);
 
         Assert.assertTrue(service.isNotificationEnabled(

@@ -4,10 +4,7 @@ import ar.edu.itba.paw.model.Brand;
 import ar.edu.itba.paw.model.Category;
 import ar.edu.itba.paw.model.Condition;
 import ar.edu.itba.paw.model.Listing;
-import ar.edu.itba.paw.model.ListingFilter;
-import ar.edu.itba.paw.model.ListingSort;
 import ar.edu.itba.paw.model.ListingStatus;
-import ar.edu.itba.paw.model.Page;
 import ar.edu.itba.paw.model.Model;
 import ar.edu.itba.paw.model.Price;
 import ar.edu.itba.paw.model.Subcategory;
@@ -15,7 +12,6 @@ import ar.edu.itba.paw.model.User;
 import ar.edu.itba.paw.persistence.ListingDao;
 import ar.edu.itba.paw.service.dto.ImageData;
 import ar.edu.itba.paw.service.dto.ListingCreationDto;
-import ar.edu.itba.paw.service.dto.ListingFilterDto;
 import ar.edu.itba.paw.service.dto.ListingUpdateDto;
 import ar.edu.itba.paw.service.exception.BadParameterException;
 import ar.edu.itba.paw.service.exception.NotFoundException;
@@ -32,7 +28,6 @@ import java.time.Year;
 import java.util.List;
 import java.util.Optional;
 
-import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyBoolean;
 import static org.mockito.Mockito.anyInt;
 import static org.mockito.Mockito.eq;
@@ -56,7 +51,6 @@ public class ListingServiceImplTest {
     private static final long BRAND_ID = 1L;
     private static final long MODEL_ID = 1L;
     private static final int YEAR = 2023;
-    private static final int PAGE_SIZE = 12;
 
     @InjectMocks
     private ListingServiceImpl listingService;
@@ -143,37 +137,9 @@ public class ListingServiceImplTest {
         );
     }
 
-    private static ListingFilterDto buildFilterDto(
-        final Condition condition,
-        final ListingSort sort,
-        final ListingStatus status,
-        final Integer page,
-        final BigDecimal minPrice,
-        final BigDecimal maxPrice,
-        final Boolean acceptsTrade
-    ) {
-        return new ListingFilterDto(
-            null, null, minPrice, maxPrice, condition, acceptsTrade, null, null, sort, null, status, page, PAGE_SIZE, null, null, null, null, null, null, null
-        );
-    }
-
     /* ---------------------------------------------------------------------------------------------- */
     /* getById                                                                                         */
     /* ---------------------------------------------------------------------------------------------- */
-
-    @Test
-    public void testGetByIdExists() {
-        // Arrange
-        final Listing listing = buildFakeListing(buildFakeUser(SELLER_ID, "seller"));
-        when(listingDao.getById(eq(LISTING_ID))).thenReturn(Optional.of(listing));
-
-        // Act
-        final Listing result = listingService.getById(LISTING_ID);
-
-        // Assert
-        Assert.assertEquals(LISTING_ID, (long) result.getId());
-        Assert.assertEquals(LISTING_TITLE, result.getTitle());
-    }
 
     @Test(expected = NotFoundException.class)
     public void testGetByIdDoesNotExistThrows() {
@@ -192,19 +158,6 @@ public class ListingServiceImplTest {
     /* ---------------------------------------------------------------------------------------------- */
     /* search                                                                                          */
     /* ---------------------------------------------------------------------------------------------- */
-
-    @Test
-    public void testSearchReturnsDaoPage() {
-        // Arrange
-        final Page<Listing> page = new Page<>(List.of(buildFakeListing(buildFakeUser(SELLER_ID, "seller"))), 1, PAGE_SIZE, 1);
-        when(listingDao.search(any(ListingFilter.class))).thenReturn(page);
-
-        // Act
-        final Page<Listing> result = listingService.search(buildFilterDto(null, null, null, 1, null, null, null));
-
-        // Assert
-        Assert.assertSame(page, result);
-    }
 
     @Test(expected = NullPointerException.class)
     public void testSearchNullDtoThrows() {

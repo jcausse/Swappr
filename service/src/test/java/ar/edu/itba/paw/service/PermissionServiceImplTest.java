@@ -37,6 +37,9 @@ public class PermissionServiceImplTest {
     @Mock
     private SiteNotificationService siteNotificationService;
 
+    @Mock
+    private UserService userService;
+
     private void stubOffer() {
         final Offer offer = Offer.builder()
             .id(OFFER_ID)
@@ -86,5 +89,24 @@ public class PermissionServiceImplTest {
         stubOffer();
 
         Assert.assertFalse(permissionService.canManageOfferAsBuyer(SELLER, OFFER_ID));
+    }
+
+    @Test
+    public void testIsAdminAllowsAdminUser() {
+        when(userService.isAdmin(eq(OUTSIDER))).thenReturn(true);
+
+        Assert.assertTrue(permissionService.isAdmin(OUTSIDER));
+    }
+
+    @Test
+    public void testIsAdminDeniesNonAdminUser() {
+        when(userService.isAdmin(eq(OUTSIDER))).thenReturn(false);
+
+        Assert.assertFalse(permissionService.isAdmin(OUTSIDER));
+    }
+
+    @Test
+    public void testIsAdminDeniesNullUser() {
+        Assert.assertFalse(permissionService.isAdmin(null));
     }
 }

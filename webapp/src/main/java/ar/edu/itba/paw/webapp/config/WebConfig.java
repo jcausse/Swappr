@@ -26,10 +26,12 @@ import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import ar.edu.itba.paw.service.CatalogService;
+import ar.edu.itba.paw.service.PermissionService;
 import ar.edu.itba.paw.service.SiteNotificationService;
 import ar.edu.itba.paw.service.UserService;
 import ar.edu.itba.paw.webapp.auth.AuthHelper;
 import ar.edu.itba.paw.webapp.auth.CurrentUserArgumentResolver;
+import ar.edu.itba.paw.webapp.controller.interceptor.AdminRoleInterceptor;
 import ar.edu.itba.paw.webapp.controller.interceptor.CategoriesInterceptor;
 import ar.edu.itba.paw.webapp.controller.interceptor.NotificationInterceptor;
 import ar.edu.itba.paw.webapp.i18n.DatabaseLocaleResolver;
@@ -69,15 +71,18 @@ public class WebConfig implements WebMvcConfigurer {
     private final CurrentUserArgumentResolver currentUserArgumentResolver;
     private final ObjectProvider<CategoriesInterceptor> categoriesInterceptorProvider;
     private final ObjectProvider<NotificationInterceptor> notificationInterceptorProvider;
+    private final ObjectProvider<AdminRoleInterceptor> adminRoleInterceptorProvider;
 
     @Autowired
     public WebConfig(Environment env, @Lazy CurrentUserArgumentResolver currentUserArgumentResolver,
                      ObjectProvider<CategoriesInterceptor> categoriesInterceptorProvider,
-                     ObjectProvider<NotificationInterceptor> notificationInterceptorProvider) {
+                     ObjectProvider<NotificationInterceptor> notificationInterceptorProvider,
+                     ObjectProvider<AdminRoleInterceptor> adminRoleInterceptorProvider) {
         this.env = env;
         this.currentUserArgumentResolver = currentUserArgumentResolver;
         this.categoriesInterceptorProvider = categoriesInterceptorProvider;
         this.notificationInterceptorProvider = notificationInterceptorProvider;
+        this.adminRoleInterceptorProvider = adminRoleInterceptorProvider;
     }
 
     /* --------------------------------------------------------------- */
@@ -147,11 +152,18 @@ public class WebConfig implements WebMvcConfigurer {
         return new NotificationInterceptor(authHelper, siteNotificationService);
     }
 
+    @Bean
+    public AdminRoleInterceptor adminRoleInterceptor(final AuthHelper authHelper,
+                                                     final PermissionService permissionService) {
+        return new AdminRoleInterceptor(authHelper, permissionService);
+    }
+
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(localeChangeInterceptor());
         registry.addInterceptor(categoriesInterceptorProvider.getObject());
         registry.addInterceptor(notificationInterceptorProvider.getObject());
+        registry.addInterceptor(adminRoleInterceptorProvider.getObject());
     }
 
     @Bean
