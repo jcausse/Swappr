@@ -3,6 +3,7 @@
 <%@ attribute name="baseUrl" required="true" %>
 <%@ attribute name="pageParam" required="false" %>
 <%@ attribute name="classname" required="false" %>
+<%@ attribute name="id" required="false" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="spring" uri="http://www.springframework.org/tags" %>
 <%@ taglib prefix="paw" tagdir="/WEB-INF/tags" %>
@@ -61,7 +62,7 @@
         <c:param name="${pageParamName}" value="${page.totalPages}"/>
     </c:url>
 
-    <div class="flex items-center justify-center gap-1 ${paginationClass}">
+    <div <c:if test="${not empty id}">id="${id}"</c:if> class="flex items-center justify-center gap-1 ${paginationClass}">
         <paw:linkButton href="${firstUrl}" variant="outline" icon="chevrons-left" disabled="${not page.hasPrevious}" ariaLabel="${paginationFirstLabel}" />
         <paw:linkButton href="${prevUrl}" variant="outline" icon="chevron-left" disabled="${not page.hasPrevious}" ariaLabel="${paginationPreviousLabel}" />
 

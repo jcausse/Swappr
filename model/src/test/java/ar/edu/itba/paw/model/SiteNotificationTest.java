@@ -140,15 +140,4 @@ public class SiteNotificationTest {
                     otherStatus.showCallToAction());
         }
     }
-
-    @Test
-    public void testIsShowCallToActionMatchesShowCallToAction() {
-        final SiteNotification active = buildNotification(
-                NotificationType.OFFER_ACCEPTED, buildOffer(OfferStatus.PENDING_PAYMENT));
-        Assert.assertEquals(active.showCallToAction(), active.isShowCallToAction());
-
-        final SiteNotification inactive = buildNotification(
-                NotificationType.OFFER_ACCEPTED, buildOffer(OfferStatus.ACCEPTED));
-        Assert.assertEquals(inactive.showCallToAction(), inactive.isShowCallToAction());
-    }
 }

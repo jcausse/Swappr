@@ -33,7 +33,6 @@ import ar.edu.itba.paw.model.OfferStatusGroup;
 import ar.edu.itba.paw.model.User;
 import ar.edu.itba.paw.service.ListingService;
 import ar.edu.itba.paw.service.OfferService;
-import ar.edu.itba.paw.service.exception.BadParameterException;
 import ar.edu.itba.paw.service.exception.NotFoundException;
 import ar.edu.itba.paw.webapp.auth.CurrentUser;
 import ar.edu.itba.paw.webapp.form.ListingFilterForm;
@@ -151,12 +150,7 @@ public class AccountController {
     @PreAuthorize("@webPermissionService.canManageOfferAsBuyer(authentication, #offerId)")
     public ModelAndView showProofOfPaymentUpload(@PathVariable Long offerId, @CurrentUser User currentUser) {
         LOGGER.debug("User {} accessing proof of payment upload for offer {}", currentUser.getId(), offerId);
-        final Offer offer = offerService.getById(offerId, false)
-                .orElseThrow(() -> NotFoundException.createFor("Offer"));
-
-        if (!offer.canUploadDocuments()) {
-            throw new BadParameterException("Offer does not accept uploading documents in current state");
-        }
+        final Offer offer = offerService.getForDocumentUpload(offerId);
 
         return new ModelAndView("account/proofOfPaymentUpload")
             .addObject("offer", offer)
@@ -191,12 +185,7 @@ public class AccountController {
     @PreAuthorize("@webPermissionService.canManageOfferAsSeller(authentication, #offerId)")
     public ModelAndView showProofOfShippingUpload(@PathVariable Long offerId, @CurrentUser User currentUser) {
         LOGGER.debug("User {} accessing proof of shipping upload for offer {}", currentUser.getId(), offerId);
-        final Offer offer = offerService.getById(offerId, false)
-                .orElseThrow(() -> NotFoundException.createFor("Offer"));
-
-        if (!offer.canUploadDocuments()) {
-            throw new BadParameterException("Offer does not accept uploading documents in current state");
-        }
+        final Offer offer = offerService.getForDocumentUpload(offerId);
 
         return new ModelAndView("account/proofOfShippingUpload")
             .addObject("offer", offer)
@@ -268,12 +257,7 @@ public class AccountController {
     @PreAuthorize("@webPermissionService.canAccessOffer(authentication, #offerId)")
     public ModelAndView showRateForm(@PathVariable Long offerId, @CurrentUser User currentUser,
                                       @ModelAttribute("rateForm") RateForm rateForm) {
-        final Offer offer = offerService.getById(offerId, false)
-                .orElseThrow(() -> NotFoundException.createFor("Offer"));
-
-        if (!offer.canBeRatedBy(currentUser)) {
-            throw new BadParameterException("Only accepted offers can be rated");
-        }
+        final Offer offer = offerService.getRateableBy(offerId, currentUser);
 
         return new ModelAndView("account/rate")
             .addObject("offer", offer)

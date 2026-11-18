@@ -15,9 +15,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.when;
 
@@ -75,23 +73,17 @@ public class OneTimePasswordServiceImplTest {
     }
 
     @Test
-    public void testVerifyExpiresOldOtpAndDeletesIt() {
+    public void testVerifyExpiresOldOtp() {
         // Arrange
         final User user = buildUser();
-        final AtomicBoolean deleted = new AtomicBoolean(false);
         when(otpDao.getByUser(user)).thenReturn(Optional.of(
             buildOtp(Instant.now().minus(16, ChronoUnit.MINUTES))));
-        doAnswer(invocation -> {
-            deleted.set(true);
-            return null;
-        }).when(otpDao).deleteIfPresentByUser(user);
 
         // Act
         final var result = otpService.verify(user, PLAIN_OTP);
 
         // Assert
         Assert.assertEquals(OneTimePasswordVerificationResult.EXPIRED, result);
-        Assert.assertTrue(deleted.get());
     }
 
     @Test

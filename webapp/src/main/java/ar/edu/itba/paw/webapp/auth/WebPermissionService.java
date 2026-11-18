@@ -32,4 +32,8 @@ public class WebPermissionService {
     public boolean canManageNotification(final Authentication authentication, final long notificationId) {
         return authHelper.getCurrentUser(authentication).map(u -> permissionService.canManageNotification(u, notificationId)).orElse(false);
     }
+
+    public boolean isAdmin(final Authentication authentication) {
+        return authHelper.getCurrentUser(authentication).map(permissionService::isAdmin).orElse(false);
+    }
 }

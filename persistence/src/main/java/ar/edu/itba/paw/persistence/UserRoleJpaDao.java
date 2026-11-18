@@ -32,4 +32,19 @@ public class UserRoleJpaDao implements UserRoleDao {
         }
         return new ArrayList<>();
     }
+
+    @Override
+    public boolean hasRole(@NonNull User user, @NonNull Role role) {
+        if (user.getId() == null) {
+            return false;
+        }
+        final Long count = em.createQuery(
+                        "SELECT COUNT(r) FROM User u JOIN u.roles r WHERE u.id = :userId AND r = :role",
+                        Long.class
+                )
+                .setParameter("userId", user.getId())
+                .setParameter("role", role)
+                .getSingleResult();
+        return count != null && count > 0;
+    }
 }

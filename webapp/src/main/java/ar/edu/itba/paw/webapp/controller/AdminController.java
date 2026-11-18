@@ -81,7 +81,7 @@ public class AdminController {
     private final UserService userService;
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("@webPermissionService.isAdmin(authentication)")
     public ModelAndView dashboard(
             @CurrentUser User currentUser,
             @ModelAttribute("takeDownListingForm") AdminTakeDownListingForm takeDownListingForm,
@@ -94,7 +94,7 @@ public class AdminController {
     }
 
     @GetMapping("/catalog")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("@webPermissionService.isAdmin(authentication)")
     public ModelAndView catalog(
             @CurrentUser User currentUser,
             @RequestParam(value = "page", defaultValue = "1") int page,
@@ -196,7 +196,7 @@ public class AdminController {
     }
 
     @PostMapping("/catalog/requests/{id}/accept")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("@webPermissionService.isAdmin(authentication)")
     public ModelAndView acceptBrandModelRequest(
             @CurrentUser User currentUser,
             @PathVariable Long id,
@@ -226,7 +226,7 @@ public class AdminController {
     }
 
     @PostMapping("/catalog/requests/{id}/reject")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("@webPermissionService.isAdmin(authentication)")
     public ModelAndView rejectBrandModelRequest(
             @CurrentUser User currentUser,
             @PathVariable Long id,
@@ -243,7 +243,7 @@ public class AdminController {
     }
 
     @PostMapping("/catalog/brands")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("@webPermissionService.isAdmin(authentication)")
     public ModelAndView createBrand(
             @CurrentUser User currentUser,
             @Valid @ModelAttribute("createBrandForm") AdminCreateBrandForm form,
@@ -266,7 +266,7 @@ public class AdminController {
     }
 
     @PostMapping("/catalog/brands/{id}/replace")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("@webPermissionService.isAdmin(authentication)")
     public ModelAndView replaceBrand(
             @CurrentUser User currentUser,
             @PathVariable Long id,
@@ -285,7 +285,7 @@ public class AdminController {
     }
 
     @PostMapping("/catalog/brands/{id}/rename")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("@webPermissionService.isAdmin(authentication)")
     public ModelAndView renameBrand(
             @CurrentUser User currentUser,
             @PathVariable Long id,
@@ -309,7 +309,7 @@ public class AdminController {
     }
 
     @PostMapping("/catalog/models")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("@webPermissionService.isAdmin(authentication)")
     public ModelAndView createModel(
             @CurrentUser User currentUser,
             @Valid @ModelAttribute("createModelForm") AdminModelForm form,
@@ -330,7 +330,7 @@ public class AdminController {
     }
 
     @PostMapping("/catalog/models/{id}/edit")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("@webPermissionService.isAdmin(authentication)")
     public ModelAndView editModel(
             @CurrentUser User currentUser,
             @PathVariable Long id,
@@ -352,7 +352,7 @@ public class AdminController {
     }
 
     @PostMapping("/catalog/models/{id}/delete")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("@webPermissionService.isAdmin(authentication)")
     public ModelAndView deleteModel(
             @CurrentUser User currentUser,
             @PathVariable Long id,
@@ -364,7 +364,7 @@ public class AdminController {
     }
 
     @PostMapping("/catalog/models/{id}/replace")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("@webPermissionService.isAdmin(authentication)")
     public ModelAndView replaceModel(
             @CurrentUser User currentUser,
             @PathVariable Long id,
@@ -381,7 +381,7 @@ public class AdminController {
     }
 
     @PostMapping("/catalog/brands/{id}/delete")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("@webPermissionService.isAdmin(authentication)")
     public ModelAndView deleteBrand(
             @CurrentUser User currentUser,
             @PathVariable Long id,
@@ -393,7 +393,7 @@ public class AdminController {
     }
 
     @GetMapping("/listings")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("@webPermissionService.isAdmin(authentication)")
     public ModelAndView listings(
             @CurrentUser User currentUser,
             @Valid @ModelAttribute("filterForm") AdminListingFilterForm filterForm,
@@ -424,7 +424,7 @@ public class AdminController {
     }
 
     @PostMapping("/listings/takedown")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("@webPermissionService.isAdmin(authentication)")
     public ModelAndView takeDownListingByForm(
             @CurrentUser User currentUser,
             @Valid @ModelAttribute("takeDownListingForm") AdminTakeDownListingForm form,
@@ -463,7 +463,7 @@ public class AdminController {
     }
 
     @PostMapping("/listings/{id}/takedown")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("@webPermissionService.isAdmin(authentication)")
     public ModelAndView takeDownListingById(
             @CurrentUser User currentUser,
             @PathVariable Long id,
@@ -486,7 +486,7 @@ public class AdminController {
     }
 
     @GetMapping("/offers")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("@webPermissionService.isAdmin(authentication)")
     public ModelAndView offers(
             @CurrentUser User currentUser,
             @ModelAttribute("filterForm") AdminOfferFilterForm filterForm,
@@ -512,7 +512,7 @@ public class AdminController {
     }
 
     @PostMapping("/offers/takedown")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("@webPermissionService.isAdmin(authentication)")
     public ModelAndView takeDownOfferByForm(
             @CurrentUser User currentUser,
             @Valid @ModelAttribute("takeDownOfferForm") AdminTakeDownOfferForm form,
@@ -551,7 +551,7 @@ public class AdminController {
     }
 
     @PostMapping("/offers/{id}/takedown")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("@webPermissionService.isAdmin(authentication)")
     public ModelAndView takeDownOfferById(
             @CurrentUser User currentUser,
             @PathVariable Long id,
@@ -574,7 +574,7 @@ public class AdminController {
     }
 
     @GetMapping("/users")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("@webPermissionService.isAdmin(authentication)")
     public ModelAndView users(
             @CurrentUser User currentUser,
             @Valid @ModelAttribute("filterForm") AdminUserFilterForm filterForm,
@@ -602,7 +602,7 @@ public class AdminController {
     }
 
     @PostMapping("/users/suspend")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("@webPermissionService.isAdmin(authentication)")
     public ModelAndView suspendUser(
             @CurrentUser User currentUser,
             @Valid @ModelAttribute("suspendUserForm") AdminSuspendUserForm form,
@@ -631,7 +631,7 @@ public class AdminController {
     }
 
     @PostMapping("/users/unsuspend")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("@webPermissionService.isAdmin(authentication)")
     public ModelAndView unsuspendUser(
             @CurrentUser User currentUser,
             @Valid @ModelAttribute("suspendUserForm") AdminSuspendUserForm form,
@@ -653,7 +653,7 @@ public class AdminController {
     }
 
     @PostMapping("/users/grant-admin")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("@webPermissionService.isAdmin(authentication)")
     public ModelAndView grantAdminRole(
             @CurrentUser User currentUser,
             @Valid @ModelAttribute("grantRoleForm") AdminGrantRoleForm form,
