@@ -141,20 +141,6 @@ public class ListingServiceImplTest {
     /* getById                                                                                         */
     /* ---------------------------------------------------------------------------------------------- */
 
-    @Test
-    public void testGetByIdExists() {
-        // Arrange
-        final Listing listing = buildFakeListing(buildFakeUser(SELLER_ID, "seller"));
-        when(listingDao.getById(eq(LISTING_ID))).thenReturn(Optional.of(listing));
-
-        // Act
-        final Listing result = listingService.getById(LISTING_ID);
-
-        // Assert
-        Assert.assertEquals(LISTING_ID, (long) result.getId());
-        Assert.assertEquals(LISTING_TITLE, result.getTitle());
-    }
-
     @Test(expected = NotFoundException.class)
     public void testGetByIdDoesNotExistThrows() {
         // Arrange

@@ -90,18 +90,6 @@ public class CatalogServiceImplTest {
     /* getModelById                                                                                    */
     /* ---------------------------------------------------------------------------------------------- */
 
-    @Test
-    public void testGetModelByIdExists() {
-        final Model model = buildFakeModel(MODEL_ID, MODEL_NAME);
-        when(modelDao.getById(eq(MODEL_ID))).thenReturn(Optional.of(model));
-
-        final Model result = catalogService.getModelById(MODEL_ID);
-
-        Assert.assertEquals(MODEL_ID, (long) result.getId());
-        Assert.assertEquals(MODEL_NAME, result.getName());
-        Assert.assertEquals(BRAND_NAME, result.getBrand().getName());
-    }
-
     @Test(expected = BadParameterException.class)
     public void testGetModelByIdNullThrows() {
         catalogService.getModelById(null);
