@@ -2,6 +2,8 @@
 <%@ attribute name="page" required="true" type="ar.edu.itba.paw.model.Page" %>
 <%@ attribute name="baseUrl" required="true" %>
 <%@ attribute name="pageParam" required="false" %>
+<%@ attribute name="classname" required="false" %>
+<%@ attribute name="id" required="false" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="spring" uri="http://www.springframework.org/tags" %>
 <%@ taglib prefix="paw" tagdir="/WEB-INF/tags" %>
@@ -11,6 +13,12 @@
   Preserves every current query param except "page", so active filters/sorting survive navigation.
 --%>
 <c:set var="pageParamName" value="${not empty pageParam ? pageParam : 'page'}"/>
+<c:set var="paginationClass" value="${not empty classname ? classname : 'mt-8'}"/>
+
+<spring:message code="pagination.first" var="paginationFirstLabel"/>
+<spring:message code="pagination.previous" var="paginationPreviousLabel"/>
+<spring:message code="pagination.next" var="paginationNextLabel"/>
+<spring:message code="pagination.last" var="paginationLastLabel"/>
 
 <c:if test="${page.totalPages > 1}">
     <c:url value="${baseUrl}" var="prevUrl">
@@ -54,15 +62,15 @@
         <c:param name="${pageParamName}" value="${page.totalPages}"/>
     </c:url>
 
-    <div class="flex items-center justify-center gap-1 mt-8">
-        <paw:linkButton href="${firstUrl}" variant="outline" icon="chevrons-left" disabled="${not page.hasPrevious}" />
-        <paw:linkButton href="${prevUrl}" variant="outline" icon="chevron-left" disabled="${not page.hasPrevious}" />
+    <div <c:if test="${not empty id}">id="${id}"</c:if> class="flex items-center justify-center gap-1 ${paginationClass}">
+        <paw:linkButton href="${firstUrl}" variant="outline" icon="chevrons-left" disabled="${not page.hasPrevious}" ariaLabel="${paginationFirstLabel}" />
+        <paw:linkButton href="${prevUrl}" variant="outline" icon="chevron-left" disabled="${not page.hasPrevious}" ariaLabel="${paginationPreviousLabel}" />
 
         <span class="px-3 py-1.5 text-sm text-black/60 min-w-40 text-center">
             <spring:message code="pagination.current" arguments="${page.page},${page.totalPages}"/>
         </span>
 
-        <paw:linkButton href="${nextUrl}" variant="outline" icon="chevron-right" disabled="${not page.hasNext}" />
-        <paw:linkButton href="${lastUrl}" variant="outline" icon="chevrons-right" disabled="${not page.hasNext}" />
+        <paw:linkButton href="${nextUrl}" variant="outline" icon="chevron-right" disabled="${not page.hasNext}" ariaLabel="${paginationNextLabel}" />
+        <paw:linkButton href="${lastUrl}" variant="outline" icon="chevrons-right" disabled="${not page.hasNext}" ariaLabel="${paginationLastLabel}" />
     </div>
 </c:if>

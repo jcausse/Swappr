@@ -3,6 +3,7 @@
 <%@ attribute name="id" required="true" %>
 <%@ attribute name="value" required="false" %>
 <%@ attribute name="label" required="false" %>
+<%@ attribute name="labelClassname" required="false" %>
 <%@ attribute name="disabled" required="false" type="java.lang.Boolean" %>
 <%@ attribute name="classname" required="false" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
@@ -40,7 +41,7 @@
     <paw:icon name="check" classname="check-icon font-bold text-xl/none translate-x-0.5 -translate-y-0.25 opacity-0 drop-shadow-[1px_1px_white,-1px_-1px_white] transition duration-150" />
   </span>
   <c:if test="${not empty label}">
-    <span><c:out value="${label}"/></span>
+    <span class="${labelClassname}"><c:out value="${label}"/></span>
   </c:if>
   <jsp:doBody/>
 </label>

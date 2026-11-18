@@ -28,15 +28,6 @@ public class CategoryJpaDaoTest {
     private CategoryDao categoryDao;
 
     @Test
-    public void testGetAll() {
-        // Act
-        final List<Category> categories = categoryDao.getAll();
-
-        // Assert
-        Assert.assertEquals(2, categories.size());
-    }
-
-    @Test
     public void testGetAllReturnsEveryCategory() {
         // Act
         final List<Category> categories = categoryDao.getAll();

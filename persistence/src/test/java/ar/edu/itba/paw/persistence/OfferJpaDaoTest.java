@@ -624,7 +624,7 @@ public class OfferJpaDaoTest {
     @Test
     public void testRejectPendingOffersReturnsAllButTheExcludedOne() {
         // Act
-        final List<Offer> rejected = offerDao.rejectPendingOffers(MACBOOK_LISTING_ID, FULL_PRICE_OFFER_ID);
+        final List<Offer> rejected = offerDao.rejectPendingOffers(MACBOOK_LISTING_ID, FULL_PRICE_OFFER_ID, false);
 
         // Assert
         Assert.assertEquals(List.of(LOW_OFFER_ID), idsOf(rejected));
@@ -633,7 +633,7 @@ public class OfferJpaDaoTest {
     @Test
     public void testRejectPendingOffersKeepsTheExcludedOnePending() {
         // Act
-        offerDao.rejectPendingOffers(MACBOOK_LISTING_ID, FULL_PRICE_OFFER_ID);
+        offerDao.rejectPendingOffers(MACBOOK_LISTING_ID, FULL_PRICE_OFFER_ID, false);
 
         // Assert
         Assert.assertEquals(1, countOffersWhere("offer_id = " + LOW_OFFER_ID + " AND status = 'REJECTED'"));
@@ -643,7 +643,7 @@ public class OfferJpaDaoTest {
     @Test
     public void testRejectPendingOffersWithoutExceptionRejectsAll() {
         // Act
-        final List<Offer> rejected = offerDao.rejectPendingOffers(MACBOOK_LISTING_ID, null);
+        final List<Offer> rejected = offerDao.rejectPendingOffers(MACBOOK_LISTING_ID, null, false);
 
         // Assert
         Assert.assertEquals(List.of(LOW_OFFER_ID, FULL_PRICE_OFFER_ID), sortedIdsOf(rejected));
@@ -653,7 +653,7 @@ public class OfferJpaDaoTest {
     @Test
     public void testRejectPendingOffersIgnoresOtherStatuses() {
         // Act (listing 4 also has a rejected and a pending_payment offer)
-        final List<Offer> rejected = offerDao.rejectPendingOffers(GAMING_LISTING_ID, null);
+        final List<Offer> rejected = offerDao.rejectPendingOffers(GAMING_LISTING_ID, null, false);
 
         // Assert
         Assert.assertEquals(List.of(GAMING_OFFER_ID), idsOf(rejected));
@@ -661,9 +661,31 @@ public class OfferJpaDaoTest {
     }
 
     @Test
+    public void testRejectPendingOffersCanIncludePendingPaymentOffers() {
+        // Act
+        final List<Offer> rejected = offerDao.rejectPendingOffers(GAMING_LISTING_ID, null, true);
+
+        // Assert
+        Assert.assertEquals(List.of(GAMING_OFFER_ID, TRADE_OFFER_ID), sortedIdsOf(rejected));
+        Assert.assertEquals(0, countOffersWhere(
+            "listing_id = " + GAMING_LISTING_ID + " AND status IN ('PENDING', 'PENDING_PAYMENT')"));
+    }
+
+    @Test
+    public void testRejectCancellableOffersForOfferedListing() {
+        // Act
+        final int rejected = offerDao.rejectCancellableOffersForOfferedListing(MACBOOK_LISTING_ID);
+
+        // Assert
+        Assert.assertEquals(1, rejected);
+        Assert.assertEquals(1, countOffersWhere(
+            "offer_id = " + TRADE_OFFER_ID + " AND status = 'REJECTED'"));
+    }
+
+    @Test
     public void testRejectPendingOffersDoesNotTouchOtherListings() {
         // Act
-        offerDao.rejectPendingOffers(MACBOOK_LISTING_ID, null);
+        offerDao.rejectPendingOffers(MACBOOK_LISTING_ID, null, false);
 
         // Assert
         Assert.assertEquals(1, countOffersWhere("offer_id = " + GAMING_OFFER_ID + " AND status = 'PENDING'"));

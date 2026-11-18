@@ -4,7 +4,6 @@
 <%@ taglib prefix="paw" tagdir="/WEB-INF/tags" %>
 <%@ taglib prefix="spring" uri="http://www.springframework.org/tags" %>
 
-<!DOCTYPE html>
 <html lang="${pageContext.response.locale.language}">
 <paw:head titleKey="badRequest.heading"/>
 <body class="min-h-screen bg-neutral-50 flex items-center justify-center p-6">

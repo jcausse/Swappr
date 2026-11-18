@@ -32,12 +32,12 @@ public class BrandJpaDao implements BrandDao {
 
     @Override
     public boolean existsByNameAndIdNot(String name, Long id) {
-        return em.createQuery(
-                "SELECT COUNT(b) FROM Brand b WHERE LOWER(b.name) = LOWER(:name) AND b.id <> :id",
-                Long.class)
+        return Boolean.TRUE.equals(em.createNativeQuery(
+                        "SELECT EXISTS (SELECT 1 FROM brands b"
+                        + " WHERE LOWER(b.brand_name) = LOWER(:name) AND b.brand_id <> :id)")
                 .setParameter("name", name)
                 .setParameter("id", id)
-                .getSingleResult() > 0;
+                .getSingleResult());
     }
 
     @Override
@@ -48,28 +48,46 @@ public class BrandJpaDao implements BrandDao {
 
     @Override
     public Page<BrandInfo> getWithStats(BrandSort sort, int page, int pageSize) {
-        final long totalCount = em.createQuery("SELECT COUNT(b) FROM Brand b", Long.class)
-                .getSingleResult();
+        final long totalCount = ((Number) em.createNativeQuery("SELECT COUNT(*) FROM brands b")
+                .getSingleResult()).longValue();
 
         if (totalCount == 0) {
             return new Page<>(List.of(), page, pageSize, 0);
         }
 
         final String direction = sort.isAscending() ? "ASC" : "DESC";
+        final String nativeOrderBy = sort.getKey().equals("id")
+                ? "b.brand_id " + direction
+                : "b.brand_name " + direction + ", b.brand_id " + direction;
         final String orderBy = sort.getKey().equals("id")
                 ? "b.id " + direction
                 : "b.name " + direction + ", b.id " + direction;
+
+        // 1+1 pagination: page only brand IDs in a native query, then aggregate for those IDs.
+        final List<Long> brandIds = ((List<?>) em.createNativeQuery(
+                "SELECT b.brand_id FROM brands b ORDER BY " + nativeOrderBy)
+                .setFirstResult((page - 1) * pageSize)
+                .setMaxResults(pageSize)
+                .getResultList())
+                .stream()
+                .map(row -> ((Number) row).longValue())
+                .toList();
+
+        if (brandIds.isEmpty()) {
+            return new Page<>(List.of(), page, pageSize, totalCount);
+        }
+
         final List<BrandInfo> content = em.createQuery(
                 "SELECT new ar.edu.itba.paw.model.BrandInfo("
                 + "b.id, b.name, COUNT(DISTINCT m.id), COUNT(DISTINCT l.id))"
                 + " FROM Brand b"
                 + " LEFT JOIN Model m ON m.brand.id = b.id"
                 + " LEFT JOIN Listing l ON l.model.id = m.id"
+                + " WHERE b.id IN :brandIds"
                 + " GROUP BY b.id, b.name"
                 + " ORDER BY " + orderBy,
                 BrandInfo.class)
-                .setFirstResult((page - 1) * pageSize)
-                .setMaxResults(pageSize)
+                .setParameter("brandIds", brandIds)
                 .getResultList();
 
         return new Page<>(content, page, pageSize, totalCount);
@@ -111,14 +129,18 @@ public class BrandJpaDao implements BrandDao {
         return brand;
     }
 
+    // Native EXISTS: JPQL has no select-level EXISTS, so the alternatives are a full COUNT or a
+    // setMaxResults(1) query, which may trigger hidden in-memory pagination via implicit joins if
+    // entities change. Native EXISTS short-circuits on the first match.
+    // The join is explicit so the SQL reads directly as listings -> models.
     @Override
     public boolean hasListings(Long brandId) {
-        return !em.createQuery(
-                "SELECT l.id FROM Listing l WHERE l.model.brand.id = :brandId",
-                Long.class)
+        return Boolean.TRUE.equals(em.createNativeQuery(
+                        "SELECT EXISTS ("
+                        + "SELECT 1 FROM listings l"
+                        + " JOIN models m ON m.model_id = l.model_id"
+                        + " WHERE m.brand_id = :brandId)")
                 .setParameter("brandId", brandId)
-                .setMaxResults(1)
-                .getResultList()
-                .isEmpty();
+                .getSingleResult());
     }
 }

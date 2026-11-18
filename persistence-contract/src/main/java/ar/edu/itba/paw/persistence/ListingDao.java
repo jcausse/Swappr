@@ -18,19 +18,26 @@ public interface ListingDao {
     Listing create(String title, Price price, User creator, Model model, int year,
                     Condition condition, boolean acceptsTrade, boolean acceptsShipping, String description, List<Long> imageIds);
     Page<Listing> search(ListingFilter filter);
-    ListingStatus purchase(Long id, Long buyerId);
-    ListingStatus pendingTransaction(Long id, Long buyerId);
+    Page<Listing> searchForAdmin(ListingFilter filter);
+    void purchase(Long id);
+    void pendingTransaction(Long id);
     void updateStatus(Long id, ListingStatus status);
 
     void updateStatusBulk(List<Long> ids, ListingStatus status);
 
-    Listing update(Long id, String title, Price price, Model model, int year,
-                   Condition condition, boolean acceptsTrade, boolean acceptsShipping, String description);
+    Optional<Listing> update(Long id, String title, Price price, Model model, int year,
+                             Condition condition, boolean acceptsTrade, boolean acceptsShipping, String description);
     boolean cancel(Long id);
 
     int releaseOfferedListingsForParticipant(Long userId);
 
     int releaseListingsHeldByBuyerPaymentOffers(Long userId);
+
+    /**
+     * Admin-cancellation edge case: bulk-releases the target listings held by PENDING_PAYMENT
+     * trade offers whose offered listing is the one being canceled.
+     */
+    int releaseListingsHeldByPendingPaymentTradeOffersForOfferedListing(Long offeredListingId);
 
     int cancelAllByCreator(Long userId);
 

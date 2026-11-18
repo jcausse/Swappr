@@ -5,7 +5,6 @@ import ar.edu.itba.paw.model.ListingSort;
 import ar.edu.itba.paw.model.ListingStatus;
 import ar.edu.itba.paw.model.OfferRating;
 import ar.edu.itba.paw.model.Province;
-import ar.edu.itba.paw.model.RatingFilter;
 import ar.edu.itba.paw.model.RatingRole;
 import ar.edu.itba.paw.model.User;
 import ar.edu.itba.paw.service.ListingService;
@@ -13,12 +12,12 @@ import ar.edu.itba.paw.service.RatingService;
 import ar.edu.itba.paw.service.ProvinceService;
 import ar.edu.itba.paw.service.UserService;
 import ar.edu.itba.paw.service.dto.ListingFilterDto;
+import ar.edu.itba.paw.service.dto.RatingFilterDto;
 import ar.edu.itba.paw.webapp.auth.AuthHelper;
 import ar.edu.itba.paw.webapp.auth.CurrentUser;
 import ar.edu.itba.paw.service.exception.UserNotFoundException;
 import ar.edu.itba.paw.webapp.form.RatingFilterForm;
 import ar.edu.itba.paw.webapp.form.StringSelectOption;
-import ar.edu.itba.paw.webapp.form.SelectOption;
 import ar.edu.itba.paw.webapp.form.UserEditForm;
 import ar.edu.itba.paw.webapp.form.UserForm;
 import javax.validation.Valid;
@@ -32,6 +31,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
 import java.net.URLEncoder;
@@ -59,7 +59,9 @@ public class UserController {
     @GetMapping("/profile/{id}")
     @PreAuthorize("permitAll()")
     public ModelAndView profile(@PathVariable Long id, @CurrentUser(required = false) User currentUser,
-                                @ModelAttribute("ratingFilterForm") RatingFilterForm ratingFilterForm) {
+                                @ModelAttribute("ratingFilterForm") RatingFilterForm ratingFilterForm,
+                                @RequestParam(value = "listingPage", defaultValue = "1") int listingPageNumber,
+                                @RequestParam(value = "ratingPage", defaultValue = "1") int ratingPageNumber) {
         LOGGER.debug("Accessing profile for user id: {}", id);
         final User user = userService.getById(id).orElseThrow(() -> UserNotFoundException.byId(id));
         final boolean isSelfRequest = user.isSameUser(currentUser);
@@ -68,7 +70,7 @@ public class UserController {
                 .sort(ListingSort.RECENT)
                 .creatorId(user.getId())
                 .status(ListingStatus.ACTIVE)
-                .page(1)
+                .page(listingPageNumber)
                 .pageSize(PROFILE_LISTINGS_PAGE_SIZE)
                 .build();
 
@@ -78,11 +80,11 @@ public class UserController {
         final var role = ratingFilterForm.getRole();
         final var type = ratingFilterForm.getType();
 
-        var ratingFilter = RatingFilter.builder()
+        var ratingFilter = RatingFilterDto.builder()
                 .ratedId(user.getId())
                 .roles(List.of(role))
                 .types(type != null ? List.of(type) : null)
-                .page(ratingFilterForm.getPage())
+                .page(ratingPageNumber)
                 .pageSize(PROFILE_RATINGS_PAGE_SIZE)
                 .build();
 
@@ -134,7 +136,7 @@ public class UserController {
     private ModelAndView profileEditView(final User currentUser) {
         return new ModelAndView("profileEdit")
                 .addObject("user", currentUser)
-                .addObject("provinces", buildProvinceOptions())
+                .addObject("provinces", provinceService.getAll())
                 .addObject("languages", buildLanguageOptions());
     }
 
@@ -147,14 +149,6 @@ public class UserController {
                 .toList();
     }
 
-    private List<SelectOption> buildProvinceOptions() {
-        return provinceService.getAll().stream()
-                .map(province -> new SelectOption(
-                        province.getId(),
-                        "province." + province.getName()
-                ))
-                .toList();
-    }
 
     @PostMapping("/profile/edit")
     @PreAuthorize("isAuthenticated()")
@@ -169,7 +163,7 @@ public class UserController {
         }
 
         LOGGER.info("User {} profile edit submitted", currentUser.getId());
-        LOGGER.debug("User {} updating profile", currentUser.getUsername());
+        LOGGER.debug("User {} updating profile", currentUser.getId());
 
         // One service call does the whole profile update (display name, password, image, location,
         // language) in a single transaction. Persisting the language also updates the website locale,
@@ -198,8 +192,7 @@ public class UserController {
             return registerForm(form);
         }
 
-        LOGGER.info("User registration submitted: {}", form.getUsername());
-        LOGGER.debug("Registering new user with username: {}", form.getUsername());
+        LOGGER.debug("Registering new user");
 
         final User created = userService.create(form.toDto());
 

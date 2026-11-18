@@ -1,5 +1,6 @@
 package ar.edu.itba.paw.webapp.controller;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -10,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
+import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -31,7 +33,6 @@ import ar.edu.itba.paw.model.OfferStatusGroup;
 import ar.edu.itba.paw.model.User;
 import ar.edu.itba.paw.service.ListingService;
 import ar.edu.itba.paw.service.OfferService;
-import ar.edu.itba.paw.service.exception.BadParameterException;
 import ar.edu.itba.paw.service.exception.NotFoundException;
 import ar.edu.itba.paw.webapp.auth.CurrentUser;
 import ar.edu.itba.paw.webapp.form.ListingFilterForm;
@@ -68,7 +69,7 @@ public class AccountController {
     public ModelAndView listings(@CurrentUser User currentUser, @ModelAttribute("filterForm") ListingFilterForm filterForm) {
         LOGGER.debug("User {} accessing account listings", currentUser.getId());
 
-        final var filter = filterForm.toDto(currentUser.getId(), ACCOUNT_LISTINGS_PAGE_SIZE);
+        final var filter = filterForm.toOwnedListingsDto(currentUser.getId(), ACCOUNT_LISTINGS_PAGE_SIZE);
 
         final var listingPage = listingService.search(filter);
         final var listings = listingPage.getContent();
@@ -94,18 +95,20 @@ public class AccountController {
     public ModelAndView incomingOffers(@CurrentUser User currentUser, @ModelAttribute("filterForm") OfferFilterForm filterForm) {
         LOGGER.debug("User {} accessing incoming offers", currentUser.getId());
 
+        // Status group comparison: we consider this presentation, not business logic, as transient flags are only
+        // used to decide whether to show the other/better offer banners; these are only shown for pending offers.
+        // This is a UI choice and not something the service needs to be aware of, since these are presentation flags
+        // it's up to the view to decide if it needs them populated.
         final var filter = filterForm.toDto(currentUser.getId(), null, ACCOUNT_OFFERS_PAGE_SIZE);
         final var offerPage = offerService.get(filter, filter.statusGroup() == OfferStatusGroup.PENDING);
 
-        final var statusGroupOptions = Arrays.stream(OfferStatusGroup.values())
-            .map(s -> new StringSelectOption(s.name(), "offer.statusGroup." + s.getStatus()))
-            .toList();
+        final var statusGroups = Arrays.stream(OfferStatusGroup.values()).toList();
 
         var offerCountByStatus = getOfferCountByStatus(currentUser, true);
         return new ModelAndView("account/incomingOffers")
                 .addObject("offerPage", offerPage)
                 .addObject("offers", offerPage.getContent())
-                .addObject("statusGroupOptions", statusGroupOptions)
+                .addObject("statusGroups", statusGroups)
                 .addObject("offerCountByStatus", offerCountByStatus)
                 .addObject("pendingOffersCount", offerCountByStatus.get(OfferStatusGroup.PENDING.name()));
     }
@@ -118,14 +121,12 @@ public class AccountController {
         final var filter = filterForm.toDto(null, currentUser.getId(), ACCOUNT_OFFERS_PAGE_SIZE);
         final var offerPage = offerService.get(filter, false);
 
-        final var statusGroupOptions = Arrays.stream(OfferStatusGroup.values())
-            .map(s -> new StringSelectOption(s.name(), "offer.statusGroup." + s.getStatus()))
-            .toList();
+        final var statusGroups = Arrays.stream(OfferStatusGroup.values()).toList();
 
         return new ModelAndView("account/myOffers")
                 .addObject("offerPage", offerPage)
                 .addObject("offers", offerPage.getContent())
-                .addObject("statusGroupOptions", statusGroupOptions)
+                .addObject("statusGroups", statusGroups)
                 .addObject("offerCountByStatus", getOfferCountByStatus(currentUser, false))
                 .addObject("pendingOffersCount", offerService.getPendingOffersCount(currentUser));
     }
@@ -149,12 +150,7 @@ public class AccountController {
     @PreAuthorize("@webPermissionService.canManageOfferAsBuyer(authentication, #offerId)")
     public ModelAndView showProofOfPaymentUpload(@PathVariable Long offerId, @CurrentUser User currentUser) {
         LOGGER.debug("User {} accessing proof of payment upload for offer {}", currentUser.getId(), offerId);
-        final Offer offer = offerService.getById(offerId, false)
-                .orElseThrow(() -> NotFoundException.createFor("Offer"));
-
-        if (!offer.canUploadDocuments()) {
-            throw new BadParameterException("Offer does not accept uploading documents in current state");
-        }
+        final Offer offer = offerService.getForDocumentUpload(offerId);
 
         return new ModelAndView("account/proofOfPaymentUpload")
             .addObject("offer", offer)
@@ -189,12 +185,7 @@ public class AccountController {
     @PreAuthorize("@webPermissionService.canManageOfferAsSeller(authentication, #offerId)")
     public ModelAndView showProofOfShippingUpload(@PathVariable Long offerId, @CurrentUser User currentUser) {
         LOGGER.debug("User {} accessing proof of shipping upload for offer {}", currentUser.getId(), offerId);
-        final Offer offer = offerService.getById(offerId, false)
-                .orElseThrow(() -> NotFoundException.createFor("Offer"));
-
-        if (!offer.canUploadDocuments()) {
-            throw new BadParameterException("Offer does not accept uploading documents in current state");
-        }
+        final Offer offer = offerService.getForDocumentUpload(offerId);
 
         return new ModelAndView("account/proofOfShippingUpload")
             .addObject("offer", offer)
@@ -250,10 +241,14 @@ public class AccountController {
 
     private ResponseEntity<Resource> getResource(final File file) {
         final ByteArrayResource resource = new ByteArrayResource(file.getData());
+        final String contentDisposition = ContentDisposition.attachment()
+                .filename(file.getFilename(), StandardCharsets.UTF_8)
+                .build()
+                .toString();
 
         return ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType(file.getContentType().orElse("application/octet-stream")))
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getFilename() + "\"")
+                .contentType(MediaType.valueOf(file.getMediaType()))
+                .header(HttpHeaders.CONTENT_DISPOSITION, contentDisposition)
                 .contentLength(file.getData().length)
                 .body(resource);
     }
@@ -262,12 +257,7 @@ public class AccountController {
     @PreAuthorize("@webPermissionService.canAccessOffer(authentication, #offerId)")
     public ModelAndView showRateForm(@PathVariable Long offerId, @CurrentUser User currentUser,
                                       @ModelAttribute("rateForm") RateForm rateForm) {
-        final Offer offer = offerService.getById(offerId, false)
-                .orElseThrow(() -> NotFoundException.createFor("Offer"));
-
-        if (!offer.canBeRatedBy(currentUser)) {
-            throw new BadParameterException("Only accepted offers can be rated");
-        }
+        final Offer offer = offerService.getRateableBy(offerId, currentUser);
 
         return new ModelAndView("account/rate")
             .addObject("offer", offer)
@@ -280,18 +270,17 @@ public class AccountController {
                                         @CurrentUser User currentUser,
                                         @Valid @ModelAttribute("rateForm") RateForm rateForm,
                                         BindingResult bindingResult) {
-        final Offer offer = offerService.getById(offerId, false)
-                .orElseThrow(() -> NotFoundException.createFor("Offer"));
-
         if (bindingResult.hasErrors()) {
+            final Offer offer = offerService.getById(offerId, false)
+                    .orElseThrow(() -> NotFoundException.createFor("Offer"));
             return new ModelAndView("account/rate")
                 .addObject("offer", offer)
                 .addObject("pendingOffersCount", offerService.getPendingOffersCount(currentUser));
         }
 
-        offerService.rate(offer, currentUser, rateForm.getRating(), rateForm.getReviewText());
+        final Offer ratedOffer = offerService.rate(offerId, currentUser, rateForm.getRating(), rateForm.getReviewText());
 
-        return new ModelAndView("redirect:" + (offer.isBuyer(currentUser)
+        return new ModelAndView("redirect:" + (ratedOffer.isBuyer(currentUser)
             ? "/account/my-offers?statusGroup=RESOLVED"
             : "/account/incoming-offers?statusGroup=RESOLVED"));
     }

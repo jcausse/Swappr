@@ -7,7 +7,6 @@ import ar.edu.itba.paw.service.exception.BrandModelRequestAlreadyExistsException
 import ar.edu.itba.paw.service.exception.ModelAlreadyExistsException;
 import ar.edu.itba.paw.webapp.auth.CurrentUser;
 import ar.edu.itba.paw.webapp.form.BrandModelRequestForm;
-import ar.edu.itba.paw.webapp.form.SelectOption;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,15 +39,10 @@ public class BrandModelRequestController {
             @ModelAttribute("requestForm") BrandModelRequestForm form,
             @RequestParam(value = "categoryId", required = false) Long categoryId,
             @RequestParam(value = "subcategoryId", required = false) Long subcategoryId,
-            @RequestParam(value = "brandId", required = false) Long brandId,
-            @RequestParam(value = "duplicate", defaultValue = "false") boolean duplicate
+            @RequestParam(value = "brandId", required = false) Long brandId
     ) {
         form.applyDefaults(categoryId, subcategoryId, brandId);
-        final ModelAndView mav = render(form);
-        if (duplicate) {
-            mav.addObject("formError", "error.catalogRequest.duplicate");
-        }
-        return mav;
+        return render(form);
     }
 
     @PostMapping
@@ -58,13 +52,6 @@ public class BrandModelRequestController {
             BindingResult errors,
             @CurrentUser User currentUser
     ) {
-        final boolean isAutoSubmit = Boolean.TRUE.equals(form.getIsAutoSubmit());
-        form.setIsAutoSubmit(false);
-        if (isAutoSubmit) {
-            form.setSubcategoryId(null);
-            return render(form);
-        }
-
         if (errors.hasErrors()) {
             return render(form);
         }
@@ -82,10 +69,20 @@ public class BrandModelRequestController {
             return mav;
         } catch (BrandModelRequestAlreadyExistsException ex) {
             LOGGER.warn("Brand/model request already exists: {}", ex.getMessage());
-            return new ModelAndView("redirect:/catalog-requests/new?duplicate=1");
+            errors.reject("error.catalogRequest.duplicate");
+            return render(form);
         }
 
         return new ModelAndView("redirect:/catalog-requests/success");
+    }
+
+    // Changing the category re-renders the form with the new subcategories and keeps what the user typed.
+    // It is not a submission, so the form is not validated.
+    @PostMapping(params = "categoryChanged")
+    @PreAuthorize("isAuthenticated()")
+    public ModelAndView changeCategory(@ModelAttribute("requestForm") BrandModelRequestForm form) {
+        form.setSubcategoryId(null);
+        return render(form);
     }
 
     @GetMapping("/success")
@@ -98,16 +95,11 @@ public class BrandModelRequestController {
         final var categories = catalogService.getAllCategories();
         final ModelAndView mav = new ModelAndView("catalogRequest/new")
                 .addObject("categories", categories)
-                .addObject("categoryOptions", categories.stream()
-                        .map(category -> new SelectOption(category.getId(), "category." + category.getName()))
-                        .toList())
                 .addObject("brandOptions", catalogService.getAllBrands());
 
         if (form.getCategoryId() != null) {
-            mav.addObject("subcategoryOptions", catalogService.getSubcategoriesByCategory(form.getCategoryId())
-                    .stream()
-                    .map(subcategory -> new SelectOption(subcategory.getId(), "subcategory." + subcategory.getName()))
-                    .toList());
+            mav.addObject("subcategories",
+                    catalogService.getSubcategoriesByCategory(form.getCategoryId()));
         }
 
         return mav;

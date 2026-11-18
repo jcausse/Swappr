@@ -13,11 +13,12 @@
 <spring:message code="account.incomingOffers.pendingTitle" var="pendingTitleMsg"/>
 <spring:message code="account.incomingOffers.pendingPaymentTitle" var="pendingPaymentTitleMsg"/>
 <spring:message code="account.incomingOffers.resolvedTitle" var="resolvedTitleMsg"/>
+<spring:message code="account.incomingOffers.view" var="viewOfferLabel"/>
 
 <account:layout titleKey="account.incomingOffers.title" title="${titleMsg}" subtitle="${subtitleMsg}">
     <form:form modelAttribute="filterForm" action="${filterAction}" method="get" id="filterForm">
         <paw:card classname="p-2! mb-4">
-            <paw:formButtonToggle path="statusGroup" items="${statusGroupOptions}" badgeCounts="${offerCountByStatus}" selectedOption="${filterForm.getStatusGroup().name()}" translateLabels="true" />
+            <paw:formButtonToggle path="statusGroup" items="${statusGroups}" itemLabel="status" itemValue="name" labelPrefix="offer.statusGroup." badgeCounts="${offerCountByStatus}" selectedOption="${filterForm.getStatusGroup().name()}" translateLabels="true" />
         </paw:card>
     </form:form>
 
@@ -35,7 +36,7 @@
                 <c:forEach var="offer" items="${offers}">
                     <account:offerCard offer="${offer}" user="buyer">
                         <c:url value="/account/incoming-offers/${offer.id}" var="offerUrl"/>
-                        <paw:linkButton variant="outline" href="${offerUrl}" icon="eye" />
+                        <paw:linkButton variant="outline" href="${offerUrl}" icon="eye" ariaLabel="${viewOfferLabel}" />
                         <paw:menu id="incoming${offer.id}" variant="outline" icon="ellipsis" panelWidth="w-66" panelAlign="right">
                             <c:if test="${offer.offeredListing.present}">
                                 <c:url value="/listing/${offer.offeredListing.get().id}" var="offeredListingUrl"/>

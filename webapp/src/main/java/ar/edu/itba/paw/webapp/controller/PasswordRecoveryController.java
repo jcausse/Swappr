@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import ar.edu.itba.paw.service.PasswordRecoveryService;
 import ar.edu.itba.paw.service.enumeration.OneTimePasswordVerificationResult;
@@ -20,9 +21,6 @@ import ar.edu.itba.paw.webapp.auth.AuthHelper;
 import ar.edu.itba.paw.webapp.form.PasswordRecoveryRequestForm;
 import ar.edu.itba.paw.webapp.form.PasswordRecoveryVerificationForm;
 import lombok.RequiredArgsConstructor;
-
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 
 @RequiredArgsConstructor
 @Controller
@@ -52,18 +50,20 @@ public class PasswordRecoveryController {
     @PostMapping("/recovery/request")
     public ModelAndView passwordRecoveryRequestPOST(
             @Valid @ModelAttribute("passwordRecoveryRequestForm") PasswordRecoveryRequestForm form,
-            BindingResult errors
+            BindingResult errors,
+            RedirectAttributes redirectAttributes
     ) {
         if (errors.hasErrors()) {
             LOGGER.debug("Validation failed for password recovery request form");
             return new ModelAndView("recovery/request");
         }
 
-        LOGGER.info("Password recovery requested for {}", form.getUsernameOrEmail());
+        LOGGER.info("Password recovery requested");
         passwordRecoveryService.startAndSendRecoveryEmail(form.getUsernameOrEmail());
 
-        return new ModelAndView("redirect:/recovery/request?codeSent=true&usernameOrEmail="
-                + URLEncoder.encode(form.getUsernameOrEmail(), StandardCharsets.UTF_8));
+        redirectAttributes.addAttribute("codeSent", true);
+        redirectAttributes.addAttribute("usernameOrEmail", form.getUsernameOrEmail());
+        return new ModelAndView("redirect:/recovery/request");
     }
 
     @GetMapping("/recovery/verification")
@@ -92,12 +92,12 @@ public class PasswordRecoveryController {
         );
 
         if (result == OneTimePasswordVerificationResult.ACCEPTED) {
-            LOGGER.info("Password successfully recovered for {}", form.getUsernameOrEmail());
+            LOGGER.info("Password successfully recovered");
             authHelper.login(request, form.getUsernameOrEmail());
             return new ModelAndView("redirect:/");
         }
 
-        LOGGER.debug("Password recovery verification failed for {} with result {}", form.getUsernameOrEmail(), result);
+        LOGGER.debug("Password recovery verification failed with result {}", result);
         errors.rejectValue("otp", result == OneTimePasswordVerificationResult.EXPIRED
                 ? "recovery.verification.error.expiredOtp"
                 : "recovery.verification.error.invalidOtp"

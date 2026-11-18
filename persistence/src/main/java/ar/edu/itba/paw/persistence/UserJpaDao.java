@@ -150,16 +150,18 @@ public class UserJpaDao implements UserDao {
 
     @Override
     public boolean isUsernameTaken(String username) {
-        return em.createQuery("SELECT COUNT(u) FROM User u WHERE u.username = :username", Long.class)
+        return Boolean.TRUE.equals(em.createNativeQuery(
+                        "SELECT EXISTS (SELECT 1 FROM users u WHERE u.username = :username)")
                 .setParameter("username", username)
-                .getSingleResult() > 0;
+                .getSingleResult());
     }
 
     @Override
     public boolean isEmailTaken(String email) {
-        return em.createQuery("SELECT COUNT(u) FROM User u WHERE u.email = :email", Long.class)
+        return Boolean.TRUE.equals(em.createNativeQuery(
+                        "SELECT EXISTS (SELECT 1 FROM users u WHERE u.email = :email)")
                 .setParameter("email", email)
-                .getSingleResult() > 0;
+                .getSingleResult());
     }
 
     @Override
@@ -167,9 +169,9 @@ public class UserJpaDao implements UserDao {
         final User user = em.find(User.class, userId);
         if (user != null) {
             switch (rating) {
-                case POSITIVE -> user.setSellerPositiveRatings((user.getSellerPositiveRatings() != null ? user.getSellerPositiveRatings() : 0) + 1);
-                case NEUTRAL -> user.setSellerNeutralRatings((user.getSellerNeutralRatings() != null ? user.getSellerNeutralRatings() : 0) + 1);
-                case NEGATIVE -> user.setSellerNegativeRatings((user.getSellerNegativeRatings() != null ? user.getSellerNegativeRatings() : 0) + 1);
+                case POSITIVE -> user.setSellerPositiveRatings(user.getSellerPositiveRatings() + 1);
+                case NEUTRAL -> user.setSellerNeutralRatings(user.getSellerNeutralRatings() + 1);
+                case NEGATIVE -> user.setSellerNegativeRatings(user.getSellerNegativeRatings() + 1);
             }
         }
     }
@@ -179,9 +181,9 @@ public class UserJpaDao implements UserDao {
         final User user = em.find(User.class, userId);
         if (user != null) {
             switch (rating) {
-                case POSITIVE -> user.setBuyerPositiveRatings((user.getBuyerPositiveRatings() != null ? user.getBuyerPositiveRatings() : 0) + 1);
-                case NEUTRAL -> user.setBuyerNeutralRatings((user.getBuyerNeutralRatings() != null ? user.getBuyerNeutralRatings() : 0) + 1);
-                case NEGATIVE -> user.setBuyerNegativeRatings((user.getBuyerNegativeRatings() != null ? user.getBuyerNegativeRatings() : 0) + 1);
+                case POSITIVE -> user.setBuyerPositiveRatings(user.getBuyerPositiveRatings() + 1);
+                case NEUTRAL -> user.setBuyerNeutralRatings(user.getBuyerNeutralRatings() + 1);
+                case NEGATIVE -> user.setBuyerNegativeRatings(user.getBuyerNegativeRatings() + 1);
             }
         }
     }
@@ -196,6 +198,8 @@ public class UserJpaDao implements UserDao {
         incrementRatingCounters(increments, rating, false);
     }
 
+    // Bulk JPQL update: does not refresh users already in the persistence context. Re-fetch
+    // (or refresh/detach) affected users before reading them later in this transaction.
     private void incrementRatingCounters(Map<Long, Long> increments, OfferRating rating, boolean seller) {
         if (increments == null || increments.isEmpty()) return;
 
@@ -216,7 +220,7 @@ public class UserJpaDao implements UserDao {
         incrementsCase.append(" ELSE 0 END");
 
         final Query update = em.createQuery(
-                "UPDATE User u SET u." + field + " = COALESCE(u." + field + ", 0) + "
+                "UPDATE User u SET u." + field + " = u." + field + " + "
                         + incrementsCase + " WHERE u.id IN :ids")
                 .setParameter("ids", increments.keySet());
         params.forEach(update::setParameter);

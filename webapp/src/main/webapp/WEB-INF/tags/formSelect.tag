@@ -2,10 +2,10 @@
 <%@ attribute name="path" required="true" %>
 <%@ attribute name="id" required="false" %>
 <%@ attribute name="items" required="true" type="java.lang.Object" %>
-<%@ attribute name="plainStrings" required="false" type="java.lang.Boolean" %>
 <%@ attribute name="translateLabels" required="false" type="java.lang.Boolean" %>
 <%@ attribute name="itemLabel" required="false" type="java.lang.String" %>
 <%@ attribute name="itemValue" required="false" type="java.lang.String" %>
+<%@ attribute name="labelPrefix" required="false" type="java.lang.String" %>
 <%@ attribute name="label" required="false" %>
 <%@ attribute name="placeholder" required="false" %>
 <%@ attribute name="variant" required="false" %>
@@ -43,6 +43,7 @@
 <c:set var="inputId" value="${not empty id ? id : path}"/>
 <c:set var="resolvedItemLabel" value="${not empty itemLabel ? itemLabel : 'name'}"/>
 <c:set var="resolvedItemValue" value="${not empty itemValue ? itemValue : 'id'}"/>
+<c:set var="resolvedLabelPrefix" value="${not empty labelPrefix ? labelPrefix : ''}"/>
 
 <%-- Define the markup in reverse order so we can use errors to conditionally style the input --%>
 <div class="flex flex-col-reverse gap-1 ${inputClass}">
@@ -63,22 +64,11 @@
             <c:choose>
                 <c:when test="${isTranslateLabels}">
                     <c:forEach var="item" items="${items}">
-                        <c:choose>
-                            <c:when test="${not empty plainStrings}">
-                                <c:set var="optionValue" value="${item}"/>
-                                <c:set var="optionLabelKey" value="${item}"/>
-                            </c:when>
-                            <c:otherwise>
-                                <c:set var="optionValue" value="${item[resolvedItemValue]}"/>
-                                <c:set var="optionLabelKey" value="${item[resolvedItemLabel]}"/>
-                            </c:otherwise>
-                        </c:choose>
+                        <c:set var="optionValue" value="${item[resolvedItemValue]}"/>
+                        <c:set var="optionLabelKey" value="${resolvedLabelPrefix}${item[resolvedItemLabel]}"/>
                         <spring:message code="${optionLabelKey}" var="optionLabel"/>
                         <form:option value="${optionValue}" label="${optionLabel}"/>
                     </c:forEach>
-                </c:when>
-                <c:when test="${not empty plainStrings}">
-                    <form:options items="${items}" />
                 </c:when>
                 <c:otherwise>
                     <form:options items="${items}" itemValue="${resolvedItemValue}" itemLabel="${resolvedItemLabel}" />

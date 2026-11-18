@@ -39,13 +39,13 @@
                 <%-- Step 1: Category Selection (always visible) --%>
                 <spring:message code="listing.new.category" var="categoryLabel"/>
                 <spring:message code="listing.new.category.select" var="categoryPlaceholder"/>
-                <paw:formSelect path="categoryId" label="${categoryLabel}" placeholder="${categoryPlaceholder}" items="${categoryOptions}" translateLabels="true" />
+                <paw:formSelect path="categoryId" label="${categoryLabel}" placeholder="${categoryPlaceholder}" items="${categories}" itemLabel="name" itemValue="id" labelPrefix="category." translateLabels="true" />
 
                 <%-- Step 2: Subcategory Selection (visible when category selected) --%>
                 <c:if test="${chooseProductForm.step ge 2}">
                     <spring:message code="listing.new.subcategory" var="subcategoryLabel"/>
                     <spring:message code="listing.new.subcategory.select" var="subcategoryPlaceholder"/>
-                    <paw:formSelect path="subcategoryId" label="${subcategoryLabel}" placeholder="${subcategoryPlaceholder}" items="${subcategoryOptions}" translateLabels="true" />
+                    <paw:formSelect path="subcategoryId" label="${subcategoryLabel}" placeholder="${subcategoryPlaceholder}" items="${subcategories}" itemLabel="name" itemValue="id" labelPrefix="subcategory." translateLabels="true" />
                 </c:if>
             </div>
 

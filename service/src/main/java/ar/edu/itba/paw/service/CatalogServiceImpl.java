@@ -170,6 +170,9 @@ public class CatalogServiceImpl implements CatalogService {
 
     @Override
     public Model getModelById(Long id) {
+        if (id == null) {
+            throw BadParameterException.create("id", "Model id is required");
+        }
         return modelDao
             .getById(id)
             .orElseThrow(() -> NotFoundException.createFor("Model with ID " + id));
@@ -181,10 +184,17 @@ public class CatalogServiceImpl implements CatalogService {
     }
 
     @Override
-    public Page<ModelInfo> getModels(Long brandId, Long subcategoryId, ModelSort sort, Integer page, int pageSize) {
+    public Page<ModelInfo> getModels(
+            Long brandId,
+            Long categoryId,
+            Long subcategoryId,
+            ModelSort sort,
+            Integer page,
+            int pageSize
+    ) {
         final int safePage = page == null || page < 1 ? 1 : page;
         return modelDao.getWithInfo(
-            brandId, subcategoryId, sort == null ? ModelSort.NAME_ASC : sort, safePage, pageSize
+            brandId, categoryId, subcategoryId, sort == null ? ModelSort.NAME_ASC : sort, safePage, pageSize
         );
     }
 
@@ -278,15 +288,17 @@ public class CatalogServiceImpl implements CatalogService {
         final Map<Long, List<ModelListingInfo>> infoByModelId = new LinkedHashMap<>();
         for (final ModelListingInfo info : infoPage.getContent()) {
             infoByModelId
-                .computeIfAbsent(info.getModel().getId(), key -> new ArrayList<>())
+                .computeIfAbsent(info.getModelId(), key -> new ArrayList<>())
                 .add(info);
         }
 
         final var summaries = infoByModelId.values()
             .stream()
             .map(values -> ModelListingInfoSummary.builder()
-                .brand(values.get(0).getBrand())
-                .model(values.get(0).getModel())
+                .brandId(values.get(0).getBrandId())
+                .brandName(values.get(0).getBrandName())
+                .modelId(values.get(0).getModelId())
+                .modelName(values.get(0).getModelName())
                 .listingInfoByCondition(values)
                 .build()
             )
@@ -299,8 +311,10 @@ public class CatalogServiceImpl implements CatalogService {
     public Optional<ModelListingInfoSummary> getListingInfoSummaryForModel(final Long modelId, final Long excludedListingId) {
         return modelDao.getListingInfoSummaryForModel(modelId, excludedListingId)
             .map(summary -> ModelListingInfoSummary.builder()
-                .brand(summary.getBrand())
-                .model(summary.getModel())
+                .brandId(summary.getBrandId())
+                .brandName(summary.getBrandName())
+                .modelId(summary.getModelId())
+                .modelName(summary.getModelName())
                 .listingInfoByCondition(summary.getListingInfoByCondition())
                 .build());
     }

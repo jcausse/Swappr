@@ -11,16 +11,12 @@ import org.springframework.stereotype.Repository;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
-import javax.persistence.TypedQuery;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @Repository
 public class SiteNotificationJpaDao implements SiteNotificationDao {
@@ -97,44 +93,33 @@ public class SiteNotificationJpaDao implements SiteNotificationDao {
         final int page = filter.getPage();
         final int pageSize = filter.getPageSize();
 
-        // 1. Count query
-        final StringBuilder countHql = new StringBuilder(
-                "SELECT COUNT(n) FROM SiteNotification n WHERE n.user.id = :userId");
-        final Map<String, Object> hqlParams = new HashMap<>();
-        hqlParams.put("userId", filter.getUserId());
+        // 1. Shared filter predicate used by both the count and ID queries
+        final StringBuilder nativeWhere = new StringBuilder(" WHERE user_id = :userId");
+        final Map<String, Object> nativeParams = new HashMap<>();
+        nativeParams.put("userId", filter.getUserId());
 
         if (filter.isUnreadOnly()) {
-            countHql.append(" AND n.read = false");
+            nativeWhere.append(" AND is_read = false");
         }
         if (filter.getType() != null) {
-            countHql.append(" AND n.type = :type");
-            hqlParams.put("type", filter.getType());
+            nativeWhere.append(" AND notification_type = :type");
+            nativeParams.put("type", filter.getType().name());
         }
 
-        final TypedQuery<Long> countQuery = em.createQuery(countHql.toString(), Long.class);
-        hqlParams.forEach(countQuery::setParameter);
-        final long totalCount = countQuery.getSingleResult();
+        // 2. Count query
+        final Query countQuery = em.createNativeQuery(
+                "SELECT COUNT(*) FROM site_notifications" + nativeWhere);
+        nativeParams.forEach(countQuery::setParameter);
+        final long totalCount = ((Number) countQuery.getSingleResult()).longValue();
 
         if (totalCount == 0) {
             return new Page<>(List.of(), page, pageSize, 0);
         }
 
-        // 2. Native ID query (1+1 model - Step 1: select IDs with filters and ordering)
-        final StringBuilder nativeSql = new StringBuilder(
-                "SELECT notification_id FROM site_notifications WHERE user_id = :userId");
-        final Map<String, Object> nativeParams = new HashMap<>();
-        nativeParams.put("userId", filter.getUserId());
-
-        if (filter.isUnreadOnly()) {
-            nativeSql.append(" AND is_read = false");
-        }
-        if (filter.getType() != null) {
-            nativeSql.append(" AND notification_type = :type");
-            nativeParams.put("type", filter.getType().name());
-        }
-        nativeSql.append(" ORDER BY created_at DESC, notification_id DESC");
-
-        final Query idQuery = em.createNativeQuery(nativeSql.toString())
+        // 3. Native ID query (1+1 model - Step 1: select IDs with filters and ordering)
+        final Query idQuery = em.createNativeQuery(
+                        "SELECT notification_id FROM site_notifications" + nativeWhere
+                        + " ORDER BY created_at DESC, notification_id DESC")
                 .setFirstResult((page - 1) * pageSize)
                 .setMaxResults(pageSize);
         nativeParams.forEach(idQuery::setParameter);
@@ -145,19 +130,12 @@ public class SiteNotificationJpaDao implements SiteNotificationDao {
             return new Page<>(List.of(), page, pageSize, totalCount);
         }
 
-        // 3. Population query (1+1 model - Step 2: load entities with bodyArgs and preserve order)
-        final List<SiteNotification> fetched = em.createQuery(
-                        "SELECT DISTINCT n FROM SiteNotification n LEFT JOIN FETCH n.bodyArgs LEFT JOIN FETCH n.offer LEFT JOIN FETCH n.user WHERE n.id IN :ids",
+        // 4. Population query (1+1 model - Step 2: load entities with bodyArgs and re-apply the ID query ordering)
+        final List<SiteNotification> entities = em.createQuery(
+                        "SELECT DISTINCT n FROM SiteNotification n LEFT JOIN FETCH n.bodyArgs LEFT JOIN FETCH n.offer LEFT JOIN FETCH n.user WHERE n.id IN :ids ORDER BY n.createdAt DESC, n.id DESC",
                         SiteNotification.class)
                 .setParameter("ids", ids)
                 .getResultList();
-
-        final Map<Long, SiteNotification> byId = fetched.stream()
-                .collect(Collectors.toMap(SiteNotification::getId, Function.identity()));
-        final List<SiteNotification> entities = ids.stream()
-                .map(byId::get)
-                .filter(Objects::nonNull)
-                .toList();
 
         return new Page<>(entities, page, pageSize, totalCount);
     }

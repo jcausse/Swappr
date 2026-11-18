@@ -49,13 +49,35 @@ public class ListingServiceImpl implements ListingService {
 
     @Override
     public Listing getById(Long id) {
+        if (id == null) {
+            throw BadParameterException.create("id", "Listing id is required");
+        }
         return listingDao
             .getById(id)
             .orElseThrow(() -> NotFoundException.createFor("Listing with ID " + id));
     }
 
     @Override
+    public Page<Listing> getActiveByCreator(Long creatorId, Integer page, int pageSize) {
+        return search(ListingFilterDto.builder()
+            .creatorId(creatorId)
+            .status(ListingStatus.ACTIVE)
+            .page(page == null || page < 1 ? 1 : page)
+            .pageSize(pageSize)
+            .build());
+    }
+
+    @Override
     public Page<Listing> search(ListingFilterDto dto) {
+        return search(dto, false);
+    }
+
+    @Override
+    public Page<Listing> searchForAdmin(ListingFilterDto dto) {
+        return search(dto, true);
+    }
+
+    private Page<Listing> search(ListingFilterDto dto, boolean forAdmin) {
         Objects.requireNonNull(dto, "ListingFilterDto cannot be null");
         LOGGER.debug("Searching listings: query='{}', categoryId={}, status={}, sort={}, page={}",
                 dto.query(), dto.categoryId(), dto.status(), dto.sort(), dto.page());
@@ -86,7 +108,7 @@ public class ListingServiceImpl implements ListingService {
             .yearMax(dto.yearMax())
             .build();
 
-        return listingDao.search(filter);
+        return forAdmin ? listingDao.searchForAdmin(filter) : listingDao.search(filter);
     }
 
     @Override
@@ -208,7 +230,7 @@ public class ListingServiceImpl implements ListingService {
             throw new BadParameterException("Listing is not in a pending transaction state");
         }
 
-        listingDao.purchase(id, buyerId);
+        listingDao.purchase(id);
 
         final User buyer = userService.getById(buyerId)
             .orElseThrow(() -> new BadParameterException("Invalid buyerId"));
@@ -229,7 +251,7 @@ public class ListingServiceImpl implements ListingService {
             .getById(id)
             .orElseThrow(() -> NotFoundException.createFor("Listing with ID " + id));
 
-        listingDao.pendingTransaction(id, buyerId);
+        listingDao.pendingTransaction(id);
 
         return listing;
     }
@@ -275,7 +297,7 @@ public class ListingServiceImpl implements ListingService {
             acceptsTradeFor(price, dto.acceptsTrade()),
             dto.acceptsShipping(),
             dto.description()
-        );
+        ).orElseThrow(() -> NotFoundException.createFor("Listing with ID " + existing.getId()));
 
         final var currentImageIds = existing.getImageIds();
         final var removedImageIds = Optional.ofNullable(dto.removedImageIds()).orElse(List.of()).stream()
@@ -309,5 +331,23 @@ public class ListingServiceImpl implements ListingService {
     public void updateStatusBulk(List<Long> ids, ListingStatus status) {
         LOGGER.debug("Bulk updating listing status: ids={}, newStatus={}", ids, status);
         listingDao.updateStatusBulk(ids, status);
+    }
+
+    @Override
+    @Transactional
+    public int releaseOfferedListingsForParticipant(Long userId) {
+        return listingDao.releaseOfferedListingsForParticipant(userId);
+    }
+
+    @Override
+    @Transactional
+    public int releaseListingsHeldByBuyerPaymentOffers(Long userId) {
+        return listingDao.releaseListingsHeldByBuyerPaymentOffers(userId);
+    }
+
+    @Override
+    @Transactional
+    public int releaseListingsHeldByPendingPaymentTradeOffersForOfferedListing(Long offeredListingId) {
+        return listingDao.releaseListingsHeldByPendingPaymentTradeOffersForOfferedListing(offeredListingId);
     }
 }

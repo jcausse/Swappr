@@ -8,4 +8,5 @@ import java.util.List;
 public interface UserRoleDao {
     void addRole(User user, Role role);
     List<Role> getRoles(User user);
+    boolean hasRole(User user, Role role);
 }

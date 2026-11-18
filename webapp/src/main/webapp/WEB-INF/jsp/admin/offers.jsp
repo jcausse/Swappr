@@ -35,7 +35,7 @@
                 <div class="flex-1 w-full">
                     <spring:message code="admin.offers.statusGroup.label" var="statusGroupLabel"/>
                     <spring:message code="admin.offers.statusGroup.all" var="allStatusGroupText"/>
-                    <paw:formSelect path="statusGroup" label="${statusGroupLabel}" placeholder="${allStatusGroupText}" items="${statusGroupOptions}" itemLabel="label" itemValue="value" translateLabels="true"/>
+                    <paw:formSelect path="statusGroup" label="${statusGroupLabel}" placeholder="${allStatusGroupText}" items="${statusGroups}" itemLabel="status" itemValue="name" labelPrefix="offer.statusGroup." translateLabels="true"/>
                 </div>
 
                 <spring:message code="admin.offers.filter.submit" var="submitFilter"/>
@@ -161,7 +161,7 @@
                     </c:forEach>
 
                     <%-- Pagination --%>
-                    <paw:pagination page="${offersPage}" baseUrl="${offersBaseUrl}"/>
+                    <paw:pagination page="${offersPage}" baseUrl="/admin/offers"/>
                 </div>
             </c:otherwise>
         </c:choose>

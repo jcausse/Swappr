@@ -45,6 +45,8 @@ public class ImageJpaDao implements ImageDao {
         return images;
     }
 
+    // Bulk JPQL delete: does not refresh images already in the persistence context. Re-fetch
+    // (or refresh/detach) affected images before reading them later in this transaction.
     @Override
     public void deleteAll(final List<Long> ids) {
         if (ids == null || ids.isEmpty()) {

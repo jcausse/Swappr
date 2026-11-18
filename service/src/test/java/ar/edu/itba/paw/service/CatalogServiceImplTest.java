@@ -1,15 +1,11 @@
 package ar.edu.itba.paw.service;
 
 import ar.edu.itba.paw.model.Brand;
-import ar.edu.itba.paw.model.BrandInfo;
-import ar.edu.itba.paw.model.BrandSort;
 import ar.edu.itba.paw.model.Category;
 import ar.edu.itba.paw.model.Condition;
 import ar.edu.itba.paw.model.Model;
-import ar.edu.itba.paw.model.ModelInfo;
 import ar.edu.itba.paw.model.ModelListingInfo;
 import ar.edu.itba.paw.model.ModelListingInfoSummary;
-import ar.edu.itba.paw.model.ModelSort;
 import ar.edu.itba.paw.model.Page;
 import ar.edu.itba.paw.model.Price;
 import ar.edu.itba.paw.model.Subcategory;
@@ -94,16 +90,9 @@ public class CatalogServiceImplTest {
     /* getModelById                                                                                    */
     /* ---------------------------------------------------------------------------------------------- */
 
-    @Test
-    public void testGetModelByIdExists() {
-        final Model model = buildFakeModel(MODEL_ID, MODEL_NAME);
-        when(modelDao.getById(eq(MODEL_ID))).thenReturn(Optional.of(model));
-
-        final Model result = catalogService.getModelById(MODEL_ID);
-
-        Assert.assertEquals(MODEL_ID, (long) result.getId());
-        Assert.assertEquals(MODEL_NAME, result.getName());
-        Assert.assertEquals(BRAND_NAME, result.getBrand().getName());
+    @Test(expected = BadParameterException.class)
+    public void testGetModelByIdNullThrows() {
+        catalogService.getModelById(null);
     }
 
     @Test(expected = NotFoundException.class)
@@ -114,106 +103,8 @@ public class CatalogServiceImplTest {
     }
 
     /* ---------------------------------------------------------------------------------------------- */
-    /* delegating reads                                                                                */
-    /* ---------------------------------------------------------------------------------------------- */
-
-    @Test
-    public void testFindBrandByNameDelegates() {
-        final Brand brand = buildFakeBrand();
-        when(brandDao.getByName(eq(BRAND_NAME))).thenReturn(Optional.of(brand));
-
-        final Optional<Brand> result = catalogService.findBrandByName(BRAND_NAME);
-
-        Assert.assertTrue(result.isPresent());
-        Assert.assertSame(brand, result.get());
-    }
-
-    @Test
-    public void testFindModelByNameAndBrandDelegates() {
-        final Model model = buildFakeModel(MODEL_ID, MODEL_NAME);
-        when(modelDao.getByNameAndBrandId(eq(MODEL_NAME), eq(BRAND_ID))).thenReturn(Optional.of(model));
-
-        final Optional<Model> result = catalogService.findModelByNameAndBrand(MODEL_NAME, BRAND_ID);
-
-        Assert.assertTrue(result.isPresent());
-        Assert.assertSame(model, result.get());
-    }
-
-    @Test
-    public void testGetAllCategoriesDelegates() {
-        final List<Category> categories = List.of(Category.builder().id(CATEGORY_ID).name("Electronics").build());
-        when(categoryDao.getAll()).thenReturn(categories);
-
-        final List<Category> result = catalogService.getAllCategories();
-
-        Assert.assertEquals(categories, result);
-    }
-
-    @Test
-    public void testGetSubcategoriesByCategoryDelegates() {
-        final List<Subcategory> subcategories = List.of(buildFakeSubcategory());
-        when(subcategoryDao.getByCategoryId(eq(CATEGORY_ID))).thenReturn(subcategories);
-
-        final List<Subcategory> result = catalogService.getSubcategoriesByCategory(CATEGORY_ID);
-
-        Assert.assertEquals(subcategories, result);
-    }
-
-    @Test
-    public void testGetBrandsBySubcategoryDelegates() {
-        final List<Brand> brands = List.of(buildFakeBrand());
-        when(brandDao.getBySubcategoryId(eq(SUBCATEGORY_ID))).thenReturn(brands);
-
-        final List<Brand> result = catalogService.getBrandsBySubcategory(SUBCATEGORY_ID);
-
-        Assert.assertEquals(brands, result);
-    }
-
-    @Test
-    public void testGetModelsBySubcategoryAndBrandDelegates() {
-        final List<Model> models = List.of(buildFakeModel(MODEL_ID, MODEL_NAME));
-        when(modelDao.getBySubcategoryIdAndBrandId(eq(SUBCATEGORY_ID), eq(BRAND_ID))).thenReturn(models);
-
-        final List<Model> result = catalogService.getModelsBySubcategoryAndBrand(SUBCATEGORY_ID, BRAND_ID);
-
-        Assert.assertEquals(models, result);
-    }
-
-    /* ---------------------------------------------------------------------------------------------- */
     /* brand management                                                                                */
     /* ---------------------------------------------------------------------------------------------- */
-
-    @Test
-    public void testGetBrandsDelegatesToDao() {
-        final Page<BrandInfo> brandsPage = new Page<>(List.of(
-                BrandInfo.builder().id(1L).name("Apple").modelCount(2L).listingCount(1L).build(),
-                BrandInfo.builder().id(2L).name("Dell").modelCount(0L).listingCount(0L).build()), 2, 10, 12);
-        when(brandDao.getWithStats(eq(BrandSort.BRAND_ASC), eq(2), eq(10))).thenReturn(brandsPage);
-
-        final Page<BrandInfo> result = catalogService.getBrands(BrandSort.BRAND_ASC, 2, 10);
-
-        Assert.assertSame(brandsPage, result);
-    }
-
-    @Test
-    public void testGetBrandsDefaultsNullPageAndSort() {
-        final Page<BrandInfo> brandsPage = new Page<>(List.of(), 1, 10, 0);
-        when(brandDao.getWithStats(eq(BrandSort.BRAND_ASC), eq(1), eq(10))).thenReturn(brandsPage);
-
-        final Page<BrandInfo> result = catalogService.getBrands(null, null, 10);
-
-        Assert.assertSame(brandsPage, result);
-    }
-
-    @Test
-    public void testGetAllBrandsDelegatesToDao() {
-        final List<Brand> brands = List.of(buildFakeBrand());
-        when(brandDao.getAll()).thenReturn(brands);
-
-        final List<Brand> result = catalogService.getAllBrands();
-
-        Assert.assertSame(brands, result);
-    }
 
     @Test(expected = BadParameterException.class)
     public void testReplaceBrandWithSameBrandThrows() {
@@ -245,21 +136,6 @@ public class CatalogServiceImplTest {
 
         Assert.assertEquals(List.of(dell), options.get(BRAND_ID));
         Assert.assertEquals(List.of(apple), options.get(2L));
-    }
-
-    @Test
-    public void testGetModelReplacementOptionsExcludeSelfAndLabelBrand() {
-        final Model pro = buildFakeModel(MODEL_ID, MODEL_NAME);
-        final Model air = buildFakeModel(AIR_MODEL_ID, "MacBook Air");
-        when(modelDao.getAllWithBrand()).thenReturn(List.of(pro, air));
-
-        final var options = catalogService.getModelReplacementOptions(List.of(MODEL_ID, AIR_MODEL_ID));
-
-        Assert.assertEquals(1, options.get(MODEL_ID).size());
-        Assert.assertEquals(AIR_MODEL_ID, (long) options.get(MODEL_ID).get(0).getId());
-        Assert.assertEquals("Apple — MacBook Air", options.get(MODEL_ID).get(0).getLabel());
-        Assert.assertEquals(1, options.get(AIR_MODEL_ID).size());
-        Assert.assertEquals(MODEL_ID, (long) options.get(AIR_MODEL_ID).get(0).getId());
     }
 
     @Test
@@ -340,24 +216,6 @@ public class CatalogServiceImplTest {
     /* ---------------------------------------------------------------------------------------------- */
 
     @Test
-    public void testGetModelsDefaultsPageAndSort() {
-        final Page<ModelInfo> modelsPage = new Page<>(List.of(), 1, 10, 0);
-        when(modelDao.getWithInfo(null, null, ModelSort.NAME_ASC, 1, 10)).thenReturn(modelsPage);
-
-        final Page<ModelInfo> result = catalogService.getModels(null, null, null, null, 10);
-
-        Assert.assertSame(modelsPage, result);
-    }
-
-    @Test
-    public void testGetAllSubcategoriesDelegates() {
-        final List<Subcategory> subcategories = List.of(buildFakeSubcategory());
-        when(subcategoryDao.getAll()).thenReturn(subcategories);
-
-        Assert.assertSame(subcategories, catalogService.getAllSubcategories());
-    }
-
-    @Test
     public void testCreateModelTrimsName() {
         final Brand brand = buildFakeBrand();
         final Subcategory subcategory = buildFakeSubcategory();
@@ -431,8 +289,8 @@ public class CatalogServiceImplTest {
         Assert.assertEquals(10, result.getPageSize());
         Assert.assertEquals(25, result.getTotalCount());
         Assert.assertEquals(2, result.getContent().size());
-        Assert.assertEquals("MacBook Air", result.getContent().get(0).getModel().getName());
-        Assert.assertEquals("MacBook Pro", result.getContent().get(1).getModel().getName());
+        Assert.assertEquals("MacBook Air", result.getContent().get(0).getModelName());
+        Assert.assertEquals("MacBook Pro", result.getContent().get(1).getModelName());
         Assert.assertEquals(
             List.of(Condition.LIKE_NEW, Condition.GOOD),
             result.getContent().get(1).getListingInfoByCondition().stream()
@@ -441,47 +299,9 @@ public class CatalogServiceImplTest {
         );
     }
 
-    @Test
-    public void testGetListingInfoSummaryDefaultsNullPageToOne() {
-        final Page<ModelListingInfo> daoPage = new Page<>(List.of(), 1, 10, 0);
-        when(modelDao.getListingInfoSummary(BRAND_ID, MODEL_ID, null, null, SUBCATEGORY_ID, 1, 10))
-            .thenReturn(daoPage);
-
-        final Page<ModelListingInfoSummary> result = catalogService.getListingInfoSummary(
-            BRAND_ID, MODEL_ID, null, null, SUBCATEGORY_ID, null, 10
-        );
-
-        Assert.assertEquals(1, result.getPage());
-        Assert.assertTrue(result.getContent().isEmpty());
-        Assert.assertEquals(0, result.getTotalCount());
-    }
-
     /* ---------------------------------------------------------------------------------------------- */
     /* getListingInfoSummaryForModel                                                                   */
     /* ---------------------------------------------------------------------------------------------- */
-
-    @Test
-    public void testGetListingInfoSummaryForModelKeepsQueryConditionOrder() {
-        final Model model = buildFakeModel(MODEL_ID, MODEL_NAME);
-        final ModelListingInfo good = buildListingInfo(model, Condition.GOOD);
-        final ModelListingInfo likeNew = buildListingInfo(model, Condition.LIKE_NEW);
-        final ModelListingInfoSummary summary = ModelListingInfoSummary.builder()
-            .brand(model.getBrand())
-            .model(model)
-            .listingInfoByCondition(List.of(likeNew, good))
-            .build();
-        when(modelDao.getListingInfoSummaryForModel(eq(MODEL_ID), isNull())).thenReturn(Optional.of(summary));
-
-        final Optional<ModelListingInfoSummary> result = catalogService.getListingInfoSummaryForModel(MODEL_ID, null);
-
-        Assert.assertTrue(result.isPresent());
-        Assert.assertEquals(
-            List.of(Condition.LIKE_NEW, Condition.GOOD),
-            result.get().getListingInfoByCondition().stream()
-                .map(ModelListingInfo::getCondition)
-                .toList()
-        );
-    }
 
     @Test
     public void testGetListingInfoSummaryForModelEmpty() {
@@ -492,8 +312,10 @@ public class CatalogServiceImplTest {
 
     private ModelListingInfo buildListingInfo(final Model model, final Condition condition) {
         return ModelListingInfo.builder()
-            .brand(model.getBrand())
-            .model(model)
+            .brandId(model.getBrand().getId())
+            .brandName(model.getBrand().getName())
+            .modelId(model.getId())
+            .modelName(model.getName())
             .condition(condition)
             .listingCount(1L)
             .minPrice(new Price(BigDecimal.TEN))

@@ -3,6 +3,7 @@ package ar.edu.itba.paw.persistence;
 import ar.edu.itba.paw.model.Condition;
 import ar.edu.itba.paw.model.ModelListingInfo;
 import ar.edu.itba.paw.model.ModelListingInfoSummary;
+import ar.edu.itba.paw.model.Page;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -61,8 +62,8 @@ public class ModelListingInfoJpaDaoTest {
 
         Assert.assertTrue(maybeSummary.isPresent());
         final ModelListingInfoSummary summary = maybeSummary.get();
-        Assert.assertEquals("Apple", summary.getBrand().getName());
-        Assert.assertEquals("MacBook Pro", summary.getModel().getName());
+        Assert.assertEquals("Apple", summary.getBrandName());
+        Assert.assertEquals("MacBook Pro", summary.getModelName());
         Assert.assertEquals(2, summary.getListingInfoByCondition().size());
 
         final Map<Condition, ModelListingInfo> byCondition = summary.getListingInfoByCondition().stream()
@@ -115,5 +116,46 @@ public class ModelListingInfoJpaDaoTest {
     @Test
     public void testGetListingInfoSummaryForModelEmptyWhenModelDoesNotExist() {
         Assert.assertTrue(modelDao.getListingInfoSummaryForModel(NON_EXISTING_MODEL_ID, null).isEmpty());
+    }
+
+    /* ---------------------------------------------------------------------------------------------- */
+    /* getListingInfoSummary                                                                           */
+    /* ---------------------------------------------------------------------------------------------- */
+
+    @Test
+    public void testGetListingInfoSummaryAppliesAllFiltersToCountAndContent() {
+        final Page<ModelListingInfo> page = modelDao.getListingInfoSummary(
+                APPLE_BRAND_ID, MACBOOK_MODEL_ID, 2024, 2024, LAPTOPS_SUBCATEGORY_ID, 1, 10);
+
+        Assert.assertEquals(1, page.getTotalCount());
+        Assert.assertEquals(1, page.getContent().size());
+        final ModelListingInfo info = page.getContent().getFirst();
+        Assert.assertEquals(MACBOOK_MODEL_ID, (long) info.getModelId());
+        Assert.assertEquals(Condition.EXCELLENT, info.getCondition());
+        Assert.assertEquals(0, new BigDecimal("2000.00").compareTo(info.getMinPrice().getAmount()));
+    }
+
+    @Test
+    public void testGetListingInfoSummaryPaginatesModelsAndOutOfRangeKeepsTotal() {
+        jdbcTemplate.update(
+                "INSERT INTO models (model_id, model_name, brand_id, subcategory_id) VALUES (?, ?, ?, ?)",
+                101L, "A Model", APPLE_BRAND_ID, LAPTOPS_SUBCATEGORY_ID);
+        jdbcTemplate.update(
+                "INSERT INTO listings (listing_id, title, description, creator_id, model_id, year, price, status, condition, accepts_trade)"
+                + " VALUES (?, ?, NULL, ?, ?, ?, ?, 'ACTIVE', 'GOOD', FALSE)",
+                901L, "A listing", 1L, 101L, 2023, new BigDecimal("100.00"));
+
+        final Page<ModelListingInfo> first = modelDao.getListingInfoSummary(
+                null, null, null, null, LAPTOPS_SUBCATEGORY_ID, 1, 1);
+        final Page<ModelListingInfo> second = modelDao.getListingInfoSummary(
+                null, null, null, null, LAPTOPS_SUBCATEGORY_ID, 2, 1);
+        final Page<ModelListingInfo> outOfRange = modelDao.getListingInfoSummary(
+                null, null, null, null, LAPTOPS_SUBCATEGORY_ID, 10, 1);
+
+        Assert.assertEquals(2, first.getTotalCount());
+        Assert.assertEquals(101L, (long) first.getContent().getFirst().getModelId());
+        Assert.assertEquals(1L, (long) second.getContent().getFirst().getModelId());
+        Assert.assertTrue(outOfRange.isEmpty());
+        Assert.assertEquals(2, outOfRange.getTotalCount());
     }
 }

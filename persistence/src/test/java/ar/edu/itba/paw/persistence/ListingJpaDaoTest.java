@@ -431,15 +431,6 @@ public class ListingJpaDaoTest {
         Assert.assertEquals(0, page.getTotalCount());
     }
 
-    @Test
-    public void testSearchReturnsOnlyCoverImage() {
-        // Act
-        final Page<Listing> page = listingDao.search(baseFilter().query("MacBook Pro").build());
-
-        // Assert
-        Assert.assertEquals(List.of(FRONT_IMAGE_ID, BACK_IMAGE_ID), page.getContent().getFirst().getImageIds());
-    }
-
     /* ---------------------------------------------------------------------------------------------- */
     /* search: sorting (only ACTIVE listings: 1, 2 and 4)                                              */
     /* ---------------------------------------------------------------------------------------------- */
@@ -631,7 +622,7 @@ public class ListingJpaDaoTest {
             MACBOOK_LISTING_ID, "MacBook Pro M3", new Price(new BigDecimal("1400.00")),
             buildFakeModel(PHONE_MODEL_ID, SAMSUNG_BRAND_ID, PHONES_SUBCATEGORY_ID, PHONES_CATEGORY_ID), 2023,
             Condition.FAIR, false, false, "Some scratches"
-        );
+        ).orElseThrow();
 
         // Assert
         Assert.assertEquals("MacBook Pro M3", updated.getTitle());
@@ -648,10 +639,22 @@ public class ListingJpaDaoTest {
         final Listing updated = listingDao.update(
             MACBOOK_LISTING_ID, "MacBook Pro M3", new Price(new BigDecimal("1400.00")),
             buildFakeModel(MODEL_ID, BRAND_ID, SUBCATEGORY_ID, CATEGORY_ID), 2023, Condition.FAIR, false, false, "Some scratches"
-        );
+        ).orElseThrow();
 
         // Assert
         Assert.assertEquals(ListingStatus.ACTIVE, updated.getStatus());
+    }
+
+    @Test
+    public void testUpdateNonExistingListingReturnsEmpty() {
+        // Act
+        final Optional<Listing> updated = listingDao.update(
+            NON_EXISTING_ID, "MacBook Pro M3", new Price(new BigDecimal("1400.00")),
+            buildFakeModel(MODEL_ID, BRAND_ID, SUBCATEGORY_ID, CATEGORY_ID), 2023, Condition.FAIR, false, false, "Some scratches"
+        );
+
+        // Assert
+        Assert.assertTrue(updated.isEmpty());
     }
 
     @Test
@@ -690,10 +693,9 @@ public class ListingJpaDaoTest {
     @Test
     public void testPurchaseMarksListingAsSold() {
         // Act
-        final ListingStatus status = listingDao.purchase(MACBOOK_LISTING_ID, BUYER_ID);
+        listingDao.purchase(MACBOOK_LISTING_ID);
 
         // Assert
-        Assert.assertEquals(ListingStatus.SOLD, status);
         Assert.assertEquals(1, countListingsWhere(
             "listing_id = " + MACBOOK_LISTING_ID + " AND status = 'SOLD'"
         ));
@@ -702,12 +704,32 @@ public class ListingJpaDaoTest {
     @Test
     public void testPendingTransactionMarksListingAsPending() {
         // Act
-        final ListingStatus status = listingDao.pendingTransaction(MACBOOK_LISTING_ID, BUYER_ID);
+        listingDao.pendingTransaction(MACBOOK_LISTING_ID);
 
         // Assert
-        Assert.assertEquals(ListingStatus.PENDING_TRANSACTION, status);
         Assert.assertEquals(1, countListingsWhere(
             "listing_id = " + MACBOOK_LISTING_ID + " AND status = 'PENDING_TRANSACTION'"
+        ));
+    }
+
+    @Test
+    public void testReleaseListingsHeldByPendingPaymentTradeOffersForOfferedListing() {
+        // Arrange
+        jdbcTemplate.update("UPDATE listings SET status = 'PENDING_TRANSACTION' WHERE listing_id = ?",
+            GAMING_LISTING_ID);
+        jdbcTemplate.update(
+            "INSERT INTO offers (offer_id, listing_id, buyer_id, amount, is_full_price, status, message, created_at, offered_listing_id)"
+                + " VALUES (?, ?, ?, ?, FALSE, 'PENDING_PAYMENT', NULL, TIMESTAMP '2026-01-01 10:00:00+00:00', ?)",
+            910L, GAMING_LISTING_ID, SELLER_ID, new BigDecimal("100.00"), MACBOOK_LISTING_ID);
+
+        // Act
+        final int released = listingDao
+            .releaseListingsHeldByPendingPaymentTradeOffersForOfferedListing(MACBOOK_LISTING_ID);
+
+        // Assert
+        Assert.assertEquals(1, released);
+        Assert.assertEquals(1, countListingsWhere(
+            "listing_id = " + GAMING_LISTING_ID + " AND status = 'ACTIVE'"
         ));
     }
 

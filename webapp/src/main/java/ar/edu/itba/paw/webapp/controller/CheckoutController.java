@@ -68,8 +68,8 @@ public class CheckoutController {
 
     private ModelAndView withUserListings(Listing listing, User currentUser, CheckoutForm form) {
         if (listing.isAcceptsTrade()) {
-            var filter = form.toTradeListingsFilterDto(currentUser.getId(), TRADE_LISTINGS_PAGE_SIZE);
-            var userListingsPage = listingService.search(filter);
+            var userListingsPage = listingService.getActiveByCreator(
+                    currentUser.getId(), form.getPage(), TRADE_LISTINGS_PAGE_SIZE);
             return new ModelAndView("checkout/index")
                     .addObject("listing", listing)
                     .addObject("userListingsPage", userListingsPage)

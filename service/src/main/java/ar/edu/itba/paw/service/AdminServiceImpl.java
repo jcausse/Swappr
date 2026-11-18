@@ -2,8 +2,6 @@ package ar.edu.itba.paw.service;
 
 import ar.edu.itba.paw.model.Role;
 import ar.edu.itba.paw.model.User;
-import ar.edu.itba.paw.persistence.ListingDao;
-import ar.edu.itba.paw.persistence.OfferDao;
 import ar.edu.itba.paw.service.exception.NotFoundException;
 import ar.edu.itba.paw.service.exception.SelfSuspendException;
 import lombok.NonNull;
@@ -23,8 +21,7 @@ public class AdminServiceImpl implements AdminService {
     private final ListingCancellationService listingCancellationService;
     private final OfferService offerService;
     private final UserService userService;
-    private final ListingDao listingDao;
-    private final OfferDao offerDao;
+    private final ListingService listingService;
 
     @Override
     @Transactional
@@ -43,10 +40,10 @@ public class AdminServiceImpl implements AdminService {
     @Override
     @Transactional
     public User grantRole(@NonNull String usernameOrEmail, @NonNull Role role) {
-        LOGGER.info("Admin granting role {} to user '{}'", role, usernameOrEmail);
+        LOGGER.info("Admin granting role {}", role);
         final var user = userService.getByUsernameOrEmail(usernameOrEmail)
                 .orElseThrow(() -> {
-                    LOGGER.warn("User '{}' not found for granting role {}", usernameOrEmail, role);
+                    LOGGER.warn("User not found for granting role {}", role);
                     return NotFoundException.createFor("User");
                 });
 
@@ -74,18 +71,19 @@ public class AdminServiceImpl implements AdminService {
         final Long userId = user.getId();
 
         // Release trade listings offered in the offers that are about to be rejected
-        final int releasedOfferedListings = listingDao.releaseOfferedListingsForParticipant(userId);
+        final int releasedOfferedListings = listingService.releaseOfferedListingsForParticipant(userId);
 
         // Release listings held by the user's pending-payment offers (target listings belong to other sellers)
-        final int releasedHeldListings = listingDao.releaseListingsHeldByBuyerPaymentOffers(userId);
+        final int releasedHeldListings = listingService.releaseListingsHeldByBuyerPaymentOffers(userId);
 
         // Silently reject every pending or pending-payment offer the user participates in
-        final int rejectedOffers = offerDao.rejectAllForParticipant(userId);
-
-        final User suspendedUser = userService.suspend(userId);
+        final int rejectedOffers = offerService.rejectAllForParticipant(userId);
 
         // Cancel every listing still owned by the user, leaving completed sales untouched
-        final int canceledListings = listingDao.cancelAllByCreator(userId);
+        final int canceledListings = listingCancellationService.cancelAllByCreator(userId);
+
+        // Suspend last so the account-suspension notification is dispatched after all other writes
+        final User suspendedUser = userService.suspend(userId);
 
         LOGGER.info("Suspension cleanup for user id={}: releasedOfferedListings={}, releasedHeldListings={}, "
                         + "rejectedOffers={}, canceledListings={}",
@@ -97,10 +95,10 @@ public class AdminServiceImpl implements AdminService {
     @Override
     @Transactional
     public User unsuspendUser(@NonNull String usernameOrEmail) {
-        LOGGER.info("Admin unsuspending user '{}'", usernameOrEmail);
+        LOGGER.info("Admin unsuspending user");
         final var user = userService.getByUsernameOrEmail(usernameOrEmail)
                 .orElseThrow(() -> {
-                    LOGGER.warn("User '{}' not found for unsuspension", usernameOrEmail);
+                    LOGGER.warn("User not found for unsuspension");
                     return NotFoundException.createFor("User");
                 });
 

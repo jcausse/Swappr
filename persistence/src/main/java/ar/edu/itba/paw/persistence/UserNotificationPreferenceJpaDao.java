@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -47,6 +48,20 @@ public class UserNotificationPreferenceJpaDao implements UserNotificationPrefere
                         "SELECT p FROM UserNotificationPreference p WHERE p.id.userId = :userId",
                         UserNotificationPreference.class)
                 .setParameter("userId", user.getId())
+                .getResultList();
+    }
+
+    @Override
+    public List<UserNotificationPreference> getByUsersAndType(final Collection<User> users, final NotificationType type) {
+        if (users == null || users.isEmpty() || type == null) {
+            return List.of();
+        }
+        return em.createQuery(
+                        "FROM UserNotificationPreference p"
+                        + " WHERE p.user IN :users AND p.id.type = :type",
+                        UserNotificationPreference.class)
+                .setParameter("users", users)
+                .setParameter("type", type)
                 .getResultList();
     }
 

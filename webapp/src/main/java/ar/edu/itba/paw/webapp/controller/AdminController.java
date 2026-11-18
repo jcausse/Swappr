@@ -8,6 +8,7 @@ import ar.edu.itba.paw.model.ListingStatus;
 import ar.edu.itba.paw.model.ModelSort;
 import ar.edu.itba.paw.model.OfferStatusGroup;
 import ar.edu.itba.paw.model.Role;
+import ar.edu.itba.paw.model.Subcategory;
 import ar.edu.itba.paw.model.User;
 import ar.edu.itba.paw.service.AdminService;
 import ar.edu.itba.paw.service.BrandModelRequestService;
@@ -15,10 +16,11 @@ import ar.edu.itba.paw.service.CatalogService;
 import ar.edu.itba.paw.service.ListingService;
 import ar.edu.itba.paw.service.OfferService;
 import ar.edu.itba.paw.service.UserService;
-import ar.edu.itba.paw.service.exception.BadParameterException;
 import ar.edu.itba.paw.service.exception.BrandAlreadyExistsException;
+import ar.edu.itba.paw.service.exception.ListingNotCancelableException;
 import ar.edu.itba.paw.service.exception.ModelAlreadyExistsException;
 import ar.edu.itba.paw.service.exception.NotFoundException;
+import ar.edu.itba.paw.service.exception.OfferNotCancelableException;
 import ar.edu.itba.paw.service.exception.SelfSuspendException;
 import ar.edu.itba.paw.webapp.auth.CurrentUser;
 import ar.edu.itba.paw.webapp.form.AdminBrandModelRequestAcceptForm;
@@ -33,7 +35,6 @@ import ar.edu.itba.paw.webapp.form.AdminRenameBrandForm;
 import ar.edu.itba.paw.webapp.form.AdminReplaceBrandForm;
 import ar.edu.itba.paw.webapp.form.AdminReplaceModelForm;
 import ar.edu.itba.paw.webapp.form.AdminUserFilterForm;
-import ar.edu.itba.paw.webapp.form.SelectOption;
 import ar.edu.itba.paw.webapp.form.StringSelectOption;
 import ar.edu.itba.paw.webapp.form.AdminSuspendUserForm;
 import ar.edu.itba.paw.webapp.form.AdminTakeDownListingForm;
@@ -80,7 +81,7 @@ public class AdminController {
     private final UserService userService;
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("@webPermissionService.isAdmin(authentication)")
     public ModelAndView dashboard(
             @CurrentUser User currentUser,
             @ModelAttribute("takeDownListingForm") AdminTakeDownListingForm takeDownListingForm,
@@ -88,12 +89,12 @@ public class AdminController {
             @ModelAttribute("suspendUserForm") AdminSuspendUserForm suspendUserForm,
             @ModelAttribute("grantRoleForm") AdminGrantRoleForm grantRoleForm
     ) {
-        LOGGER.info("Admin {} accessed dashboard", currentUser.getUsername());
+        LOGGER.info("Admin {} accessed dashboard", currentUser.getId());
         return new ModelAndView("admin/dashboard");
     }
 
     @GetMapping("/catalog")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("@webPermissionService.isAdmin(authentication)")
     public ModelAndView catalog(
             @CurrentUser User currentUser,
             @RequestParam(value = "page", defaultValue = "1") int page,
@@ -111,12 +112,11 @@ public class AdminController {
             @ModelAttribute("replaceModelForm") AdminReplaceModelForm replaceModelForm,
             @ModelAttribute("acceptRequestForm") AdminBrandModelRequestAcceptForm acceptRequestForm
     ) {
-        LOGGER.debug("Admin {} accessed catalog management page: brandPage={}, modelPage={}, requestPage={}", currentUser.getUsername(), page, modelPage, requestPage);
-        modelFilterForm.setIsAutoSubmit(false);
-        createModelFilterForm.setIsAutoSubmit(false);
+        LOGGER.debug("Admin {} accessed catalog management page: brandPage={}, modelPage={}, requestPage={}", currentUser.getId(), page, modelPage, requestPage);
         final var brandsPage = catalogService.getBrands(sort, page, BRAND_PAGE_SIZE);
         final var modelsPage = catalogService.getModels(
-                modelFilterForm.getFilterBrandId(), modelFilterForm.getFilterSubcategoryId(),
+                modelFilterForm.getFilterBrandId(), modelFilterForm.getFilterCategoryId(),
+                modelFilterForm.getFilterSubcategoryId(),
                 modelSort, modelPage, MODEL_PAGE_SIZE);
         final var requestsPage = brandModelRequestService.getRequests(requestPage, REQUEST_PAGE_SIZE);
         final List<Brand> allBrands = catalogService.getAllBrands();
@@ -128,16 +128,10 @@ public class AdminController {
                 .addObject("brandReplacementOptions", catalogService.getBrandReplacementOptions(
                         brandsPage.getContent().stream().map(BrandInfo::getId).toList()))
                 .addObject("brandOptions", allBrands)
-                .addObject("editModelSubcategoryOptions", catalogService.getAllSubcategories().stream()
-                        .map(subcategory -> new SelectOption(
-                                subcategory.getId(), "subcategory." + subcategory.getName()))
-                        .toList())
+                .addObject("editModelSubcategories", catalogService.getAllSubcategories())
                 .addObject("categories", categories)
-                .addObject("categoryOptions", categories.stream()
-                        .map(category -> new SelectOption(category.getId(), "category." + category.getName()))
-                        .toList())
-                .addObject("modelFilterSubcategoryOptions", subcategoryOptions(modelFilterForm.getFilterCategoryId()))
-                .addObject("createModelSubcategoryOptions", subcategoryOptions(createModelFilterForm.getCategoryId()))
+                .addObject("modelFilterSubcategories", subcategoryOptions(modelFilterForm.getFilterCategoryId()))
+                .addObject("createModelSubcategories", subcategoryOptions(createModelFilterForm.getCategoryId()))
                 .addObject("models", modelsPage.getContent())
                 .addObject("modelsPage", modelsPage)
                 .addObject("currentModelSort", modelSort)
@@ -194,18 +188,15 @@ public class AdminController {
         return new ModelAndView("redirect:" + RedirectHelper.appendQueryParam(target, key, code));
     }
 
-    private List<SelectOption> subcategoryOptions(Long categoryId) {
+    private List<Subcategory> subcategoryOptions(Long categoryId) {
         if (categoryId == null) {
             return List.of();
         }
-        return catalogService.getSubcategoriesByCategory(categoryId).stream()
-                .map(subcategory -> new SelectOption(
-                        subcategory.getId(), "subcategory." + subcategory.getName()))
-                .toList();
+        return catalogService.getSubcategoriesByCategory(categoryId);
     }
 
     @PostMapping("/catalog/requests/{id}/accept")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("@webPermissionService.isAdmin(authentication)")
     public ModelAndView acceptBrandModelRequest(
             @CurrentUser User currentUser,
             @PathVariable Long id,
@@ -213,7 +204,7 @@ public class AdminController {
             BindingResult errors,
             @RequestParam(value = "redirect", required = false) String redirectUrl
     ) {
-        LOGGER.info("Admin {} requested acceptance of brand/model request {}", currentUser.getUsername(), id);
+        LOGGER.info("Admin {} requested acceptance of brand/model request {}", currentUser.getId(), id);
         if (errors.hasErrors()) {
             return catalogError(redirectUrl, "requestInvalid");
         }
@@ -235,13 +226,13 @@ public class AdminController {
     }
 
     @PostMapping("/catalog/requests/{id}/reject")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("@webPermissionService.isAdmin(authentication)")
     public ModelAndView rejectBrandModelRequest(
             @CurrentUser User currentUser,
             @PathVariable Long id,
             @RequestParam(value = "redirect", required = false) String redirectUrl
     ) {
-        LOGGER.info("Admin {} requested rejection of brand/model request {}", currentUser.getUsername(), id);
+        LOGGER.info("Admin {} requested rejection of brand/model request {}", currentUser.getId(), id);
         try {
             brandModelRequestService.reject(id);
         } catch (NotFoundException e) {
@@ -252,14 +243,14 @@ public class AdminController {
     }
 
     @PostMapping("/catalog/brands")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("@webPermissionService.isAdmin(authentication)")
     public ModelAndView createBrand(
             @CurrentUser User currentUser,
             @Valid @ModelAttribute("createBrandForm") AdminCreateBrandForm form,
             BindingResult errors,
             @RequestParam(value = "redirect", required = false) String redirectUrl
     ) {
-        LOGGER.info("Admin {} requested creation of brand '{}'", currentUser.getUsername(), form.getName());
+        LOGGER.info("Admin {} requested creation of brand '{}'", currentUser.getId(), form.getName());
         if (errors.hasErrors()) {
             return catalogError(redirectUrl, "brandInvalidName");
         }
@@ -275,7 +266,7 @@ public class AdminController {
     }
 
     @PostMapping("/catalog/brands/{id}/replace")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("@webPermissionService.isAdmin(authentication)")
     public ModelAndView replaceBrand(
             @CurrentUser User currentUser,
             @PathVariable Long id,
@@ -283,7 +274,7 @@ public class AdminController {
             BindingResult errors,
             @RequestParam(value = "redirect", required = false) String redirectUrl
     ) {
-        LOGGER.info("Admin {} requested replacement of brand {} with {}", currentUser.getUsername(), id, form.getReplacementBrandId());
+        LOGGER.info("Admin {} requested replacement of brand {} with {}", currentUser.getId(), id, form.getReplacementBrandId());
         if (errors.hasErrors()) {
             return catalogError(redirectUrl, "brandInvalidReplacement");
         }
@@ -294,7 +285,7 @@ public class AdminController {
     }
 
     @PostMapping("/catalog/brands/{id}/rename")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("@webPermissionService.isAdmin(authentication)")
     public ModelAndView renameBrand(
             @CurrentUser User currentUser,
             @PathVariable Long id,
@@ -302,7 +293,7 @@ public class AdminController {
             BindingResult errors,
             @RequestParam(value = "redirect", required = false) String redirectUrl
     ) {
-        LOGGER.info("Admin {} requested rename for brand {}", currentUser.getUsername(), id);
+        LOGGER.info("Admin {} requested rename for brand {}", currentUser.getId(), id);
         if (errors.hasErrors()) {
             return catalogError(redirectUrl, "brandInvalidName");
         }
@@ -318,14 +309,14 @@ public class AdminController {
     }
 
     @PostMapping("/catalog/models")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("@webPermissionService.isAdmin(authentication)")
     public ModelAndView createModel(
             @CurrentUser User currentUser,
             @Valid @ModelAttribute("createModelForm") AdminModelForm form,
             BindingResult errors,
             @RequestParam(value = "redirect", required = false) String redirectUrl
     ) {
-        LOGGER.info("Admin {} requested creation of model '{}'", currentUser.getUsername(), form.getName());
+        LOGGER.info("Admin {} requested creation of model '{}'", currentUser.getId(), form.getName());
         if (errors.hasErrors()) {
             return catalogError(redirectUrl, "modelInvalid");
         }
@@ -339,7 +330,7 @@ public class AdminController {
     }
 
     @PostMapping("/catalog/models/{id}/edit")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("@webPermissionService.isAdmin(authentication)")
     public ModelAndView editModel(
             @CurrentUser User currentUser,
             @PathVariable Long id,
@@ -347,7 +338,7 @@ public class AdminController {
             BindingResult errors,
             @RequestParam(value = "redirect", required = false) String redirectUrl
     ) {
-        LOGGER.info("Admin {} requested edit of model {}", currentUser.getUsername(), id);
+        LOGGER.info("Admin {} requested edit of model {}", currentUser.getId(), id);
         if (errors.hasErrors()) {
             return catalogError(redirectUrl, "modelInvalid");
         }
@@ -361,19 +352,19 @@ public class AdminController {
     }
 
     @PostMapping("/catalog/models/{id}/delete")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("@webPermissionService.isAdmin(authentication)")
     public ModelAndView deleteModel(
             @CurrentUser User currentUser,
             @PathVariable Long id,
             @RequestParam(value = "redirect", required = false) String redirectUrl
     ) {
-        LOGGER.info("Admin {} requested deletion of model {}", currentUser.getUsername(), id);
+        LOGGER.info("Admin {} requested deletion of model {}", currentUser.getId(), id);
         catalogService.deleteModel(id);
         return catalogSuccess(redirectUrl, "model_deleted");
     }
 
     @PostMapping("/catalog/models/{id}/replace")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("@webPermissionService.isAdmin(authentication)")
     public ModelAndView replaceModel(
             @CurrentUser User currentUser,
             @PathVariable Long id,
@@ -381,7 +372,7 @@ public class AdminController {
             BindingResult errors,
             @RequestParam(value = "redirect", required = false) String redirectUrl
     ) {
-        LOGGER.info("Admin {} requested replacement of model {} with {}", currentUser.getUsername(), id, form.getReplacementModelId());
+        LOGGER.info("Admin {} requested replacement of model {} with {}", currentUser.getId(), id, form.getReplacementModelId());
         if (errors.hasErrors()) {
             return catalogError(redirectUrl, "modelInvalidReplacement");
         }
@@ -390,29 +381,29 @@ public class AdminController {
     }
 
     @PostMapping("/catalog/brands/{id}/delete")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("@webPermissionService.isAdmin(authentication)")
     public ModelAndView deleteBrand(
             @CurrentUser User currentUser,
             @PathVariable Long id,
             @RequestParam(value = "redirect", required = false) String redirectUrl
     ) {
-        LOGGER.info("Admin {} requested deletion of brand {}", currentUser.getUsername(), id);
+        LOGGER.info("Admin {} requested deletion of brand {}", currentUser.getId(), id);
         catalogService.deleteBrand(id);
         return catalogSuccess(redirectUrl, "brand_deleted");
     }
 
     @GetMapping("/listings")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("@webPermissionService.isAdmin(authentication)")
     public ModelAndView listings(
             @CurrentUser User currentUser,
             @Valid @ModelAttribute("filterForm") AdminListingFilterForm filterForm,
             @RequestParam(value = "page", defaultValue = "1") int page,
             @ModelAttribute("takeDownListingForm") AdminTakeDownListingForm takeDownListingForm
     ) {
-        LOGGER.debug("Admin {} accessed listings page: page={}, query={}, status={}", currentUser.getUsername(), page, filterForm.getQuery(), filterForm.getStatus());
+        LOGGER.debug("Admin {} accessed listings page: page={}, query={}, status={}", currentUser.getId(), page, filterForm.getQuery(), filterForm.getStatus());
         ModelAndView mav = new ModelAndView("admin/listings");
         var filter = filterForm.toDto(page, DEFAULT_PAGE_SIZE);
-        mav.addObject("listingsPage", listingService.search(filter));
+        mav.addObject("listingsPage", listingService.searchForAdmin(filter));
         mav.addObject("statusOptions", Arrays.stream(ListingStatus.values())
                 .map(status -> new StringSelectOption(status.name(), "listing.status." + status.name()))
                 .toList());
@@ -433,14 +424,14 @@ public class AdminController {
     }
 
     @PostMapping("/listings/takedown")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("@webPermissionService.isAdmin(authentication)")
     public ModelAndView takeDownListingByForm(
             @CurrentUser User currentUser,
             @Valid @ModelAttribute("takeDownListingForm") AdminTakeDownListingForm form,
             BindingResult errors,
             @RequestParam(value = "redirect", required = false) String redirectUrl
     ) {
-        LOGGER.info("Admin {} requested takedown for listingId={}", currentUser.getUsername(), form.getListingId());
+        LOGGER.info("Admin {} requested takedown for listingId={}", currentUser.getId(), form.getListingId());
         if (errors.hasErrors()) {
             return new ModelAndView("admin/dashboard")
                     .addObject("takeDownOfferForm", new AdminTakeDownOfferForm())
@@ -457,50 +448,56 @@ public class AdminController {
                     .addObject("takeDownOfferForm", new AdminTakeDownOfferForm())
                     .addObject("suspendUserForm", new AdminSuspendUserForm())
                     .addObject("grantRoleForm", new AdminGrantRoleForm());
+        } catch (ListingNotCancelableException e) {
+            LOGGER.warn("Listing {} cannot be taken down: {}", form.getListingId(), e.getMessage());
+            errors.rejectValue("listingId", "admin.error.listingCannotBeCanceled");
+            return new ModelAndView("admin/dashboard")
+                    .addObject("takeDownOfferForm", new AdminTakeDownOfferForm())
+                    .addObject("suspendUserForm", new AdminSuspendUserForm())
+                    .addObject("grantRoleForm", new AdminGrantRoleForm());
         }
 
-        final var target = RedirectHelper.resolvePath(
-                redirectUrl,
-                "/admin/listings?success=listing_takedown",
-                ADMIN_PATH_FILTER
-        );
-        return new ModelAndView("redirect:" + target);
+        final var target = RedirectHelper.resolvePath(redirectUrl, "/admin/listings", ADMIN_PATH_FILTER);
+        return new ModelAndView("redirect:"
+                + RedirectHelper.appendQueryParam(target, "success", "listing_takedown"));
     }
 
     @PostMapping("/listings/{id}/takedown")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("@webPermissionService.isAdmin(authentication)")
     public ModelAndView takeDownListingById(
             @CurrentUser User currentUser,
             @PathVariable Long id,
             @RequestParam(value = "redirect", required = false) String redirectUrl
     ) {
-        LOGGER.info("Admin {} took down listing id={}", currentUser.getUsername(), id);
-        String fallback = "/admin/listings?error=listingNotFound";
+        String key = "error";
+        String code = "listingNotFound";
         try {
             adminService.takeDownListing(id);
-            fallback = "/admin/listings?success=listing_takedown";
+            key = "success";
+            code = "listing_takedown";
         } catch (NotFoundException e) {
             LOGGER.warn("Listing {} not found for takedown", id);
+        } catch (ListingNotCancelableException e) {
+            LOGGER.warn("Listing {} cannot be taken down: {}", id, e.getMessage());
+            code = "listingCannotBeCanceled";
         }
-        final var target = RedirectHelper.resolvePath(redirectUrl, fallback, ADMIN_PATH_FILTER);
-        return new ModelAndView("redirect:" + target);
+        final var target = RedirectHelper.resolvePath(redirectUrl, "/admin/listings", ADMIN_PATH_FILTER);
+        return new ModelAndView("redirect:" + RedirectHelper.appendQueryParam(target, key, code));
     }
 
     @GetMapping("/offers")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("@webPermissionService.isAdmin(authentication)")
     public ModelAndView offers(
             @CurrentUser User currentUser,
             @ModelAttribute("filterForm") AdminOfferFilterForm filterForm,
             @RequestParam(value = "page", defaultValue = "1") int page,
             @ModelAttribute("takeDownOfferForm") AdminTakeDownOfferForm takeDownOfferForm
     ) {
-        LOGGER.debug("Admin {} accessed offers page: page={}, statusGroup={}", currentUser.getUsername(), page, filterForm.getStatusGroup());
+        LOGGER.debug("Admin {} accessed offers page: page={}, statusGroup={}", currentUser.getId(), page, filterForm.getStatusGroup());
         ModelAndView mav = new ModelAndView("admin/offers");
         var filter = filterForm.toDto(page, DEFAULT_PAGE_SIZE);
         mav.addObject("offersPage", offerService.get(filter, false));
-        mav.addObject("statusGroupOptions", Arrays.stream(OfferStatusGroup.values())
-                .map(statusGroup -> new StringSelectOption(statusGroup.name(), "offer.statusGroup." + statusGroup.getStatus()))
-                .toList());
+        mav.addObject("statusGroups", Arrays.stream(OfferStatusGroup.values()).toList());
         mav.addObject("offersReturnUrl", buildOffersReturnUrl(page, filterForm));
         return mav;
     }
@@ -515,14 +512,14 @@ public class AdminController {
     }
 
     @PostMapping("/offers/takedown")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("@webPermissionService.isAdmin(authentication)")
     public ModelAndView takeDownOfferByForm(
             @CurrentUser User currentUser,
             @Valid @ModelAttribute("takeDownOfferForm") AdminTakeDownOfferForm form,
             BindingResult errors,
             @RequestParam(value = "redirect", required = false) String redirectUrl
     ) {
-        LOGGER.info("Admin {} requested takedown for offerId={}", currentUser.getUsername(), form.getOfferId());
+        LOGGER.info("Admin {} requested takedown for offerId={}", currentUser.getId(), form.getOfferId());
         if (errors.hasErrors()) {
             return new ModelAndView("admin/dashboard")
                     .addObject("takeDownListingForm", new AdminTakeDownListingForm())
@@ -539,7 +536,7 @@ public class AdminController {
                     .addObject("takeDownListingForm", new AdminTakeDownListingForm())
                     .addObject("suspendUserForm", new AdminSuspendUserForm())
                     .addObject("grantRoleForm", new AdminGrantRoleForm());
-        } catch (BadParameterException e) {
+        } catch (OfferNotCancelableException e) {
             LOGGER.warn("Offer {} cannot be taken down: {}", form.getOfferId(), e.getMessage());
             errors.rejectValue("offerId", "admin.error.offerCannotBeCanceled");
             return new ModelAndView("admin/dashboard")
@@ -548,38 +545,36 @@ public class AdminController {
                     .addObject("grantRoleForm", new AdminGrantRoleForm());
         }
 
-        final var target = RedirectHelper.resolvePath(
-                redirectUrl,
-                "/admin/offers?success=offer_takedown",
-                ADMIN_PATH_FILTER
-        );
-        return new ModelAndView("redirect:" + target);
+        final var target = RedirectHelper.resolvePath(redirectUrl, "/admin/offers", ADMIN_PATH_FILTER);
+        return new ModelAndView("redirect:"
+                + RedirectHelper.appendQueryParam(target, "success", "offer_takedown"));
     }
 
     @PostMapping("/offers/{id}/takedown")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("@webPermissionService.isAdmin(authentication)")
     public ModelAndView takeDownOfferById(
             @CurrentUser User currentUser,
             @PathVariable Long id,
             @RequestParam(value = "redirect", required = false) String redirectUrl
     ) {
-        LOGGER.info("Admin {} took down offer id={}", currentUser.getUsername(), id);
-        String fallback = "/admin/offers?error=offerNotFound";
+        String key = "error";
+        String code = "offerNotFound";
         try {
             adminService.takeDownOffer(id);
-            fallback = "/admin/offers?success=offer_takedown";
+            key = "success";
+            code = "offer_takedown";
         } catch (NotFoundException e) {
             LOGGER.warn("Offer {} not found for takedown", id);
-        } catch (BadParameterException e) {
+        } catch (OfferNotCancelableException e) {
             LOGGER.warn("Offer {} cannot be taken down: {}", id, e.getMessage());
-            fallback = "/admin/offers?error=offerCannotBeCanceled";
+            code = "offerCannotBeCanceled";
         }
-        final var target = RedirectHelper.resolvePath(redirectUrl, fallback, ADMIN_PATH_FILTER);
-        return new ModelAndView("redirect:" + target);
+        final var target = RedirectHelper.resolvePath(redirectUrl, "/admin/offers", ADMIN_PATH_FILTER);
+        return new ModelAndView("redirect:" + RedirectHelper.appendQueryParam(target, key, code));
     }
 
     @GetMapping("/users")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("@webPermissionService.isAdmin(authentication)")
     public ModelAndView users(
             @CurrentUser User currentUser,
             @Valid @ModelAttribute("filterForm") AdminUserFilterForm filterForm,
@@ -587,15 +582,16 @@ public class AdminController {
             @ModelAttribute("grantRoleForm") AdminGrantRoleForm grantRoleForm
     ) {
         final var username = filterForm.getUsername();
-        LOGGER.debug("Admin {} accessed users management page: username={}", currentUser.getUsername(), username);
+        LOGGER.debug("Admin {} accessed users management page", currentUser.getId());
         ModelAndView mav = new ModelAndView("admin/users");
         if (username != null && !username.isBlank()) {
             Optional<User> targetUser = userService.getByUsernameOrEmail(username);
             if (targetUser.isPresent()) {
                 User user = targetUser.get();
+                final List<Role> targetUserRoles = userService.getRoles(user);
                 mav.addObject("targetUser", user);
-                mav.addObject("targetUserRoles", user.getRoles());
-                mav.addObject("isTargetUserAdmin", user.hasRole(Role.ADMIN));
+                mav.addObject("targetUserRoles", targetUserRoles);
+                mav.addObject("isTargetUserAdmin", targetUserRoles.contains(Role.ADMIN));
                 suspendUserForm.setUsername(user.getUsername());
                 grantRoleForm.setUsername(user.getUsername());
             } else {
@@ -606,70 +602,73 @@ public class AdminController {
     }
 
     @PostMapping("/users/suspend")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("@webPermissionService.isAdmin(authentication)")
     public ModelAndView suspendUser(
             @CurrentUser User currentUser,
             @Valid @ModelAttribute("suspendUserForm") AdminSuspendUserForm form,
             BindingResult errors,
-            @ModelAttribute("grantRoleForm") AdminGrantRoleForm grantRoleForm
+            @ModelAttribute("grantRoleForm") AdminGrantRoleForm grantRoleForm,
+            @ModelAttribute("filterForm") AdminUserFilterForm filterForm
     ) {
         final var formUsernameOrEmail = form.getUsernameOrEmail();
-        LOGGER.info("Admin {} requested user suspension for '{}'", currentUser.getUsername(), formUsernameOrEmail);
+        LOGGER.info("Admin {} requested user suspension", currentUser.getId());
 
         if (errors.hasErrors()) {
-            return new ModelAndView("admin/users");
+            return new ModelAndView("admin/users").addObject("filterForm", filterForm);
         }
 
         final User user;
         try {
             user = adminService.suspendUser(currentUser, formUsernameOrEmail);
         } catch (SelfSuspendException e) {
-            LOGGER.warn("Admin {} prevented from suspending theirself", currentUser.getUsername());
+            LOGGER.warn("Admin {} prevented from suspending theirself", currentUser.getId());
             errors.rejectValue("username", "admin.users.error.selfSuspend");
-            return new ModelAndView("admin/users");
+            return new ModelAndView("admin/users").addObject("filterForm", filterForm);
         }
 
-        LOGGER.info("Admin {} logically suspended user {}", currentUser.getUsername(), user.getUsername());
+        LOGGER.info("Admin {} logically suspended user id={}", currentUser.getId(), user.getId());
         return new ModelAndView("redirect:/admin/users?success=user_suspended&username=" + URLEncoder.encode(user.getUsername(), StandardCharsets.UTF_8));
     }
 
     @PostMapping("/users/unsuspend")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("@webPermissionService.isAdmin(authentication)")
     public ModelAndView unsuspendUser(
             @CurrentUser User currentUser,
             @Valid @ModelAttribute("suspendUserForm") AdminSuspendUserForm form,
             BindingResult errors,
-            @ModelAttribute("grantRoleForm") AdminGrantRoleForm grantRoleForm
+            @ModelAttribute("grantRoleForm") AdminGrantRoleForm grantRoleForm,
+            @ModelAttribute("filterForm") AdminUserFilterForm filterForm
     ) {
         final var formUsernameOrEmail = form.getUsernameOrEmail();
-        LOGGER.info("Admin {} requested user unsuspension for '{}'", currentUser.getUsername(), formUsernameOrEmail);
+        LOGGER.info("Admin {} requested user unsuspension", currentUser.getId());
 
         if (errors.hasErrors()) {
-            return new ModelAndView("admin/users");
+            return new ModelAndView("admin/users").addObject("filterForm", filterForm);
         }
 
         User user = adminService.unsuspendUser(formUsernameOrEmail);
 
-        LOGGER.info("Admin {} unsuspended user {}", currentUser.getUsername(), user.getUsername());
+        LOGGER.info("Admin {} unsuspended user id={}", currentUser.getId(), user.getId());
         return new ModelAndView("redirect:/admin/users?success=user_unsuspended&username=" + URLEncoder.encode(user.getUsername(), StandardCharsets.UTF_8));
     }
 
     @PostMapping("/users/grant-admin")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("@webPermissionService.isAdmin(authentication)")
     public ModelAndView grantAdminRole(
             @CurrentUser User currentUser,
             @Valid @ModelAttribute("grantRoleForm") AdminGrantRoleForm form,
             BindingResult errors,
-            @ModelAttribute("suspendUserForm") AdminSuspendUserForm suspendUserForm
+            @ModelAttribute("suspendUserForm") AdminSuspendUserForm suspendUserForm,
+            @ModelAttribute("filterForm") AdminUserFilterForm filterForm
     ) {
-        LOGGER.info("Admin {} requested granting ADMIN role for '{}'", currentUser.getUsername(), form.getUsernameOrEmail());
+        LOGGER.info("Admin {} requested granting ADMIN role", currentUser.getId());
         if (errors.hasErrors()) {
-            return new ModelAndView("admin/users");
+            return new ModelAndView("admin/users").addObject("filterForm", filterForm);
         }
 
         User user = adminService.grantRole(form.getUsernameOrEmail(), Role.ADMIN);
 
-        LOGGER.info("Admin {} granted ADMIN role to user {}", currentUser.getUsername(), user.getUsername());
+        LOGGER.info("Admin {} granted ADMIN role to user id={}", currentUser.getId(), user.getId());
         return new ModelAndView("redirect:/admin/users?success=role_granted&username=" + URLEncoder.encode(user.getUsername(), StandardCharsets.UTF_8));
     }
 }

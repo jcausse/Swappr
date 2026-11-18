@@ -35,19 +35,17 @@
         <paw:divider />
 
         <form:form id="catalogRequestForm" modelAttribute="requestForm" action="${requestUrl}" method="post" class="flex flex-col gap-4 mt-4">
-            <form:hidden path="isAutoSubmit"/>
-            <c:if test="${not empty formError}">
-                <div class="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-                    <spring:message code="${formError}"/>
-                </div>
-            </c:if>
+            <form:errors path="*" element="div" cssClass="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700"/>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <paw:formSelect
                     path="categoryId"
                     label="${categoryLabel}"
                     placeholder="${categoryPlaceholder}"
-                    items="${categoryOptions}"
+                    items="${categories}"
+                    itemLabel="name"
+                    itemValue="id"
+                    labelPrefix="category."
                     translateLabels="true"
                 />
 
@@ -56,7 +54,10 @@
                         path="subcategoryId"
                         label="${subcategoryLabel}"
                         placeholder="${subcategoryPlaceholder}"
-                        items="${subcategoryOptions}"
+                        items="${subcategories}"
+                        itemLabel="name"
+                        itemValue="id"
+                        labelPrefix="subcategory."
                         translateLabels="true"
                     />
                 </c:if>
@@ -112,18 +113,17 @@
             var existingBrandFields = document.getElementById('existingBrandFields');
             var newBrandRadio = document.getElementById('requestTypeNew');
             var existingBrandRadio = document.getElementById('requestTypeExisting');
-            var isAutoSubmitInput = document.getElementById('isAutoSubmit');
             var requestForm = document.getElementById('catalogRequestForm');
 
-            function submitForm() {
-                if (isAutoSubmitInput) {
-                    isAutoSubmitInput.value = 'true';
-                }
-                requestForm.submit();
-            }
-
             if (categorySelect) {
-                categorySelect.addEventListener('change', submitForm);
+                categorySelect.addEventListener('change', function () {
+                    var categoryChanged = document.createElement('input');
+                    categoryChanged.type = 'hidden';
+                    categoryChanged.name = 'categoryChanged';
+                    categoryChanged.value = 'true';
+                    requestForm.appendChild(categoryChanged);
+                    requestForm.submit();
+                });
             }
 
             function updateFields() {
