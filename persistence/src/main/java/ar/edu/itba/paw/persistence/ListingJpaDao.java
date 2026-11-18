@@ -195,8 +195,8 @@ public class ListingJpaDao implements ListingDao {
     private static final Map<ListingSort, String> LISTING_SORT_TO_SQL = new HashMap<>(Map.ofEntries(
             Map.entry(ListingSort.PRICE_ASC, "l.price ASC, l.listing_id DESC"),
             Map.entry(ListingSort.PRICE_DESC, "l.price DESC, l.listing_id DESC"),
-            Map.entry(ListingSort.NAME_ASC, "l.title ASC, l.listing_id DESC"),
-            Map.entry(ListingSort.NAME_DESC, "l.title DESC, l.listing_id DESC"),
+            Map.entry(ListingSort.NAME_ASC, "LOWER(l.title) ASC, l.listing_id DESC"),
+            Map.entry(ListingSort.NAME_DESC, "LOWER(l.title) DESC, l.listing_id DESC"),
             Map.entry(ListingSort.MOST_OFFERS,
                     "(SELECT COUNT(*) FROM offers o WHERE o.listing_id = l.listing_id AND o.status = 'PENDING') DESC, l.listing_id DESC"),
             Map.entry(ListingSort.RECENT_OFFERS,
@@ -208,8 +208,8 @@ public class ListingJpaDao implements ListingDao {
     private static final Map<ListingSort, String> LISTING_SORT_TO_JPQL = new HashMap<>(Map.ofEntries(
             Map.entry(ListingSort.PRICE_ASC, "l.price.amount ASC, l.id DESC"),
             Map.entry(ListingSort.PRICE_DESC, "l.price.amount DESC, l.id DESC"),
-            Map.entry(ListingSort.NAME_ASC, "l.title ASC, l.id DESC"),
-            Map.entry(ListingSort.NAME_DESC, "l.title DESC, l.id DESC"),
+            Map.entry(ListingSort.NAME_ASC, "LOWER(l.title) ASC, l.id DESC"),
+            Map.entry(ListingSort.NAME_DESC, "LOWER(l.title) DESC, l.id DESC"),
             Map.entry(ListingSort.MOST_OFFERS, "l.pendingOffersCount DESC, l.id DESC"),
             Map.entry(ListingSort.RECENT_OFFERS, "l.recentPendingOfferAt DESC NULLS LAST, l.id DESC")
     ));
